@@ -1,0 +1,25 @@
+defmodule Tiki.Tickets.TicketType do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  schema "ticket_type" do
+    field :description, :string
+    field :expire_time, :utc_datetime
+    field :name, :string
+    field :price, :integer
+    field :purchasable, :boolean, default: true
+    field :release_time, :utc_datetime
+
+    belongs_to :ticket_batch, Tiki.Tickets.TicketBatch
+
+    timestamps()
+  end
+
+  @doc false
+  def changeset(ticket_type, attrs) do
+    ticket_type
+    |> cast(attrs, [:name, :description, :purchasable, :price, :release_time, :expire_time])
+    |> validate_required([:name, :description, :purchasable, :price, :release_time, :expire_time])
+    |> validate_number(:price, greater_than_or_equal_to: 0)
+  end
+end
