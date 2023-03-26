@@ -4,7 +4,7 @@ defmodule Tiki.Tickets.TicketBatch do
 
   alias Tiki.Tickets.TicketBatch
 
-  schema "ticket_batch" do
+  schema "ticket_batches" do
     field :max_size, :integer
     field :min_size, :integer
     field :name, :string
@@ -12,6 +12,7 @@ defmodule Tiki.Tickets.TicketBatch do
     belongs_to :event, Tiki.Events.Event
 
     has_many :sub_batches, TicketBatch
+    has_many :ticket_types, Tiki.Tickets.TicketType
     belongs_to :parent_batch, TicketBatch
 
     timestamps()

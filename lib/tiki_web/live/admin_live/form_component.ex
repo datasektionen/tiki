@@ -1,4 +1,4 @@
-defmodule TikiWeb.EventLive.FormComponent do
+defmodule TikiWeb.AdminLive.Event.FormComponent do
   use TikiWeb, :live_component
 
   alias Tiki.Events

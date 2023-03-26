@@ -21,10 +21,10 @@ defmodule Tiki.TicketsFixtures do
   end
 
   @doc """
-  Generate a ticket_type.
+  Generate a ticket_types.
   """
   def ticket_type_fixture(attrs \\ %{}) do
-    {:ok, ticket_type} =
+    {:ok, ticket_types} =
       attrs
       |> Enum.into(%{
         description: "some description",
@@ -36,6 +36,6 @@ defmodule Tiki.TicketsFixtures do
       })
       |> Tiki.Tickets.create_ticket_type()
 
-    ticket_type
+    ticket_types
   end
 end

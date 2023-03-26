@@ -1,28 +1,40 @@
-<.header>
-  Event <%= @event.id %>
-  <:subtitle>This is a event record from your database.</:subtitle>
-  <:actions>
-    <.link patch={~p"/events/#{@event}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit event</.button>
+<div class="flex flex-col gap-2 mb-2">
+  <div class="flex flex-row justify-between">
+    <h1 class="font-bold text-3xl"><%= @event.name %></h1>
+
+    <.link patch={~p"/events/#{@event}/purchase"}>
+      <.button>Köp biljetter</.button>
     </.link>
-  </:actions>
-</.header>
+  </div>
+  <div class="text-gray-500">
+    <%= Calendar.strftime(@event.event_date, "%y-%m-%d vid %H:%M") %>
+  </div>
+  <p>
+    <%= @event.description %>
+  </p>
+</div>
+Övriga online:
+<p><%= max(@online_count - 1, 0) %></p>
+Hej Adam!
+Event: <%= @event.name %>
+<div :for={ticket_type <- @ticket_types}>
+  <button><%= ticket_type.name %></button>
+  <div><%= ticket_type.price %></div>
+</div>
 
-<.list>
-  <:item title="Name"><%= @event.name %></:item>
-  <:item title="Description"><%= @event.description %></:item>
-  <:item title="Event date"><%= @event.event_date %></:item>
-</.list>
-
-<.back navigate={~p"/events"}>Back to events</.back>
-
-<.modal :if={@live_action == :edit} id="event-modal" show on_cancel={JS.patch(~p"/events/#{@event}")}>
+<.modal
+  :if={@live_action == :purchase}
+  id="purchase-modal"
+  show
+  on_cancel={JS.patch(~p"/events/#{@event}")}
+>
   <.live_component
-    module={TikiWeb.EventLive.FormComponent}
+    module={TikiWeb.EventLive.PurchaseComponent}
     id={@event.id}
     title={@page_title}
     action={@live_action}
     event={@event}
     patch={~p"/events/#{@event}"}
+    current_user={@current_user}
   />
 </.modal>

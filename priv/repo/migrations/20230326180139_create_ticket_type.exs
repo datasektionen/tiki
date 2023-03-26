@@ -14,6 +14,6 @@ defmodule Tiki.Repo.Migrations.CreateTicketType do
       timestamps()
     end
 
-    create index(:ticket_type, [:ticket_batches])
+    create index(:ticket_types, [:ticket_batch_id])
   end
 end

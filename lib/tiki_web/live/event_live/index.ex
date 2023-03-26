@@ -2,46 +2,29 @@ defmodule TikiWeb.EventLive.Index do
   use TikiWeb, :live_view
 
   alias Tiki.Events
-  alias Tiki.Events.Event
 
-  @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :events, Events.list_events())}
+    events = Events.list_events()
+
+    {:ok, assign(socket, events: events)}
   end
 
-  @impl true
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
+  def render(assigns) do
+    ~H"""
+    <div class="font-bold text-lg mb-2">Listar alla events</div>
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Event")
-    |> assign(:event, Events.get_event!(id))
-  end
-
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Event")
-    |> assign(:event, %Event{})
-  end
-
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Events")
-    |> assign(:event, nil)
-  end
-
-  @impl true
-  def handle_info({TikiWeb.EventLive.FormComponent, {:saved, event}}, socket) do
-    {:noreply, stream_insert(socket, :events, event)}
-  end
-
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    event = Events.get_event!(id)
-    {:ok, _} = Events.delete_event(event)
-
-    {:noreply, stream_delete(socket, :events, event)}
+    <div class="grid md:grid-cols-3 gap-4">
+      <.link
+        :for={event <- @events}
+        navigate={~p"/events/#{event}"}
+        class="rounded-lg px-4 py-4 border shadow-sm hover:bg-gray-50 flex flex-col gap-1"
+      >
+        <div class="font-bold"><%= event.name %></div>
+        <div class="text-sm text-gray-500">
+          <%= Calendar.strftime(event.event_date, "%y-%m-%d %H:%M") %>
+        </div>
+      </.link>
+    </div>
+    """
   end
 end

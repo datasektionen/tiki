@@ -13,11 +13,11 @@ defmodule Tiki.Orders do
 
   ## Examples
 
-      iex> list_order()
+      iex> list_orders()
       [%Order{}, ...]
 
   """
-  def list_order do
+  def list_orders do
     Repo.all(Order)
   end
 
@@ -113,7 +113,7 @@ defmodule Tiki.Orders do
       [%Ticket{}, ...]
 
   """
-  def list_ticket do
+  def list_tickets do
     Repo.all(Ticket)
   end
 
@@ -196,5 +196,22 @@ defmodule Tiki.Orders do
   """
   def change_ticket(%Ticket{} = ticket, attrs \\ %{}) do
     Ticket.changeset(ticket, attrs)
+  end
+
+  def purchase_tickets(ticket_types, user) do
+    IO.inspect(ticket_types)
+
+    Repo.transaction(fn ->
+      order =
+        %Order{user_id: user.id}
+        |> Repo.insert!()
+
+      tickets =
+        Enum.map(ticket_types, fn tt ->
+          %Ticket{ticket_type_id: tt.id, order_id: order.id}
+        end)
+
+      Enum.each(tickets, fn t -> Repo.insert!(t) end)
+    end)
   end
 end

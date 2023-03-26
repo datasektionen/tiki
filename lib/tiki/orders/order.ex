@@ -2,7 +2,7 @@ defmodule Tiki.Orders.Order do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "order" do
+  schema "orders" do
     belongs_to :user, Tiki.Accounts.User
     has_many :tickets, Tiki.Orders.Ticket
 

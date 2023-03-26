@@ -14,6 +14,7 @@ defmodule Tiki.Application do
       Tiki.Repo,
       # Start the PubSub system
       {Phoenix.PubSub, name: Tiki.PubSub},
+      Tiki.Presence,
       # Start Finch
       {Finch, name: Tiki.Finch},
       # Start the Endpoint (http/https)

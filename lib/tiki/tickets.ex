@@ -17,7 +17,7 @@ defmodule Tiki.Tickets do
       [%TicketBatch{}, ...]
 
   """
-  def list_ticket_batch do
+  def list_ticket_batches do
     Repo.all(TicketBatch)
   end
 
@@ -105,7 +105,7 @@ defmodule Tiki.Tickets do
   alias Tiki.Tickets.TicketType
 
   @doc """
-  Returns the list of ticket_type.
+  Returns the list of ticket_types.
 
   ## Examples
 
@@ -113,12 +113,12 @@ defmodule Tiki.Tickets do
       [%TicketType{}, ...]
 
   """
-  def list_ticket_type do
+  def list_ticket_types do
     Repo.all(TicketType)
   end
 
   @doc """
-  Gets a single ticket_type.
+  Gets a single ticket_types.
 
   Raises `Ecto.NoResultsError` if the Ticket type does not exist.
 
@@ -134,7 +134,7 @@ defmodule Tiki.Tickets do
   def get_ticket_type!(id), do: Repo.get!(TicketType, id)
 
   @doc """
-  Creates a ticket_type.
+  Creates a ticket_types.
 
   ## Examples
 
@@ -152,49 +152,49 @@ defmodule Tiki.Tickets do
   end
 
   @doc """
-  Updates a ticket_type.
+  Updates a ticket_types.
 
   ## Examples
 
-      iex> update_ticket_type(ticket_type, %{field: new_value})
+      iex> update_ticket_type(ticket_types, %{field: new_value})
       {:ok, %TicketType{}}
 
-      iex> update_ticket_type(ticket_type, %{field: bad_value})
+      iex> update_ticket_type(ticket_types, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_ticket_type(%TicketType{} = ticket_type, attrs) do
-    ticket_type
+  def update_ticket_type(%TicketType{} = ticket_types, attrs) do
+    ticket_types
     |> TicketType.changeset(attrs)
     |> Repo.update()
   end
 
   @doc """
-  Deletes a ticket_type.
+  Deletes a ticket_types.
 
   ## Examples
 
-      iex> delete_ticket_type(ticket_type)
+      iex> delete_ticket_type(ticket_types)
       {:ok, %TicketType{}}
 
-      iex> delete_ticket_type(ticket_type)
+      iex> delete_ticket_type(ticket_types)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_ticket_type(%TicketType{} = ticket_type) do
-    Repo.delete(ticket_type)
+  def delete_ticket_type(%TicketType{} = ticket_types) do
+    Repo.delete(ticket_types)
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking ticket_type changes.
+  Returns an `%Ecto.Changeset{}` for tracking ticket_types changes.
 
   ## Examples
 
-      iex> change_ticket_type(ticket_type)
+      iex> change_ticket_type(ticket_types)
       %Ecto.Changeset{data: %TicketType{}}
 
   """
-  def change_ticket_type(%TicketType{} = ticket_type, attrs \\ %{}) do
-    TicketType.changeset(ticket_type, attrs)
+  def change_ticket_type(%TicketType{} = ticket_types, attrs \\ %{}) do
+    TicketType.changeset(ticket_types, attrs)
   end
 end

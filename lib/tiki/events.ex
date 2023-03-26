@@ -101,4 +101,15 @@ defmodule Tiki.Events do
   def change_event(%Event{} = event, attrs \\ %{}) do
     Event.changeset(event, attrs)
   end
+
+  def get_ticket_types(event_id) do
+    query =
+      from e in Event,
+        join: tb in assoc(e, :ticket_batches),
+        join: tt in assoc(tb, :ticket_types),
+        where: e.id == ^event_id,
+        select: tt
+
+    Repo.all(query)
+  end
 end

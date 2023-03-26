@@ -64,17 +64,21 @@ defmodule TikiWeb.Router do
   scope "/", TikiWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live "/events", EventLive.Index, :index
-    live "/events/new", EventLive.Index, :new
-    live "/events/:id/edit", EventLive.Index, :edit
-
-    live "/events/:id", EventLive.Show, :show
-    live "/events/:id/show/edit", EventLive.Show, :edit
-
     live_session :require_authenticated_user,
       on_mount: [{TikiWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+      live "/admin/events", AdminLive.Event.Index, :index
+      live "/admin/events/new", AdminLive.Event.Index, :new
+      live "/admin/events/:id/edit", AdminLive.Event.Index, :edit
+
+      live "/admin/events/:id", AdminLive.Event.Show, :show
+      live "/admin/events/:id/show/edit", AdminLive.Event.Show, :edit
+
+      live "/events", EventLive.Index, :index
+      live "/events/:id", EventLive.Show, :index
+      live "/events/:id/purchase", EventLive.Show, :purchase
     end
   end
 

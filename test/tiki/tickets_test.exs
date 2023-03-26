@@ -66,67 +66,94 @@ defmodule Tiki.TicketsTest do
     end
   end
 
-  describe "ticket_type" do
+  describe "ticket_types" do
     alias Tiki.Tickets.TicketType
 
     import Tiki.TicketsFixtures
 
-    @invalid_attrs %{description: nil, expire_time: nil, name: nil, price: nil, purchasable: nil, release_time: nil}
+    @invalid_attrs %{
+      description: nil,
+      expire_time: nil,
+      name: nil,
+      price: nil,
+      purchasable: nil,
+      release_time: nil
+    }
 
-    test "list_ticket_type/0 returns all ticket_type" do
-      ticket_type = ticket_type_fixture()
-      assert Tickets.list_ticket_type() == [ticket_type]
+    test "list_ticket_type/0 returns all ticket_types" do
+      ticket_types = ticket_type_fixture()
+      assert Tickets.list_ticket_type() == [ticket_types]
     end
 
-    test "get_ticket_type!/1 returns the ticket_type with given id" do
-      ticket_type = ticket_type_fixture()
-      assert Tickets.get_ticket_type!(ticket_type.id) == ticket_type
+    test "get_ticket_type!/1 returns the ticket_types with given id" do
+      ticket_types = ticket_type_fixture()
+      assert Tickets.get_ticket_type!(ticket_types.id) == ticket_types
     end
 
-    test "create_ticket_type/1 with valid data creates a ticket_type" do
-      valid_attrs = %{description: "some description", expire_time: ~U[2023-03-25 18:01:00Z], name: "some name", price: 42, purchasable: true, release_time: ~U[2023-03-25 18:01:00Z]}
+    test "create_ticket_type/1 with valid data creates a ticket_types" do
+      valid_attrs = %{
+        description: "some description",
+        expire_time: ~U[2023-03-25 18:01:00Z],
+        name: "some name",
+        price: 42,
+        purchasable: true,
+        release_time: ~U[2023-03-25 18:01:00Z]
+      }
 
-      assert {:ok, %TicketType{} = ticket_type} = Tickets.create_ticket_type(valid_attrs)
-      assert ticket_type.description == "some description"
-      assert ticket_type.expire_time == ~U[2023-03-25 18:01:00Z]
-      assert ticket_type.name == "some name"
-      assert ticket_type.price == 42
-      assert ticket_type.purchasable == true
-      assert ticket_type.release_time == ~U[2023-03-25 18:01:00Z]
+      assert {:ok, %TicketType{} = ticket_types} = Tickets.create_ticket_type(valid_attrs)
+      assert ticket_types.description == "some description"
+      assert ticket_types.expire_time == ~U[2023-03-25 18:01:00Z]
+      assert ticket_types.name == "some name"
+      assert ticket_types.price == 42
+      assert ticket_types.purchasable == true
+      assert ticket_types.release_time == ~U[2023-03-25 18:01:00Z]
     end
 
     test "create_ticket_type/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket_type(@invalid_attrs)
     end
 
-    test "update_ticket_type/2 with valid data updates the ticket_type" do
-      ticket_type = ticket_type_fixture()
-      update_attrs = %{description: "some updated description", expire_time: ~U[2023-03-26 18:01:00Z], name: "some updated name", price: 43, purchasable: false, release_time: ~U[2023-03-26 18:01:00Z]}
+    test "update_ticket_type/2 with valid data updates the ticket_types" do
+      ticket_types = ticket_type_fixture()
 
-      assert {:ok, %TicketType{} = ticket_type} = Tickets.update_ticket_type(ticket_type, update_attrs)
-      assert ticket_type.description == "some updated description"
-      assert ticket_type.expire_time == ~U[2023-03-26 18:01:00Z]
-      assert ticket_type.name == "some updated name"
-      assert ticket_type.price == 43
-      assert ticket_type.purchasable == false
-      assert ticket_type.release_time == ~U[2023-03-26 18:01:00Z]
+      update_attrs = %{
+        description: "some updated description",
+        expire_time: ~U[2023-03-26 18:01:00Z],
+        name: "some updated name",
+        price: 43,
+        purchasable: false,
+        release_time: ~U[2023-03-26 18:01:00Z]
+      }
+
+      assert {:ok, %TicketType{} = ticket_types} =
+               Tickets.update_ticket_type(ticket_types, update_attrs)
+
+      assert ticket_types.description == "some updated description"
+      assert ticket_types.expire_time == ~U[2023-03-26 18:01:00Z]
+      assert ticket_types.name == "some updated name"
+      assert ticket_types.price == 43
+      assert ticket_types.purchasable == false
+      assert ticket_types.release_time == ~U[2023-03-26 18:01:00Z]
     end
 
     test "update_ticket_type/2 with invalid data returns error changeset" do
-      ticket_type = ticket_type_fixture()
-      assert {:error, %Ecto.Changeset{}} = Tickets.update_ticket_type(ticket_type, @invalid_attrs)
-      assert ticket_type == Tickets.get_ticket_type!(ticket_type.id)
+      ticket_types = ticket_type_fixture()
+
+      assert {:error, %Ecto.Changeset{}} =
+               Tickets.update_ticket_type(ticket_types, @invalid_attrs)
+
+      assert ticket_types == Tickets.get_ticket_type!(ticket_types.id)
     end
 
-    test "delete_ticket_type/1 deletes the ticket_type" do
-      ticket_type = ticket_type_fixture()
-      assert {:ok, %TicketType{}} = Tickets.delete_ticket_type(ticket_type)
-      assert_raise Ecto.NoResultsError, fn -> Tickets.get_ticket_type!(ticket_type.id) end
+    test "delete_ticket_type/1 deletes the ticket_types" do
+      ticket_types = ticket_type_fixture()
+      assert {:ok, %TicketType{}} = Tickets.delete_ticket_type(ticket_types)
+      assert_raise Ecto.NoResultsError, fn -> Tickets.get_ticket_type!(ticket_types.id) end
     end
 
-    test "change_ticket_type/1 returns a ticket_type changeset" do
-      ticket_type = ticket_type_fixture()
-      assert %Ecto.Changeset{} = Tickets.change_ticket_type(ticket_type)
+    test "change_ticket_type/1 returns a ticket_types changeset" do
+      ticket_types = ticket_type_fixture()
+      assert %Ecto.Changeset{} = Tickets.change_ticket_type(ticket_types)
     end
   end
 end

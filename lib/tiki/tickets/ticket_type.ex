@@ -2,7 +2,7 @@ defmodule Tiki.Tickets.TicketType do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "ticket_type" do
+  schema "ticket_types" do
     field :description, :string
     field :expire_time, :utc_datetime
     field :name, :string
@@ -16,8 +16,8 @@ defmodule Tiki.Tickets.TicketType do
   end
 
   @doc false
-  def changeset(ticket_type, attrs) do
-    ticket_type
+  def changeset(ticket_types, attrs) do
+    ticket_types
     |> cast(attrs, [:name, :description, :purchasable, :price, :release_time, :expire_time])
     |> validate_required([:name, :description, :purchasable, :price, :release_time, :expire_time])
     |> validate_number(:price, greater_than_or_equal_to: 0)
