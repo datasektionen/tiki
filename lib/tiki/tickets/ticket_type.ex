@@ -11,6 +11,7 @@ defmodule Tiki.Tickets.TicketType do
     field :release_time, :utc_datetime
 
     belongs_to :ticket_batch, Tiki.Tickets.TicketBatch
+    has_many :tickets, Tiki.Orders.Ticket
 
     timestamps()
   end

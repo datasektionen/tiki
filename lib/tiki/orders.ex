@@ -4,6 +4,7 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
+  alias Tiki.Tickets.TicketBatch
   alias Tiki.Repo
 
   alias Tiki.Orders.Order
@@ -198,12 +199,10 @@ defmodule Tiki.Orders do
     Ticket.changeset(ticket, attrs)
   end
 
-  def purchase_tickets(ticket_types, user) do
-    IO.inspect(ticket_types)
-
+  def purchase_tickets(ticket_types, user_id) do
     Repo.transaction(fn ->
       order =
-        %Order{user_id: user.id}
+        %Order{user_id: user_id}
         |> Repo.insert!()
 
       tickets =
@@ -213,6 +212,111 @@ defmodule Tiki.Orders do
 
       Enum.each(tickets, fn t -> Repo.insert!(t) end)
     end)
+  end
+
+  @doc """
+  Reserves tickets for an event. Returns the order.
+
+  ## Examples
+      iex> reserve_tickets(123, [%TicketType{}, ...], 456)
+      %Order{}
+  """
+  def reserve_tickets(event_id, ticket_types, user_id) do
+    purchased_tickets = get_purchased_batches(event_id)
+
+    create_order = fn repo, _ ->
+      %Order{user_id: user_id, event_id: event_id, status: :reserved}
+      |> Repo.insert()
+    end
+
+    verify_order = fn repo, order ->
+      nil
+    end
+
+    Repo.transaction(fn ->
+      order =
+        %Order{user_id: user_id, event_id: event_id, status: :reserved}
+        |> Repo.insert!()
+
+      tickets =
+        Enum.map(ticket_types, fn tt ->
+          %Ticket{ticket_type_id: tt.id, order_id: order.id}
+        end)
+
+      Enum.each(tickets, fn t -> Repo.insert!(t) end)
+
+      order
+    end)
+  end
+
+  defmodule TreeBuilder do
+    def build(graph, vertex) do
+      children =
+        for child <- :digraph.in_neighbours(graph, vertex) do
+          build(graph, child)
+        end
+
+      {^vertex, label} = :digraph.vertex(graph, vertex)
+
+      sum_purchased = Enum.reduce(children, 0, fn child, acc -> acc + child.purchased end)
+
+      Map.put(label, :children, children)
+      |> Map.put(:purchased, sum_purchased + label.purchased)
+    end
+  end
+
+  @doc """
+  Returns a tree of ticket batches for an event, where
+  each batch has an id, min, max, and the number of tickets
+  purchased for that batch. Note that the top level batch
+  is a virtual batch that represents the entire event.
+
+  ## Examples
+      iex> get_purchased_batches(123)
+      %{batch: %TicketBatch{}, purchased: 2, min: 1, max: 10, children: [...]}
+  """
+  def get_purchased_batches(event_id) do
+    root_batches_query =
+      from tb in TicketBatch,
+        where: tb.event_id == ^event_id,
+        where: is_nil(tb.parent_batch_id)
+
+    batches_recursion_query =
+      from tb in TicketBatch,
+        where: tb.event_id == ^event_id,
+        inner_join: ctb in "batch_tree",
+        on: tb.parent_batch_id == ctb.id
+
+    batches_query =
+      root_batches_query
+      |> union_all(^batches_recursion_query)
+
+    query =
+      TicketBatch
+      |> where([tb], tb.event_id == ^event_id)
+      |> recursive_ctes(true)
+      |> with_cte("batch_tree", as: ^batches_query)
+      |> join(:left, [tb], tt in assoc(tb, :ticket_types))
+      |> join(:left, [tb, tt], t in assoc(tt, :tickets))
+      |> group_by([tb, tt, t], tb.id)
+      |> select([tb, tt, t], %{batch: tb, purchased: count(t.id)})
+
+    results = Repo.all(query)
+
+    # We now have an array of batches with the number of tickets purchased for each batch. We now need to build the tree.
+    fake_root = %{batch: %TicketBatch{id: 0}, purchased: 0}
+
+    graph = :digraph.new()
+
+    for %{batch: %TicketBatch{id: id}} = node <- [fake_root | results] do
+      :digraph.add_vertex(graph, id, node)
+    end
+
+    for %{batch: %TicketBatch{id: id, parent_batch_id: parent_id}} <- results do
+      :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
+    end
+
+    tree = TreeBuilder.build(graph, fake_root.batch.id)
   end
 
   @doc """

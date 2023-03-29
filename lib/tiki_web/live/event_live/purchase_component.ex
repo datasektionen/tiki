@@ -51,7 +51,7 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
         Enum.map(1..ticket_type.count, fn _ -> ticket_type end)
       end)
 
-    {:ok, _} = Orders.purchase_tickets(flattned, socket.assigns.current_user)
+    {:ok, _} = Orders.purchase_tickets(flattned, socket.assigns.current_user.id)
 
     {:noreply, assign(socket, state: :purchased)}
   end

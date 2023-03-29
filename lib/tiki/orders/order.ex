@@ -6,6 +6,7 @@ defmodule Tiki.Orders.Order do
     field :status, Ecto.Enum, values: [:pending, :paid, :cancelled]
 
     belongs_to :user, Tiki.Accounts.User
+    belongs_to :event, Tiki.Events.Event
     has_many :tickets, Tiki.Orders.Ticket
 
     timestamps()
@@ -14,7 +15,7 @@ defmodule Tiki.Orders.Order do
   @doc false
   def changeset(order, attrs) do
     order
-    |> cast(attrs, [:user_id])
+    |> cast(attrs, [:user_id, :event_id, :status])
     |> validate_required([])
   end
 end
