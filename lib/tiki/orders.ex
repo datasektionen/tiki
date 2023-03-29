@@ -214,4 +214,24 @@ defmodule Tiki.Orders do
       Enum.each(tickets, fn t -> Repo.insert!(t) end)
     end)
   end
+
+  @doc """
+  Returns the list of purchased ticket types for an event, along
+  with the number of tickets purchased for each type. Useful when
+  initializing the order GenServers.
+  ## Examples
+      iex> get_purchased_ticket_types(123)
+      [%{ticket_type: %TicketType{}, purchased: 2}, ...]
+  """
+  def get_purchased_ticket_types(event_id) do
+    query =
+      from t in Ticket,
+        right_join: tt in assoc(t, :ticket_type),
+        right_join: tb in assoc(tt, :ticket_batch),
+        where: tb.event_id == ^event_id,
+        select: %{ticket_type: tt, purchased: count(t.id)},
+        group_by: tt.id
+
+    Repo.all(query)
+  end
 end
