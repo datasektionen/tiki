@@ -40,7 +40,14 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
   def handle_event("submit", _params, socket) do
     to_purchase = Enum.filter(socket.assigns.ticket_types, &(&1.count > 0))
 
+    flattned =
+      Enum.flat_map(socket.assigns.to_purchase, fn ticket_type ->
+        Enum.map(1..ticket_type.count, fn _ -> ticket_type end)
+      end)
+
     price = Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
+
+    {:ok, order_uuid} = Tiki.Orders.reserve_tickets(socket.assigns.event.id, flattned)
 
     {:noreply, assign(socket, state: :purchase, to_purchase: to_purchase, total_price: price)}
   end
@@ -51,7 +58,9 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
         Enum.map(1..ticket_type.count, fn _ -> ticket_type end)
       end)
 
-    {:ok, _} = Orders.purchase_tickets(flattned, socket.assigns.current_user)
+    Tiki.OrderServer.Event.buy_tickets(socket.assigns.event.id, flattned)
+
+    # {:ok, _} = Orders.purchase_tickets(flattned, socket.assigns.current_user)
 
     {:noreply, assign(socket, state: :purchased)}
   end

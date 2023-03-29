@@ -4,9 +4,11 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
+  alias Tiki.Tickets.TicketType
   alias Tiki.Repo
 
   alias Tiki.Orders.Order
+  alias Tiki.OrderServer
 
   @doc """
   Returns the list of order.
@@ -199,8 +201,6 @@ defmodule Tiki.Orders do
   end
 
   def purchase_tickets(ticket_types, user) do
-    IO.inspect(ticket_types)
-
     Repo.transaction(fn ->
       order =
         %Order{user_id: user.id}
@@ -213,5 +213,51 @@ defmodule Tiki.Orders do
 
       Enum.each(tickets, fn t -> Repo.insert!(t) end)
     end)
+  end
+
+  @doc """
+  Returns the list of purchased ticket types for an event, along
+  with the number of tickets purchased for each type. Useful when
+  initializing the order GenServers.
+
+  ## Examples
+
+      iex> get_purchased_ticket_types(123)
+      [%{ticket_type: %TicketType{}, purchased: 2}, ...]
+  """
+  def get_purchased_ticket_types(event_id) do
+    query =
+      from t in Ticket,
+        right_join: tt in assoc(t, :ticket_type),
+        right_join: tb in assoc(tt, :ticket_batch),
+        where: tb.event_id == ^event_id,
+        select: %{ticket_type: tt, purchased: count(t.id)},
+        group_by: tt.id
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Creates a reservation
+
+  ## Examples
+
+      iex> reserve_tickets(1, [%TicketType{}, %TicketType{}, ...], 1)
+      {:ok, reservation_uuid}
+  """
+  def reserve_tickets(event_id, ticket_types, user_id) do
+    OrderServer.Event.reserve_tickets(event_id, ticket_types, user_id)
+  end
+
+  @doc """
+  Completes a reserved order
+
+  ## Examples
+
+      iex> buy_reserved_tickets(1, 123)
+      {:ok, reservation_uuid}
+  """
+  def buy_reserved_tickets(event_id, reservation_uuid) do
+    OrderServer.Event.buy_tickets(event_id, reservation_uuid)
   end
 end

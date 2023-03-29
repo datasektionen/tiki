@@ -4,6 +4,7 @@ defmodule TikiWeb.EventLive.Show do
   alias Tiki.Events
   alias Tiki.Presence
 
+  @impl true
   def mount(%{"id" => event_id}, _session, socket) do
     ticket_types = Events.get_ticket_types(event_id)
     event = Events.get_event!(event_id)
@@ -36,6 +37,7 @@ defmodule TikiWeb.EventLive.Show do
     |> assign(:page_title, socket.assigns.event.name)
   end
 
+  @impl true
   def handle_info(
         %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
         %{assigns: %{online_count: count}} = socket

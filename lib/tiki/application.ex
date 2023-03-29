@@ -18,9 +18,10 @@ defmodule Tiki.Application do
       # Start Finch
       {Finch, name: Tiki.Finch},
       # Start the Endpoint (http/https)
-      TikiWeb.Endpoint
+      TikiWeb.Endpoint,
       # Start a worker by calling: Tiki.Worker.start_link(arg)
       # {Tiki.Worker, arg}
+      Tiki.OrderServer.Server
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

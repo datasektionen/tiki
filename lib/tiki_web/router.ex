@@ -76,6 +76,8 @@ defmodule TikiWeb.Router do
       live "/admin/events/:id", AdminLive.Event.Show, :show
       live "/admin/events/:id/show/edit", AdminLive.Event.Show, :edit
 
+      live "/admin/events/:id/purchases", AdminLive.Event.Purchases
+
       live "/events", EventLive.Index, :index
       live "/events/:id", EventLive.Show, :index
       live "/events/:id/purchase", EventLive.Show, :purchase

@@ -3,6 +3,8 @@ defmodule Tiki.Orders.Order do
   import Ecto.Changeset
 
   schema "orders" do
+    field :status, Ecto.Enum, values: [:pending, :paid, :cancelled]
+
     belongs_to :user, Tiki.Accounts.User
     has_many :tickets, Tiki.Orders.Ticket
 
