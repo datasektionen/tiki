@@ -220,8 +220,6 @@ defmodule Tiki.Orders do
       %Order{}
   """
   def reserve_tickets(event_id, ticket_types, user_id) do
-    IO.inspect(ticket_types)
-
     Repo.transaction(fn ->
       order =
         %Order{user_id: user_id, event_id: event_id, status: :pending}
@@ -240,6 +238,22 @@ defmodule Tiki.Orders do
 
       order
     end)
+  end
+
+  def maybe_cancel_reservation(order) do
+    result =
+      Repo.transaction(fn ->
+        order = Repo.get!(Order, order.id)
+
+        if order.status == :pending do
+          Repo.delete_all(from t in Ticket, where: t.order_id == ^order.id)
+          Repo.delete(order)
+
+          brodcast(order.event_id, {:order_updated, order})
+        end
+      end)
+
+    result
   end
 
   defmodule TreeBuilder do

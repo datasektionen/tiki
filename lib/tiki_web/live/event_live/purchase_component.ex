@@ -2,8 +2,14 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
   use TikiWeb, :live_component
 
   alias Tiki.Orders
-  alias Tiki.Tickets
   alias Tiki.Events
+
+  def update(%{action: {:timeout}}, socket) do
+    case socket.assigns.state do
+      :purchase -> {:ok, assign(socket, state: :timeout)}
+      _ -> {:ok, socket}
+    end
+  end
 
   def update(assigns, socket) do
     ticket_types = Events.get_ticket_types(assigns.event.id) |> Enum.map(&Map.put(&1, :count, 0))
@@ -37,11 +43,24 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     {:noreply, socket |> assign(ticket_types: ticket_types)}
   end
 
+  def handle_event("cancel", _params, socket) do
+    if socket.assigns.state == :purchase do
+      Orders.maybe_cancel_reservation(socket.assigns.order)
+    end
+
+    {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event.id}")}
+  end
+
   def handle_event("submit", _params, socket) do
     to_purchase = Enum.filter(socket.assigns.ticket_types, &(&1.count > 0))
 
     {:ok, order} =
       Orders.reserve_tickets(socket.assigns.event.id, to_purchase, socket.assigns.current_user.id)
+
+    TikiWeb.EventLive.PurchaseMonitor.monitor(self(), __MODULE__, %{
+      id: socket.assigns.id,
+      order: order
+    })
 
     price = Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
 
@@ -55,87 +74,8 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     {:noreply, assign(socket, state: :purchased)}
   end
 
-  def render(assigns) do
-    ~H"""
-    <div>
-      <div :if={@state == :purchased}>
-        <.header>
-          Färdigt
-          <:subtitle>Ditt köp är färdigt, du kan se ditt kvitto nedan.</:subtitle>
-        </.header>
-
-        <div class="pt-4">
-          <.ticket_summary tickets={@to_purchase} total_price={@total_price} />
-        </div>
-      </div>
-      <div :if={@state == :purchase}>
-        <.header>
-          Betalning
-          <:subtitle>Du har 7 minuter på dig att genomföra ditt köp.</:subtitle>
-        </.header>
-
-        <div class="pt-4">
-          <.ticket_summary tickets={@to_purchase} total_price={@total_price} />
-        </div>
-
-        <div>
-          Typ betalning ie stripe här!
-        </div>
-
-        <div class="flex flex-row justify-end">
-          <.button phx-click="pay" phx-target={@myself}>
-            Betala <%= @total_price %> kr
-          </.button>
-        </div>
-      </div>
-      <div :if={@state == :tickets}>
-        <.header>
-          <%= @title %>
-          <:subtitle>Köp biljetter till eventet här.</:subtitle>
-        </.header>
-
-        <div class="flex flex-col gap-3 pt-4">
-          <div
-            :for={ticket_type <- @ticket_types}
-            class="flex flex-row justify-between py-4 px-4 bg-gray-100 rounded-xl"
-          >
-            <div class="flex flex-col">
-              <h3 class="font-bold text-xl pb-1"><%= ticket_type.name %></h3>
-              <div class="text-gray-600"><%= ticket_type.price %> kr</div>
-            </div>
-
-            <div class="flex flex-row items-center gap-2">
-              <div
-                class="bg-white rounded-full w-8 h-8 text-2xl shadow-md flex justify-center items-center hover:bg-gray-100 hover:cursor-pointer"
-                phx-click={JS.push("dec", value: %{id: ticket_type.id})}
-                phx-target={@myself}
-              >
-                <.icon name="hero-minus-mini" />
-              </div>
-
-              <div class="bg-gray-200 h-10 w-8 rounded-lg flex justify-center items-center">
-                <%= ticket_type.count %>
-              </div>
-
-              <div
-                class="bg-white rounded-full w-8 h-8 text-2xl shadow-md flex justify-center items-center hover:bg-gray-100 hover:cursor-pointer"
-                phx-click={JS.push("inc", value: %{id: ticket_type.id})}
-                phx-target={@myself}
-              >
-                <.icon name="hero-plus-mini" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex flex-row justify-end pt-4">
-          <.button phx-click="submit" phx-target={@myself}>
-            <span>Fortsätt</span>
-          </.button>
-        </div>
-      </div>
-    </div>
-    """
+  def unmount({:shutdown, :closed}, %{order: order}) do
+    Orders.maybe_cancel_reservation(order)
   end
 
   defp ticket_summary(assigns) do
@@ -159,5 +99,45 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
       </tbody>
     </table>
     """
+  end
+end
+
+defmodule TikiWeb.EventLive.PurchaseMonitor do
+  use GenServer
+
+  def start_link(init_arg) do
+    GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)
+  end
+
+  def monitor(pid, view_module, meta) do
+    GenServer.call(__MODULE__, {:monitor, pid, view_module, meta})
+  end
+
+  def init(_) do
+    {:ok, %{views: %{}}}
+  end
+
+  def handle_call({:monitor, pid, view_module, meta}, _, %{views: views} = state) do
+    Process.monitor(pid)
+    Process.send_after(self(), {:timeout, pid}, 60_000)
+    {:reply, :ok, %{state | views: Map.put(views, pid, {view_module, meta})}}
+  end
+
+  def handle_info({:timeout, view_pid}, state) do
+    case Map.pop(state.views, view_pid) do
+      {{module, meta}, new_views} ->
+        send(view_pid, {:timeout, %{id: meta.id}})
+        module.unmount({:shutdown, :closed}, meta)
+        {:noreply, %{state | views: new_views}}
+
+      {nil, _} ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:DOWN, _ref, :process, view_pid, reason}, state) do
+    {{module, meta}, new_views} = Map.pop(state.views, view_pid)
+    module.unmount(reason, meta)
+    {:noreply, %{state | views: new_views}}
   end
 end

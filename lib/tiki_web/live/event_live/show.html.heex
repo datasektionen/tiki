@@ -22,12 +22,7 @@ Event: <%= @event.name %>
   <div><%= ticket_type.price %></div>
 </div>
 
-<.modal
-  :if={@live_action == :purchase}
-  id="purchase-modal"
-  show
-  on_cancel={JS.patch(~p"/events/#{@event}")}
->
+<div :if={@live_action == :purchase}>
   <.live_component
     module={TikiWeb.EventLive.PurchaseComponent}
     id={@event.id}
@@ -37,4 +32,4 @@ Event: <%= @event.name %>
     patch={~p"/events/#{@event}"}
     current_user={@current_user}
   />
-</.modal>
+</div>

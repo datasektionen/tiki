@@ -1,0 +1,89 @@
+<div>
+  <.modal id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)}>
+    <div :if={@state == :timeout}>
+      <.header>
+        Tiden är slut.
+        <:subtitle>
+          Tyvärr tog tiden slut för din beställning, men du kan pröva att göra en ny.
+        </:subtitle>
+      </.header>
+    </div>
+
+    <div :if={@state == :purchased}>
+      <.header>
+        Färdigt
+        <:subtitle>Ditt köp är färdigt, du kan se ditt kvitto nedan.</:subtitle>
+      </.header>
+
+      <div class="pt-4">
+        <.ticket_summary tickets={@to_purchase} total_price={@total_price} />
+      </div>
+    </div>
+    <div :if={@state == :purchase}>
+      <.header>
+        Betalning
+        <:subtitle>Du har 7 minuter på dig att genomföra ditt köp.</:subtitle>
+      </.header>
+
+      <div class="pt-4">
+        <.ticket_summary tickets={@to_purchase} total_price={@total_price} />
+      </div>
+
+      <div>
+        Typ betalning ie stripe här!
+      </div>
+
+      <div class="flex flex-row justify-end">
+        <.button phx-click="pay" phx-target={@myself}>
+          Betala <%= @total_price %> kr
+        </.button>
+      </div>
+    </div>
+    <div :if={@state == :tickets}>
+      <.header>
+        <%= @title %>
+        <:subtitle>Köp biljetter till eventet här.</:subtitle>
+      </.header>
+
+      <div class="flex flex-col gap-3 pt-4">
+        <div
+          :for={ticket_type <- @ticket_types}
+          class="flex flex-row justify-between py-4 px-4 bg-gray-100 rounded-xl"
+        >
+          <div class="flex flex-col">
+            <h3 class="font-bold text-xl pb-1"><%= ticket_type.name %></h3>
+            <div class="text-gray-600"><%= ticket_type.price %> kr</div>
+          </div>
+
+          <div class="flex flex-row items-center gap-2">
+            <div
+              class="bg-white rounded-full w-8 h-8 text-2xl shadow-md flex justify-center items-center hover:bg-gray-100 hover:cursor-pointer"
+              phx-click={JS.push("dec", value: %{id: ticket_type.id})}
+              phx-target={@myself}
+            >
+              <.icon name="hero-minus-mini" />
+            </div>
+
+            <div class="bg-gray-200 h-10 w-8 rounded-lg flex justify-center items-center">
+              <%= ticket_type.count %>
+            </div>
+
+            <div
+              class="bg-white rounded-full w-8 h-8 text-2xl shadow-md flex justify-center items-center hover:bg-gray-100 hover:cursor-pointer"
+              phx-click={JS.push("inc", value: %{id: ticket_type.id})}
+              phx-target={@myself}
+            >
+              <.icon name="hero-plus-mini" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-row justify-end pt-4">
+        <.button phx-click="submit" phx-target={@myself}>
+          <span>Fortsätt</span>
+        </.button>
+      </div>
+    </div>
+  </.modal>
+</div>
