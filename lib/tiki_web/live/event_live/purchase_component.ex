@@ -119,7 +119,7 @@ defmodule TikiWeb.EventLive.PurchaseMonitor do
 
   def handle_call({:monitor, pid, view_module, meta}, _, %{views: views} = state) do
     Process.monitor(pid)
-    Process.send_after(self(), {:timeout, pid}, 60_000)
+    Process.send_after(self(), {:timeout, pid}, 30_000)
     {:reply, :ok, %{state | views: Map.put(views, pid, {view_module, meta})}}
   end
 

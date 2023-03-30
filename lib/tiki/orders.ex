@@ -4,6 +4,7 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
   alias Phoenix.PubSub
   alias Tiki.Tickets.TicketBatch
   alias Tiki.Tickets.TicketType
@@ -220,40 +221,65 @@ defmodule Tiki.Orders do
       %Order{}
   """
   def reserve_tickets(event_id, ticket_types, user_id) do
-    Repo.transaction(fn ->
-      order =
-        %Order{user_id: user_id, event_id: event_id, status: :pending}
-        |> Repo.insert!()
+    result =
+      Repo.transaction(fn ->
+        order =
+          %Order{user_id: user_id, event_id: event_id, status: :pending}
+          |> Repo.insert!()
 
-      tickets =
-        Enum.flat_map(ticket_types, fn tt ->
-          for _ <- 1..tt.count do
-            %Ticket{ticket_type_id: tt.id, order_id: order.id}
-          end
-        end)
+        tickets =
+          Enum.flat_map(ticket_types, fn tt ->
+            for _ <- 1..tt.count do
+              %Ticket{ticket_type_id: tt.id, order_id: order.id}
+            end
+          end)
 
-      Enum.each(tickets, fn t -> Repo.insert!(t) end)
+        Enum.each(tickets, fn t -> Repo.insert!(t) end)
 
-      brodcast(event_id, {:order_updated, order})
+        order
+      end)
 
-      order
-    end)
+    case result do
+      {:ok, order} ->
+        brodcast(order.event_id, {:order_updated, order})
+        {:ok, order}
+
+      {:error, _} ->
+        {:error, "Could not reserve tickets"}
+    end
   end
 
   def maybe_cancel_reservation(order) do
-    result =
-      Repo.transaction(fn ->
-        order = Repo.get!(Order, order.id)
-
-        if order.status == :pending do
-          Repo.delete_all(from t in Ticket, where: t.order_id == ^order.id)
-          Repo.delete(order)
-
-          brodcast(order.event_id, {:order_updated, order})
+    multi =
+      Multi.new()
+      |> Multi.run(:order, fn repo, _changes ->
+        case repo.one(from o in Order, where: o.id == ^order.id) do
+          nil -> {:error, :not_found}
+          %Order{status: :pending} -> {:ok, order}
+          %Order{} -> {:error, :not_pending}
         end
       end)
+      |> Multi.delete_all(:delete_tickets, fn %{order: order} ->
+        from t in Ticket, where: t.order_id == ^order.id
+      end)
+      |> Multi.delete(:delete_order, fn %{order: order} -> order end)
 
-    result
+    result = multi |> Repo.transaction()
+
+    case result do
+      {:ok, _} ->
+        brodcast(order.event_id, {:order_updated, order})
+        {:ok, order}
+
+      {:error, :order, :not_found, _} ->
+        {:error, "Order not found, nothing to cancel"}
+
+      {:error, :order, :not_pending, _} ->
+        {:error, "Order is not pending"}
+
+      _ ->
+        {:error, "Could not cancel reservation"}
+    end
   end
 
   defmodule TreeBuilder do
@@ -320,6 +346,9 @@ defmodule Tiki.Orders do
     # Calculate number of purchased tickets for each batch
     %{children: children} = TreeBuilder.build(batch_tree, root)
 
+    # Not garbage collected, so we need to delete it
+    :digraph.delete(batch_tree)
+
     children
   end
 
@@ -331,6 +360,9 @@ defmodule Tiki.Orders do
 
     # Get the number of available tickets for each batch
     available = TreeBuilder.available(batch_tree, root)
+
+    # Not garbage collected, so we need to delete it
+    :digraph.delete(batch_tree)
 
     sub =
       from tt in TicketType,
