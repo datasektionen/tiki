@@ -4,7 +4,9 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
+  alias Phoenix.PubSub
   alias Tiki.Tickets.TicketBatch
+  alias Tiki.Tickets.TicketType
   alias Tiki.Repo
 
   alias Tiki.Orders.Order
@@ -199,19 +201,15 @@ defmodule Tiki.Orders do
     Ticket.changeset(ticket, attrs)
   end
 
-  def purchase_tickets(ticket_types, user_id) do
-    Repo.transaction(fn ->
-      order =
-        %Order{user_id: user_id}
-        |> Repo.insert!()
+  def confirm_order(order) do
+    case update_order(order, %{status: "paid"}) do
+      {:error, changeset} ->
+        {:error, changeset}
 
-      tickets =
-        Enum.map(ticket_types, fn tt ->
-          %Ticket{ticket_type_id: tt.id, order_id: order.id}
-        end)
-
-      Enum.each(tickets, fn t -> Repo.insert!(t) end)
-    end)
+      {:ok, order} ->
+        brodcast(order.event_id, {:order_updated, order})
+        {:ok, order}
+    end
   end
 
   @doc """
@@ -222,28 +220,23 @@ defmodule Tiki.Orders do
       %Order{}
   """
   def reserve_tickets(event_id, ticket_types, user_id) do
-    purchased_tickets = get_purchased_batches(event_id)
-
-    create_order = fn repo, _ ->
-      %Order{user_id: user_id, event_id: event_id, status: :reserved}
-      |> Repo.insert()
-    end
-
-    verify_order = fn repo, order ->
-      nil
-    end
+    IO.inspect(ticket_types)
 
     Repo.transaction(fn ->
       order =
-        %Order{user_id: user_id, event_id: event_id, status: :reserved}
+        %Order{user_id: user_id, event_id: event_id, status: :pending}
         |> Repo.insert!()
 
       tickets =
-        Enum.map(ticket_types, fn tt ->
-          %Ticket{ticket_type_id: tt.id, order_id: order.id}
+        Enum.flat_map(ticket_types, fn tt ->
+          for _ <- 1..tt.count do
+            %Ticket{ticket_type_id: tt.id, order_id: order.id}
+          end
         end)
 
       Enum.each(tickets, fn t -> Repo.insert!(t) end)
+
+      brodcast(event_id, {:order_updated, order})
 
       order
     end)
@@ -260,8 +253,40 @@ defmodule Tiki.Orders do
 
       sum_purchased = Enum.reduce(children, 0, fn child, acc -> acc + child.purchased end)
 
-      Map.put(label, :children, children)
-      |> Map.put(:purchased, sum_purchased + label.purchased)
+      label =
+        Map.put(label, :children, children)
+        |> Map.put(:purchased, sum_purchased + label.purchased)
+
+      :digraph.add_vertex(graph, vertex, label)
+      label
+    end
+
+    @doc """
+    Returns a map of available tickets for each batch in the tree.
+    """
+    def available(graph, node) do
+      available_helper(graph, node, :infinity)
+    end
+
+    defp available_helper(graph, vertex, count) do
+      {^vertex, label} = :digraph.vertex(graph, vertex)
+
+      count = if count == :infinity, do: :infinity, else: count
+
+      available =
+        case label.batch.max_size do
+          nil -> count
+          max_size -> min(count, max_size - label.purchased)
+        end
+
+      children = :digraph.in_neighbours(graph, vertex)
+
+      available_childs =
+        Enum.reduce(children, %{}, fn child, acc ->
+          Map.merge(acc, available_helper(graph, child, available))
+        end)
+
+      Map.merge(available_childs, %{vertex => available})
     end
   end
 
@@ -276,6 +301,57 @@ defmodule Tiki.Orders do
       %{batch: %TicketBatch{}, purchased: 2, min: 1, max: 10, children: [...]}
   """
   def get_purchased_batches(event_id) do
+    {batch_tree, root} = get_batch_tree(event_id)
+
+    # Calculate number of purchased tickets for each batch
+    %{children: children} = TreeBuilder.build(batch_tree, root)
+
+    children
+  end
+
+  def get_availible_ticket_types(event_id) do
+    {batch_tree, root} = get_batch_tree(event_id)
+
+    # Propagate the number of purchased tickets up the tree
+    TreeBuilder.build(batch_tree, root)
+
+    # Get the number of available tickets for each batch
+    available = TreeBuilder.available(batch_tree, root)
+
+    sub =
+      from tt in TicketType,
+        join: tb in assoc(tt, :ticket_batch),
+        left_join: t in assoc(tt, :tickets),
+        join: o in assoc(t, :order),
+        where: tb.event_id == ^event_id,
+        group_by: tt.id,
+        select: %{ticket_type_id: tt.id, count: count(t.id)}
+
+    sub_pending = sub |> where([tt, tb, t, o], o.status == ^"pending")
+    sub_purchased = sub |> where([tt, tb, t, o], o.status == ^"paid")
+
+    query =
+      from tt in TicketType,
+        join: tb in assoc(tt, :ticket_batch),
+        left_join: pt in subquery(sub_pending),
+        on: tt.id == pt.ticket_type_id,
+        left_join: pt2 in subquery(sub_purchased),
+        on: tt.id == pt2.ticket_type_id,
+        where: tb.event_id == ^event_id,
+        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count}
+
+    ticket_types =
+      Repo.all(query)
+      |> Enum.map(fn tt ->
+        Map.put(tt, :purchased, tt.purchased || 0)
+        |> Map.put(:pending, tt.pending || 0)
+        |> Map.put(:available, available[tt.ticket_type.ticket_batch_id])
+      end)
+
+    ticket_types
+  end
+
+  defp get_batch_tree(event_id) do
     root_batches_query =
       from tb in TicketBatch,
         where: tb.event_id == ^event_id,
@@ -304,7 +380,7 @@ defmodule Tiki.Orders do
     results = Repo.all(query)
 
     # We now have an array of batches with the number of tickets purchased for each batch. We now need to build the tree.
-    fake_root = %{batch: %TicketBatch{id: 0}, purchased: 0}
+    fake_root = %{batch: %TicketBatch{id: 0, name: "fake_root"}, purchased: 0}
 
     graph = :digraph.new()
 
@@ -316,7 +392,7 @@ defmodule Tiki.Orders do
       :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
     end
 
-    tree = TreeBuilder.build(graph, fake_root.batch.id)
+    {graph, fake_root.batch.id}
   end
 
   @doc """
@@ -337,5 +413,13 @@ defmodule Tiki.Orders do
         group_by: tt.id
 
     Repo.all(query)
+  end
+
+  defp brodcast(event_id, message) do
+    PubSub.broadcast(Tiki.PubSub, "event:#{event_id}", message)
+  end
+
+  def subscribe(event_id) do
+    PubSub.subscribe(Tiki.PubSub, "event:#{event_id}")
   end
 end

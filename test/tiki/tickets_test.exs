@@ -12,7 +12,7 @@ defmodule Tiki.TicketsTest do
 
     test "list_ticket_batch/0 returns all ticket_batch" do
       ticket_batch = ticket_batch_fixture()
-      assert Tickets.list_ticket_batch() == [ticket_batch]
+      assert Tickets.list_ticket_batches() == [ticket_batch]
     end
 
     test "get_ticket_batch!/1 returns the ticket_batch with given id" do
@@ -82,7 +82,7 @@ defmodule Tiki.TicketsTest do
 
     test "list_ticket_type/0 returns all ticket_types" do
       ticket_types = ticket_type_fixture()
-      assert Tickets.list_ticket_type() == [ticket_types]
+      assert Tickets.list_ticket_types() == [ticket_types]
     end
 
     test "get_ticket_type!/1 returns the ticket_types with given id" do

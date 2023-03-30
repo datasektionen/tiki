@@ -21,7 +21,7 @@ defmodule Tiki.Tickets.TicketBatch do
   @doc false
   def changeset(ticket_batch, attrs) do
     ticket_batch
-    |> cast(attrs, [:name, :min_size, :max_size, :event_id, :parent_id])
-    |> validate_required([:name, :min_size, :max_size])
+    |> cast(attrs, [:name, :min_size, :max_size, :event_id, :parent_batch_id])
+    |> validate_required([:name])
   end
 end

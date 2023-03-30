@@ -8,12 +8,12 @@ defmodule TikiWeb.EventLive.Show do
     ticket_types = Events.get_ticket_types(event_id)
     event = Events.get_event!(event_id)
 
-    initial_count = Presence.list("event:#{event_id}") |> map_size
-    TikiWeb.Endpoint.subscribe("event:#{event_id}")
+    initial_count = Presence.list("presence:event:#{event_id}") |> map_size
+    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
     Presence.track(
       self(),
-      "event:#{event_id}",
+      "presence:event:#{event_id}",
       socket.id,
       %{}
     )

@@ -10,9 +10,7 @@ defmodule Tiki.OrdersFixtures do
   def order_fixture(attrs \\ %{}) do
     {:ok, order} =
       attrs
-      |> Enum.into(%{
-
-      })
+      |> Enum.into(%{})
       |> Tiki.Orders.create_order()
 
     order
@@ -24,9 +22,7 @@ defmodule Tiki.OrdersFixtures do
   def ticket_fixture(attrs \\ %{}) do
     {:ok, ticket} =
       attrs
-      |> Enum.into(%{
-
-      })
+      |> Enum.into(%{})
       |> Tiki.Orders.create_ticket()
 
     ticket
