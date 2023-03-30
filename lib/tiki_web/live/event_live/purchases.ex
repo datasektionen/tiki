@@ -33,14 +33,23 @@ defmodule TikiWeb.AdminLive.Event.Purchases do
 
   def render(assigns) do
     ~H"""
-    Det är <%= @online_count %> personer online just nu.
-    Köpta biljetter:
-    <div class="flex flex-col">
-      <div :for={ticket_type <- @ticket_types}>
-        <span>Biljettyp: <%= ticket_type.ticket_type.name %>,</span>
-        <span>Reserverade: <%= ticket_type.pending %>,</span>
-        <span>Köpta: <%= ticket_type.purchased %>,</span>
-        <span>Tillgängliga: <%= ticket_type.available %></span>
+    <div class="mb-4">
+      <h1 class="font-bold text-2xl mb-1">Event: <%= @event.name %></h1>
+      <div class="text-gray-600">
+        Det är <%= @online_count %> personer online just nu på biljettsidan.
+      </div>
+    </div>
+
+    <h2 class="font-bold text-lg mb-3">Biljettyper</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div
+        :for={ticket_type <- @ticket_types}
+        class="border rounded-xl shadow-sm p-4 hover:bg-gray-50"
+      >
+        <div class="font-bold text-lg"><%= ticket_type.ticket_type.name %></div>
+        <div><span class="font-bold"><%= ticket_type.available %> </span>tillgängliga</div>
+        <div><span class="font-bold"><%= ticket_type.purchased %> </span>köpta</div>
+        <div><span class="font-bold"><%= ticket_type.pending %> </span>reserverade</div>
       </div>
     </div>
     """
