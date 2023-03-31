@@ -13,12 +13,7 @@ defmodule TikiWeb.EventLive.Show do
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
     TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
-    Presence.track(
-      self(),
-      "presence:event:#{event_id}",
-      socket.id,
-      %{}
-    )
+    Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
 
     {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
   end
@@ -48,8 +43,8 @@ defmodule TikiWeb.EventLive.Show do
   end
 
   @impl true
-  def handle_info({:timeout, %{id: id}}, socket) do
-    send_update(PurchaseComponent, id: id, action: {:timeout})
+  def handle_info({:timeout, %{id: id} = meta}, socket) do
+    send_update(PurchaseComponent, id: id, action: {:timeout, meta})
     {:noreply, socket}
   end
 

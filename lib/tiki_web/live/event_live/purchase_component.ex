@@ -1,14 +1,16 @@
 defmodule TikiWeb.EventLive.PurchaseComponent do
   use TikiWeb, :live_component
 
-  alias Phoenix.PubSub
+  alias TikiWeb.EventLive.PurchaseMonitor
   alias Tiki.Orders
-  alias Tiki.Events
 
-  def update(%{action: {:timeout}}, socket) do
+  def update(%{action: {:timeout, _}}, socket) do
     case socket.assigns.state do
-      :purchase -> {:ok, assign(socket, state: :timeout)}
-      _ -> {:ok, socket}
+      :purchase ->
+        {:ok, assign(socket, state: :timeout)}
+
+      _ ->
+        {:ok, socket}
     end
   end
 
@@ -28,7 +30,13 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
 
     {:ok,
      socket
-     |> assign(ticket_types: ticket_types, counts: counts, state: :tickets, error: nil)
+     |> assign(
+       ticket_types: ticket_types,
+       counts: counts,
+       state: :tickets,
+       error: nil,
+       order: nil
+     )
      |> assign(assigns)}
   end
 
@@ -59,16 +67,11 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
       end)
       |> Enum.filter(fn ticket -> ticket.count > 0 end)
 
-    case Orders.reserve_tickets(
-           socket.assigns.event.id,
-           to_purchase,
-           socket.assigns.current_user.id
-         ) do
+    %{current_user: %{id: user_id}, event: %{id: event_id}} = socket.assigns
+
+    case Orders.reserve_tickets(event_id, to_purchase, user_id) do
       {:ok, order} ->
-        TikiWeb.EventLive.PurchaseMonitor.monitor(self(), __MODULE__, %{
-          id: socket.assigns.id,
-          order: order
-        })
+        PurchaseMonitor.monitor(self(), %{id: socket.assigns.id, order: order})
 
         price =
           Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
@@ -90,10 +93,6 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     {:ok, _} = Orders.confirm_order(socket.assigns.order)
 
     {:noreply, assign(socket, state: :purchased)}
-  end
-
-  def unmount({:shutdown, :closed}, %{order: order}) do
-    Orders.maybe_cancel_reservation(order)
   end
 
   defp ticket_summary(assigns) do
@@ -123,39 +122,45 @@ end
 defmodule TikiWeb.EventLive.PurchaseMonitor do
   use GenServer
 
+  alias Tiki.Orders
+
   def start_link(init_arg) do
     GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-  def monitor(pid, view_module, meta) do
-    GenServer.call(__MODULE__, {:monitor, pid, view_module, meta})
+  def monitor(pid, meta) do
+    GenServer.call(__MODULE__, {:monitor, pid, meta})
   end
 
   def init(_) do
     {:ok, %{views: %{}}}
   end
 
-  def handle_call({:monitor, pid, view_module, meta}, _, %{views: views} = state) do
+  def handle_call({:monitor, pid, meta}, _, %{views: views} = state) do
     Process.monitor(pid)
-    Process.send_after(self(), {:timeout, pid}, 30_000)
-    {:reply, :ok, %{state | views: Map.put(views, pid, {view_module, meta})}}
+    Process.send_after(self(), {:timeout, pid, meta}, 60_000)
+    {:reply, :ok, %{state | views: Map.put(views, pid, meta)}}
   end
 
-  def handle_info({:timeout, view_pid}, state) do
-    case Map.pop(state.views, view_pid) do
-      {{module, meta}, new_views} ->
-        send(view_pid, {:timeout, %{id: meta.id}})
-        module.unmount({:shutdown, :closed}, meta)
-        {:noreply, %{state | views: new_views}}
-
-      {nil, _} ->
-        {:noreply, state}
+  def handle_info({:timeout, view_pid, meta}, state) do
+    case maybe_cancel_reservation(meta) do
+      :cancelled -> send(view_pid, {:timeout, meta})
+      :not_cancelled -> nil
     end
+
+    {:noreply, state}
   end
 
-  def handle_info({:DOWN, _ref, :process, view_pid, reason}, state) do
-    {{module, meta}, new_views} = Map.pop(state.views, view_pid)
-    module.unmount(reason, meta)
+  def handle_info({:DOWN, _ref, :process, view_pid, _reason}, state) do
+    {meta, new_views} = Map.pop(state.views, view_pid)
+    maybe_cancel_reservation(meta)
     {:noreply, %{state | views: new_views}}
+  end
+
+  defp maybe_cancel_reservation(%{order: order}) do
+    case Orders.maybe_cancel_reservation(order) do
+      {:ok, _} -> :cancelled
+      {:error, _} -> :not_cancelled
+    end
   end
 end
