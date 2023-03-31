@@ -17,9 +17,7 @@ defmodule TikiWeb.AdminLive.Event.Purchases do
     {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
   end
 
-  def handle_info({:order_updated, _order}, socket) do
-    ticket_types = Orders.get_availible_ticket_types(socket.assigns.event.id)
-
+  def handle_info({:tickets_updated, ticket_types}, socket) do
     {:noreply, assign(socket, ticket_types: ticket_types)}
   end
 
@@ -46,7 +44,7 @@ defmodule TikiWeb.AdminLive.Event.Purchases do
         :for={ticket_type <- @ticket_types}
         class="border rounded-xl shadow-sm p-4 hover:bg-gray-50"
       >
-        <div class="font-bold text-lg"><%= ticket_type.ticket_type.name %></div>
+        <div class="font-bold text-lg"><%= ticket_type.name %></div>
         <div><span class="font-bold"><%= ticket_type.available %> </span>tillgängliga</div>
         <div><span class="font-bold"><%= ticket_type.purchased %> </span>köpta</div>
         <div><span class="font-bold"><%= ticket_type.pending %> </span>reserverade</div>

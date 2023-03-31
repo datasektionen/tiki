@@ -55,24 +55,6 @@ defmodule Tiki.OrdersTest do
       order = order_fixture()
       assert %Ecto.Changeset{} = Orders.change_order(order)
     end
-
-    test "get_purchased_batches/1 returns purchased batches" do
-      event = example_event_fixture()
-
-      tree = Orders.get_purchased_batches(event.id)
-
-      assert [
-               %{
-                 batch: %TicketBatch{},
-                 purchased: 0,
-                 children: [
-                   %{batch: %TicketBatch{}, purchased: 0, children: []},
-                   %{batch: %TicketBatch{}, purchased: 0, children: []}
-                 ]
-               },
-               %{batch: %TicketBatch{}, purchased: 0, children: []}
-             ] = tree
-    end
   end
 
   describe "ticket" do

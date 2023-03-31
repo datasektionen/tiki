@@ -20,8 +20,10 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         phx-submit="save"
       >
         <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:description]} type="text" label="Description" />
+        <.input field={@form[:description]} type="textarea" label="Description" />
         <.input field={@form[:event_date]} type="datetime-local" label="Event date" />
+        <.input field={@form[:location]} type="text" label="Location" />
+        <.input field={@form[:image_url]} type="text" label="Image url" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Event</.button>
         </:actions>

@@ -1,6 +1,7 @@
 defmodule TikiWeb.EventLive.PurchaseComponent do
   use TikiWeb, :live_component
 
+  alias Phoenix.PubSub
   alias Tiki.Orders
   alias Tiki.Events
 
@@ -11,36 +12,36 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     end
   end
 
-  def update(assigns, socket) do
-    ticket_types = Events.get_ticket_types(assigns.event.id) |> Enum.map(&Map.put(&1, :count, 0))
+  def update(%{action: {:tickets_updated, ticket_types}}, socket) do
+    {:ok, assign(socket, ticket_types: ticket_types)}
+  end
 
-    {:ok, socket |> assign(ticket_types: ticket_types, state: :tickets) |> assign(assigns)}
+  def update(assigns, socket) do
+    ticket_types = Orders.get_availible_ticket_types(assigns.event.id)
+
+    counts =
+      Enum.reduce(ticket_types, %{}, fn ticket_type, acc ->
+        Map.put(acc, ticket_type.id, 0)
+      end)
+
+    Orders.subscribe(assigns.event.id)
+
+    {:ok,
+     socket
+     |> assign(ticket_types: ticket_types, counts: counts, state: :tickets, error: nil)
+     |> assign(assigns)}
   end
 
   def handle_event("inc", %{"id" => id}, socket) do
-    ticket_types =
-      Enum.map(socket.assigns.ticket_types, fn ticket_type ->
-        if ticket_type.id == id do
-          Map.put(ticket_type, :count, ticket_type.count + 1)
-        else
-          ticket_type
-        end
-      end)
+    counts = Map.update(socket.assigns.counts, id, 0, &(&1 + 1))
 
-    {:noreply, socket |> assign(ticket_types: ticket_types)}
+    {:noreply, assign(socket, counts: counts)}
   end
 
   def handle_event("dec", %{"id" => id}, socket) do
-    ticket_types =
-      Enum.map(socket.assigns.ticket_types, fn ticket_type ->
-        if ticket_type.id == id do
-          Map.put(ticket_type, :count, ticket_type.count - 1)
-        else
-          ticket_type
-        end
-      end)
+    counts = Map.update(socket.assigns.counts, id, 0, &(&1 - 1))
 
-    {:noreply, socket |> assign(ticket_types: ticket_types)}
+    {:noreply, assign(socket, counts: counts)}
   end
 
   def handle_event("cancel", _params, socket) do
@@ -52,20 +53,37 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
   end
 
   def handle_event("submit", _params, socket) do
-    to_purchase = Enum.filter(socket.assigns.ticket_types, &(&1.count > 0))
+    to_purchase =
+      Enum.map(socket.assigns.ticket_types, fn ticket_type ->
+        Map.put(ticket_type, :count, socket.assigns.counts[ticket_type.id])
+      end)
+      |> Enum.filter(fn ticket -> ticket.count > 0 end)
 
-    {:ok, order} =
-      Orders.reserve_tickets(socket.assigns.event.id, to_purchase, socket.assigns.current_user.id)
+    case Orders.reserve_tickets(
+           socket.assigns.event.id,
+           to_purchase,
+           socket.assigns.current_user.id
+         ) do
+      {:ok, order} ->
+        TikiWeb.EventLive.PurchaseMonitor.monitor(self(), __MODULE__, %{
+          id: socket.assigns.id,
+          order: order
+        })
 
-    TikiWeb.EventLive.PurchaseMonitor.monitor(self(), __MODULE__, %{
-      id: socket.assigns.id,
-      order: order
-    })
+        price =
+          Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
 
-    price = Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
+        {:noreply,
+         assign(socket,
+           state: :purchase,
+           order: order,
+           to_purchase: to_purchase,
+           total_price: price
+         )}
 
-    {:noreply,
-     assign(socket, state: :purchase, order: order, to_purchase: to_purchase, total_price: price)}
+      {:error, reason} ->
+        {:noreply, assign(socket, error: reason)}
+    end
   end
 
   def handle_event("pay", _params, socket) do

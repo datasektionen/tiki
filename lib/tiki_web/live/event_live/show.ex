@@ -52,4 +52,16 @@ defmodule TikiWeb.EventLive.Show do
     send_update(PurchaseComponent, id: id, action: {:timeout})
     {:noreply, socket}
   end
+
+  @impl true
+  def handle_info({:tickets_updated, _ticket_types} = msg, socket) do
+    send_update(PurchaseComponent, id: socket.assigns.event.id, action: msg)
+    {:noreply, socket}
+  end
+
+  defp month_name(month) do
+    {"januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september",
+     "oktober", "november", "december"}
+    |> elem(month - 1)
+  end
 end

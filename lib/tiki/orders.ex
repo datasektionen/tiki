@@ -8,6 +8,7 @@ defmodule Tiki.Orders do
   alias Phoenix.PubSub
   alias Tiki.Tickets.TicketBatch
   alias Tiki.Tickets.TicketType
+  alias Tiki.Tickets.Ticket
   alias Tiki.Repo
 
   alias Tiki.Orders.Order
@@ -208,7 +209,7 @@ defmodule Tiki.Orders do
         {:error, changeset}
 
       {:ok, order} ->
-        brodcast(order.event_id, {:order_updated, order})
+        broadcast(order.event_id, {:tickets_updated, get_availible_ticket_types(order.event_id)})
         {:ok, order}
     end
   end
@@ -222,30 +223,31 @@ defmodule Tiki.Orders do
   """
   def reserve_tickets(event_id, ticket_types, user_id) do
     result =
-      Repo.transaction(fn ->
-        order =
-          %Order{user_id: user_id, event_id: event_id, status: :pending}
-          |> Repo.insert!()
-
-        tickets =
-          Enum.flat_map(ticket_types, fn tt ->
-            for _ <- 1..tt.count do
-              %Ticket{ticket_type_id: tt.id, order_id: order.id}
-            end
-          end)
-
-        Enum.each(tickets, fn t -> Repo.insert!(t) end)
-
-        order
+      Multi.new()
+      |> get_availible_ticket_types_multi(event_id)
+      |> Multi.run(:check_availability, fn _repo, %{available: available} ->
+        case Enum.all?(ticket_types, &(&1.count <= available[&1.ticket_batch_id])) do
+          true -> {:ok, :ok}
+          false -> {:error, "Det fanns inte tillräckligt med biljetter"}
+        end
       end)
+      |> Multi.insert(:order, %Order{user_id: user_id, event_id: event_id, status: :pending})
+      |> Multi.insert_all(:tickets, Ticket, fn %{order: order} ->
+        Enum.flat_map(ticket_types, fn tt ->
+          for _ <- 1..tt.count do
+            %{ticket_type_id: tt.id, order_id: order.id}
+          end
+        end)
+      end)
+      |> Repo.transaction()
 
     case result do
-      {:ok, order} ->
-        brodcast(order.event_id, {:order_updated, order})
+      {:ok, %{order: order}} ->
+        broadcast(order.event_id, {:tickets_updated, get_availible_ticket_types(order.event_id)})
         {:ok, order}
 
-      {:error, _} ->
-        {:error, "Could not reserve tickets"}
+      {:error, :check_availability, message, _} ->
+        {:error, message}
     end
   end
 
@@ -268,7 +270,7 @@ defmodule Tiki.Orders do
 
     case result do
       {:ok, _} ->
-        brodcast(order.event_id, {:order_updated, order})
+        broadcast(order.event_id, {:tickets_updated, get_availible_ticket_types(order.event_id)})
         {:ok, order}
 
       {:error, :order, :not_found, _} ->
@@ -330,40 +332,27 @@ defmodule Tiki.Orders do
     end
   end
 
-  @doc """
-  Returns a tree of ticket batches for an event, where
-  each batch has an id, min, max, and the number of tickets
-  purchased for that batch. Note that the top level batch
-  is a virtual batch that represents the entire event.
+  def get_availible_ticket_types(event_id) do
+    result =
+      Multi.new()
+      |> get_availible_ticket_types_multi(event_id)
+      |> Repo.transaction()
 
-  ## Examples
-      iex> get_purchased_batches(123)
-      %{batch: %TicketBatch{}, purchased: 2, min: 1, max: 10, children: [...]}
-  """
-  def get_purchased_batches(event_id) do
-    {batch_tree, root} = get_batch_tree(event_id)
+    case result do
+      {:ok, %{ticket_types_availible: ticket_types}} ->
+        Enum.map(ticket_types, fn tt ->
+          tt.ticket_type
+          |> Map.put(:available, tt.available)
+          |> Map.put(:purchased, tt.purchased)
+          |> Map.put(:pending, tt.pending)
+        end)
 
-    # Calculate number of purchased tickets for each batch
-    %{children: children} = TreeBuilder.build(batch_tree, root)
-
-    # Not garbage collected, so we need to delete it
-    :digraph.delete(batch_tree)
-
-    children
+      other ->
+        other
+    end
   end
 
-  def get_availible_ticket_types(event_id) do
-    {batch_tree, root} = get_batch_tree(event_id)
-
-    # Propagate the number of purchased tickets up the tree
-    TreeBuilder.build(batch_tree, root)
-
-    # Get the number of available tickets for each batch
-    available = TreeBuilder.available(batch_tree, root)
-
-    # Not garbage collected, so we need to delete it
-    :digraph.delete(batch_tree)
-
+  defp get_availible_ticket_types_multi(multi, event_id) do
     sub =
       from tt in TicketType,
         join: tb in assoc(tt, :ticket_batch),
@@ -386,18 +375,35 @@ defmodule Tiki.Orders do
         where: tb.event_id == ^event_id,
         select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count}
 
-    ticket_types =
-      Repo.all(query)
-      |> Enum.map(fn tt ->
-        Map.put(tt, :purchased, tt.purchased || 0)
-        |> Map.put(:pending, tt.pending || 0)
-        |> Map.put(:available, available[tt.ticket_type.ticket_batch_id])
-      end)
+    multi
+    |> get_batch_tree_multi(event_id)
+    |> Multi.run(:available, fn _repo, %{graph: {batch_tree, root}} ->
+      # Propagate the number of purchased tickets up the tree
+      TreeBuilder.build(batch_tree, root)
 
-    ticket_types
+      # Get the number of available tickets for each batch
+      available = TreeBuilder.available(batch_tree, root)
+
+      # Not garbage collected, so we need to delete it
+      :digraph.delete(batch_tree)
+
+      {:ok, available}
+    end)
+    |> Multi.all(:ticket_types, query)
+    |> Multi.run(:ticket_types_availible, fn _repo,
+                                             %{available: available, ticket_types: ticket_types} ->
+      ticket_types =
+        Enum.map(ticket_types, fn tt ->
+          Map.put(tt, :purchased, tt.purchased || 0)
+          |> Map.put(:pending, tt.pending || 0)
+          |> Map.put(:available, available[tt.ticket_type.ticket_batch_id])
+        end)
+
+      {:ok, ticket_types}
+    end)
   end
 
-  defp get_batch_tree(event_id) do
+  defp get_batch_tree_multi(multi, event_id) do
     root_batches_query =
       from tb in TicketBatch,
         where: tb.event_id == ^event_id,
@@ -423,22 +429,23 @@ defmodule Tiki.Orders do
       |> group_by([tb, tt, t], tb.id)
       |> select([tb, tt, t], %{batch: tb, purchased: count(t.id)})
 
-    results = Repo.all(query)
+    Multi.all(multi, :batches, query)
+    |> Multi.run(:graph, fn _repo, %{batches: batches} ->
+      # We now have an array of batches with the number of tickets purchased for each batch. We now need to build the tree.
+      fake_root = %{batch: %TicketBatch{id: 0, name: "fake_root"}, purchased: 0}
 
-    # We now have an array of batches with the number of tickets purchased for each batch. We now need to build the tree.
-    fake_root = %{batch: %TicketBatch{id: 0, name: "fake_root"}, purchased: 0}
+      graph = :digraph.new()
 
-    graph = :digraph.new()
+      for %{batch: %TicketBatch{id: id}} = node <- [fake_root | batches] do
+        :digraph.add_vertex(graph, id, node)
+      end
 
-    for %{batch: %TicketBatch{id: id}} = node <- [fake_root | results] do
-      :digraph.add_vertex(graph, id, node)
-    end
+      for %{batch: %TicketBatch{id: id, parent_batch_id: parent_id}} <- batches do
+        :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
+      end
 
-    for %{batch: %TicketBatch{id: id, parent_batch_id: parent_id}} <- results do
-      :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
-    end
-
-    {graph, fake_root.batch.id}
+      {:ok, {graph, fake_root.batch.id}}
+    end)
   end
 
   @doc """
@@ -461,11 +468,15 @@ defmodule Tiki.Orders do
     Repo.all(query)
   end
 
-  defp brodcast(event_id, message) do
+  defp broadcast(event_id, message) do
     PubSub.broadcast(Tiki.PubSub, "event:#{event_id}", message)
   end
 
   def subscribe(event_id) do
     PubSub.subscribe(Tiki.PubSub, "event:#{event_id}")
+  end
+
+  def unsubscribe(event_id) do
+    PubSub.unsubscribe(Tiki.PubSub, "event:#{event_id}")
   end
 end
