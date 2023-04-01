@@ -241,13 +241,6 @@ defmodule Tiki.Orders do
   def reserve_tickets(event_id, ticket_types, user_id) do
     result =
       Multi.new()
-      |> get_availible_ticket_types_multi(event_id)
-      |> Multi.run(:check_availability, fn _repo, %{available: available} ->
-        case Enum.all?(ticket_types, &(&1.count <= available[&1.ticket_batch_id])) do
-          true -> {:ok, :ok}
-          false -> {:error, "Det fanns inte tillräckligt med biljetter"}
-        end
-      end)
       |> Multi.insert(:order, %Order{user_id: user_id, event_id: event_id, status: :pending})
       |> Multi.insert_all(:tickets, Ticket, fn %{order: order} ->
         Enum.flat_map(ticket_types, fn tt ->
@@ -255,6 +248,13 @@ defmodule Tiki.Orders do
             %{ticket_type_id: tt.id, order_id: order.id}
           end
         end)
+      end)
+      |> get_availible_ticket_types_multi(event_id)
+      |> Multi.run(:check_availability, fn _repo, %{ticket_types_availible: available} ->
+        case Enum.all?(available, &(&1.available >= 0)) do
+          true -> {:ok, :ok}
+          false -> {:error, "Det fanns inte tillräckligt med biljetter"}
+        end
       end)
       |> Repo.transaction()
 
