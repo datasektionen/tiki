@@ -35,7 +35,22 @@ defmodule Tiki.Events do
       ** (Ecto.NoResultsError)
 
   """
-  def get_event!(id), do: Repo.get!(Event, id)
+  def get_event!(id, opts \\ []) do
+    base_query = from e in Event, where: e.id == ^id
+
+    base_query
+    |> preload_ticket_types(Keyword.get(opts, :preload_ticket_types, false))
+    |> Repo.one!()
+  end
+
+  defp preload_ticket_types(query, false), do: query
+
+  defp preload_ticket_types(query, true) do
+    from e in query,
+      inner_join: tb in assoc(e, :ticket_batches),
+      left_join: tt in assoc(tb, :ticket_types),
+      preload: [ticket_batches: {tb, ticket_types: tt}]
+  end
 
   @doc """
   Creates a event.

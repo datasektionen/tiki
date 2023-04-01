@@ -8,11 +8,9 @@
   </:actions>
 </.header>
 
-<.list>
-  <:item title="Name"><%= @event.name %></:item>
-  <:item title="Description"><%= @event.description %></:item>
-  <:item title="Event date"><%= @event.event_date %></:item>
-</.list>
+<div class="mt-4 flex flex-col gap-4">
+  <.ticket_batch :for={batch <- @batches} batch={batch} />
+</div>
 
 <.back navigate={~p"/admin/events"}>Back to events</.back>
 
