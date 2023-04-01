@@ -1,6 +1,9 @@
 defmodule TikiWeb.AdminLive.Event.Show do
   use TikiWeb, :live_view
 
+  alias Tiki.Tickets.TicketType
+  alias Tiki.Tickets
+  alias Tiki.Orders.Ticket
   alias Tiki.Events
   alias Tiki.Tickets.TicketBatch
 
@@ -10,18 +13,46 @@ defmodule TikiWeb.AdminLive.Event.Show do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => id} = params, _, socket) do
     event = Events.get_event!(id, preload_ticket_types: true)
-
-    batches =
-      get_batch_graph(event.ticket_batches)
-      |> dbg()
+    batches = get_batch_graph(event.ticket_batches)
 
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:batches, batches)
-     |> assign(:event, event)}
+     |> assign(:event, event)
+     |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  def apply_action(socket, :show, _params), do: assign(socket, :page_title, "Show Event")
+  def apply_action(socket, :edit, _params), do: assign(socket, :page_title, "Edit Event")
+
+  def apply_action(socket, :edit_batch, %{"batch_id" => batch_id}) do
+    batch = Tickets.get_ticket_batch!(batch_id)
+
+    socket
+    |> assign(:page_title, "Edit Ticket Batch")
+    |> assign(:batch, batch)
+  end
+
+  def apply_action(socket, :new_batch, _params) do
+    socket
+    |> assign(:page_title, "New Ticket Batch")
+    |> assign(:batch, %TicketBatch{event_id: socket.assigns.event.id})
+  end
+
+  def apply_action(socket, :edit_ticket_type, %{"ticket_type_id" => tt_id}) do
+    ticket_type = Tickets.get_ticket_type!(tt_id)
+
+    socket
+    |> assign(:page_title, "Edit Ticket type")
+    |> assign(:ticket_type, ticket_type)
+  end
+
+  def apply_action(socket, :new_ticket_type, _params) do
+    socket
+    |> assign(:page_title, "New Ticket type")
+    |> assign(:ticket_type, %TicketType{})
   end
 
   defp get_batch_graph(batches) do
@@ -29,8 +60,6 @@ defmodule TikiWeb.AdminLive.Event.Show do
     graph = :digraph.new()
 
     batches = Enum.map(batches, fn batch -> %{batch: batch} end)
-
-    IO.inspect(batches)
 
     for %{batch: %TicketBatch{id: id}} = node <- [fake_root | batches] do
       :digraph.add_vertex(graph, id, node)
@@ -40,8 +69,8 @@ defmodule TikiWeb.AdminLive.Event.Show do
       :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
     end
 
-    :digraph.vertices(graph) |> dbg()
-    :digraph.edges(graph) |> dbg()
+    :digraph.vertices(graph)
+    :digraph.edges(graph)
 
     %{children: batches} = build_graph(graph, fake_root.batch.id)
 
@@ -61,16 +90,17 @@ defmodule TikiWeb.AdminLive.Event.Show do
     Map.put(label, :children, children)
   end
 
-  defp page_title(:show), do: "Show Event"
-  defp page_title(:edit), do: "Edit Event"
-
   attr :batch, :map
   attr :level, :integer, default: 0
 
   defp ticket_batch(assigns) do
     ~H"""
     <div class="w-full rounded-lg overflow-hidden bg-gray-50 shadow-sm">
-      <div class="bg-gray-200 px-4 py-4 flex flex-row justify-between">
+      <.link
+        patch={~p"/admin/events/#{@batch.batch.event_id}/batches/#{@batch.batch}/edit"}
+        phx-click={JS.push_focus()}
+        class="bg-gray-200 px-4 py-4 flex flex-row justify-between hover:bg-gray-300"
+      >
         <div class="inline-flex items-center gap-2">
           <.icon name="hero-rectangle-stack-mini h-4 w-4" />
           <%= @batch.batch.name %>
@@ -78,9 +108,13 @@ defmodule TikiWeb.AdminLive.Event.Show do
         <div :if={@batch.batch.max_size}>
           max <%= @batch.batch.max_size %>
         </div>
-      </div>
-      <div :if={@batch.batch.ticket_types != []} class="flex flex-col gap-4 px-4 py-4">
-        <div :for={ticket_type <- @batch.batch.ticket_types} class="flex flex-row justify-between">
+      </.link>
+      <div :if={@batch.batch.ticket_types != []} class="flex flex-col">
+        <.link
+          :for={ticket_type <- @batch.batch.ticket_types}
+          patch={~p"/admin/events/#{@batch.batch.event_id}/ticket-types/#{ticket_type}/edit"}
+          class="py-4 px-4 flex flex-row justify-between hover:bg-white"
+        >
           <div class="inline-flex items-center gap-2">
             <.icon name="hero-ticket-mini h-4 w-4" />
             <%= ticket_type.name %>
@@ -88,7 +122,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
           <div class="text-gray-500">
             <%= ticket_type.price %> kr
           </div>
-        </div>
+        </.link>
       </div>
 
       <div :if={@batch.children != []} class="flex flex-col gap-4 my-4 mr-2">

@@ -1,16 +1,44 @@
 <.header>
   Event <%= @event.id %>
-  <:subtitle>This is a event record from your database.</:subtitle>
+  <:subtitle>Detta är ett event i databasen.</:subtitle>
   <:actions>
     <.link patch={~p"/admin/events/#{@event}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit event</.button>
+      <.button>Redigera event</.button>
     </.link>
   </:actions>
 </.header>
 
-<div class="mt-4 flex flex-col gap-4">
-  <.ticket_batch :for={batch <- @batches} batch={batch} />
+<div class="my-8">
+  <h2 class="font-bold text-lg mb-2">Biljettyper</h2>
+  <div class="text-sm text-gray-700">Här visas biljettyper och batches.</div>
+
+  <div class="mt-4 flex flex-col gap-4 mb-4">
+    <.ticket_batch :for={batch <- @batches} batch={batch} />
+  </div>
+  <div class="flex flex-row justify-end gap-2">
+    <.link patch={~p"/admin/events/#{@event}/batches/new"}>
+      <.button>Ny batch</.button>
+    </.link>
+
+    <.link patch={~p"/admin/events/#{@event}/ticket-types/new"}>
+      <.button>Ny biljettyp</.button>
+    </.link>
+  </div>
 </div>
+
+<h2 class="font-bold text-lg mb-2">Eventinformation</h2>
+<div class="text-sm text-gray-700">Information om eventet.</div>
+
+<.list>
+  <:item title="Titel"><%= @event.name %></:item>
+  <:item title="Datum"><%= @event.event_date %></:item>
+  <:item title="Plats"><%= @event.location %></:item>
+  <:item title="Beskrivning">
+    <div class="whitespace-pre-wrap">
+      <%= @event.description %>
+    </div>
+  </:item>
+</.list>
 
 <.back navigate={~p"/admin/events"}>Back to events</.back>
 
@@ -26,6 +54,40 @@
     title={@page_title}
     action={@live_action}
     event={@event}
+    patch={~p"/admin/events/#{@event}"}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action in [:edit_batch, :new_batch]}
+  id="batch-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/events/#{@event}")}
+>
+  <.live_component
+    module={TikiWeb.AdminLive.Event.BatchFormComponent}
+    id={@batch.id || :new}
+    title={@page_title}
+    action={@live_action}
+    batch={@batch}
+    batches={@event.ticket_batches}
+    patch={~p"/admin/events/#{@event}"}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action in [:edit_ticket_type, :new_ticket_type]}
+  id="ticket-type-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/events/#{@event}")}
+>
+  <.live_component
+    module={TikiWeb.AdminLive.Event.TicketTypeFormComponent}
+    id={@ticket_type.id || :new}
+    title={@page_title}
+    action={@live_action}
+    ticket_type={@ticket_type}
+    batches={@event.ticket_batches}
     patch={~p"/admin/events/#{@event}"}
   />
 </.modal>

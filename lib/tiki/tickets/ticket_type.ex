@@ -19,8 +19,16 @@ defmodule Tiki.Tickets.TicketType do
   @doc false
   def changeset(ticket_types, attrs) do
     ticket_types
-    |> cast(attrs, [:name, :description, :purchasable, :price, :release_time, :expire_time])
-    |> validate_required([:name, :description, :purchasable, :price, :release_time, :expire_time])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :purchasable,
+      :price,
+      :release_time,
+      :expire_time,
+      :ticket_batch_id
+    ])
+    |> validate_required([:name, :description, :purchasable, :price, :ticket_batch_id])
     |> validate_number(:price, greater_than_or_equal_to: 0)
   end
 end
