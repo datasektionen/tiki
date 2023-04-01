@@ -71,8 +71,8 @@ defmodule TikiWeb.AdminLive.Event.Show do
     ~H"""
     <div class="w-full rounded-lg overflow-hidden bg-gray-50 shadow-sm">
       <div class="bg-gray-200 px-4 py-4 flex flex-row justify-between">
-        <div>
-          <.icon name="hero-tag-mini h-4 w-4" />
+        <div class="inline-flex items-center gap-2">
+          <.icon name="hero-rectangle-stack-mini h-4 w-4" />
           <%= @batch.batch.name %>
         </div>
         <div :if={@batch.batch.max_size}>
@@ -81,11 +81,11 @@ defmodule TikiWeb.AdminLive.Event.Show do
       </div>
       <div :if={@batch.batch.ticket_types != []} class="flex flex-col gap-4 px-4 py-4">
         <div :for={ticket_type <- @batch.batch.ticket_types} class="flex flex-row justify-between">
-          <div>
+          <div class="inline-flex items-center gap-2">
             <.icon name="hero-ticket-mini h-4 w-4" />
             <%= ticket_type.name %>
           </div>
-          <div>
+          <div class="text-gray-500">
             <%= ticket_type.price %> kr
           </div>
         </div>

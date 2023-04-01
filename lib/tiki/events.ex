@@ -47,7 +47,7 @@ defmodule Tiki.Events do
 
   defp preload_ticket_types(query, true) do
     from e in query,
-      inner_join: tb in assoc(e, :ticket_batches),
+      left_join: tb in assoc(e, :ticket_batches),
       left_join: tt in assoc(tb, :ticket_types),
       preload: [ticket_batches: {tb, ticket_types: tt}]
   end
