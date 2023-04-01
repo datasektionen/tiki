@@ -15,29 +15,38 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
   end
 
   def update(%{action: {:tickets_updated, ticket_types}}, socket) do
-    {:ok, assign(socket, ticket_types: ticket_types)}
+    {:ok, assign_ticket_types(socket, ticket_types)}
   end
 
   def update(assigns, socket) do
     ticket_types = Orders.get_availible_ticket_types(assigns.event.id)
-
-    counts =
-      Enum.reduce(ticket_types, %{}, fn ticket_type, acc ->
-        Map.put(acc, ticket_type.id, 0)
-      end)
 
     Orders.subscribe(assigns.event.id)
 
     {:ok,
      socket
      |> assign(
-       ticket_types: ticket_types,
-       counts: counts,
        state: :tickets,
+       promo_code: "",
        error: nil,
        order: nil
      )
-     |> assign(assigns)}
+     |> assign(assigns)
+     |> assign_ticket_types(ticket_types)}
+  end
+
+  defp assign_ticket_types(socket, ticket_types, promo_code \\ "") do
+    ticket_types =
+      Enum.filter(ticket_types, fn ticket_type ->
+        ticket_type.promo_code == nil || ticket_type.promo_code == promo_code
+      end)
+
+    counts =
+      Enum.reduce(ticket_types, %{}, fn ticket_type, acc ->
+        Map.put(acc, ticket_type.id, 0)
+      end)
+
+    assign(socket, ticket_types: ticket_types, counts: counts)
   end
 
   def handle_event("inc", %{"id" => id}, socket) do
@@ -93,6 +102,16 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     {:ok, _} = Orders.confirm_order(socket.assigns.order)
 
     {:noreply, assign(socket, state: :purchased)}
+  end
+
+  def handle_event("update_promo", %{"code" => code}, socket) do
+    {:noreply, assign(socket, promo_code: code)}
+  end
+
+  def handle_event("activate_promo", %{"code" => code}, socket) do
+    ticket_types = Orders.get_availible_ticket_types(socket.assigns.event.id)
+
+    {:noreply, assign(socket, promo_code: "") |> assign_ticket_types(ticket_types, code)}
   end
 
   defp ticket_summary(assigns) do

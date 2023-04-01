@@ -32,6 +32,7 @@ defmodule TikiWeb.AdminLive.Event.TicketTypeFormComponent do
           label="Ticket batch"
           options={options_for_batch(@batches)}
         />
+        <.input field={@form[:promo_code]} type="text" label="Promo kod" />
 
         <:actions>
           <div>
