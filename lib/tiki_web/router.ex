@@ -24,9 +24,11 @@ defmodule TikiWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", TikiWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", TikiWeb do
+    pipe_through :api
+
+    post "/swish/callback", SwishController, :callback
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:tiki, :dev_routes) do
