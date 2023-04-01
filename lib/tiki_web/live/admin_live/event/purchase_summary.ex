@@ -1,4 +1,4 @@
-defmodule TikiWeb.AdminLive.Event.Purchases do
+defmodule TikiWeb.AdminLive.Event.PurchaseSummary do
   use TikiWeb, :live_view
 
   alias Tiki.Events
@@ -32,7 +32,7 @@ defmodule TikiWeb.AdminLive.Event.Purchases do
   def render(assigns) do
     ~H"""
     <div class="mb-4">
-      <h1 class="font-bold text-2xl mb-1">Event: <%= @event.name %></h1>
+      <h1 class="font-bold text-xl mb-1">Livestatus för <%= @event.name %></h1>
       <div class="text-gray-600">
         Det är <%= @online_count %> personer online just nu på biljettsidan.
       </div>

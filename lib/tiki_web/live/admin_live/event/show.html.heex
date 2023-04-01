@@ -1,12 +1,29 @@
 <.header>
   Event <%= @event.id %>
   <:subtitle>Detta är ett event i databasen.</:subtitle>
+
   <:actions>
     <.link patch={~p"/admin/events/#{@event}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Redigera event</.button>
     </.link>
   </:actions>
 </.header>
+
+<div class="flex flex-col gap-1 pt-2">
+  <.link
+    navigate={~p"/admin/events/#{@event}/purchases"}
+    class="text-sm font-bold hover:text-gray-600"
+  >
+    Visa köp
+  </.link>
+
+  <.link
+    navigate={~p"/admin/events/#{@event}/purchase-summary"}
+    class="text-sm font-bold hover:text-gray-600"
+  >
+    Visa live-status
+  </.link>
+</div>
 
 <div class="my-8">
   <h2 class="font-bold text-lg mb-2">Biljettyper</h2>
@@ -40,7 +57,7 @@
   </:item>
 </.list>
 
-<.back navigate={~p"/admin/events"}>Back to events</.back>
+<.back navigate={~p"/admin/events"}>Tillbaka to events</.back>
 
 <.modal
   :if={@live_action == :edit}

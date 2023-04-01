@@ -40,7 +40,17 @@ defmodule Tiki.Orders do
       ** (Ecto.NoResultsError)
 
   """
-  def get_order!(id), do: Repo.get!(Order, id)
+  def get_order!(id) do
+    query =
+      from o in Order,
+        where: o.id == ^id,
+        join: t in assoc(o, :tickets),
+        join: tt in assoc(t, :ticket_type),
+        join: u in assoc(o, :user),
+        preload: [tickets: {t, ticket_type: tt}, user: u]
+
+    Repo.one!(query)
+  end
 
   @doc """
   Creates a order.
@@ -210,6 +220,13 @@ defmodule Tiki.Orders do
 
       {:ok, order} ->
         broadcast(order.event_id, {:tickets_updated, get_availible_ticket_types(order.event_id)})
+
+        broadcast(
+          order.event_id,
+          :purchases,
+          {:order_confirmed, get_order!(order.id)}
+        )
+
         {:ok, order}
     end
   end
@@ -468,8 +485,29 @@ defmodule Tiki.Orders do
     Repo.all(query)
   end
 
+  def list_orders_for_event(event_id) do
+    query =
+      from o in Order,
+        where: o.event_id == ^event_id,
+        join: t in assoc(o, :tickets),
+        join: tt in assoc(t, :ticket_type),
+        join: u in assoc(o, :user),
+        order_by: [desc: o.inserted_at],
+        preload: [tickets: {t, ticket_type: tt}, user: u]
+
+    Repo.all(query)
+  end
+
+  defp broadcast(event_id, :purchases, message) do
+    PubSub.broadcast(Tiki.PubSub, "event:#{event_id}:purchases", message)
+  end
+
   defp broadcast(event_id, message) do
     PubSub.broadcast(Tiki.PubSub, "event:#{event_id}", message)
+  end
+
+  def subscribe(event_id, :purchases) do
+    PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:purchases")
   end
 
   def subscribe(event_id) do

@@ -37,7 +37,7 @@ defmodule TikiWeb.AdminLive.Event.TicketTypeFormComponent do
           <div>
             <.button phx-disable-with="Saving...">Save ticket type</.button>
             <.button
-              :if={@action == :edit_batch}
+              :if={@action == :edit_ticket_type}
               type="button"
               phx-click="delete"
               phx-disable-with="Deleting..."
