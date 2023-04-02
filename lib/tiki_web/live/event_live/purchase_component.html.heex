@@ -29,9 +29,24 @@
         <.ticket_summary tickets={@to_purchase} total_price={@total_price} />
       </div>
 
-      <div>
-        Typ betalning ie stripe här!
-      </div>
+      <form
+        :if={@intent != nil}
+        id="payment-form"
+        phx-hook="InitCheckout"
+        data-secret={@intent.client_secret}
+      >
+        <div id="link-authentication-element">
+          <!--Stripe.js injects the Link Authentication Element-->
+        </div>
+        <div id="payment-element">
+          <!--Stripe.js injects the Payment Element-->
+        </div>
+        <button id="submit">
+          <div class="spinner hidden" id="spinner"></div>
+          <span id="button-text">Pay now</span>
+        </button>
+        <div id="payment-message" class="hidden"></div>
+      </form>
 
       <div class="flex flex-row justify-end">
         <.button phx-click="pay" phx-target={@myself}>

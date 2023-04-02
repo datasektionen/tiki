@@ -38,3 +38,6 @@ npm-debug.log
 .elixir_ls/
 
 swish_certs/
+
+# Ignore .env file
+.env
