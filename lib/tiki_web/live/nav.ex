@@ -39,7 +39,8 @@ defmodule TikiWeb.Nav do
   end
 
   tab AdminLive.Dashboard.Index, :dashboard
-  tab AdminLive.Events.Index, :events
+  tab AdminLive.Event.Show, :event_overview
+  tab AdminLive.Event.PurchaseSummary, :live_purchases
 
   defp set_active_tab(_params, _url, socket) do
     active_tab = active_tab(socket.view)
