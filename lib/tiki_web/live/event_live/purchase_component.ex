@@ -1,6 +1,7 @@
 defmodule TikiWeb.EventLive.PurchaseComponent do
   use TikiWeb, :live_component
 
+  alias Mix.Tasks.Archive.Check
   alias Tiki.Checkouts.StripeCheckout
   alias Tiki.Checkouts
   alias TikiWeb.EventLive.PurchaseMonitor
@@ -127,6 +128,17 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     ticket_types = Orders.get_availible_ticket_types(socket.assigns.event.id)
 
     {:noreply, assign(socket, promo_code: "") |> assign_ticket_types(ticket_types, code)}
+  end
+
+  def handle_event("payment-sucess", %{"id" => id}, socket) do
+    with {:ok, order} <- Checkouts.confirm_stripe_payment(id),
+         {:ok, _} <- Orders.confirm_order(order) do
+      {:noreply, assign(socket, state: :purchased)}
+    else
+      _ ->
+        # TODO: Handle error
+        {:noreply, socket}
+    end
   end
 
   defp ticket_summary(assigns) do

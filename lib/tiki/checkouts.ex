@@ -101,4 +101,40 @@ defmodule Tiki.Checkouts do
   def change_stripe_checkout(%StripeCheckout{} = stripe_checkout, attrs \\ %{}) do
     StripeCheckout.changeset(stripe_checkout, attrs)
   end
+
+  def confirm_stripe_payment(intent_id) do
+    query =
+      from(stc in StripeCheckout,
+        where: stc.payment_intent_id == ^intent_id,
+        join: o in assoc(stc, :order),
+        select: o
+      )
+
+    with {:ok,
+          %Stripe.PaymentIntent{
+            status: status,
+            id: ^intent_id,
+            currency: currency,
+            payment_method: pm
+          }} <-
+           Stripe.PaymentIntent.retrieve(intent_id, %{}),
+         checkout <- Repo.get_by!(StripeCheckout, payment_intent_id: intent_id),
+         {:ok, checkout} <-
+           update_stripe_checkout(checkout, %{
+             status: "succeeded",
+             payment_method_id: pm,
+             currency: currency
+           }) do
+      if status == "succeeded" do
+        case Repo.one(query) do
+          nil -> {:error, "Order not found"}
+          order -> {:ok, order}
+        end
+      else
+        {:error, "Payment intent status is not succeeded"}
+      end
+    else
+      {:error, err} -> {:error, err}
+    end
+  end
 end

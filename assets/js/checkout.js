@@ -3,7 +3,7 @@ const stripe = Stripe("pk_test_51KWkyIER7ko6YTop95lS7iFgl8Y0BtV7a0NszFX2VnRCxEdf
 
 export const InitCheckout = {
     mounted() {
-        const callback = intent => { this.pushEvent("payment-sucess", intent) };
+        const callback = intent => { this.pushEventTo(this.el, "payment-sucess", intent) };
         init(this.el, callback);
     }
 }
@@ -30,35 +30,31 @@ const init = (form, callback) => {
     const paymentElement = elements.create("payment", paymentElementOptions);
     paymentElement.mount("#payment-element");
 
-    form.addEventListener("submit", handleSubmit);
-}
-
-
-async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-
-    const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-            // Make sure to change this to your payment completion page
-            return_url: "http://localhost:4000",
-            receipt_email: emailAddress,
-        },
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        setLoading(true);
+    
+        stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                // Make sure to change this to your payment completion page
+                return_url: "http://localhost:4000/events",
+                receipt_email: emailAddress,
+            },
+            redirect: "if_required"
+        }).then((result) => {
+            if (result.error) {
+                if (result.error.type === "card_error" || result.error.type === "validation_error") {
+                    showMessage(result.error.message);
+                } else {
+                    showMessage("An unexpected error occurred.");
+                }
+            
+                setLoading(false);
+            }
+            callback(result.paymentIntent)
+        })
     });
-
-    // This point will only be reached if there is an immediate error when
-    // confirming the payment. Otherwise, your customer will be redirected to
-    // your `return_url`. For some payment methods like iDEAL, your customer will
-    // be redirected to an intermediate site first to authorize the payment, then
-    // redirected to the `return_url`.
-    if (error.type === "card_error" || error.type === "validation_error") {
-        showMessage(error.message);
-    } else {
-        showMessage("An unexpected error occurred.");
-    }
-
-    setLoading(false);
 }
 
 // ------- UI helpers -------
