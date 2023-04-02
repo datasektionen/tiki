@@ -1,32 +1,59 @@
-<header class="px-4 sm:px-6 lg:px-8">
-  <div class="flex items-center justify-between border-b border-zinc-100 py-3 text-sm">
-    <div class="flex items-center gap-4">
-      <a href="/">
-        <img src={~p"/images/logo.svg"} width="36" />
-      </a>
-      <p class="bg-brand/5 text-brand rounded-full px-2 font-medium leading-6">
-        v<%= Application.spec(:phoenix, :vsn) %>
-      </p>
-    </div>
-    <div class="flex items-center gap-4 font-semibold leading-6 text-zinc-900">
-      <a href="https://twitter.com/elixirphoenix" class="hover:text-zinc-700">
-        @elixirphoenix
-      </a>
-      <a href="https://github.com/phoenixframework/phoenix" class="hover:text-zinc-700">
-        GitHub
-      </a>
-      <a
-        href="https://hexdocs.pm/phoenix/overview.html"
-        class="rounded-lg bg-zinc-100 px-2 py-1 hover:bg-zinc-200/80"
+<!-- Mobile sidebar -->
+<div id="mobile-sidebar-container" class="fixed inset-0 z-40 lg:hidden" style="display: none;">
+  <div class="fixed inset-0 bg-gray-600 bg-opacity-75" phx-click={hide_mobile_sidebar()}></div>
+  <div
+    id="mobile-sidebar"
+    class="bg-gray-900 relative flex min-h-screen w-full max-w-xs flex-1 flex-col py-4"
+  >
+    <div class="mt-2 flex w-full flex-row items-center justify-between px-4">
+      <span class="text-xl font-bold text-white">Tiki</span>
+
+      <button
+        type="button"
+        id="hide-mobile-sidebar"
+        class="h-6 w-6"
+        phx-click={hide_mobile_sidebar()}
       >
-        Get Started <span aria-hidden="true">&rarr;</span>
-      </a>
+        <.icon name="hero-chevron-left" class="h-full w-full text-white" />
+      </button>
+    </div>
+    <nav class="px-4">
+      <.sidebar active_tab={@active_tab} event={@event || nil} />
+    </nav>
+  </div>
+</div>
+<!-- Static sidebar for desktop -->
+<div class="fixed top-0 hidden h-screen self-start lg:flex lg:flex-grow">
+  <div class="bg-gray-900 flex w-64 flex-col border-r py-8">
+    <div class="flex items-center px-6 pb-4">
+      <.link
+        navigate={}
+        class="flex h-10 flex-row items-center gap-2 fill-white text-white hover:fill-gray-200 hover:text-gray-200"
+      >
+        <span class="text-xl font-bold">Tiki</span>
+      </.link>
+    </div>
+    <!-- Sidebar -->
+    <div class="flex h-0 flex-1 flex-col overflow-y-auto">
+      <nav class="">
+        <.sidebar active_tab={@active_tab} event={@event || nil} />
+      </nav>
     </div>
   </div>
-</header>
-<main class="px-4 py-20 sm:px-6 lg:px-8">
-  <div class="mx-auto max-w-2xl">
+</div>
+<div class="flex w-screen flex-col lg:pl-64">
+  <div class="flex w-full flex-row items-center justify-between border-b px-4 py-4 lg:px-6 lg:py-4 lg:hidden">
+    <div class="flex flex-row items-center lg:hidden">
+      <button id="show-mobile-sidebar" phx-click={show_mobile_sidebar()} class="">
+        <.icon name="hero-bars-3-center-left" class=" h-6 w-6" />
+      </button>
+    </div>
+  </div>
+  <div class="px-4 pt-2 pb-8 lg:px-6">
     <.flash_group flash={@flash} />
     <%= @inner_content %>
   </div>
-</main>
+</div>
+
+<.flash flash={@flash} kind={:info} />
+<.flash flash={@flash} kind={:error} />

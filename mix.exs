@@ -52,6 +52,7 @@ defmodule Tiki.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:stripity_stripe, "~> 2.0"},
+      {:httpoison, "~> 2.0"},
       {:k6, "~> 0.2.0", only: :dev}
     ]
   end

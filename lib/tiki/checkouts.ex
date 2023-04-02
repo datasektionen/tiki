@@ -109,7 +109,6 @@ defmodule Tiki.Checkouts do
         join: o in assoc(stc, :order),
         select: o
       )
-
     with {:ok,
           %Stripe.PaymentIntent{
             status: status,
