@@ -76,7 +76,10 @@ defmodule TikiWeb.Router do
 
     scope "/admin" do
       live_session :require_admin_user,
+        on_mount: [{TikiWeb.UserAuth, :ensure_admin}, TikiWeb.Nav],
         layout: {TikiWeb.Layouts, :admin} do
+        live "/", AdminLive.Dashboard.Index, :index
+
         live "/events", AdminLive.Event.Index, :index
         live "/events/new", AdminLive.Event.Index, :new
         live "/events/:id/edit", AdminLive.Event.Index, :edit
