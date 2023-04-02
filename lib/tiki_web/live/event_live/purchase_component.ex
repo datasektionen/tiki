@@ -43,7 +43,16 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
 
     counts =
       Enum.reduce(ticket_types, %{}, fn ticket_type, acc ->
-        Map.put(acc, ticket_type.id, 0)
+        prev_count =
+          case Map.get(socket.assigns, :counts, %{}) do
+            counts when is_map(counts) ->
+              Map.get(counts, ticket_type.id, 0)
+
+            _ ->
+              0
+          end
+
+        Map.put(acc, ticket_type.id, prev_count)
       end)
 
     assign(socket, ticket_types: ticket_types, counts: counts)

@@ -241,13 +241,13 @@ defmodule Tiki.Orders do
   def reserve_tickets(event_id, ticket_types, user_id) do
     result =
       Multi.new()
-      |> Multi.insert(:order, %Order{user_id: user_id, event_id: event_id, status: :pending})
       |> Multi.run(:positive_tickets, fn _repo, _ ->
         case length(ticket_types) do
           0 -> {:error, "Du måste välja minst en biljett"}
           _ -> {:ok, :ok}
         end
       end)
+      |> Multi.insert(:order, %Order{user_id: user_id, event_id: event_id, status: :pending})
       |> Multi.insert_all(:tickets, Ticket, fn %{order: order} ->
         Enum.flat_map(ticket_types, fn tt ->
           for _ <- 1..tt.count do

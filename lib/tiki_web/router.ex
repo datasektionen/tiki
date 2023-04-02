@@ -69,28 +69,33 @@ defmodule TikiWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
-      live "/admin/events", AdminLive.Event.Index, :index
-      live "/admin/events/new", AdminLive.Event.Index, :new
-      live "/admin/events/:id/edit", AdminLive.Event.Index, :edit
-
-      live "/admin/events/:id/purchases", AdminLive.Event.Purchases
-      live "/admin/events/:id/purchase-summary", AdminLive.Event.PurchaseSummary
-
-      live "/admin/events/:id", AdminLive.Event.Show, :show
-      live "/admin/events/:id/show/edit", AdminLive.Event.Show, :edit
-
-      live "/admin/events/:id/batches/new", AdminLive.Event.Show, :new_batch
-      live "/admin/events/:id/batches/:batch_id/edit", AdminLive.Event.Show, :edit_batch
-
-      live "/admin/events/:id/ticket-types/new", AdminLive.Event.Show, :new_ticket_type
-
-      live "/admin/events/:id/ticket-types/:ticket_type_id/edit",
-           AdminLive.Event.Show,
-           :edit_ticket_type
-
       live "/events", EventLive.Index, :index
       live "/events/:id", EventLive.Show, :index
       live "/events/:id/purchase", EventLive.Show, :purchase
+    end
+
+    scope "/admin" do
+      live_session :require_admin_user,
+        layout: {TikiWeb.Layouts, :admin} do
+        live "/events", AdminLive.Event.Index, :index
+        live "/events/new", AdminLive.Event.Index, :new
+        live "/events/:id/edit", AdminLive.Event.Index, :edit
+
+        live "/events/:id/purchases", AdminLive.Event.Purchases
+        live "/events/:id/purchase-summary", AdminLive.Event.PurchaseSummary
+
+        live "/events/:id", AdminLive.Event.Show, :show
+        live "/events/:id/show/edit", AdminLive.Event.Show, :edit
+
+        live "/events/:id/batches/new", AdminLive.Event.Show, :new_batch
+        live "/events/:id/batches/:batch_id/edit", AdminLive.Event.Show, :edit_batch
+
+        live "/events/:id/ticket-types/new", AdminLive.Event.Show, :new_ticket_type
+
+        live "/events/:id/ticket-types/:ticket_type_id/edit",
+             AdminLive.Event.Show,
+             :edit_ticket_type
+      end
     end
   end
 
