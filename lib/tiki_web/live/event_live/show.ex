@@ -1,6 +1,8 @@
 defmodule TikiWeb.EventLive.Show do
   use TikiWeb, :live_view
 
+  alias Tiki.Checkouts
+  alias Tiki.Checkouts.StripeCheckout
   alias TikiWeb.EventLive.PurchaseComponent
   alias Tiki.Events
   alias Tiki.Presence
@@ -52,6 +54,33 @@ defmodule TikiWeb.EventLive.Show do
   def handle_info({:tickets_updated, _ticket_types} = msg, socket) do
     send_update(PurchaseComponent, id: socket.assigns.event.id, action: msg)
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:create_stripe_payment_intent, order_id, user_id, price}, socket) do
+    with {:ok, intent} <-
+           Stripe.PaymentIntent.create(%{
+             amount: price * 100,
+             currency: "sek"
+           }),
+         {:ok, stripe_ceckout} <-
+           Checkouts.create_stripe_checkout(%{
+             user_id: user_id,
+             order_id: order_id,
+             price: price * 100,
+             payment_intent_id: intent.id
+           }) do
+      send_update(PurchaseComponent,
+        id: socket.assigns.event.id,
+        action: {:stripe_intent, intent}
+      )
+
+      {:noreply, socket}
+    else
+      {:error, error} ->
+        IO.inspect(error)
+        {:noreply, socket}
+    end
   end
 
   defp month_name(month) do

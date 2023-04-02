@@ -1,8 +1,14 @@
 defmodule TikiWeb.EventLive.PurchaseComponent do
   use TikiWeb, :live_component
 
+  alias Tiki.Checkouts.StripeCheckout
+  alias Tiki.Checkouts
   alias TikiWeb.EventLive.PurchaseMonitor
   alias Tiki.Orders
+
+  def update(%{action: {:stripe_intent, intent}}, socket) do
+    {:ok, assign(socket, intent: intent)}
+  end
 
   def update(%{action: {:timeout, _}}, socket) do
     case socket.assigns.state do
@@ -29,7 +35,8 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
        state: :tickets,
        promo_code: "",
        error: nil,
-       order: nil
+       order: nil,
+       intent: nil
      )
      |> assign(assigns)
      |> assign_ticket_types(ticket_types)}
@@ -87,21 +94,20 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
 
     %{current_user: %{id: user_id}, event: %{id: event_id}} = socket.assigns
 
-    case Orders.reserve_tickets(event_id, to_purchase, user_id) do
-      {:ok, order} ->
-        PurchaseMonitor.monitor(self(), %{id: socket.assigns.id, order: order})
+    price = Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
 
-        price =
-          Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
+    with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase, user_id) do
+      PurchaseMonitor.monitor(self(), %{id: socket.assigns.id, order: order})
+      send(self(), {:create_stripe_payment_intent, order.id, user_id, price})
 
-        {:noreply,
-         assign(socket,
-           state: :purchase,
-           order: order,
-           to_purchase: to_purchase,
-           total_price: price
-         )}
-
+      {:noreply,
+       assign(socket,
+         state: :purchase,
+         order: order,
+         to_purchase: to_purchase,
+         total_price: price
+       )}
+    else
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}
     end
