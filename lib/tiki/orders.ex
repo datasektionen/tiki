@@ -213,7 +213,17 @@ defmodule Tiki.Orders do
       ** (Ecto.NoResultsError)
 
   """
-  def get_ticket!(id), do: Repo.get!(Ticket, id)
+  def get_ticket!(id) do
+    query =
+      from t in Ticket,
+        where: t.id == ^id,
+        join: tt in assoc(t, :ticket_type),
+        join: o in assoc(t, :order),
+        join: u in assoc(o, :user),
+        preload: [ticket_type: tt, order: {o, user: u}]
+
+    Repo.one!(query)
+  end
 
   @doc """
   Creates a ticket.
@@ -559,6 +569,27 @@ defmodule Tiki.Orders do
         join: u in assoc(o, :user),
         order_by: [desc: o.inserted_at],
         preload: [tickets: {t, ticket_type: tt}, user: u]
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Returns the tikets for an event, ordered by most recent first.
+
+  ## Examples
+
+      iex> list_tickets_for_event(event_id)
+      [%Ticket{ticket_type: %TicketType{}}, %Order{user: %User{}}], ...]
+  """
+  def list_tickets_for_event(event_id) do
+    query =
+      from t in Ticket,
+        join: o in assoc(t, :order),
+        join: tt in assoc(t, :ticket_type),
+        join: u in assoc(o, :user),
+        order_by: [desc: o.inserted_at],
+        where: o.event_id == ^event_id,
+        preload: [ticket_type: tt, order: {o, user: u}]
 
     Repo.all(query)
   end

@@ -12,9 +12,11 @@ defmodule TikiWeb.EventLive.Show do
     event = Events.get_event!(event_id)
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
-    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
-    Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
+    if connected?(socket) do
+      TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+      Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
+    end
 
     {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
   end
