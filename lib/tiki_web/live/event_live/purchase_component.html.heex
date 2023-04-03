@@ -34,6 +34,7 @@
         id="payment-form"
         phx-hook="InitCheckout"
         data-secret={@intent.client_secret}
+        class="flex flex-col gap-4"
       >
         <div id="link-authentication-element">
           <!--Stripe.js injects the Link Authentication Element-->
@@ -41,18 +42,21 @@
         <div id="payment-element">
           <!--Stripe.js injects the Payment Element-->
         </div>
-        <button id="submit">
+        <button
+          id="submit"
+          class={[
+            "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
+            "text-sm font-semibold leading-6 text-white active:text-white/80",
+            "self-end"
+          ]}
+        >
           <div class="spinner hidden" id="spinner"></div>
-          <span id="button-text">Pay now</span>
+          <span id="button-text">
+            Betala <%= @total_price %> kr
+          </span>
         </button>
         <div id="payment-message" class="hidden"></div>
       </form>
-
-      <div class="flex flex-row justify-end">
-        <.button phx-click="pay" phx-target={@myself}>
-          Betala <%= @total_price %> kr
-        </.button>
-      </div>
     </div>
     <div :if={@state == :tickets}>
       <.header>
