@@ -95,11 +95,11 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
   defp ticket_batch(assigns) do
     ~H"""
-    <div class="w-full rounded-lg overflow-hidden bg-gray-50 shadow-sm">
+    <div class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm">
       <.link
         patch={~p"/admin/events/#{@batch.batch.event_id}/batches/#{@batch.batch}/edit"}
         phx-click={JS.push_focus()}
-        class="bg-gray-200 px-4 py-4 flex flex-row justify-between hover:bg-gray-300"
+        class="flex flex-row justify-between bg-gray-200 px-4 py-4 hover:bg-gray-300"
       >
         <div class="inline-flex items-center gap-2">
           <.icon name="hero-rectangle-stack-mini h-4 w-4" />
@@ -113,7 +113,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
         <.link
           :for={ticket_type <- @batch.batch.ticket_types}
           patch={~p"/admin/events/#{@batch.batch.event_id}/ticket-types/#{ticket_type}/edit"}
-          class="py-4 px-4 flex flex-row justify-between hover:bg-white"
+          class="flex flex-row justify-between px-4 py-4 hover:bg-white"
         >
           <div class="inline-flex items-center gap-2">
             <.icon name="hero-ticket-mini h-4 w-4" />
@@ -125,7 +125,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
         </.link>
       </div>
 
-      <div :if={@batch.children != []} class="flex flex-col gap-4 my-4 mr-2">
+      <div :if={@batch.children != []} class="my-4 mr-2 flex flex-col gap-4">
         <div :for={child <- @batch.children} class="ml-4">
           <.ticket_batch batch={child} level={@level + 1} />
         </div>

@@ -53,7 +53,8 @@ defmodule Tiki.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:stripity_stripe, "~> 2.0"},
       {:httpoison, "~> 2.0"},
-      {:k6, "~> 0.2.0", only: :dev}
+      {:k6, "~> 0.2.0", only: :dev, runtime: false},
+      {:tailwind_formatter, "~> 0.3.5", only: :dev, runtime: false}
     ]
   end
 

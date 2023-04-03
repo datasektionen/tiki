@@ -67,36 +67,36 @@
       </div>
 
       <div class="flex flex-col gap-3 pt-4">
-        <div :for={ticket_type <- @ticket_types} class="overflow-hidden bg-gray-100 rounded-xl">
+        <div :for={ticket_type <- @ticket_types} class="overflow-hidden rounded-xl bg-gray-100">
           <div :if={ticket_type.promo_code != nil}>
-            <div class="bg-cyan-700 text-cyan-100 text-sm text-center py-1">
+            <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
               <%= ticket_type.promo_code %>
             </div>
           </div>
 
-          <div class="flex flex-row justify-between py-4 px-4">
+          <div class="flex flex-row justify-between px-4 py-4">
             <div class="flex flex-col">
-              <h3 class="font-bold text-xl pb-1"><%= ticket_type.name %></h3>
+              <h3 class="pb-1 text-xl font-bold"><%= ticket_type.name %></h3>
               <div class="text-gray-600"><%= ticket_type.price %> kr</div>
             </div>
 
             <div class="flex flex-row items-center gap-2">
               <button
                 :if={@counts[ticket_type.id] > 0}
-                class="bg-white rounded-full w-8 h-8 text-2xl shadow-md flex justify-center items-center hover:bg-gray-100 hover:cursor-pointer"
+                class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-2xl shadow-md hover:cursor-pointer hover:bg-gray-100"
                 phx-click={JS.push("dec", value: %{id: ticket_type.id})}
                 phx-target={@myself}
               >
                 <.icon name="hero-minus-mini" />
               </button>
 
-              <div class="bg-gray-200 h-10 w-8 rounded-lg flex justify-center items-center">
+              <div class="flex h-10 w-8 items-center justify-center rounded-lg bg-gray-200">
                 <%= @counts[ticket_type.id] %>
               </div>
 
               <button
                 :if={@counts[ticket_type.id] >= ticket_type.available}
-                class="bg-gray-200 rounded-full w-8 h-8 text-2xl shadow-md flex justify-center items-center"
+                class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-2xl shadow-md"
                 disabled
               >
                 <.icon name="hero-plus-mini" />
@@ -104,7 +104,7 @@
 
               <button
                 :if={@counts[ticket_type.id] < ticket_type.available}
-                class="bg-white rounded-full w-8 h-8 text-2xl shadow-md flex justify-center items-center hover:bg-gray-100 hover:cursor-pointer"
+                class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-2xl shadow-md hover:cursor-pointer hover:bg-gray-100"
                 phx-click={JS.push("inc", value: %{id: ticket_type.id})}
                 phx-target={@myself}
               >
@@ -115,7 +115,7 @@
 
           <div
             :if={ticket_type.available <= 0}
-            class="text-sm text-center bg-gray-200 py-1 text-gray-600"
+            class="bg-gray-200 py-1 text-center text-sm text-gray-600"
           >
             Biljetterna är slutsålda
           </div>
@@ -129,7 +129,7 @@
           phx-target={@myself}
           phx-change="update_promo"
           phx-submit="activate_promo"
-          class="flex flex-row justify-between w-full"
+          class="flex w-full flex-row justify-between"
         >
           <input
             type="text"

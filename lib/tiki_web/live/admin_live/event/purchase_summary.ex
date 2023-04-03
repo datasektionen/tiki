@@ -32,19 +32,19 @@ defmodule TikiWeb.AdminLive.Event.PurchaseSummary do
   def render(assigns) do
     ~H"""
     <div class="mb-4">
-      <h1 class="font-bold text-xl mb-1">Livestatus för <%= @event.name %></h1>
+      <h1 class="mb-1 text-xl font-bold">Livestatus för <%= @event.name %></h1>
       <div class="text-gray-600">
         Det är <%= @online_count %> personer online just nu på biljettsidan.
       </div>
     </div>
 
-    <h2 class="font-bold text-lg mb-3">Biljettyper</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <h2 class="mb-3 text-lg font-bold">Biljettyper</h2>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <div
         :for={ticket_type <- @ticket_types}
-        class="border rounded-xl shadow-sm p-4 hover:bg-gray-50"
+        class="rounded-xl border p-4 shadow-sm hover:bg-gray-50"
       >
-        <div class="font-bold text-lg"><%= ticket_type.name %></div>
+        <div class="text-lg font-bold"><%= ticket_type.name %></div>
         <div><span class="font-bold"><%= ticket_type.available %> </span>tillgängliga</div>
         <div><span class="font-bold"><%= ticket_type.purchased %> </span>köpta</div>
         <div><span class="font-bold"><%= ticket_type.pending %> </span>reserverade</div>

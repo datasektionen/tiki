@@ -24,7 +24,7 @@ defmodule TikiWeb.AdminLive.Event.Purchases do
 
   def render(assigns) do
     ~H"""
-    <h2 class="font-bold text-xl mb-2">Beställningar</h2>
+    <h2 class="mb-2 text-xl font-bold">Beställningar</h2>
     <div class="text-gray-600">
       Totalt <%= @num_orders %> beställningar med <%= @num_tickets %> biljetter
     </div>

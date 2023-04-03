@@ -37,7 +37,7 @@ defmodule TikiWeb.Layouts do
 
   defp sidebar(%{event: nil} = assigns) do
     ~H"""
-    <div class="text-white flex flex-col gap-4">
+    <div class="flex flex-col gap-4 text-white">
       <.sidebar_item
         icon="hero-home-mini"
         text="Alla event"
@@ -56,8 +56,8 @@ defmodule TikiWeb.Layouts do
 
   defp sidebar(assigns) do
     ~H"""
-    <nav class="flex flex-col justify-between h-full flex-grow">
-      <div class="text-white flex flex-col gap-4">
+    <nav class="flex h-full flex-grow flex-col justify-between">
+      <div class="flex flex-col gap-4 text-white">
         <.sidebar_item
           icon="hero-calendar-days"
           text="Översikt"
@@ -89,7 +89,7 @@ defmodule TikiWeb.Layouts do
           active={@active_tab == :forms}
         />
       </div>
-      <div class="text-white flex flex-col gap-4">
+      <div class="flex flex-col gap-4 text-white">
         <.sidebar_item
           icon="hero-home-mini"
           text="Alla event"
@@ -121,7 +121,7 @@ defmodule TikiWeb.Layouts do
         if(@active, do: "border-white", else: "border-gray-900 text-gray-400")
       ]}
     >
-      <.icon name={@icon} class="w-5 h-5" />
+      <.icon name={@icon} class="h-5 w-5" />
       <div class="text-sm font-bold"><%= @text %></div>
     </.link>
     """
