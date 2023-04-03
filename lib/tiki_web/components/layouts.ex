@@ -59,7 +59,7 @@ defmodule TikiWeb.Layouts do
     <nav class="flex flex-col justify-between h-full flex-grow">
       <div class="text-white flex flex-col gap-4">
         <.sidebar_item
-          icon="hero-home-mini"
+          icon="hero-calendar-days"
           text="Översikt"
           to={~p"/admin/events/#{@event}"}
           active={@active_tab == :event_overview}
@@ -89,12 +89,20 @@ defmodule TikiWeb.Layouts do
           active={@active_tab == :forms}
         />
       </div>
-      <.sidebar_item
-        icon="hero-home-mini"
-        text="Alla event"
-        to={~p"/admin"}
-        active={@active_tab == :dashboard}
-      />
+      <div class="text-white flex flex-col gap-4">
+        <.sidebar_item
+          icon="hero-home-mini"
+          text="Alla event"
+          to={~p"/admin"}
+          active={@active_tab == :dashboard}
+        />
+        <.sidebar_item
+          icon="hero-cog-6-tooth-mini"
+          text="Inställningar"
+          to={~p"/admin/settings"}
+          active={@active_tab == :settings}
+        />
+      </div>
     </nav>
     """
   end

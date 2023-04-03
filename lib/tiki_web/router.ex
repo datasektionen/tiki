@@ -95,10 +95,9 @@ defmodule TikiWeb.Router do
 
         live "/events/:id/ticket-types/new", AdminLive.Event.Show, :new_ticket_type
 
-        live
-          "/events/:id/ticket-types/:ticket_type_id/edit",
-          AdminLive.Event.Show,
-          :edit_ticket_type
+        live "/events/:id/ticket-types/:ticket_type_id/edit",
+             AdminLive.Event.Show,
+             :edit_ticket_type
       end
     end
   end
