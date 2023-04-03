@@ -2,7 +2,6 @@ defmodule TikiWeb.EventLive.Show do
   use TikiWeb, :live_view
 
   alias Tiki.Checkouts
-  alias Tiki.Checkouts.StripeCheckout
   alias TikiWeb.EventLive.PurchaseComponent
   alias Tiki.Events
   alias Tiki.Presence
@@ -13,9 +12,11 @@ defmodule TikiWeb.EventLive.Show do
     event = Events.get_event!(event_id)
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
-    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
-    Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
+    if connected?(socket) do
+      TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+      Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
+    end
 
     {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
   end
@@ -63,7 +64,7 @@ defmodule TikiWeb.EventLive.Show do
              amount: price * 100,
              currency: "sek"
            }),
-         {:ok, stripe_ceckout} <-
+         {:ok, _stripe_ceckout} <-
            Checkouts.create_stripe_checkout(%{
              user_id: user_id,
              order_id: order_id,

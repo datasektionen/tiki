@@ -1,8 +1,6 @@
 defmodule TikiWeb.EventLive.PurchaseComponent do
   use TikiWeb, :live_component
 
-  alias Mix.Tasks.Archive.Check
-  alias Tiki.Checkouts.StripeCheckout
   alias Tiki.Checkouts
   alias TikiWeb.EventLive.PurchaseMonitor
   alias Tiki.Orders
@@ -26,9 +24,13 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
   end
 
   def update(assigns, socket) do
-    ticket_types = Orders.get_availible_ticket_types(assigns.event.id)
-
-    Orders.subscribe(assigns.event.id)
+    ticket_types =
+      if connected?(socket) do
+        Orders.subscribe(assigns.event.id)
+        Orders.get_availible_ticket_types(assigns.event.id)
+      else
+        []
+      end
 
     {:ok,
      socket

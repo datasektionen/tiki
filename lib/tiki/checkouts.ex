@@ -119,7 +119,7 @@ defmodule Tiki.Checkouts do
           }} <-
            Stripe.PaymentIntent.retrieve(intent_id, %{}),
          checkout <- Repo.get_by!(StripeCheckout, payment_intent_id: intent_id),
-         {:ok, checkout} <-
+         {:ok, _} <-
            update_stripe_checkout(checkout, %{
              status: "succeeded",
              payment_method_id: pm,
