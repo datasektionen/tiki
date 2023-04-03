@@ -1,14 +1,14 @@
-<div class="flex flex-col gap-2 mb-2">
+<div class="mb-2 flex flex-col gap-2">
   <div :if={@event.image_url != nil} class="pb-4">
-    <img class="object-cover w-full aspect-video rounded-xl" src={@event.image_url} />
+    <img class="aspect-video w-full rounded-xl object-cover" src={@event.image_url} />
   </div>
 
-  <div class="flex flex-row justify-between items-center">
+  <div class="flex flex-row items-center justify-between">
     <div>
       <div class="text-gray-500">
         <%= Calendar.strftime(@event.event_date, "%d %B", month_names: &month_name/1) %>
       </div>
-      <h1 class="font-bold text-3xl"><%= @event.name %></h1>
+      <h1 class="text-3xl font-bold"><%= @event.name %></h1>
     </div>
 
     <.link patch={~p"/events/#{@event}/purchase"}>
@@ -16,17 +16,17 @@
     </.link>
   </div>
 
-  <div class="flex flex-col my-4 text-gray-500 gap-1">
-    <div class=" inline-flex items-center gap-2">
+  <div class="my-4 flex flex-col gap-1 text-gray-500">
+    <div class="inline-flex items-center gap-2">
       <.icon name="hero-calendar" />
       <%= Calendar.strftime(@event.event_date, "%Y-%m-%d vid %H:%M") %>
     </div>
-    <div class=" inline-flex items-center gap-2">
+    <div class="inline-flex items-center gap-2">
       <.icon name="hero-map-pin" />
       <%= @event.location %>
     </div>
   </div>
-  <p class="whitespace-pre-wrap -mt-8">
+  <p class="-mt-8 whitespace-pre-wrap">
     <%= @event.description %>
   </p>
 </div>
@@ -43,8 +43,9 @@
   />
 </div>
 
-<div class="fixed right-4 bottom-4 border shadow-sm py-2 px-4 rounded-full bg-white">
+<div class="fixed right-4 bottom-4 rounded-full border bg-white px-4 py-2 shadow-sm">
   <%= max(@online_count, 0) %> online
 </div>
 
-<script src="https://js.stripe.com/v3/"></script>
+<script src="https://js.stripe.com/v3/">
+</script>

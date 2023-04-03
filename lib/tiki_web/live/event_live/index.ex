@@ -11,15 +11,15 @@ defmodule TikiWeb.EventLive.Index do
 
   def render(assigns) do
     ~H"""
-    <div class="font-bold text-lg mb-4">Listar alla events</div>
+    <div class="mb-4 text-lg font-bold">Listar alla events</div>
 
-    <div class="grid md:grid-cols-2 gap-4">
+    <div class="grid gap-4 md:grid-cols-2">
       <.link
         :for={event <- @events}
         navigate={~p"/events/#{event}"}
-        class="rounded-lg px-4 py-4 border shadow-sm hover:bg-gray-50 flex flex-col gap-1"
+        class="flex flex-col gap-1 rounded-lg border px-4 py-4 shadow-sm hover:bg-gray-50"
       >
-        <div class="font-bold text-lg"><%= event.name %></div>
+        <div class="text-lg font-bold"><%= event.name %></div>
         <div class="text-sm text-gray-500">
           <%= Calendar.strftime(event.event_date, "%y-%m-%d %H:%M") %>
         </div>

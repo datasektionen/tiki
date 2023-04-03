@@ -143,19 +143,19 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
 
   defp ticket_summary(assigns) do
     ~H"""
-    <table class="w-full border-collapse border-spacing-0 ">
+    <table class="w-full border-collapse border-spacing-0">
       <tbody class="text-sm">
-        <tr :for={ticket <- @tickets} class=" border-t">
-          <th class="text-left pr-2 py-1"><%= ticket.name %></th>
-          <td class="text-right whitespace-nowrap pr-2 py-1">
+        <tr :for={ticket <- @tickets} class="border-t">
+          <th class="py-1 pr-2 text-left"><%= ticket.name %></th>
+          <td class="whitespace-nowrap py-1 pr-2 text-right">
             <%= "#{ticket.count} x #{ticket.price} kr" %>
           </td>
-          <td class="text-right whitespace-nowrap py-1"><%= ticket.price * ticket.count %> kr</td>
+          <td class="whitespace-nowrap py-1 text-right"><%= ticket.price * ticket.count %> kr</td>
         </tr>
         <tr class="border-t-2 border-gray-300">
           <th></th>
-          <td class="text-right whitespace-nowrap pr-2 py-1">TOTALT</td>
-          <td class="text-right whitespace-nowrap py-1">
+          <td class="whitespace-nowrap py-1 pr-2 text-right">TOTALT</td>
+          <td class="whitespace-nowrap py-1 text-right">
             <%= @total_price %> kr
           </td>
         </tr>
