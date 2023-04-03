@@ -13,6 +13,73 @@ defmodule Tiki.Orders do
 
   alias Tiki.Orders.Order
 
+  defmodule TreeBuilder do
+    @moduledoc """
+    Module for building a tree of ticket batches.
+    """
+
+    @doc """
+    Builds a tree of ticket batches from a :digraph recursively.
+    Propagates the purchased count up the tree and mutates the graph.
+
+    ## Examples
+
+        iex> build(graph, 0)
+        %{batch: %Tiki.Tickets.TicketBatch{...}, children: [...], purchased: 0}
+    """
+    def build(graph, vertex) do
+      children =
+        for child <- :digraph.in_neighbours(graph, vertex) do
+          build(graph, child)
+        end
+
+      {^vertex, label} = :digraph.vertex(graph, vertex)
+
+      sum_purchased = Enum.reduce(children, 0, fn child, acc -> acc + child.purchased end)
+
+      label =
+        Map.put(label, :children, children)
+        |> Map.put(:purchased, sum_purchased + label.purchased)
+
+      :digraph.add_vertex(graph, vertex, label)
+      label
+    end
+
+    @doc """
+    Returns a map of available tickets for each batch in the tree, note
+    that tree must be built first to propagate the purchased count up the tree.
+
+    ## Examples
+
+        iex> available(graph, 0)
+        %{0 => :infinity, 2 => 3, ...}
+    """
+    def available(graph, node) do
+      available_helper(graph, node, :infinity)
+    end
+
+    defp available_helper(graph, vertex, count) do
+      {^vertex, label} = :digraph.vertex(graph, vertex)
+
+      count = if count == :infinity, do: :infinity, else: count
+
+      available =
+        case label.batch.max_size do
+          nil -> count
+          max_size -> min(count, max_size - label.purchased)
+        end
+
+      children = :digraph.in_neighbours(graph, vertex)
+
+      available_childs =
+        Enum.reduce(children, %{}, fn child, acc ->
+          Map.merge(acc, available_helper(graph, child, available))
+        end)
+
+      Map.merge(available_childs, %{vertex => available})
+    end
+  end
+
   @doc """
   Returns the list of order.
 
@@ -213,30 +280,15 @@ defmodule Tiki.Orders do
     Ticket.changeset(ticket, attrs)
   end
 
-  def confirm_order(order) do
-    case update_order(order, %{status: "paid"}) do
-      {:error, changeset} ->
-        {:error, changeset}
-
-      {:ok, order} ->
-        broadcast(order.event_id, {:tickets_updated, get_availible_ticket_types(order.event_id)})
-
-        broadcast(
-          order.event_id,
-          :purchases,
-          {:order_confirmed, get_order!(order.id)}
-        )
-
-        {:ok, order}
-    end
-  end
-
   @doc """
   Reserves tickets for an event. Returns the order.
 
   ## Examples
       iex> reserve_tickets(123, [%TicketType{}, ...], 456)
-      %Order{}
+      {:ok, %Order{}}
+
+      iex> reserve_tickets(232, [%TicketType{}, ...], 456)
+      {:error, "Du måste välja minst en biljett"}
   """
   def reserve_tickets(event_id, ticket_types, user_id) do
     result =
@@ -277,6 +329,44 @@ defmodule Tiki.Orders do
     end
   end
 
+  @doc """
+  Confirms an order, ie. marks it as paid. Returns the order.
+
+  ## Examples
+      iex> confirm_order(%Order{})
+      {:ok, %Order{}}
+
+      iex> confirm_order(%Order{})
+      {:error, %Ecto.Changeset{}}
+  """
+  def confirm_order(order) do
+    case update_order(order, %{status: "paid"}) do
+      {:error, changeset} ->
+        {:error, changeset}
+
+      {:ok, order} ->
+        broadcast(order.event_id, {:tickets_updated, get_availible_ticket_types(order.event_id)})
+
+        broadcast(
+          order.event_id,
+          :purchases,
+          {:order_confirmed, get_order!(order.id)}
+        )
+
+        {:ok, order}
+    end
+  end
+
+  @doc """
+  Cancels an order if it exists. Returns the order.
+
+  ## Examples
+      iex> cancel_order(%Order{})
+      {:ok, %Order{}}
+
+      iex> cancel_order(%Order{})
+      {:error, reason}
+  """
   def maybe_cancel_reservation(order) do
     multi =
       Multi.new()
@@ -310,54 +400,27 @@ defmodule Tiki.Orders do
     end
   end
 
-  defmodule TreeBuilder do
-    def build(graph, vertex) do
-      children =
-        for child <- :digraph.in_neighbours(graph, vertex) do
-          build(graph, child)
-        end
+  @doc """
+  Returns the availible ticket types for an event. Returns a list of ticket types,
+  with the number of available tickets, purchased tickets and pending tickets.
 
-      {^vertex, label} = :digraph.vertex(graph, vertex)
-
-      sum_purchased = Enum.reduce(children, 0, fn child, acc -> acc + child.purchased end)
-
-      label =
-        Map.put(label, :children, children)
-        |> Map.put(:purchased, sum_purchased + label.purchased)
-
-      :digraph.add_vertex(graph, vertex, label)
-      label
-    end
-
-    @doc """
-    Returns a map of available tickets for each batch in the tree.
-    """
-    def available(graph, node) do
-      available_helper(graph, node, :infinity)
-    end
-
-    defp available_helper(graph, vertex, count) do
-      {^vertex, label} = :digraph.vertex(graph, vertex)
-
-      count = if count == :infinity, do: :infinity, else: count
-
-      available =
-        case label.batch.max_size do
-          nil -> count
-          max_size -> min(count, max_size - label.purchased)
-        end
-
-      children = :digraph.in_neighbours(graph, vertex)
-
-      available_childs =
-        Enum.reduce(children, %{}, fn child, acc ->
-          Map.merge(acc, available_helper(graph, child, available))
-        end)
-
-      Map.merge(available_childs, %{vertex => available})
-    end
-  end
-
+  ## Examples
+      iex> get_availible_ticket_types(123)
+      [
+        %TicketType{
+          available: 10,
+          purchased: 0,
+          pending: 0,
+          ...
+        },
+        %TicketType{
+          available: 10,
+          purchased: 4,
+          pending: 2,
+          ...
+        }
+      ]
+  """
   def get_availible_ticket_types(event_id) do
     result =
       Multi.new()
@@ -379,6 +442,7 @@ defmodule Tiki.Orders do
   end
 
   defp get_availible_ticket_types_multi(multi, event_id) do
+    # Subquery for counting tickets based on status
     sub =
       from tt in TicketType,
         join: tb in assoc(tt, :ticket_batch),
@@ -391,6 +455,7 @@ defmodule Tiki.Orders do
     sub_pending = sub |> where([tt, tb, t, o], o.status == ^"pending")
     sub_purchased = sub |> where([tt, tb, t, o], o.status == ^"paid")
 
+    # Query for ticket types and their counts
     query =
       from tt in TicketType,
         join: tb in assoc(tt, :ticket_batch),
@@ -430,11 +495,13 @@ defmodule Tiki.Orders do
   end
 
   defp get_batch_tree_multi(multi, event_id) do
+    # Get the root batches
     root_batches_query =
       from tb in TicketBatch,
         where: tb.event_id == ^event_id,
         where: is_nil(tb.parent_batch_id)
 
+    # Get all batches recursively
     batches_recursion_query =
       from tb in TicketBatch,
         where: tb.event_id == ^event_id,
@@ -457,7 +524,8 @@ defmodule Tiki.Orders do
 
     Multi.all(multi, :batches, query)
     |> Multi.run(:graph, fn _repo, %{batches: batches} ->
-      # We now have an array of batches with the number of tickets purchased for each batch. We now need to build the tree.
+      # We now have an array of batches with the number of tickets purchased for
+      # each batch. We now need to build the tree.
       fake_root = %{batch: %TicketBatch{id: 0, name: "fake_root"}, purchased: 0}
 
       graph = :digraph.new()
@@ -475,25 +543,13 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  Returns the list of purchased ticket types for an event, along
-  with the number of tickets purchased for each type. Useful when
-  initializing the order GenServers.
+  Returns the orders for an event, ordered by most recent first.
+
   ## Examples
-      iex> get_purchased_ticket_types(123)
-      [%{ticket_type: %TicketType{}, purchased: 2}, ...]
+
+      iex> list_orders_for_event(event_id)
+      [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
   """
-  def get_purchased_ticket_types(event_id) do
-    query =
-      from t in Ticket,
-        right_join: tt in assoc(t, :ticket_type),
-        right_join: tb in assoc(tt, :ticket_batch),
-        where: tb.event_id == ^event_id,
-        select: %{ticket_type: tt, purchased: count(t.id)},
-        group_by: tt.id
-
-    Repo.all(query)
-  end
-
   def list_orders_for_event(event_id) do
     query =
       from o in Order,

@@ -3,7 +3,6 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
   alias Tiki.Tickets.TicketType
   alias Tiki.Tickets
-  alias Tiki.Orders.Ticket
   alias Tiki.Events
   alias Tiki.Tickets.TicketBatch
 

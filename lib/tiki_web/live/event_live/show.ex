@@ -2,7 +2,6 @@ defmodule TikiWeb.EventLive.Show do
   use TikiWeb, :live_view
 
   alias Tiki.Checkouts
-  alias Tiki.Checkouts.StripeCheckout
   alias TikiWeb.EventLive.PurchaseComponent
   alias Tiki.Events
   alias Tiki.Presence
@@ -63,7 +62,7 @@ defmodule TikiWeb.EventLive.Show do
              amount: price * 100,
              currency: "sek"
            }),
-         {:ok, stripe_ceckout} <-
+         {:ok, _stripe_ceckout} <-
            Checkouts.create_stripe_checkout(%{
              user_id: user_id,
              order_id: order_id,

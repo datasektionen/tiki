@@ -1,8 +1,6 @@
 defmodule TikiWeb.EventLive.PurchaseComponent do
   use TikiWeb, :live_component
 
-  alias Mix.Tasks.Archive.Check
-  alias Tiki.Checkouts.StripeCheckout
   alias Tiki.Checkouts
   alias TikiWeb.EventLive.PurchaseMonitor
   alias Tiki.Orders
