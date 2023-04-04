@@ -54,7 +54,8 @@ defmodule Tiki.MixProject do
       {:stripity_stripe, "~> 2.0"},
       {:httpoison, "~> 2.0"},
       {:k6, "~> 0.2.0", only: :dev, runtime: false},
-      {:tailwind_formatter, "~> 0.3.5", only: :dev, runtime: false}
+      {:tailwind_formatter, "~> 0.3.5", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false}
     ]
   end
 

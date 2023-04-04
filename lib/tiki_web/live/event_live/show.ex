@@ -59,18 +59,7 @@ defmodule TikiWeb.EventLive.Show do
 
   @impl true
   def handle_info({:create_stripe_payment_intent, order_id, user_id, price}, socket) do
-    with {:ok, intent} <-
-           Stripe.PaymentIntent.create(%{
-             amount: price * 100,
-             currency: "sek"
-           }),
-         {:ok, _stripe_ceckout} <-
-           Checkouts.create_stripe_checkout(%{
-             user_id: user_id,
-             order_id: order_id,
-             price: price * 100,
-             payment_intent_id: intent.id
-           }) do
+    with {:ok, intent} <- Checkouts.create_stripe_payment_intent(order_id, user_id, price) do
       send_update(PurchaseComponent,
         id: socket.assigns.event.id,
         action: {:stripe_intent, intent}

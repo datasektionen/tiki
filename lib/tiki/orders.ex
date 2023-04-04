@@ -390,7 +390,9 @@ defmodule Tiki.Orders do
       |> Multi.delete_all(:delete_tickets, fn %{order: order} ->
         from t in Ticket, where: t.order_id == ^order.id
       end)
-      |> Multi.delete(:delete_order, fn %{order: order} -> order end)
+      |> Multi.update(:set_order_failed, fn %{order: order} ->
+        change_order(order, %{status: :cancelled})
+      end)
 
     result = multi |> Repo.transaction()
 

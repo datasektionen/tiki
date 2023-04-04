@@ -102,6 +102,52 @@ defmodule Tiki.Checkouts do
     StripeCheckout.changeset(stripe_checkout, attrs)
   end
 
+  @doc """
+  Creates a stripe payment intent with the stripe API,
+  and creates a stripe checkout in the database. Returns the intent.any()
+
+  ## Examples
+
+      iex> create_stripe_payment_intent(1, 1, 10000)
+      {:ok, %Stripe.PaymentIntent{}}
+
+      iex> create_stripe_payment_intent(1, 1, 10000)
+      {:error, %Stripe.Error{}}
+  """
+  def create_stripe_payment_intent(order_id, user_id, price) do
+    with {:ok, intent} <-
+           Stripe.PaymentIntent.create(%{
+             amount: price * 100,
+             currency: "sek"
+           }),
+         {:ok, _stripe_ceckout} <-
+           create_stripe_checkout(%{
+             user_id: user_id,
+             order_id: order_id,
+             price: price * 100,
+             payment_intent_id: intent.id
+           }) do
+      {:ok, intent}
+    else
+      {:error, err} -> {:error, err}
+    end
+  end
+
+  @doc """
+  Confirms a stripe payment intent with the stripe API,
+  and updates the stripe checkout in the database. Returns the order.
+
+  ## Examples
+
+      iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
+      {:ok, %Order{}}
+
+      iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
+      {:error, "Order not found"}
+
+      iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
+      {:error, "Payment intent status is not succeeded"}
+  """
   def confirm_stripe_payment(intent_id) do
     query =
       from(stc in StripeCheckout,
@@ -116,12 +162,11 @@ defmodule Tiki.Checkouts do
             id: ^intent_id,
             currency: currency,
             payment_method: pm
-          }} <-
-           Stripe.PaymentIntent.retrieve(intent_id, %{}),
+          }} <- Stripe.PaymentIntent.retrieve(intent_id, %{}),
          checkout <- Repo.get_by!(StripeCheckout, payment_intent_id: intent_id),
          {:ok, _} <-
            update_stripe_checkout(checkout, %{
-             status: "succeeded",
+             status: status,
              payment_method_id: pm,
              currency: currency
            }) do
