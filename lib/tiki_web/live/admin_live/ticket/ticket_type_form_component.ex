@@ -1,4 +1,4 @@
-defmodule TikiWeb.AdminLive.Event.TicketTypeFormComponent do
+defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
   use TikiWeb, :live_component
 
   alias Tiki.Tickets

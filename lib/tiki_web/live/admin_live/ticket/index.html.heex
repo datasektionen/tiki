@@ -1,0 +1,56 @@
+<div class="my-8">
+  <div class="mb-4 flex flex-row items-center justify-between">
+    <div>
+      <h2 class="mb-2 text-lg font-bold">Biljettyper</h2>
+      <div class="text-sm text-gray-700">Här visas biljettyper och batches.</div>
+    </div>
+
+    <div class="flex flex-row justify-end gap-2">
+      <.link patch={~p"/admin/events/#{@event}/batches/new"}>
+        <.button>Ny batch</.button>
+      </.link>
+
+      <.link patch={~p"/admin/events/#{@event}/ticket-types/new"}>
+        <.button>Ny biljettyp</.button>
+      </.link>
+    </div>
+  </div>
+
+  <div class="mt-4 mb-4 flex flex-col gap-4">
+    <.ticket_batch :for={batch <- @batches} batch={batch} />
+  </div>
+</div>
+
+<.modal
+  :if={@live_action in [:edit_batch, :new_batch]}
+  id="batch-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/events/#{@event}/tickets")}
+>
+  <.live_component
+    module={TikiWeb.AdminLive.Ticket.BatchFormComponent}
+    id={@batch.id || :new}
+    title={@page_title}
+    action={@live_action}
+    batch={@batch}
+    batches={@event.ticket_batches}
+    patch={~p"/admin/events/#{@event}/tickets"}
+  />
+</.modal>
+
+<.modal
+  :if={@live_action in [:edit_ticket_type, :new_ticket_type]}
+  id="ticket-type-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/events/#{@event}/tickets")}
+>
+  <.live_component
+    module={TikiWeb.AdminLive.Ticket.TicketTypeFormComponent}
+    id={@ticket_type.id || :new}
+    title={@page_title}
+    action={@live_action}
+    ticket_type={@ticket_type}
+    batches={@event.ticket_batches}
+    patch={~p"/admin/events/#{@event}/tickets"}
+  />
+</.modal>

@@ -1,4 +1,4 @@
-defmodule TikiWeb.AdminLive.Event.BatchFormComponent do
+defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
   use TikiWeb, :live_component
 
   alias Tiki.Tickets

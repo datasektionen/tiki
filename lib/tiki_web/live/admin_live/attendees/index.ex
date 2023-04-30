@@ -7,12 +7,14 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   def mount(%{"id" => event_id}, _sesison, socket) do
     event = Events.get_event!(event_id)
     tickets = Orders.list_tickets_for_event(event_id)
+    num_tickets = Enum.count(tickets)
 
     if connected?(socket), do: Orders.subscribe(event_id, :purchases)
 
     {:ok,
      socket
      |> assign(event: event)
+     |> assign(num_tickets: num_tickets)
      |> stream(:tickets, tickets)}
   end
 
@@ -28,7 +30,10 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   def render(assigns) do
     ~H"""
-    <h2 class="mb-2 text-xl font-bold">Sålda biljetter</h2>
+    <div class="border-b pb-4">
+      <h2 class="mb-1 text-xl font-bold">Sålda biljetter</h2>
+      <div class="text-sm text-gray-600">Totalt <%= @num_tickets %> biljetter</div>
+    </div>
     <ul id="tickets" phx-update="stream" role="list" class="divide-y divide-gray-100">
       <.ticket_card :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
     </ul>
