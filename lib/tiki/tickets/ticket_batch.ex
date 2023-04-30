@@ -23,5 +23,17 @@ defmodule Tiki.Tickets.TicketBatch do
     ticket_batch
     |> cast(attrs, [:name, :min_size, :max_size, :event_id, :parent_batch_id])
     |> validate_required([:name])
+    |> validate_not_equal(:id, :parent_batch_id)
+  end
+
+  defp validate_not_equal(changeset, a, b, opts \\ []) do
+    a_val = fetch_field(changeset, a)
+    b_val = fetch_field(changeset, b)
+
+    if a_val == b_val do
+      add_error(changeset, a, "#{a} must not be equal to #{b}")
+    else
+      changeset
+    end
   end
 end

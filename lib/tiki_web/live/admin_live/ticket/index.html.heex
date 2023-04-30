@@ -16,7 +16,7 @@
     </div>
   </div>
 
-  <div class="mt-4 mb-4 flex flex-col gap-4">
+  <div id="batch-root" class="mt-4 mb-4 flex flex-col gap-4" phx-hook="Sortable" data-batch="none">
     <.ticket_batch :for={batch <- @batches} batch={batch} />
   </div>
 </div>

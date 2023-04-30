@@ -13,13 +13,9 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
 
   @impl true
   def handle_params(%{"id" => event_id} = params, _session, socket) do
-    event = Events.get_event!(event_id, preload_ticket_types: true)
-    batches = get_batch_graph(event.ticket_batches)
-
     {:noreply,
      socket
-     |> assign(:batches, batches)
-     |> assign(:event, event)
+     |> assign_graph(event_id)
      |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -51,6 +47,36 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     socket
     |> assign(:page_title, "New Ticket type")
     |> assign(:ticket_type, %TicketType{})
+  end
+
+  def handle_event("drop", %{"batch" => batch_id, "to" => %{"batch" => parent_batch_id}}, socket) do
+    ticket_batch = Tickets.get_ticket_batch!(batch_id)
+
+    parent_batch_id =
+      if parent_batch_id == "none", do: nil, else: String.to_integer(parent_batch_id)
+
+    if parent_batch_id == ticket_batch.id do
+      {:noreply, socket}
+    else
+      Tickets.update_ticket_batch(ticket_batch, %{"parent_batch_id" => parent_batch_id})
+
+      {:noreply, assign_graph(socket, socket.assigns.event.id)}
+    end
+  end
+
+  def handle_event("drop", %{"ticketType" => tt_id, "to" => %{"batch" => batch_id}}, socket) do
+    ticket_type = Tickets.get_ticket_type!(tt_id)
+
+    Tickets.update_ticket_type(ticket_type, %{"ticket_batch_id" => batch_id})
+
+    {:noreply, assign_graph(socket, socket.assigns.event.id)}
+  end
+
+  defp assign_graph(socket, event_id) do
+    event = Events.get_event!(event_id, preload_ticket_types: true)
+    batches = get_batch_graph(event.ticket_batches)
+
+    assign(socket, event: event, batches: batches)
   end
 
   defp get_batch_graph(batches) do
@@ -93,10 +119,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
 
   defp ticket_batch(assigns) do
     ~H"""
-    <div
-      class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm"
-      id={"batch-zone-#{@batch.batch.id}"}
-    >
+    <div class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm" data-batch={@batch.batch.id}>
       <.link
         patch={~p"/admin/events/#{@batch.batch.event_id}/batches/#{@batch.batch}/edit"}
         phx-click={JS.push_focus()}
@@ -110,12 +133,18 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
           max <%= @batch.batch.max_size %>
         </div>
       </.link>
-      <div :if={@batch.batch.ticket_types != []} class="flex flex-col">
-        <div
+      <div
+        :if={@batch.batch.ticket_types != []}
+        class="flex flex-col"
+        id={"batch-zone-#{@batch.batch.id}"}
+        phx-hook="Sortable"
+        data-batch={@batch.batch.id}
+      >
+        <.link
           :for={ticket_type <- @batch.batch.ticket_types}
           patch={~p"/admin/events/#{@batch.batch.event_id}/ticket-types/#{ticket_type}/edit"}
-          class="flex cursor-move flex-row justify-between px-4 py-4 hover:bg-white"
-          draggable="true"
+          class="flex flex-row justify-between px-4 py-4 hover:bg-white"
+          data-ticket-type={ticket_type.id}
         >
           <div class="inline-flex items-center gap-2">
             <.icon name="hero-ticket-mini h-4 w-4" />
@@ -124,13 +153,29 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
           <div class="text-gray-500">
             <%= ticket_type.price %> kr
           </div>
+        </.link>
+      </div>
+
+      <div
+        :if={@batch.children != []}
+        class="my-4 mr-2 flex flex-col gap-4"
+        id={"batch-zone-#{@batch.batch.id}-children"}
+        phx-hook="Sortable"
+        data-batch={@batch.batch.id}
+      >
+        <div :for={child <- @batch.children} class="ml-4" data-batch={child.batch.id}>
+          <.ticket_batch batch={child} level={@level + 1} />
         </div>
       </div>
 
-      <div :if={@batch.children != []} class="my-4 mr-2 flex flex-col gap-4">
-        <div :for={child <- @batch.children} class="ml-4">
-          <.ticket_batch batch={child} level={@level + 1} />
-        </div>
+      <div
+        :if={@batch.batch.ticket_types == [] && @batch.children == []}
+        id={"batch-zone-#{@batch.batch.id}-no-children"}
+        phx-hook="Sortable"
+        data-batch={@batch.batch.id}
+        class="flex flex-col justify-between px-4 py-4 hover:bg-white"
+      >
+        Inga biljetter
       </div>
     </div>
     """
