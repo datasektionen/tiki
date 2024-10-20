@@ -80,3 +80,6 @@ config :swoosh, :api_client, false
 
 # Config for Stripe
 config :stripity_stripe, api_key: System.get_env("STRIPE_API_KEY")
+
+# Path to install SaladUI components
+config :salad_ui, components_path: Path.join(File.cwd!(), "lib/tiki_web/components")

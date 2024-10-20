@@ -31,7 +31,7 @@
   </:action>
 </.table>
 
-<.modal
+<.dialog
   :if={@live_action in [:new, :edit]}
   id="event-modal"
   show
@@ -45,4 +45,4 @@
     event={@event}
     patch={~p"/admin/events"}
   />
-</.modal>
+</.dialog>

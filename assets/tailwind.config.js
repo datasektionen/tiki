@@ -13,12 +13,12 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        brand: "#FD4F00",
-      }
+      colors: require("./tailwind.colors.json")
     },
   },
   plugins: [
+    require("@tailwindcss/typography"),
+    require("tailwindcss-animate"),
     require("@tailwindcss/forms"),
     // Allows prefixing tailwind classes with LiveView classes to add rules
     // only when LiveView classes are applied, for example:
@@ -39,7 +39,8 @@ module.exports = {
       let icons = [
         ["", "/24/outline"],
         ["-solid", "/24/solid"],
-        ["-mini", "/20/solid"]
+        ["-mini", "/20/solid"],
+        ["-micro", "/16/solid"]
       ]
       icons.forEach(([suffix, dir]) => {
         fs.readdirSync(path.join(iconsDir, dir)).map(file => {

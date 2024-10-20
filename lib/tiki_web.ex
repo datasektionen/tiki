@@ -87,6 +87,11 @@ defmodule TikiWeb do
       import TikiWeb.CoreComponents
       import TikiWeb.Gettext
 
+      import TikiWeb.Component.Table
+      import TikiWeb.Component.Button
+      import TikiWeb.Component.Input
+      import TikiWeb.Component.Dialog
+
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
 

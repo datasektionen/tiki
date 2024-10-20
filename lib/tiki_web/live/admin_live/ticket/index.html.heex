@@ -21,7 +21,7 @@
   </div>
 </div>
 
-<.modal
+<.dialog
   :if={@live_action in [:edit_batch, :new_batch]}
   id="batch-modal"
   show
@@ -36,9 +36,9 @@
     batches={@event.ticket_batches}
     patch={~p"/admin/events/#{@event}/tickets"}
   />
-</.modal>
+</.dialog>
 
-<.modal
+<.dialog
   :if={@live_action in [:edit_ticket_type, :new_ticket_type]}
   id="ticket-type-modal"
   show
@@ -53,4 +53,4 @@
     batches={@event.ticket_batches}
     patch={~p"/admin/events/#{@event}/tickets"}
   />
-</.modal>
+</.dialog>

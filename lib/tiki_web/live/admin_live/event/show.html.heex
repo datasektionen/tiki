@@ -59,7 +59,7 @@
 
 <.back navigate={~p"/admin/events"}>Tillbaka to events</.back>
 
-<.modal
+<.dialog
   :if={@live_action == :edit}
   id="event-modal"
   show
@@ -73,9 +73,9 @@
     event={@event}
     patch={~p"/admin/events/#{@event}"}
   />
-</.modal>
+</.dialog>
 
-<.modal
+<.dialog
   :if={@live_action in [:edit_batch, :new_batch]}
   id="batch-modal"
   show
@@ -90,9 +90,9 @@
     batches={@event.ticket_batches}
     patch={~p"/admin/events/#{@event}"}
   />
-</.modal>
+</.dialog>
 
-<.modal
+<.dialog
   :if={@live_action in [:edit_ticket_type, :new_ticket_type]}
   id="ticket-type-modal"
   show
@@ -107,4 +107,4 @@
     batches={@event.ticket_batches}
     patch={~p"/admin/events/#{@event}"}
   />
-</.modal>
+</.dialog>

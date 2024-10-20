@@ -1,57 +1,16 @@
-<!-- Mobile sidebar -->
-<div id="mobile-sidebar-container" class="fixed inset-0 z-40 lg:hidden" style="display: none;">
-  <div class="fixed inset-0 bg-gray-600 bg-opacity-75" phx-click={hide_mobile_sidebar()}></div>
-  <div
-    id="mobile-sidebar"
-    class="relative flex min-h-screen w-full max-w-xs flex-1 flex-col bg-gray-900 py-4"
-  >
-    <div class="mt-2 mb-6 flex w-full flex-row items-center justify-between px-6">
-      <div class="inline-flex items-center gap-2 fill-white">
-        <.tiki_logo class="h-5 w-5" />
-        <span class="text-xl font-bold text-white">Tiki</span>
-      </div>
-
-      <button
-        type="button"
-        id="hide-mobile-sidebar"
-        class="h-6 w-6"
-        phx-click={hide_mobile_sidebar()}
-      >
-        <.icon name="hero-chevron-left" class="h-full w-full text-white" />
-      </button>
+<!-- Main -->
+<div class="bg-background flex min-h-screen w-full flex-col">
+  <!-- sidebar -->
+  <aside class="bg-muted/40 fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r sm:flex">
+    <.sidebar event={Map.get(assigns, :event, nil)} />
+  </aside>
+  <div class="flex flex-col sm:gap-4 sm:py-4 sm:pl-72">
+    <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
+      <.nav_header event={Map.get(assigns, :event, nil)} />
     </div>
-    <.sidebar active_tab={@active_tab} event={Map.get(assigns, :event, nil)} />
-  </div>
-</div>
-<!-- Static sidebar for desktop -->
-<div class="fixed top-0 hidden h-screen self-start lg:flex lg:flex-grow">
-  <div class="flex w-64 flex-col border-r bg-gray-900 py-8">
-    <div class="flex items-center px-6 pb-4">
-      <.link
-        navigate={~p"/admin"}
-        class="flex h-10 flex-row items-center gap-2 fill-white text-white hover:fill-gray-200 hover:text-gray-200"
-      >
-        <.tiki_logo class="mr-1 h-6 w-6" />
-        <span class="text-2xl font-bold">Tiki</span>
-      </.link>
-    </div>
-    <!-- Sidebar -->
-    <div class="mt-2 flex h-0 flex-1 flex-col overflow-y-auto">
-      <.sidebar active_tab={@active_tab} event={Map.get(assigns, :event, nil)} />
-    </div>
-  </div>
-</div>
-<div class="flex w-screen flex-col lg:pl-64">
-  <div class="flex w-full flex-row items-center justify-between border-b px-4 py-4 lg:hidden lg:px-6 lg:py-4">
-    <div class="flex flex-row items-center lg:hidden">
-      <button id="show-mobile-sidebar" phx-click={show_mobile_sidebar()}>
-        <.icon name="hero-bars-3-center-left" class="h-6 w-6" />
-      </button>
-    </div>
-  </div>
-  <div class="px-4 pt-2 pb-8 lg:px-8">
-    <.flash_group flash={@flash} />
-    <%= @inner_content %>
+    <main class="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6">
+      <%= @inner_content %>
+    </main>
   </div>
 </div>
 
