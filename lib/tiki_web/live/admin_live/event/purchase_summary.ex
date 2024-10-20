@@ -17,6 +17,17 @@ defmodule TikiWeb.AdminLive.Event.PurchaseSummary do
     {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
   end
 
+  def handle_params(_params, _url, socket) do
+    {:noreply,
+     assign(socket, :page_title, "Live-status")
+     |> assign(:breadcrumbs, [
+       {"Dashboard", ~p"/admin"},
+       {"Events", ~p"/admin/events"},
+       {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
+       {"Live-status", ~p"/admin/events/#{socket.assigns.event.id}/attendees"}
+     ])}
+  end
+
   def handle_info({:tickets_updated, ticket_types}, socket) do
     {:noreply, assign(socket, ticket_types: ticket_types)}
   end

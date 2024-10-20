@@ -3,5 +3,5 @@
   subdirectories: ["priv/*/migrations"],
   plugins: [TailwindFormatter.MultiFormatter],
   inputs: ["*.{heex,ex,exs}", "{config,lib,test}/**/*.{heex,ex,exs}", "priv/*/seeds.exs"],
-  locals_without_parens: [tab: 2]
+  locals_without_parens: [tab: 3]
 ]

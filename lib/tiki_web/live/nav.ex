@@ -8,17 +8,17 @@ defmodule TikiWeb.Nav.ActiveTab do
     end
   end
 
-  defmacro tab(module, tab_val) do
+  defmacro tab(module, action, tab_val) do
     quote do
-      @tabs [{TikiWeb.unquote(module), unquote(tab_val)} | @tabs]
+      @tabs [{TikiWeb.unquote(module), unquote(action), unquote(tab_val)} | @tabs]
     end
   end
 
   defmacro __before_compile__(_env) do
     quote do
-      def active_tab(view) do
-        Enum.reduce_while(@tabs, nil, fn {mod, tab}, found ->
-          case view == mod do
+      def active_tab(view, action) do
+        Enum.reduce_while(@tabs, nil, fn {mod, act, tab}, found ->
+          case view == mod && action == act do
             true -> {:halt, tab}
             false -> {:cont, found}
           end
@@ -33,19 +33,31 @@ defmodule TikiWeb.Nav do
   use TikiWeb.Nav.ActiveTab
 
   def on_mount(:default, _params, _session, socket) do
-    {:cont,
-     socket
-     |> Phoenix.LiveView.attach_hook(:active_tab, :handle_params, &set_active_tab/3)}
+    {:cont, Phoenix.LiveView.attach_hook(socket, :nav_info, :handle_params, &set_nav/3)}
   end
 
-  tab AdminLive.Dashboard.Index, :dashboard
-  tab AdminLive.Event.Show, :event_overview
-  tab AdminLive.Event.PurchaseSummary, :live_purchases
-  tab AdminLive.Attendees.Index, :attendees
+  tab AdminLive.Dashboard.Index, :index, :all_events
+  tab AdminLive.Event.Index, :new, :new_event
 
-  defp set_active_tab(_params, _url, socket) do
-    active_tab = active_tab(socket.view)
+  tab AdminLive.Event.PurchaseSummary, :index, :live_status
 
-    {:cont, assign(socket, active_tab: active_tab)}
+  tab AdminLive.Event.Show, :show, :event_overview
+  tab AdminLive.Event.Show, :edit, :event_overview
+
+  tab AdminLive.Attendees.Index, :index, :event_attendees
+  tab AdminLive.Attendees.Show, :show, :event_attendees
+
+  tab AdminLive.Ticket.Index, :index, :event_tickets
+  tab AdminLive.Ticket.Index, :new_batch, :event_tickets
+  tab AdminLive.Ticket.Index, :edit_batch, :event_tickets
+  tab AdminLive.Ticket.Index, :new_ticket_type, :event_tickets
+  tab AdminLive.Ticket.Index, :edit_ticket_type, :event_tickets
+
+  defp set_nav(params, url, socket) do
+    active_tab = active_tab(socket.view, socket.assigns.live_action)
+
+    {:cont,
+     assign(socket, active_tab: active_tab)
+     |> assign_new(:breadcrumbs, fn -> [{socket.assigns.live_action, url}] end)}
   end
 end

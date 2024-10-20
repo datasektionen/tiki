@@ -12,10 +12,17 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   end
 
   @impl true
-  def handle_params(%{"id" => event_id} = params, _session, socket) do
+  def handle_params(%{"id" => event_id} = params, session, socket) do
+    socket = assign_graph(socket, event_id)
+
     {:noreply,
      socket
-     |> assign_graph(event_id)
+     |> assign(:breadcrumbs, [
+       {"Dashboard", ~p"/admin"},
+       {"Events", ~p"/admin/events"},
+       {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
+       {"Biljetter", ~p"/admin/events/#{socket.assigns.event.id}/tickets"}
+     ])
      |> apply_action(socket.assigns.live_action, params)}
   end
 

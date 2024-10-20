@@ -18,6 +18,17 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
      |> stream(:tickets, tickets)}
   end
 
+  def handle_params(_params, _url, socket) do
+    {:noreply,
+     assign(socket, :page_title, "Besökare")
+     |> assign(:breadcrumbs, [
+       {"Dashboard", ~p"/admin"},
+       {"Events", ~p"/admin/events"},
+       {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
+       {"Besökare", ~p"/admin/events/#{socket.assigns.event.id}/attendees"}
+     ])}
+  end
+
   def handle_info({:order_confirmed, order}, socket) do
     socket =
       Enum.reduce(order.tickets, socket, fn ticket, acc ->

@@ -23,7 +23,15 @@ defmodule TikiWeb.AdminLive.Event.Show do
      |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def apply_action(socket, :show, _params), do: assign(socket, :page_title, "Show Event")
+  def apply_action(socket, :show, _params) do
+    assign(socket, :page_title, "Show Event")
+    |> assign(:breadcrumbs, [
+      {"Dashboard", ~p"/admin"},
+      {"Events", ~p"/admin/events"},
+      {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"}
+    ])
+  end
+
   def apply_action(socket, :edit, _params), do: assign(socket, :page_title, "Edit Event")
 
   def apply_action(socket, :edit_batch, %{"batch_id" => batch_id}) do

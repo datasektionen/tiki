@@ -29,6 +29,10 @@ defmodule TikiWeb.AdminLive.Event.Index do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Events")
+    |> assign(:breadcrumbs, [
+      {"Dashboard", ~p"/admin"},
+      {"Events", ~p"/admin/events"}
+    ])
     |> assign(:event, nil)
   end
 

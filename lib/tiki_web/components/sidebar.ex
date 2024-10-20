@@ -9,7 +9,6 @@ defmodule TikiWeb.Component.Sidebar do
   import TikiWeb.Component.Breadcrumb
 
   attr :event, :map, default: nil
-  attr :active_tab, :atom, default: nil
   attr :mobile, :boolean, default: false
 
   def sidebar(%{event: nil} = assigns) do
@@ -22,33 +21,27 @@ defmodule TikiWeb.Component.Sidebar do
             <.icon name="hero-calendar-days" class="h-4 w-4" />
             <span>Event</span>
           </:header>
-          <.sidebar_item text="Alla event" to={~p"/admin/events"} active={@active_tab == :dashboard} />
-          <.sidebar_item
-            text="Nytt event"
-            to={~p"/admin/events/new"}
-            active={@active_tab == :settings}
-          />
+          <:item text="Alla event" to={~p"/admin/"} active={@active_tab == :all_events} />
+          <:item text="Nytt event" to={~p"/admin/events/new"} active={@active_tab == :new_event} />
         </.sidebar_group>
         <.sidebar_group>
           <:header>
             <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
             <span>Inställningar</span>
           </:header>
-          <.sidebar_item text="Alla event" to={~p"/admin/events"} active={@active_tab == :dashboard} />
-          <.sidebar_item
-            text="Nytt event"
-            to={~p"/admin/events/new"}
-            active={@active_tab == :settings}
-          />
+          <:item text="Grupper" to="" />
+          <:item text="Betalningar" to="" />
         </.sidebar_group>
       </div>
     </nav>
     <!-- sidebar footer -->
-    <.sidebar_footer mobile={@mobile} />
+    <.sidebar_footer mobile={@mobile} current_user={@current_user} />
     """
   end
 
   def sidebar(assigns) do
+    dbg(assigns.active_tab)
+
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
       <.sidebar_header mobile={@mobile} />
@@ -65,16 +58,16 @@ defmodule TikiWeb.Component.Sidebar do
             <.icon name="hero-user-group" class="h-4 w-4" />
             <span>Anmälningar</span>
           </:header>
-          <.sidebar_item
+          <:item
             text="Besökare"
             to={~p"/admin/events/#{@event}/attendees"}
-            active={@active_tab == :attendees}
+            active={@active_tab == :event_attendees}
           />
 
-          <.sidebar_item
+          <:item
             text="Live-status"
             to={~p"/admin/events/#{@event}/purchase-summary"}
-            active={@active_tab == :live_purchases}
+            active={@active_tab == :live_status}
           />
         </.sidebar_group>
 
@@ -84,10 +77,10 @@ defmodule TikiWeb.Component.Sidebar do
             <span>Biljetter</span>
           </:header>
 
-          <.sidebar_item
+          <:item
             text="Biljetttyper"
             to={~p"/admin/events/#{@event}/tickets"}
-            active={@active_tab == :tickets}
+            active={@active_tab == :event_tickets}
           />
         </.sidebar_group>
 
@@ -105,29 +98,21 @@ defmodule TikiWeb.Component.Sidebar do
             <.icon name="hero-calendar-days" class="h-4 w-4" />
             <span>Event</span>
           </:header>
-          <.sidebar_item text="Alla event" to={~p"/admin/events"} active={@active_tab == :dashboard} />
-          <.sidebar_item
-            text="Nytt event"
-            to={~p"/admin/events/new"}
-            active={@active_tab == :settings}
-          />
+          <:item text="Alla event" to={~p"/admin/"} active={@active_tab == :all_events} />
+          <:item text="Nytt event" to={~p"/admin/events/new"} active={@active_tab == :new_event} />
         </.sidebar_group>
         <.sidebar_group>
           <:header>
             <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
             <span>Inställningar</span>
           </:header>
-          <.sidebar_item text="Alla event" to={~p"/admin/events"} active={@active_tab == :dashboard} />
-          <.sidebar_item
-            text="Nytt event"
-            to={~p"/admin/events/new"}
-            active={@active_tab == :settings}
-          />
+          <:item text="Grupper" to="" />
+          <:item text="Betalningar" to="" />
         </.sidebar_group>
       </div>
     </nav>
     <!-- sidebar footer -->
-    <.sidebar_footer mobile={@mobile} />
+    <.sidebar_footer mobile={@mobile} current_user={@current_user} />
     """
   end
 
@@ -144,38 +129,40 @@ defmodule TikiWeb.Component.Sidebar do
         <.sheet_content id="sidebar-sheet" side="left" class="w-72 p-0">
           <:custom_close_btn></:custom_close_btn>
           <div class="flex h-full flex-col">
-            <.sidebar event={Map.get(assigns, :event, nil)} mobile />
+            <%= sidebar(assigns) %>
           </div>
         </.sheet_content>
       </.sheet>
       <span class="bg-foreground/40 w-[1px] mx-4 h-4 shrink-0 sm:hidden" />
-      <div class="md:hidden">
-        <.breadcrumb_list>
-          <.breadcrumb_item class="text-sm">
-            <.breadcrumb_page>All Products</.breadcrumb_page>
-          </.breadcrumb_item>
-        </.breadcrumb_list>
-      </div>
-      <.breadcrumb class="hidden md:flex">
-        <.breadcrumb_list>
-          <.breadcrumb_item>
-            <.breadcrumb_link>
-              Dashboard
-            </.breadcrumb_link>
-          </.breadcrumb_item>
-          <.breadcrumb_separator />
-          <.breadcrumb_item>
-            <.breadcrumb_link href="#">
-              Products
-            </.breadcrumb_link>
-          </.breadcrumb_item>
-          <.breadcrumb_separator />
-          <.breadcrumb_item>
-            <.breadcrumb_page>All Products</.breadcrumb_page>
-          </.breadcrumb_item>
-        </.breadcrumb_list>
-      </.breadcrumb>
+      <.breadcrumbs active_tab={@active_tab} breadcrumbs={@breadcrumbs} />
     </header>
+    """
+  end
+
+  defp breadcrumbs(assigns) do
+    len = Enum.count(assigns.breadcrumbs)
+
+    ~H"""
+    <div class="md:hidden">
+      <.breadcrumb_list>
+        <.breadcrumb_item class="text-sm">
+          <.breadcrumb_page class="text-foreground">
+            <% {name, _} = List.last(assigns.breadcrumbs) %>
+            <%= name %>
+          </.breadcrumb_page>
+        </.breadcrumb_item>
+      </.breadcrumb_list>
+    </div>
+    <.breadcrumb class="hidden md:flex">
+      <.breadcrumb_list>
+        <.breadcrumb_item :for={{{name, url}, index} <- Enum.with_index(@breadcrumbs)}>
+          <.breadcrumb_link navigate={url} class={index == len - 1 && "text-foreground"}>
+            <%= name %>
+          </.breadcrumb_link>
+          <.breadcrumb_separator :if={index != len - 1} />
+        </.breadcrumb_item>
+      </.breadcrumb_list>
+    </.breadcrumb>
     """
   end
 
@@ -225,8 +212,8 @@ defmodule TikiWeb.Component.Sidebar do
               class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
             />
             <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-semibold">Adrian Salamon</span>
-              <span class="truncate text-xs">asalamon@kth.se</span>
+              <span class="truncate font-semibold">Namn Namnsson</span>
+              <span class="truncate text-xs"><%= @current_user.email %></span>
             </div>
             <.icon name="hero-chevron-up-down" class="ml-auto h-5 w-5" />
           </button>
@@ -253,10 +240,12 @@ defmodule TikiWeb.Component.Sidebar do
               </.menu_item>
               <.menu_separator />
 
-              <.menu_item>
-                <.icon name="hero-arrow-left-end-on-rectangle" class="mr-2 h-4 w-4" />
-                <span>Logga ut</span>
-              </.menu_item>
+              <.link href={~p"/users/log_out"} method="delete">
+                <.menu_item class="hover:cursor-pointer">
+                  <.icon name="hero-arrow-left-end-on-rectangle" class="mr-2 h-4 w-4" />
+                  <span>Logga ut</span>
+                </.menu_item>
+              </.link>
             </.menu_group>
           </.menu>
         </.dropdown_menu_content>
@@ -268,11 +257,14 @@ defmodule TikiWeb.Component.Sidebar do
   slot :inner_block, required: true
   slot :header, required: true
   attr :expanded, :boolean, default: false
+  slot :item
 
   defp sidebar_group(assigns) do
+    assigns = assign(assigns, item: Enum.map(assigns.item, &Map.put_new(&1, :active, false)))
+
     ~H"""
     <div class="flex flex-col gap-1">
-      <details name={nil} class="group peer" open={@expanded}>
+      <details name={nil} class="group peer" open={Enum.any?(@item, & &1.active)}>
         <summary class="cursor-pointer list-none">
           <div class="flex flex-row items-center gap-2 rounded-md p-2 text-sm hover:bg-accent">
             <%= render_slot(@header) %>
@@ -285,8 +277,17 @@ defmodule TikiWeb.Component.Sidebar do
       </details>
       <div class="grid-rows-[0fr] transition-[grid-template-rows] grid duration-100 peer-open:grid-rows-[1fr]">
         <div class="overflow-hidden">
-          <div class="ml-4 flex flex-col gap-1 border-l px-2 text-sm">
-            <%= render_slot(@inner_block) %>
+          <div class="flex flex-col gap-1 px-2 text-sm">
+            <div class="ml-2 border-l">
+              <%= for item <- @item do %>
+                <div class={[
+                  "border-l flex flex-col pl-2 -ml-[1px]",
+                  item.active && "border-foreground"
+                ]}>
+                  <.sidebar_item text={item.text} to={item.to} active={item.active || nil} />
+                </div>
+              <% end %>
+            </div>
           </div>
         </div>
       </div>
@@ -301,9 +302,15 @@ defmodule TikiWeb.Component.Sidebar do
 
   defp sidebar_item(assigns) do
     ~H"""
-    <.link navigate={@to} class="inline-flex items-center gap-2 rounded-md p-2 hover:bg-accent">
+    <.link
+      navigate={@to}
+      class={[
+        "text-foreground inline-flex items-center gap-2 rounded-md p-2 hover:bg-accent",
+        @active && "font-medium"
+      ]}
+    >
       <.icon :if={@icon} name={@icon} class="h-4 w-4" />
-      <div class="text-foreground text-sm"><%= @text %></div>
+      <div class="text-sm"><%= @text %></div>
     </.link>
     """
   end
