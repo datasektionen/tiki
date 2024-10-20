@@ -81,7 +81,12 @@ defmodule TikiWeb.Component.Sheet do
 
   attr :id, :string, required: true, doc: "The id of the sheet"
   attr :class, :string, default: nil
-  attr :side, :string, default: "right", values: ~w(left right top bottom), doc: "The side of the sheet"
+
+  attr :side, :string,
+    default: "right",
+    values: ~w(left right top bottom),
+    doc: "The side of the sheet"
+
   slot :inner_block, required: true
   slot :custom_close_btn, required: false
 

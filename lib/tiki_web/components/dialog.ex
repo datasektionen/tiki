@@ -51,7 +51,7 @@ defmodule TikiWeb.Component.Dialog do
       phx-remove={JS.exec("phx-hide-modal", to: "##{@id}")}
       phx-show-modal={show_modal(@id)}
       phx-hide-modal={hide_modal(@id)}
-      class="relative z-50 hidden group/dialog"
+      class="group/dialog relative z-50 hidden"
     >
       <div
         id={"#{@id}-bg"}
@@ -95,7 +95,7 @@ defmodule TikiWeb.Component.Dialog do
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
                 stroke="currentColor"
-                class="w-5 h-5"
+                class="h-5 w-5"
               >
                 <path d="M18 6 6 18"></path>
                 <path d="m6 6 12 12"></path>

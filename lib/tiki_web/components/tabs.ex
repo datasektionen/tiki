@@ -117,7 +117,9 @@ defmodule TikiWeb.Component.Tabs do
   defp show_tab(root, value) do
     %JS{}
     |> JS.set_attribute({"data-state", ""}, to: "##{root} .tabs-trigger[data-state=active]")
-    |> JS.set_attribute({"data-state", "active"}, to: "##{root} .tabs-trigger[data-target=#{value}]")
+    |> JS.set_attribute({"data-state", "active"},
+      to: "##{root} .tabs-trigger[data-target=#{value}]"
+    )
     |> JS.hide(to: "##{root} .tabs-content:not([value=#{value}])")
     |> JS.show(to: "##{root} .tabs-content[value=#{value}]")
   end
