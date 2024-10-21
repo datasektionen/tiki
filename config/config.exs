@@ -62,6 +62,11 @@ config :phoenix, :json_library, Jason
 # SaladUI use tails to properly merge Tailwind CSS classes
 config :tails, colors_file: Path.join(File.cwd!(), "assets/tailwind.colors.json")
 
+config :tiki, Oidcc,
+  issuer: "https://logout.datasektionen.se/op",
+  client_id: System.get_env("OIDC_CLIENT_ID"),
+  client_secret: System.get_env("OIDC_CLIENT_SECRET")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

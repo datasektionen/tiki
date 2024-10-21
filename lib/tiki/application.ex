@@ -17,9 +17,14 @@ defmodule Tiki.Application do
       Tiki.Presence,
       # Start Finch
       {Finch, name: Tiki.Finch},
+      TikiWeb.EventLive.PurchaseMonitor,
+      {Oidcc.ProviderConfiguration.Worker,
+       %{
+         issuer: Application.fetch_env!(:tiki, Oidcc)[:issuer],
+         name: Tiki.OpenIdConfigurationProvider
+       }},
       # Start the Endpoint (http/https)
-      TikiWeb.Endpoint,
-      TikiWeb.EventLive.PurchaseMonitor
+      TikiWeb.Endpoint
 
       # Start a worker by calling: Tiki.Worker.start_link(arg)
       # {Tiki.Worker, arg}

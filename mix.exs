@@ -56,7 +56,9 @@ defmodule Tiki.MixProject do
       {:k6, "~> 0.2.0", only: :dev, runtime: false},
       {:tailwind_formatter, "~> 0.3.5", only: :dev, runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
-      {:salad_ui, git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev]}
+      {:phx_gen_oidcc, "~> 0.1.0", only: :dev, runtime: false},
+      {:salad_ui, git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev]},
+      {:oidcc_plug, "~> 0.1.0"}
     ]
   end
 

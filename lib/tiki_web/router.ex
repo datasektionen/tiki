@@ -116,4 +116,11 @@ defmodule TikiWeb.Router do
       live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
   end
+
+  scope("/oidcc", TikiWeb) do
+    pipe_through :browser
+    get "/authorize", OidccController, :authorize
+    get "/callback", OidccController, :callback
+    post "/callback", OidccController, :callback
+  end
 end
