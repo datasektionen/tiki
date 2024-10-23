@@ -20,5 +20,5 @@ defmodule TikiWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext, otp_app: :tiki
+  use Gettext.Backend, otp_app: :tiki
 end

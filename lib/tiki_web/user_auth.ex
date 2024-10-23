@@ -90,8 +90,29 @@ defmodule TikiWeb.UserAuth do
   """
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
-    user = user_token && Accounts.get_user_by_session_token(user_token)
+
+    user =
+      user_token &&
+        Accounts.get_user_by_session_token(user_token)
+        |> dbg()
+
+    conn =
+      if user do
+        put_session(conn, :locale, user.locale)
+      else
+        conn
+      end
+
     assign(conn, :current_user, user)
+  end
+
+  @doc """
+  Fetches the locale from the session and assigns it to the socket.
+  """
+  def fetch_locale(conn, _opts) do
+    locale = get_session(conn, :locale) || "en"
+    Gettext.put_locale(TikiWeb.Gettext, locale)
+    conn
   end
 
   defp ensure_user_token(conn) do
@@ -201,7 +222,9 @@ defmodule TikiWeb.UserAuth do
   defp mount_current_user(session, socket) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
-        Accounts.get_user_by_session_token(user_token)
+        user = Accounts.get_user_by_session_token(user_token)
+        Gettext.put_locale(TikiWeb.Gettext, user.locale)
+        user
       end
     end)
   end

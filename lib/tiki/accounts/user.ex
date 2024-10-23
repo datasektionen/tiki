@@ -3,10 +3,16 @@ defmodule Tiki.Accounts.User do
   import Ecto.Changeset
 
   schema "users" do
+    field :first_name, :string
+    field :last_name, :string
+    field :full_name, :string
     field :email, :string
+
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
+
+    field :locale, :string
     field :role, Ecto.Enum, values: [:user, :admin], default: :user
 
     timestamps()
@@ -155,5 +161,13 @@ defmodule Tiki.Accounts.User do
     else
       add_error(changeset, :current_password, "is not valid")
     end
+  end
+
+  @doc """
+  A changeset for updating user preferences.
+  """
+  def user_data_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:first_name, :last_name, :locale])
   end
 end

@@ -85,7 +85,7 @@ defmodule TikiWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import TikiWeb.CoreComponents
-      import TikiWeb.Gettext
+      use Gettext, backend: TikiWeb.Gettext
 
       import TikiWeb.Component.Table
       import TikiWeb.Component.Button

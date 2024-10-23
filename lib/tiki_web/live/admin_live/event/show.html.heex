@@ -3,7 +3,7 @@
   <:subtitle>Detta är ett event i databasen.</:subtitle>
 
   <:actions>
-    <.link patch={~p"/admin/events/#{@event}/show/edit"} phx-click={JS.push_focus()}>
+    <.link patch={~p"/admin/events/#{@event}/settings"} phx-click={JS.push_focus()}>
       <.button>Redigera event</.button>
     </.link>
   </:actions>

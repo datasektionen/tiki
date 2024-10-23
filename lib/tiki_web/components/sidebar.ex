@@ -8,6 +8,8 @@ defmodule TikiWeb.Component.Sidebar do
   import TikiWeb.Component.Sheet
   import TikiWeb.Component.Breadcrumb
 
+  alias Tiki.Events.Event
+
   attr :event, :map, default: nil
   attr :mobile, :boolean, default: false
 
@@ -19,18 +21,26 @@ defmodule TikiWeb.Component.Sidebar do
         <.sidebar_group>
           <:header>
             <.icon name="hero-calendar-days" class="h-4 w-4" />
-            <span>Event</span>
+            <span><%= gettext("Event") %></span>
           </:header>
-          <:item text="Alla event" to={~p"/admin/"} active={@active_tab == :all_events} />
-          <:item text="Nytt event" to={~p"/admin/events/new"} active={@active_tab == :new_event} />
+          <:item
+            text={gettext("All events")}
+            to={~p"/admin/events"}
+            active={@active_tab == :all_events}
+          />
+          <:item
+            text={gettext("New event")}
+            to={~p"/admin/events/new"}
+            active={@active_tab == :new_event}
+          />
         </.sidebar_group>
         <.sidebar_group>
           <:header>
             <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
-            <span>Inställningar</span>
+            <span><%= gettext("Settings") %></span>
           </:header>
-          <:item text="Grupper" to="" />
-          <:item text="Betalningar" to="" />
+          <:item text={gettext("Groups")} to="" />
+          <:item text={gettext("Payments")} to="" />
         </.sidebar_group>
       </div>
     </nav>
@@ -39,33 +49,36 @@ defmodule TikiWeb.Component.Sidebar do
     """
   end
 
-  def sidebar(assigns) do
-    dbg(assigns.active_tab)
+  def sidebar(%{event: %Event{id: nil}} = assigns) do
+    assign(assigns, event: nil)
+    |> sidebar()
+  end
 
+  def sidebar(assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
       <.sidebar_header mobile={@mobile} />
       <div class="flex w-full flex-col py-4">
-        <.sidebar_label>Event</.sidebar_label>
+        <.sidebar_label><%= gettext("Event") %></.sidebar_label>
         <.sidebar_item
           icon="hero-calendar-days"
-          text="Översikt"
+          text={gettext("Overview")}
           to={~p"/admin/events/#{@event}"}
           active={@active_tab == :event_overview}
         />
         <.sidebar_group>
           <:header>
             <.icon name="hero-user-group" class="h-4 w-4" />
-            <span>Anmälningar</span>
+            <span><%= gettext("Registrations") %></span>
           </:header>
           <:item
-            text="Besökare"
+            text={gettext("Attendees")}
             to={~p"/admin/events/#{@event}/attendees"}
             active={@active_tab == :event_attendees}
           />
 
           <:item
-            text="Live-status"
+            text={gettext("Live status")}
             to={~p"/admin/events/#{@event}/purchase-summary"}
             active={@active_tab == :live_status}
           />
@@ -74,7 +87,7 @@ defmodule TikiWeb.Component.Sidebar do
         <.sidebar_group>
           <:header>
             <.icon name="hero-ticket" class="h-4 w-4" />
-            <span>Biljetter</span>
+            <span><%= gettext("Tickets") %></span>
           </:header>
 
           <:item
@@ -92,22 +105,30 @@ defmodule TikiWeb.Component.Sidebar do
         />
       </div>
       <div class="flex w-full flex-col py-4">
-        <.sidebar_label>Allmänt</.sidebar_label>
+        <.sidebar_label><%= gettext("General") %></.sidebar_label>
         <.sidebar_group>
           <:header>
             <.icon name="hero-calendar-days" class="h-4 w-4" />
-            <span>Event</span>
+            <span><%= gettext("Event") %></span>
           </:header>
-          <:item text="Alla event" to={~p"/admin/"} active={@active_tab == :all_events} />
-          <:item text="Nytt event" to={~p"/admin/events/new"} active={@active_tab == :new_event} />
+          <:item
+            text={gettext("All events")}
+            to={~p"/admin/events"}
+            active={@active_tab == :all_events}
+          />
+          <:item
+            text={gettext("New event")}
+            to={~p"/admin/events/new"}
+            active={@active_tab == :new_event}
+          />
         </.sidebar_group>
         <.sidebar_group>
           <:header>
             <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
-            <span>Inställningar</span>
+            <span><%= gettext("Settings") %></span>
           </:header>
-          <:item text="Grupper" to="" />
-          <:item text="Betalningar" to="" />
+          <:item text={gettext("Groups")} to="" />
+          <:item text={gettext("Payments")} to="" />
         </.sidebar_group>
       </div>
     </nav>
@@ -118,7 +139,7 @@ defmodule TikiWeb.Component.Sidebar do
 
   def nav_header(assigns) do
     ~H"""
-    <header class="bg-background sticky top-0 z-10 flex h-14 items-center sm:static sm:h-auto sm:border-0 sm:bg-transparent">
+    <header class="bg-background flex h-auto items-center sm:bg-transparent">
       <.sheet>
         <.sheet_trigger target="sidebar-sheet">
           <button class="flex flex-row items-center sm:hidden">
@@ -212,7 +233,7 @@ defmodule TikiWeb.Component.Sidebar do
               class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
             />
             <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-semibold">Namn Namnsson</span>
+              <span class="truncate font-semibold"><%= @current_user.full_name %></span>
               <span class="truncate text-xs"><%= @current_user.email %></span>
             </div>
             <.icon name="hero-chevron-up-down" class="ml-auto h-5 w-5" />
@@ -227,23 +248,25 @@ defmodule TikiWeb.Component.Sidebar do
                   class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
                 />
                 <div class="grid flex-1 text-left text-sm leading-tight">
-                  <span class="truncate font-semibold">Adrian Salamon</span>
-                  <span class="truncate text-xs font-normal">asalamon@kth.se</span>
+                  <span class="truncate font-semibold"><%= @current_user.full_name %></span>
+                  <span class="truncate text-xs font-normal"><%= @current_user.email %></span>
                 </div>
               </div>
             </.menu_label>
             <.menu_separator />
             <.menu_group>
-              <.menu_item>
-                <.icon name="hero-cog-6-tooth" class="mr-2 h-4 w-4" />
-                <span>Inställningar</span>
-              </.menu_item>
+              <.link navigate={~p"/admin/user-settings"}>
+                <.menu_item class="hover:cursor-pointer">
+                  <.icon name="hero-cog-6-tooth" class="mr-2 h-4 w-4" />
+                  <span><%= gettext("Settings") %></span>
+                </.menu_item>
+              </.link>
               <.menu_separator />
 
               <.link href={~p"/users/log_out"} method="delete">
                 <.menu_item class="hover:cursor-pointer">
                   <.icon name="hero-arrow-left-end-on-rectangle" class="mr-2 h-4 w-4" />
-                  <span>Logga ut</span>
+                  <span><%= gettext("Log out") %></span>
                 </.menu_item>
               </.link>
             </.menu_group>

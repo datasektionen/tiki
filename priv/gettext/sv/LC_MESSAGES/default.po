@@ -1,0 +1,167 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: sv\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/tiki_web/components/core_components.ex:90
+#, elixir-autogen, elixir-format
+msgid "Attempting to reconnect"
+msgstr "Försöker återuppkopplla"
+
+#: lib/tiki_web/components/core_components.ex:81
+#, elixir-autogen, elixir-format
+msgid "Error!"
+msgstr "Fel!"
+
+#: lib/tiki_web/components/core_components.ex:102
+#, elixir-autogen, elixir-format
+msgid "Hang in there while we get back on track"
+msgstr "Vänta en stund"
+
+#: lib/tiki_web/live/admin_live/user/settings.ex:25
+#, elixir-autogen, elixir-format
+msgid "Modify user settings"
+msgstr "Ändra användarinställningar"
+
+#: lib/tiki_web/components/core_components.ex:97
+#, elixir-autogen, elixir-format
+msgid "Something went wrong!"
+msgstr "Något gick fel!"
+
+#: lib/tiki_web/components/core_components.ex:80
+#, elixir-autogen, elixir-format
+msgid "Success!"
+msgstr "Lyckades!"
+
+#: lib/tiki_web/components/core_components.ex:85
+#, elixir-autogen, elixir-format
+msgid "We can't find the internet"
+msgstr "Internetuppkoppling mislyckades"
+
+#: lib/tiki_web/components/core_components.ex:60
+#, elixir-autogen, elixir-format
+msgid "close"
+msgstr "stäng"
+
+#: lib/tiki_web/components/sidebar.ex:27
+#: lib/tiki_web/components/sidebar.ex:115
+#: lib/tiki_web/live/admin_live/event/index.ex:57
+#, elixir-autogen, elixir-format
+msgid "All events"
+msgstr "Alla events"
+
+#: lib/tiki_web/components/sidebar.ex:75
+#, elixir-autogen, elixir-format
+msgid "Attendees"
+msgstr "Besökare"
+
+#: lib/tiki_web/components/sidebar.ex:24
+#: lib/tiki_web/components/sidebar.ex:62
+#: lib/tiki_web/components/sidebar.ex:112
+#, elixir-autogen, elixir-format
+msgid "Event"
+msgstr "Event"
+
+#: lib/tiki_web/components/sidebar.ex:108
+#, elixir-autogen, elixir-format
+msgid "General"
+msgstr "Allmänt"
+
+#: lib/tiki_web/components/sidebar.ex:42
+#: lib/tiki_web/components/sidebar.ex:130
+#, elixir-autogen, elixir-format
+msgid "Groups"
+msgstr "Grupper"
+
+#: lib/tiki_web/components/sidebar.ex:81
+#, elixir-autogen, elixir-format
+msgid "Live status"
+msgstr "Livestatus"
+
+#: lib/tiki_web/components/sidebar.ex:32
+#: lib/tiki_web/components/sidebar.ex:120
+#: lib/tiki_web/live/admin_live/event/index.ex:71
+#, elixir-autogen, elixir-format
+msgid "New event"
+msgstr "Nytt event"
+
+#: lib/tiki_web/components/sidebar.ex:65
+#, elixir-autogen, elixir-format
+msgid "Overview"
+msgstr "Översikt"
+
+#: lib/tiki_web/components/sidebar.ex:43
+#: lib/tiki_web/components/sidebar.ex:131
+#, elixir-autogen, elixir-format
+msgid "Payments"
+msgstr "Betalningar"
+
+#: lib/tiki_web/components/sidebar.ex:72
+#, elixir-autogen, elixir-format
+msgid "Registrations"
+msgstr "Anmälningar"
+
+#: lib/tiki_web/components/sidebar.ex:40
+#: lib/tiki_web/components/sidebar.ex:128
+#: lib/tiki_web/components/sidebar.ex:261
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr "Inställningar"
+
+#: lib/tiki_web/components/sidebar.ex:90
+#, elixir-autogen, elixir-format
+msgid "Tickets"
+msgstr "Biljetter"
+
+#: lib/tiki_web/components/sidebar.ex:269
+#, elixir-autogen, elixir-format
+msgid "Log out"
+msgstr "Logga ut"
+
+#: lib/tiki_web/live/admin_live/user/settings.ex:22
+#, elixir-autogen, elixir-format
+msgid "User settings"
+msgstr "Användarinställningar"
+
+#: lib/tiki_web/live/admin_live/event/index.ex:83
+#, elixir-autogen, elixir-format
+msgid "Date"
+msgstr "Datum"
+
+#: lib/tiki_web/live/admin_live/event/index.ex:82
+#, elixir-autogen, elixir-format
+msgid "Location"
+msgstr "Plats"
+
+#: lib/tiki_web/live/admin_live/event/index.ex:81
+#, elixir-autogen, elixir-format
+msgid "Name"
+msgstr "Namn"
+
+#: lib/tiki_web/live/admin_live/event/index.ex:65
+#, elixir-autogen, elixir-format
+msgid "Search events"
+msgstr "Sök efter event"
+
+#: lib/tiki_web/live/admin_live/user/settings.ex:30
+#, elixir-autogen, elixir-format
+msgid "First name"
+msgstr "Förnamn"
+
+#: lib/tiki_web/live/admin_live/user/settings.ex:31
+#, elixir-autogen, elixir-format
+msgid "Last name"
+msgstr "Efternamn"
+
+#: lib/tiki_web/live/admin_live/user/settings.ex:34
+#, elixir-autogen, elixir-format
+msgid "Prefered language"
+msgstr "Föredraget språk"

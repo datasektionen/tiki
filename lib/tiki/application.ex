@@ -18,11 +18,11 @@ defmodule Tiki.Application do
       # Start Finch
       {Finch, name: Tiki.Finch},
       TikiWeb.EventLive.PurchaseMonitor,
-      {Oidcc.ProviderConfiguration.Worker,
-       %{
-         issuer: Application.fetch_env!(:tiki, Oidcc)[:issuer],
-         name: Tiki.OpenIdConfigurationProvider
-       }},
+      # {Oidcc.ProviderConfiguration.Worker,
+      #  %{
+      #    issuer: Application.fetch_env!(:tiki, Oidcc)[:issuer],
+      #    name: Tiki.OpenIdConfigurationProvider
+      #  }},
       # Start the Endpoint (http/https)
       TikiWeb.Endpoint
 

@@ -52,7 +52,7 @@ defmodule TikiWeb.Component.Input do
 
   attr :rest, :global,
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
-                multiple pattern placeholder readonly required rows size step)
+                multiple pattern placeholder readonly required rows size step class)
 
   def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     prepare_assign(assigns)
@@ -66,8 +66,8 @@ defmodule TikiWeb.Component.Input do
       end)
 
     ~H"""
-    <div>
-      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
+    <div class={@rest[:class]}>
+      <label class="text-muted-foreground flex items-center gap-4 text-sm leading-6">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -88,12 +88,12 @@ defmodule TikiWeb.Component.Input do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div>
+    <div class={@rest[:class]}>
       <.label for={@id}><%= @label %></.label>
       <select
         id={@id}
         name={@name}
-        class="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        class="border-input bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         multiple={@multiple}
         {@rest}
       >
@@ -107,13 +107,13 @@ defmodule TikiWeb.Component.Input do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div>
+    <div class={@rest[:class]}>
       <.label for={@id}><%= @label %></.label>
       <textarea
         id={@id}
         name={@name}
         class={[
-          "min-h-[80px] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "mt-2 min-h-[80px] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
@@ -127,7 +127,7 @@ defmodule TikiWeb.Component.Input do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div>
+    <div class={@rest[:class]}>
       <.label for={@id}><%= @label %></.label>
       <input
         type={@type}
@@ -135,13 +135,46 @@ defmodule TikiWeb.Component.Input do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "mt-2 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
         {@rest}
       />
       <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  attr :id, :any, default: nil
+  attr :name, :any
+  attr :value, :any
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :rest, :global,
+    include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
+                multiple pattern placeholder readonly required rows size step class)
+
+  def leading_logo_input(assigns) do
+    ~H"""
+    <div class={@rest[:class]}>
+      <div class="relative flex w-full">
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <.icon name="hero-magnifying-glass" class="text-muted-foreground h-5 w-5" />
+        </div>
+        <span class="w-full">
+          <input
+            type="text"
+            name={@name}
+            id={@id}
+            value={@value}
+            class="bg-background border-input ring-offset-background block h-10 w-full rounded-md border px-3 py-2 pl-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            {@rest}
+          />
+        </span>
+      </div>
     </div>
     """
   end

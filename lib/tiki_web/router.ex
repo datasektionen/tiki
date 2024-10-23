@@ -11,6 +11,7 @@ defmodule TikiWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    plug :fetch_locale
   end
 
   pipeline :api do
@@ -74,33 +75,55 @@ defmodule TikiWeb.Router do
       live "/events/:id/purchase", EventLive.Show, :purchase
     end
 
-    scope "/admin" do
+    scope "/admin", AdminLive do
       live_session :require_admin_user,
-        on_mount: [{TikiWeb.UserAuth, :ensure_admin}, TikiWeb.Nav],
+        on_mount: [
+          {TikiWeb.UserAuth, :ensure_admin},
+          TikiWeb.Nav
+        ],
         layout: {TikiWeb.Layouts, :admin} do
-        live "/", AdminLive.Dashboard.Index, :index
+        live "/", Dashboard.Index, :index
 
-        live "/events", AdminLive.Event.Index, :index
-        live "/events/new", AdminLive.Event.Index, :new
-        live "/events/:id/edit", AdminLive.Event.Index, :edit
+        live "/user-settings", User.Settings, :index
 
-        live "/events/:id/purchase-summary", AdminLive.Event.PurchaseSummary, :index
+        # General event stuff
+        live "/events", Event.Index, :index
+        live "/events/new", Event.Index, :new
 
-        live "/events/:id", AdminLive.Event.Show, :show
-        live "/events/:id/show/edit", AdminLive.Event.Show, :edit
+        scope "/events/:id" do
+          # Event dashboard
+          live "/", Event.Show, :show
 
-        live "/events/:id/attendees", AdminLive.Attendees.Index, :index
-        live "/events/:id/tickets/:ticket_id", AdminLive.Attendees.Show, :show
+          # Event settings
+          live "/settings", Event.Show, :edit
 
-        live "/events/:id/tickets", AdminLive.Ticket.Index, :index
+          # Tickets overview
+          live "/tickets", Ticket.Index, :index
 
-        live "/events/:id/batches/new", AdminLive.Ticket.Index, :new_batch
-        live "/events/:id/batches/:batch_id/edit", AdminLive.Ticket.Index, :edit_batch
-        live "/events/:id/ticket-types/new", AdminLive.Ticket.Index, :new_ticket_type
+          # Ticket type settings
+          live "/ticket-types/new", Ticket.Index, :new_ticket_type
 
-        live "/events/:id/ticket-types/:ticket_type_id/edit",
-             AdminLive.Ticket.Index,
-             :edit_ticket_type
+          live "/ticket-types/:ticket_type_id/edit",
+               Ticket.Index,
+               :edit_ticket_type
+
+          # Ticket batch settings
+          live "/tickets/batches/new", Ticket.Index, :new_batch
+          live "/tickets/batches/:batch_id/edit", Ticket.Index, :edit_batch
+
+          # Check-in
+          live "/check-in", Ticket.Checkin, :index
+
+          # Registrations
+          live "/attendees", Attendees.Index, :index
+          live "/queue", Attendees.Index, :index
+          live "/contact", Contact.Index, :index
+          live "/attendees/:ticket_id", Attendees.Show, :show
+
+          # Forms
+          live "/forms", Forms.Index, :index
+          live "/forms/:id/edit", Forms.Edit
+        end
       end
     end
   end

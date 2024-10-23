@@ -3,6 +3,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
 
   alias Tiki.Events
   alias Tiki.Events.Event
+  import TikiWeb.Component.Card
 
   @impl true
   def mount(_params, _session, socket) do
@@ -47,5 +48,53 @@ defmodule TikiWeb.AdminLive.Event.Index do
     {:ok, _} = Events.delete_event(event)
 
     {:noreply, stream_delete(socket, :events, event)}
+  end
+
+  def render(assigns) do
+    ~H"""
+    <div class="grid gap-4 sm:grid-cols-6">
+      <.card_title>
+        <%= gettext("All events") %>
+      </.card_title>
+
+      <div class="flex flex-row items-center gap-2 sm:col-span-6">
+        <.leading_logo_input
+          name="a"
+          value=""
+          type="text"
+          placeholder={gettext("Search events")}
+          class="max-w-xl flex-1"
+        />
+
+        <div>
+          <select
+            id="sort"
+            name="sort"
+            class="border-input bg-background ring-offset-background flex-0 h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <%= Phoenix.HTML.Form.options_for_select(["Sort by date"], "") %>
+          </select>
+        </div>
+
+        <.button navigate={~p"/admin/events/new"} class="ml-auto">
+          <%= gettext("New event") %>
+        </.button>
+      </div>
+
+      <.card class="sm:col-span-6">
+        <.table
+          id="events"
+          rows={@streams.events}
+          row_click={fn {_id, event} -> JS.navigate(~p"/admin/events/#{event}") end}
+        >
+          <:col :let={{_id, event}} label={gettext("Name")}><%= event.name %></:col>
+          <:col :let={{_id, event}} label={gettext("Location")}><%= event.location %></:col>
+          <:col :let={{_id, event}} label={gettext("Date")}>
+            <%= Calendar.strftime(event.event_date, "%Y-%m-%d") %>
+          </:col>
+        </.table>
+      </.card>
+    </div>
+    """
   end
 end

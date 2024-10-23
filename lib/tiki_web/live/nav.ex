@@ -29,6 +29,10 @@ defmodule TikiWeb.Nav.ActiveTab do
 end
 
 defmodule TikiWeb.Nav do
+  @moduledoc """
+  This plug sets the :active_tag, based on the current
+  module and live_action.
+  """
   use TikiWeb, :html
   use TikiWeb.Nav.ActiveTab
 
@@ -36,7 +40,9 @@ defmodule TikiWeb.Nav do
     {:cont, Phoenix.LiveView.attach_hook(socket, :nav_info, :handle_params, &set_nav/3)}
   end
 
-  tab AdminLive.Dashboard.Index, :index, :all_events
+  tab AdminLive.Dashboard.Index, :index, :dashboard
+  tab AdminLive.Event.Index, :index, :all_events
+
   tab AdminLive.Event.Index, :new, :new_event
 
   tab AdminLive.Event.PurchaseSummary, :index, :live_status

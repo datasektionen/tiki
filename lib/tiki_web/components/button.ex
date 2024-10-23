@@ -20,8 +20,19 @@ defmodule TikiWeb.Component.Button do
 
   attr :size, :string, values: ~w(default sm lg icon), default: "default"
   attr :rest, :global, include: ~w(disabled form name value)
+  attr :navigate, :any, default: nil
 
   slot :inner_block, required: true
+
+  def button(%{navigate: to} = assigns) when not is_nil(to) do
+    ~H"""
+    <.link navigate={to} class={@class}>
+      <.button type={@type} variant={@variant} size={@size} @rest>
+        <%= render_slot(@inner_block) %>
+      </.button>
+    </.link>
+    """
+  end
 
   def button(assigns) do
     assigns = assign(assigns, :variant_class, variant(assigns))
