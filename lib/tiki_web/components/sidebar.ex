@@ -150,7 +150,7 @@ defmodule TikiWeb.Component.Sidebar do
         <.sheet_content id="sidebar-sheet" side="left" class="w-72 p-0">
           <:custom_close_btn></:custom_close_btn>
           <div class="flex h-full flex-col">
-            <%= sidebar(assigns) %>
+            <%= sidebar(Map.put(assigns, :mobile, true)) %>
           </div>
         </.sheet_content>
       </.sheet>

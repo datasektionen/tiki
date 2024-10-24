@@ -21,7 +21,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   def handle_params(_params, _url, socket) do
     {:noreply,
      assign(socket, :page_title, "Besökare")
-     |> assign(:breadcrumbs, [
+     |> assign_breadcrumbs([
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},

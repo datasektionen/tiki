@@ -17,7 +17,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
 
     {:noreply,
      socket
-     |> assign(:breadcrumbs, [
+     |> assign_breadcrumbs([
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},

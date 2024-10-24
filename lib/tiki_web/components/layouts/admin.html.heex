@@ -8,11 +8,11 @@
     <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
       <%= nav_header(assigns) %>
     </div>
-    <main class="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6">
+    <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-4">
       <%= @inner_content %>
     </main>
   </div>
 </div>
 
-<.flash flash={@flash} kind={:info} />
-<.flash flash={@flash} kind={:error} />
+<.flash_group flash={@flash} kind={:info} />
+<.flash_group flash={@flash} kind={:error} />

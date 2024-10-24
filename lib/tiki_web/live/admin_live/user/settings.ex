@@ -11,7 +11,7 @@ defmodule TikiWeb.AdminLive.User.Settings do
   end
 
   def handle_params(_params, url, socket) do
-    {:noreply, assign(socket, breadcrumbs: [{"User settings", url}])}
+    {:noreply, assign_breadcrumbs(socket, [{"User settings", url}])}
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
@@ -22,8 +22,16 @@ defmodule TikiWeb.AdminLive.User.Settings do
 
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.update_user_data(socket.assigns.current_user, user_params) do
-      {:ok, _} -> {:noreply, redirect(socket, to: "/admin")}
-      {:error, changeset} -> {:noreply, assign(socket, form: to_form(changeset))}
+      {:ok, user} ->
+        Gettext.put_locale(TikiWeb.Gettext, user.locale)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("User settings updated"))
+         |> redirect(to: "/admin")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
 

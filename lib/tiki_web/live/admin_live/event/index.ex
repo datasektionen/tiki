@@ -23,14 +23,14 @@ defmodule TikiWeb.AdminLive.Event.Index do
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Event")
+    |> assign(:page_title, gettext("New Event"))
     |> assign(:event, %Event{})
   end
 
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Events")
-    |> assign(:breadcrumbs, [
+    |> assign_breadcrumbs([
       {"Dashboard", ~p"/admin"},
       {"Events", ~p"/admin/events"}
     ])
@@ -53,7 +53,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
   def render(assigns) do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">
-      <.card_title>
+      <.card_title class="sm:col-span-6">
         <%= gettext("All events") %>
       </.card_title>
 

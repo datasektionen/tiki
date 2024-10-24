@@ -88,14 +88,14 @@ defmodule TikiWeb.Router do
 
         # General event stuff
         live "/events", Event.Index, :index
-        live "/events/new", Event.Index, :new
+        live "/events/new", Event.Edit, :new
 
         scope "/events/:id" do
           # Event dashboard
           live "/", Event.Show, :show
 
           # Event settings
-          live "/settings", Event.Show, :edit
+          live "/edit", Event.Edit, :edit
 
           # Tickets overview
           live "/tickets", Ticket.Index, :index

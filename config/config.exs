@@ -59,6 +59,8 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :salad_ui, :error_translator_function, {TikiWeb.CoreComponents, :translate_error}
+
 # SaladUI use tails to properly merge Tailwind CSS classes
 config :tails, colors_file: Path.join(File.cwd!(), "assets/tailwind.colors.json")
 

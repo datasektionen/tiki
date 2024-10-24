@@ -16,7 +16,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Dashboard")
-    |> assign(:breadcrumbs, [
+    |> assign_breadcrumbs([
       {"Dashboard", ~p"/admin"}
     ])
   end

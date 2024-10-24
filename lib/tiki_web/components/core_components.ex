@@ -51,15 +51,20 @@ defmodule TikiWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <p :if={@title} class="flex items-center gap-1.5 text-sm font-semibold leading-6">
+      <div class="flex flex-row items-start gap-2 leading-none tracking-tight">
         <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-4 w-4" />
         <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" />
-        <%= @title %>
-      </p>
-      <p class="mt-2 text-sm leading-5"><%= msg %></p>
-      <button type="button" class="group absolute top-1 right-1 p-2" aria-label={gettext("close")}>
-        <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
-      </button>
+
+        <div class="flex flex-col">
+          <div :if={@title} class="mb-1 font-medium leading-none tracking-tight"><%= @title %></div>
+          <div class="text-sm">
+            <%= msg %>
+          </div>
+        </div>
+        <button type="button" class="ml-auto" aria-label={gettext("close")}>
+          <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
+        </button>
+      </div>
     </div>
     """
   end
@@ -132,7 +137,7 @@ defmodule TikiWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="mt-8 space-y-4 bg-white">
+      <div class="mt-6 space-y-4 bg-white">
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
           <%= render_slot(action, f) %>
@@ -181,12 +186,16 @@ defmodule TikiWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
-      <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+    <header class={[
+      "pb-4 border-b",
+      @actions != [] && "flex items-center justify-between gap-6",
+      @class
+    ]}>
+      <div class="flex flex-col gap-2">
+        <h1 class="text-2xl font-semibold leading-none tracking-tight">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
+        <p :if={@subtitle != []} class="text-muted-foreground text-sm">
           <%= render_slot(@subtitle) %>
         </p>
       </div>

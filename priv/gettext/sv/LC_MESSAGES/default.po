@@ -11,42 +11,42 @@ msgstr ""
 "Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/tiki_web/components/core_components.ex:90
+#: lib/tiki_web/components/core_components.ex:95
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr "Försöker återuppkopplla"
 
-#: lib/tiki_web/components/core_components.ex:81
+#: lib/tiki_web/components/core_components.ex:86
 #, elixir-autogen, elixir-format
 msgid "Error!"
 msgstr "Fel!"
 
-#: lib/tiki_web/components/core_components.ex:102
+#: lib/tiki_web/components/core_components.ex:107
 #, elixir-autogen, elixir-format
 msgid "Hang in there while we get back on track"
 msgstr "Vänta en stund"
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:25
+#: lib/tiki_web/live/admin_live/user/settings.ex:46
 #, elixir-autogen, elixir-format
 msgid "Modify user settings"
 msgstr "Ändra användarinställningar"
 
-#: lib/tiki_web/components/core_components.ex:97
+#: lib/tiki_web/components/core_components.ex:102
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr "Något gick fel!"
 
-#: lib/tiki_web/components/core_components.ex:80
+#: lib/tiki_web/components/core_components.ex:85
 #, elixir-autogen, elixir-format
 msgid "Success!"
 msgstr "Lyckades!"
 
-#: lib/tiki_web/components/core_components.ex:85
+#: lib/tiki_web/components/core_components.ex:90
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
-msgstr "Internetuppkoppling mislyckades"
+msgstr "Ingen uppkoppling"
 
-#: lib/tiki_web/components/core_components.ex:60
+#: lib/tiki_web/components/core_components.ex:64
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr "stäng"
@@ -88,7 +88,8 @@ msgstr "Livestatus"
 
 #: lib/tiki_web/components/sidebar.ex:32
 #: lib/tiki_web/components/sidebar.ex:120
-#: lib/tiki_web/live/admin_live/event/index.ex:71
+#: lib/tiki_web/live/admin_live/event/edit.ex:28
+#: lib/tiki_web/live/admin_live/event/index.ex:80
 #, elixir-autogen, elixir-format
 msgid "New event"
 msgstr "Nytt event"
@@ -126,22 +127,22 @@ msgstr "Biljetter"
 msgid "Log out"
 msgstr "Logga ut"
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:22
+#: lib/tiki_web/live/admin_live/user/settings.ex:43
 #, elixir-autogen, elixir-format
 msgid "User settings"
 msgstr "Användarinställningar"
 
-#: lib/tiki_web/live/admin_live/event/index.ex:83
+#: lib/tiki_web/live/admin_live/event/index.ex:92
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr "Datum"
 
-#: lib/tiki_web/live/admin_live/event/index.ex:82
+#: lib/tiki_web/live/admin_live/event/index.ex:91
 #, elixir-autogen, elixir-format
 msgid "Location"
 msgstr "Plats"
 
-#: lib/tiki_web/live/admin_live/event/index.ex:81
+#: lib/tiki_web/live/admin_live/event/index.ex:90
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "Namn"
@@ -151,17 +152,45 @@ msgstr "Namn"
 msgid "Search events"
 msgstr "Sök efter event"
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:30
+#: lib/tiki_web/live/admin_live/user/settings.ex:50
 #, elixir-autogen, elixir-format
 msgid "First name"
 msgstr "Förnamn"
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:31
+#: lib/tiki_web/live/admin_live/user/settings.ex:51
 #, elixir-autogen, elixir-format
 msgid "Last name"
 msgstr "Efternamn"
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:34
+#: lib/tiki_web/live/admin_live/user/settings.ex:54
 #, elixir-autogen, elixir-format
 msgid "Prefered language"
 msgstr "Föredraget språk"
+
+#: lib/tiki_web/live/admin_live/user/settings.ex:60
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/user/settings.ex:30
+#, elixir-autogen, elixir-format, fuzzy
+msgid "User settings updated"
+msgstr "Användarinställningar uppdaterades"
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:17
+#, elixir-autogen, elixir-format
+msgid "Edit Event"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/index.ex:26
+#, elixir-autogen, elixir-format, fuzzy
+msgid "New Event"
+msgstr "Nytt event"
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:12
+#, elixir-autogen, elixir-format
+msgid "Use this form to manage events"
+msgstr "Använd formuläret för att hantera event"
+
+msgid "Dashboard"
+msgstr "Hem"

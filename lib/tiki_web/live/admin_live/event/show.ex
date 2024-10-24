@@ -25,7 +25,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
   def apply_action(socket, :show, _params) do
     assign(socket, :page_title, "Show Event")
-    |> assign(:breadcrumbs, [
+    |> assign_breadcrumbs([
       {"Dashboard", ~p"/admin"},
       {"Events", ~p"/admin/events"},
       {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"}

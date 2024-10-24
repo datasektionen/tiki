@@ -9,7 +9,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
     <div>
       <.header>
         <%= @title %>
-        <:subtitle>Use this form to manage event records in your database.</:subtitle>
+        <:subtitle><%= gettext("Use this form to manage events") %></:subtitle>
       </.header>
 
       <.simple_form

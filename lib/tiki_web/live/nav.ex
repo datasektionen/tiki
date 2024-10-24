@@ -64,6 +64,6 @@ defmodule TikiWeb.Nav do
 
     {:cont,
      assign(socket, active_tab: active_tab)
-     |> assign_new(:breadcrumbs, fn -> [{socket.assigns.live_action, url}] end)}
+     |> assign_new(:breadcrumbs, fn -> [{Atom.to_string(socket.assigns.live_action), url}] end)}
   end
 end

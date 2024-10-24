@@ -20,7 +20,7 @@ defmodule TikiWeb.AdminLive.Event.PurchaseSummary do
   def handle_params(_params, _url, socket) do
     {:noreply,
      assign(socket, :page_title, "Live-status")
-     |> assign(:breadcrumbs, [
+     |> assign_breadcrumbs([
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},

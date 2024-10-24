@@ -54,6 +54,7 @@ defmodule TikiWeb do
       use Phoenix.LiveView,
         layout: {TikiWeb.Layouts, :app}
 
+      import TikiWeb.LiveHelpers
       unquote(html_helpers())
     end
   end
@@ -61,6 +62,7 @@ defmodule TikiWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
+      import TikiWeb.LiveHelpers
 
       unquote(html_helpers())
     end
