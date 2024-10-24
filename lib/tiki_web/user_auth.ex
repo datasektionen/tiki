@@ -223,7 +223,11 @@ defmodule TikiWeb.UserAuth do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
         user = Accounts.get_user_by_session_token(user_token)
-        Gettext.put_locale(TikiWeb.Gettext, user.locale)
+
+        if user do
+          Gettext.put_locale(TikiWeb.Gettext, Map.get(user, :locale, "en"))
+        end
+
         user
       end
     end)

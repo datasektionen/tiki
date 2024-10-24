@@ -1,0 +1,49 @@
+# Docker-compose file for setting up dependencies for a fully working development environment
+# This file is used to start up the following services:
+# - Postgres
+# - Minio (S3 local development replacement)
+# - Imgproxy (for local development)
+# - Nyckeln under dörrmattan (login service local replacement)
+# - The Phoenix application
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - _postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - "./entrypoint.sh"
+    environment:
+      # Database stuff
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tiki_dev
+      POSTGRES_HOST: db
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+      - _elixir_build:/app/_build # So that we can have separate build files for the host and the container
+    depends_on:
+      - db
+      - minio
+      - imgproxy
+      - login
+
+volumes:
+  _postgres:
+  _elixir_build:

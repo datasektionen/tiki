@@ -1,5 +1,15 @@
 # Tiki
 
+## Setup (Docker)
+
+This is the easiest way to get the project up and running. You will need to have Docker and Docker Compose installed on your machine. Simply run:
+
+```bash
+docker-compose up
+```
+
+## Setup (Local)
+
 To start your Phoenix server:
 
   * Run `mix setup` to install and setup dependencies
