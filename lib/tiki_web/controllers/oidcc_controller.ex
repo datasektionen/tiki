@@ -33,8 +33,6 @@ defmodule TikiWeb.OidccController do
           conn,
         params
       ) do
-    IO.inspect(userinfo)
-
     conn
     |> put_session("oidcc_claims", userinfo)
     |> redirect(

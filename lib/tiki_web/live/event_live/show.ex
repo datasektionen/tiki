@@ -68,7 +68,6 @@ defmodule TikiWeb.EventLive.Show do
       {:noreply, socket}
     else
       {:error, error} ->
-        IO.inspect(error)
         {:noreply, socket}
     end
   end

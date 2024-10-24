@@ -94,7 +94,6 @@ defmodule TikiWeb.UserAuth do
     user =
       user_token &&
         Accounts.get_user_by_session_token(user_token)
-        |> dbg()
 
     conn =
       if user do
