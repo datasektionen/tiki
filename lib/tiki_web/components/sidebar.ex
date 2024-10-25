@@ -1,8 +1,6 @@
 defmodule TikiWeb.Component.Sidebar do
   use TikiWeb, :html
 
-  import TikiWeb.Component.Tooltip
-  import TikiWeb.Component.Input
   import TikiWeb.Component.DropdownMenu
   import TikiWeb.Component.Menu
   import TikiWeb.Component.Sheet
@@ -79,7 +77,7 @@ defmodule TikiWeb.Component.Sidebar do
 
           <:item
             text={gettext("Live status")}
-            to={~p"/admin/events/#{@event}/purchase-summary"}
+            to={~p"/admin/events/#{@event}/status"}
             active={@active_tab == :live_status}
           />
         </.sidebar_group>
@@ -161,7 +159,7 @@ defmodule TikiWeb.Component.Sidebar do
   end
 
   defp breadcrumbs(assigns) do
-    len = Enum.count(assigns.breadcrumbs)
+    assigns = assign(assigns, :len, Enum.count(assigns.breadcrumbs))
 
     ~H"""
     <div class="md:hidden">
@@ -177,10 +175,10 @@ defmodule TikiWeb.Component.Sidebar do
     <.breadcrumb class="hidden md:flex">
       <.breadcrumb_list>
         <.breadcrumb_item :for={{{name, url}, index} <- Enum.with_index(@breadcrumbs)}>
-          <.breadcrumb_link navigate={url} class={index == len - 1 && "text-foreground"}>
+          <.breadcrumb_link navigate={url} class={index == @len - 1 && "text-foreground"}>
             <%= name %>
           </.breadcrumb_link>
-          <.breadcrumb_separator :if={index != len - 1} />
+          <.breadcrumb_separator :if={index != @len - 1} />
         </.breadcrumb_item>
       </.breadcrumb_list>
     </.breadcrumb>
@@ -280,7 +278,12 @@ defmodule TikiWeb.Component.Sidebar do
   slot :inner_block, required: true
   slot :header, required: true
   attr :expanded, :boolean, default: false
-  slot :item
+
+  slot :item do
+    attr :text, :string, required: true
+    attr :active, :boolean
+    attr :to, :string
+  end
 
   defp sidebar_group(assigns) do
     assigns = assign(assigns, item: Enum.map(assigns.item, &Map.put_new(&1, :active, false)))

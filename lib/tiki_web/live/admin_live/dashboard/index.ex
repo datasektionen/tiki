@@ -1,8 +1,6 @@
 defmodule TikiWeb.AdminLive.Dashboard.Index do
   use TikiWeb, :live_view
 
-  import TikiWeb.Component.Card
-
   def mount(_params, _session, socket) do
     events = Tiki.Events.list_events()
 

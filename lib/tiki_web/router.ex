@@ -94,6 +94,9 @@ defmodule TikiWeb.Router do
           # Event dashboard
           live "/", Event.Show, :show
 
+          # Live status
+          live "/status", Event.Status, :index
+
           # Event settings
           live "/edit", Event.Edit, :edit
 
@@ -122,7 +125,7 @@ defmodule TikiWeb.Router do
 
           # Forms
           live "/forms", Forms.Index, :index
-          live "/forms/:id/edit", Forms.Edit
+          live "/forms/:form_id/edit", Forms.Edit
         end
       end
     end

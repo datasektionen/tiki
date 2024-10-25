@@ -67,7 +67,7 @@ defmodule TikiWeb.EventLive.Show do
 
       {:noreply, socket}
     else
-      {:error, error} ->
+      {:error, _error} ->
         {:noreply, socket}
     end
   end

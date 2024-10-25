@@ -59,7 +59,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     <li class="relative flex items-center justify-between gap-x-6 px-2 py-5 hover:bg-gray-50 sm:px-4 lg:px-6">
       <div class="min-w-0">
         <div class="flex items-start gap-x-3">
-          <.link navigate={~p"/admin/events/#{@ticket.order.event_id}/tickets/#{@ticket}"}>
+          <.link navigate={~p"/admin/events/#{@ticket.order.event_id}/attendees/#{@ticket}"}>
             <span class="absolute inset-x-0 -top-px bottom-0"></span>
             <p class="text-sm font-semibold leading-6 text-gray-900">Namn Namnsson</p>
           </.link>

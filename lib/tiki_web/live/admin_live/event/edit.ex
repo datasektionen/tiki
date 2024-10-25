@@ -8,13 +8,13 @@ defmodule TikiWeb.AdminLive.Event.Edit do
     {:ok, socket}
   end
 
-  def handle_params(params, uri, socket) do
+  def handle_params(params, _uri, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, gettext("Edit Event"))
+    |> assign(:page_title, gettext("Edit event"))
     |> assign_breadcrumbs([
       {"Dashboard", ~p"/admin"},
       {"Events", ~p"/admin/events"},

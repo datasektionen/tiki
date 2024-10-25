@@ -104,7 +104,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
     ~H"""
     <div class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm">
       <.link
-        patch={~p"/admin/events/#{@batch.batch.event_id}/batches/#{@batch.batch}/edit"}
+        patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/batches/#{@batch.batch}/edit"}
         phx-click={JS.push_focus()}
         class="flex flex-row justify-between bg-gray-200 px-4 py-4 hover:bg-gray-300"
       >

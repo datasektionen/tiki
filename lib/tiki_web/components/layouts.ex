@@ -1,18 +1,6 @@
 defmodule TikiWeb.Layouts do
   use TikiWeb, :html
 
-  import TikiWeb.Component.Table
-  import TikiWeb.Component.Label
-  import TikiWeb.Component.Tooltip
-  import TikiWeb.Component.Button
-  import TikiWeb.Component.Breadcrumb
-  import TikiWeb.Component.Menu
-  import TikiWeb.Component.Tabs
-  import TikiWeb.Component.Sheet
-  import TikiWeb.Component.DropdownMenu
-  import TikiWeb.Component.Card
-  import TikiWeb.Component.Badge
-  import TikiWeb.Component.Skeleton
   import TikiWeb.Component.Sidebar
 
   embed_templates "layouts/*"

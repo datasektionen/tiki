@@ -97,7 +97,10 @@ defmodule TikiWeb.Component.Breadcrumb do
   Render breadcrumb link
   """
   attr :class, :string, default: nil
-  attr :rest, :global, include: ~w(download href hreflang ping referrerpolicy rel target type)
+
+  attr :rest, :global,
+    include: ~w(download href hreflang ping referrerpolicy rel target type navigate)
+
   slot :inner_block, required: true
 
   def breadcrumb_link(assigns) do

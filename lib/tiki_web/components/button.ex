@@ -26,8 +26,8 @@ defmodule TikiWeb.Component.Button do
 
   def button(%{navigate: to} = assigns) when not is_nil(to) do
     ~H"""
-    <.link navigate={to} class={@class}>
-      <.button type={@type} variant={@variant} size={@size} @rest>
+    <.link navigate={@navigate} class={@class}>
+      <.button type={@type} variant={@variant} size={@size} {@rest}>
         <%= render_slot(@inner_block) %>
       </.button>
     </.link>

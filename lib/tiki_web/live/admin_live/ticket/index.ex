@@ -6,13 +6,13 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   alias Tiki.Tickets
   alias Tiki.Tickets.TicketType
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     {:ok, socket}
   end
 
-  @impl true
-  def handle_params(%{"id" => event_id} = params, session, socket) do
+  @impl Phoenix.LiveView
+  def handle_params(%{"id" => event_id} = params, _session, socket) do
     socket = assign_graph(socket, event_id)
 
     {:noreply,
@@ -56,6 +56,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     |> assign(:ticket_type, %TicketType{})
   end
 
+  @impl Phoenix.LiveView
   def handle_event("drop", %{"batch" => batch_id, "to" => %{"batch" => parent_batch_id}}, socket) do
     ticket_batch = Tickets.get_ticket_batch!(batch_id)
 
@@ -128,7 +129,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     ~H"""
     <div class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm" data-batch={@batch.batch.id}>
       <.link
-        patch={~p"/admin/events/#{@batch.batch.event_id}/batches/#{@batch.batch}/edit"}
+        patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/batches/#{@batch.batch}/edit"}
         phx-click={JS.push_focus()}
         class="flex flex-row justify-between bg-gray-200 px-4 py-4 hover:bg-gray-300"
       >

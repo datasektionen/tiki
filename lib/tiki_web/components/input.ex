@@ -39,7 +39,7 @@ defmodule TikiWeb.Component.Input do
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file month number password
-               range search select tel text textarea time url week)
+               range search select tel text textarea time url week hidden)
 
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
@@ -54,7 +54,7 @@ defmodule TikiWeb.Component.Input do
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step class)
 
-  def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+  def input(%{field: %Phoenix.HTML.FormField{}} = assigns) do
     prepare_assign(assigns)
     |> input()
   end
@@ -113,7 +113,7 @@ defmodule TikiWeb.Component.Input do
         id={@id}
         name={@name}
         class={[
-          "mt-2 min-h-[80px] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "mt-2 min-h-[10rem] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}

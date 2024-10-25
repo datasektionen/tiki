@@ -45,9 +45,9 @@ defmodule TikiWeb.Component.Table do
       <.table_body id={@id} phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}>
         <.table_row :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <.table_cell
-            :for={{col, i} <- Enum.with_index(@col)}
+            :for={{col, _i} <- Enum.with_index(@col)}
             phx-click={@row_click && @row_click.(row)}
-            class={[@row_click && "hover:cursor-pointer"]}
+            class={@row_click && "hover:cursor-pointer"}
           >
             <%= render_slot(col, @row_item.(row)) %>
           </.table_cell>
@@ -64,60 +64,6 @@ defmodule TikiWeb.Component.Table do
           </.table_cell>
         </.table_row>
       </.table_body>
-    </table>
-    """
-  end
-
-  @doc """
-  Table component
-
-  ## Examples:
-
-    <.table>
-       <.table_caption>A list of your recent invoices.</.table_caption>
-       <.table_header>
-         <.table_row>
-           <.table_head class="w-[100px]">id</.table_head>
-           <.table_head>Title</.table_head>
-           <.table_head>Status</.table_head>
-           <.table_head class="text-right">action</.table_head>
-         </.table_row>
-       </.table_header>
-       <.table_body>
-         <.table_row :for={{id, entry} <- @streams.content_entries} id={id}>
-           <.table_cell class="font-medium"><%= id %></.table_cell>
-           <.table_cell><%= entry.title %></.table_cell>
-           <.table_cell><%= entry.project_id %></.table_cell>
-           <.table_cell class="text-right">
-             <.link
-               navigate={scoped_path(assigns, "/content/\#{@content_type.key}/\#{entry.id}")}
-               class="btn-action"
-             >
-               <Heroicons.pencil_square class="w-4 h-4" /> Edit
-             </.link>
-
-             <.link
-               phx-click={JS.push("delete", value: %{id: entry.id})}
-               data-confirm="Are you sure?"
-               class="btn-action"
-             >
-               <Heroicons.x_mark class="w-4 h-4 text-error" /> Delete
-             </.link>
-           </.table_cell>
-         </.table_row>
-       </.table_body>
-      </.table>
-  """
-
-  def table(assigns) do
-    assigns =
-      with %{rows: %Phoenix.LiveView.LiveStream{}} <- assigns do
-        assign(assigns, row_id: assigns.row_id || fn {id, _item} -> id end)
-      end
-
-    ~H"""
-    <table class={classes(["w-full caption-bottom text-sm", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
     </table>
     """
   end

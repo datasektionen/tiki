@@ -26,7 +26,7 @@ defmodule Tiki.Tickets.TicketBatch do
     |> validate_not_equal(:id, :parent_batch_id)
   end
 
-  defp validate_not_equal(changeset, a, b, opts \\ []) do
+  defp validate_not_equal(changeset, a, b, _opts \\ []) do
     a_val = fetch_field(changeset, a)
     b_val = fetch_field(changeset, b)
 

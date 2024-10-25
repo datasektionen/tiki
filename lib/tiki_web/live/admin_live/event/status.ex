@@ -1,4 +1,4 @@
-defmodule TikiWeb.AdminLive.Event.PurchaseSummary do
+defmodule TikiWeb.AdminLive.Event.Status do
   use TikiWeb, :live_view
 
   alias Tiki.Events

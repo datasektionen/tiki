@@ -5,25 +5,25 @@ defmodule TikiWeb.AdminLive.Event.Index do
   alias Tiki.Events.Event
   import TikiWeb.Component.Card
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     {:ok, stream(socket, :events, Events.list_events())}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Event")
+    |> assign(:page_title, gettext("Edit event"))
     |> assign(:event, Events.get_event!(id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, gettext("New Event"))
+    |> assign(:page_title, gettext("New event"))
     |> assign(:event, %Event{})
   end
 
@@ -42,7 +42,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
     {:noreply, stream_insert(socket, :events, event)}
   end
 
-  @impl true
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
     event = Events.get_event!(id)
     {:ok, _} = Events.delete_event(event)
@@ -50,6 +50,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
     {:noreply, stream_delete(socket, :events, event)}
   end
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">

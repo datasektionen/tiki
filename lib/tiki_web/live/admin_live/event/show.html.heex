@@ -3,7 +3,7 @@
   <:subtitle>Detta är ett event i databasen.</:subtitle>
 
   <:actions>
-    <.link patch={~p"/admin/events/#{@event}/settings"} phx-click={JS.push_focus()}>
+    <.link patch={~p"/admin/events/#{@event}/edit"} phx-click={JS.push_focus()}>
       <.button>Redigera event</.button>
     </.link>
   </:actions>
@@ -11,14 +11,14 @@
 
 <div class="flex flex-col gap-1 pt-2">
   <.link
-    navigate={~p"/admin/events/#{@event}/purchases"}
+    navigate={~p"/admin/events/#{@event}/attendees"}
     class="text-sm font-bold hover:text-gray-600"
   >
     Visa köp
   </.link>
 
   <.link
-    navigate={~p"/admin/events/#{@event}/purchase-summary"}
+    navigate={~p"/admin/events/#{@event}/status"}
     class="text-sm font-bold hover:text-gray-600"
   >
     Visa live-status
@@ -33,7 +33,7 @@
     <.ticket_batch :for={batch <- @batches} batch={batch} />
   </div>
   <div class="flex flex-row justify-end gap-2">
-    <.link patch={~p"/admin/events/#{@event}/batches/new"}>
+    <.link patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
       <.button>Ny batch</.button>
     </.link>
 

@@ -51,78 +51,79 @@ msgstr ""
 msgid "close"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:27
-#: lib/tiki_web/components/sidebar.ex:115
-#: lib/tiki_web/live/admin_live/event/index.ex:57
+#: lib/tiki_web/components/sidebar.ex:25
+#: lib/tiki_web/components/sidebar.ex:113
+#: lib/tiki_web/live/admin_live/event/index.ex:58
 #, elixir-autogen, elixir-format
 msgid "All events"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:75
+#: lib/tiki_web/components/sidebar.ex:73
 #, elixir-autogen, elixir-format
 msgid "Attendees"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:24
-#: lib/tiki_web/components/sidebar.ex:62
-#: lib/tiki_web/components/sidebar.ex:112
+#: lib/tiki_web/components/sidebar.ex:22
+#: lib/tiki_web/components/sidebar.ex:60
+#: lib/tiki_web/components/sidebar.ex:110
 #, elixir-autogen, elixir-format
 msgid "Event"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:108
+#: lib/tiki_web/components/sidebar.ex:106
 #, elixir-autogen, elixir-format
 msgid "General"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:42
-#: lib/tiki_web/components/sidebar.ex:130
+#: lib/tiki_web/components/sidebar.ex:40
+#: lib/tiki_web/components/sidebar.ex:128
 #, elixir-autogen, elixir-format
 msgid "Groups"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:81
+#: lib/tiki_web/components/sidebar.ex:79
 #, elixir-autogen, elixir-format
 msgid "Live status"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:32
-#: lib/tiki_web/components/sidebar.ex:120
+#: lib/tiki_web/components/sidebar.ex:30
+#: lib/tiki_web/components/sidebar.ex:118
 #: lib/tiki_web/live/admin_live/event/edit.ex:28
-#: lib/tiki_web/live/admin_live/event/index.ex:80
+#: lib/tiki_web/live/admin_live/event/index.ex:26
+#: lib/tiki_web/live/admin_live/event/index.ex:81
 #, elixir-autogen, elixir-format
 msgid "New event"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:65
+#: lib/tiki_web/components/sidebar.ex:63
 #, elixir-autogen, elixir-format
 msgid "Overview"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:43
-#: lib/tiki_web/components/sidebar.ex:131
+#: lib/tiki_web/components/sidebar.ex:41
+#: lib/tiki_web/components/sidebar.ex:129
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:72
+#: lib/tiki_web/components/sidebar.ex:70
 #, elixir-autogen, elixir-format
 msgid "Registrations"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:40
-#: lib/tiki_web/components/sidebar.ex:128
-#: lib/tiki_web/components/sidebar.ex:261
+#: lib/tiki_web/components/sidebar.ex:38
+#: lib/tiki_web/components/sidebar.ex:126
+#: lib/tiki_web/components/sidebar.ex:259
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:90
+#: lib/tiki_web/components/sidebar.ex:88
 #, elixir-autogen, elixir-format
 msgid "Tickets"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:269
+#: lib/tiki_web/components/sidebar.ex:267
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
@@ -132,22 +133,24 @@ msgstr ""
 msgid "User settings"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/index.ex:92
+#: lib/tiki_web/live/admin_live/event/index.ex:93
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/index.ex:91
+#: lib/tiki_web/live/admin_live/event/form_component.ex:25
+#: lib/tiki_web/live/admin_live/event/index.ex:92
 #, elixir-autogen, elixir-format
 msgid "Location"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/index.ex:90
+#: lib/tiki_web/live/admin_live/event/form_component.ex:22
+#: lib/tiki_web/live/admin_live/event/index.ex:91
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/index.ex:65
+#: lib/tiki_web/live/admin_live/event/index.ex:66
 #, elixir-autogen, elixir-format
 msgid "Search events"
 msgstr ""
@@ -177,20 +180,31 @@ msgstr ""
 msgid "User settings updated"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/edit.ex:17
-#, elixir-autogen, elixir-format
-msgid "Edit Event"
-msgstr ""
-
-#: lib/tiki_web/live/admin_live/event/index.ex:26
-#, elixir-autogen, elixir-format, fuzzy
-msgid "New Event"
-msgstr ""
-
 #: lib/tiki_web/live/admin_live/event/form_component.ex:12
 #, elixir-autogen, elixir-format
 msgid "Use this form to manage events"
 msgstr ""
 
 msgid "Dashboard"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:23
+#, elixir-autogen, elixir-format
+msgid "Description"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:24
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Event date"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:26
+#, elixir-autogen, elixir-format
+msgid "Image url"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:17
+#: lib/tiki_web/live/admin_live/event/index.ex:20
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Edit event"
 msgstr ""
