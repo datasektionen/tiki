@@ -8,11 +8,13 @@ defmodule Tiki.Accounts.User do
     field :full_name, :string
     field :email, :string
 
+    field :kth_id, :string
+
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
 
-    field :locale, :string
+    field :locale, :string, default: "en"
     field :role, Ecto.Enum, values: [:user, :admin], default: :user
 
     timestamps()
@@ -46,6 +48,13 @@ defmodule Tiki.Accounts.User do
     |> cast(attrs, [:email, :password, :role])
     |> validate_email(opts)
     |> validate_password(opts)
+  end
+
+  def oidcc_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:kth_id, :email, :first_name, :last_name])
+    |> validate_required([:kth_id, :email, :first_name, :last_name])
+    |> unique_constraint(:kth_id)
   end
 
   defp validate_email(changeset, opts) do

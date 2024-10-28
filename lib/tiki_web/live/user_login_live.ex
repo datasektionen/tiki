@@ -31,6 +31,27 @@ defmodule TikiWeb.UserLoginLive do
           </.button>
         </:actions>
       </.simple_form>
+
+      <div>
+        <div class="relative mt-10">
+          <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="border-border w-full border-t"></div>
+          </div>
+          <div class="relative flex justify-center text-sm font-medium leading-6">
+            <span class="bg-background px-6">Or continue with</span>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-4">
+          <.link
+            navigate={~p"/oidcc/authorize"}
+            class="ring-foreground col-span-2 flex w-full items-center justify-center gap-3 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset hover:bg-accent focus-visible:ring-transparent"
+          >
+            <img src="/images/dskold.svg" alt="Datasektionen" class="h-5 w-5 aria-hidden:hidden" />
+            <span class="text-sm font-semibold leading-6">Datasektionen</span>
+          </.link>
+        </div>
+      </div>
     </div>
     """
   end

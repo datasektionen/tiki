@@ -1,6 +1,15 @@
 defmodule TikiWeb.OidccController do
   use TikiWeb, :controller
 
+  alias TikiWeb.UserAuth
+  alias Tiki.Accounts
+
+  @key_replacements %{
+    "sub" => "kth_id",
+    "given_name" => "first_name",
+    "family_name" => "last_name"
+  }
+
   plug(
     Oidcc.Plug.Authorize,
     [
@@ -31,17 +40,18 @@ defmodule TikiWeb.OidccController do
   def callback(
         %Plug.Conn{private: %{Oidcc.Plug.AuthorizationCallback => {:ok, {_token, userinfo}}}} =
           conn,
-        params
+        _params
       ) do
-    conn
-    |> put_session("oidcc_claims", userinfo)
-    |> redirect(
-      to:
-        case params[:state] do
-          nil -> "/"
-          state -> state
-        end
-    )
+    userinfo =
+      Map.new(userinfo, fn {k, v} ->
+        key = Map.get(@key_replacements, k, k)
+        {key, v}
+      end)
+
+    case Accounts.upsert_user_with_userinfo(userinfo) do
+      {:ok, user} -> UserAuth.log_in_user(conn, user)
+      {:error, changeset} -> conn |> put_status(400) |> render(:error, reason: changeset)
+    end
   end
 
   def callback(

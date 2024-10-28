@@ -5,6 +5,9 @@ defmodule Tiki.Repo.Migrations.AddAccountData do
     alter table(:users) do
       add :first_name, :string
       add :last_name, :string
+      add :kth_id, :string
+
+      modify :hashed_password, :string, null: true
 
       add :locale, :string
     end
@@ -18,12 +21,14 @@ defmodule Tiki.Repo.Migrations.AddAccountData do
 
   def down do
     alter table(:users) do
-      drop :full_name
+      remove :full_name
 
-      drop :first_name, :string
+      modify :hashed_password, :string, null: false
 
-      drop :last_name, :string
-      drop :locale, :string
+      remove :first_name
+      remove :last_name
+      remove :kth_id
+      remove :locale
     end
   end
 end

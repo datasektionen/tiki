@@ -18,18 +18,9 @@ defmodule Tiki.Application do
       # Start Finch
       {Finch, name: Tiki.Finch},
       TikiWeb.EventLive.PurchaseMonitor,
-      # TODO: Wrap this in a supervisor that restarts the worker, and
-      # does not crash the app if the OIDC provider is down
       {Oidcc.ProviderConfiguration.Worker,
-       %{
-         issuer: Application.fetch_env!(:tiki, Oidcc)[:issuer],
-         name: Tiki.OpenIdConfigurationProvider,
-         provider_configuration_opts: %{
-           quirks: %{
-             allow_unsafe_http: true
-           }
-         }
-       }},
+       Application.get_env(:tiki, Oidcc.ProviderConfiguration, [])
+       |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})},
       # Start the Endpoint (http/https)
       TikiWeb.Endpoint
 

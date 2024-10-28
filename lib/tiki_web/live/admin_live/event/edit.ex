@@ -13,14 +13,17 @@ defmodule TikiWeb.AdminLive.Event.Edit do
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
+    event = Events.get_event!(id)
+
     socket
     |> assign(:page_title, gettext("Edit event"))
     |> assign_breadcrumbs([
       {"Dashboard", ~p"/admin"},
       {"Events", ~p"/admin/events"},
+      {event.name, ~p"/admin/events/#{id}"},
       {"Edit event", ~p"/admin/events/#{id}/edit"}
     ])
-    |> assign(:event, Events.get_event!(id))
+    |> assign(:event, event)
   end
 
   defp apply_action(socket, :delete, map) do

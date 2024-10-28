@@ -37,7 +37,7 @@ defmodule TikiWeb.Component.Sidebar do
             <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
             <span><%= gettext("Settings") %></span>
           </:header>
-          <:item text={gettext("Groups")} to="" />
+          <:item text={gettext("Members")} to={~p"/team/members"} />
           <:item text={gettext("Payments")} to="" />
         </.sidebar_group>
       </div>
@@ -125,7 +125,7 @@ defmodule TikiWeb.Component.Sidebar do
             <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
             <span><%= gettext("Settings") %></span>
           </:header>
-          <:item text={gettext("Groups")} to="" />
+          <:item text={gettext("Members")} to="" />
           <:item text={gettext("Payments")} to="" />
         </.sidebar_group>
       </div>

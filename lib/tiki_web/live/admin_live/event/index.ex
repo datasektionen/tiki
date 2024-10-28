@@ -68,7 +68,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
         />
 
         <div>
-          <.select id="sort" name="sort" options={["Sort by date"]} value="" />
+          <.select id="sort" name="sort" options={[gettext("Sort by date")]} value="" />
         </div>
 
         <.button navigate={~p"/admin/events/new"} class="ml-auto">
