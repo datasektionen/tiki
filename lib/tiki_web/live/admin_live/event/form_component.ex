@@ -25,7 +25,16 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
         <.input field={@form[:image_url]} type="text" label={gettext("Image url")} />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Event</.button>
+          <div class="flex flex-row gap-2">
+            <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save event") %></.button>
+            <.button
+              :if={@id != "new"}
+              variant="destructive"
+              navigate={~p"/admin/events/#{@event}/delete"}
+            >
+              <%= gettext("Delete event") %>
+            </.button>
+          </div>
         </:actions>
       </.simple_form>
     </div>
@@ -63,8 +72,8 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Event updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> put_flash(:info, gettext("Event updated successfully"))
+         |> push_navigate(to: ~p"/admin/events/#{event}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -78,8 +87,8 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Event created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> put_flash(:info, gettext("Event created successfully"))
+         |> push_navigate(to: ~p"/admin/events/#{event}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}

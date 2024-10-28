@@ -47,10 +47,9 @@ defmodule TikiWeb.Component.Dialog do
     ~H"""
     <div
       id={@id}
-      phx-mounted={@show && JS.exec("phx-show-modal", to: "##{@id}")}
-      phx-remove={JS.exec("phx-hide-modal", to: "##{@id}")}
-      phx-show-modal={show_modal(@id)}
-      phx-hide-modal={hide_modal(@id)}
+      phx-mounted={@show && show_modal(@id)}
+      phx-remove={hide_modal(@id)}
+      data-cancel={JS.exec(@on_cancel, "phx-remove")}
       class="group/dialog relative z-50 hidden"
     >
       <div
@@ -66,9 +65,9 @@ defmodule TikiWeb.Component.Dialog do
       >
         <.focus_wrap
           id={"#{@id}-wrap"}
-          phx-window-keydown={JS.exec("phx-hide-modal", to: "##{@id}")}
+          phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
           phx-key="escape"
-          phx-click-away={JS.exec("phx-hide-modal", to: "##{@id}")}
+          phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
           class="w-full sm:max-w-[425px]"
         >
           <div
@@ -87,7 +86,7 @@ defmodule TikiWeb.Component.Dialog do
             <button
               type="button"
               class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none group-data-[state=open]/dialog:bg-accent group-data-[state=open]/dialog:text-muted-foreground"
-              phx-click={JS.exec("phx-hide-modal", to: "##{@id}")}
+              phx-click={JS.exec("data-cancel", to: "##{@id}")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

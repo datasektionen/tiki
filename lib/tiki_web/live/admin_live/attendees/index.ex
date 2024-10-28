@@ -4,6 +4,8 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   alias Tiki.Events
   alias Tiki.Orders
 
+  import TikiWeb.Component.Card
+
   def mount(%{"id" => event_id}, _sesison, socket) do
     event = Events.get_event!(event_id)
     tickets = Orders.list_tickets_for_event(event_id)
@@ -41,13 +43,35 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   def render(assigns) do
     ~H"""
-    <div class="border-b pb-4">
-      <h2 class="mb-1 text-xl font-bold">Sålda biljetter</h2>
-      <div class="text-sm text-gray-600">Totalt <%= @num_tickets %> biljetter</div>
+    <div class="grid gap-4 sm:grid-cols-6">
+      <.card_title class="sm:col-span-6">
+        <%= gettext("Sold tickets") %>
+      </.card_title>
+
+      <div class="flex flex-row items-center gap-2 sm:col-span-6">
+        <.leading_logo_input
+          name="a"
+          value=""
+          type="text"
+          placeholder={gettext("Search")}
+          class="max-w-xl flex-1"
+        />
+
+        <div>
+          <.select id="sort" name="sort" options={["Sort by date"]} value="" />
+        </div>
+
+        <.button navigate={~p"/admin/events/{@event}/attendees/new"} class="ml-auto">
+          <%= gettext("New attendee") %>
+        </.button>
+      </div>
+
+      <.card class="sm:col-span-6">
+        <ul id="tickets" phx-update="stream" role="list" class="divide-y divide-gray-100">
+          <.ticket_card :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
+        </ul>
+      </.card>
     </div>
-    <ul id="tickets" phx-update="stream" role="list" class="divide-y divide-gray-100">
-      <.ticket_card :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
-    </ul>
     """
   end
 
@@ -56,7 +80,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   defp ticket_card(assigns) do
     ~H"""
-    <li class="relative flex items-center justify-between gap-x-6 px-2 py-5 hover:bg-gray-50 sm:px-4 lg:px-6">
+    <li class="relative flex items-center justify-between gap-x-6 px-2 py-4 first:rounded-t-xl last:rounded-b-xl hover:bg-gray-50 sm:px-4 lg:px-6">
       <div class="min-w-0">
         <div class="flex items-start gap-x-3">
           <.link navigate={~p"/admin/events/#{@ticket.order.event_id}/attendees/#{@ticket}"}>

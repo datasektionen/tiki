@@ -89,7 +89,7 @@ defmodule TikiWeb.Component.Sidebar do
           </:header>
 
           <:item
-            text="Biljetttyper"
+            text={gettext("Ticket types")}
             to={~p"/admin/events/#{@event}/tickets"}
             active={@active_tab == :event_tickets}
           />

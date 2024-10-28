@@ -99,6 +99,7 @@ defmodule TikiWeb.Router do
 
           # Event settings
           live "/edit", Event.Edit, :edit
+          live "/delete", Event.Edit, :delete
 
           # Tickets overview
           live "/tickets", Ticket.Index, :index

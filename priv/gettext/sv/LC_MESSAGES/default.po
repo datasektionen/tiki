@@ -88,9 +88,9 @@ msgstr "Livestatus"
 
 #: lib/tiki_web/components/sidebar.ex:30
 #: lib/tiki_web/components/sidebar.ex:118
-#: lib/tiki_web/live/admin_live/event/edit.ex:28
+#: lib/tiki_web/live/admin_live/event/edit.ex:34
 #: lib/tiki_web/live/admin_live/event/index.ex:26
-#: lib/tiki_web/live/admin_live/event/index.ex:81
+#: lib/tiki_web/live/admin_live/event/index.ex:75
 #, elixir-autogen, elixir-format
 msgid "New event"
 msgstr "Nytt event"
@@ -133,19 +133,19 @@ msgstr "Logga ut"
 msgid "User settings"
 msgstr "Användarinställningar"
 
-#: lib/tiki_web/live/admin_live/event/index.ex:93
+#: lib/tiki_web/live/admin_live/event/index.ex:87
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr "Datum"
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:25
-#: lib/tiki_web/live/admin_live/event/index.ex:92
+#: lib/tiki_web/live/admin_live/event/index.ex:86
 #, elixir-autogen, elixir-format
 msgid "Location"
 msgstr "Plats"
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:22
-#: lib/tiki_web/live/admin_live/event/index.ex:91
+#: lib/tiki_web/live/admin_live/event/index.ex:85
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "Namn"
@@ -208,3 +208,76 @@ msgstr "Bildlänk"
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit event"
 msgstr "Redigera event"
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:29
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Save event"
+msgstr "Spara event"
+
+#: lib/tiki_web/components/sidebar.ex:92
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Ticket types"
+msgstr "Biljettyper"
+
+#: lib/tiki_web/live/admin_live/attendees/index.ex:65
+#, elixir-autogen, elixir-format
+msgid "New attendee"
+msgstr "Ny besökare"
+
+#: lib/tiki_web/live/admin_live/attendees/index.ex:56
+#, elixir-autogen, elixir-format
+msgid "Search"
+msgstr "Sök"
+
+#: lib/tiki_web/live/admin_live/attendees/index.ex:48
+#, elixir-autogen, elixir-format
+msgid "Sold tickets"
+msgstr "Sålda biljetter"
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:95
+#: lib/tiki_web/live/admin_live/event/form_component.ex:35
+#, elixir-autogen, elixir-format
+msgid "Delete event"
+msgstr "Radera event"
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:79
+#, elixir-autogen, elixir-format
+msgid "Delete event?"
+msgstr "Radera event?"
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:51
+#, elixir-autogen, elixir-format
+msgid "Deleted event"
+msgstr "Event togs bort"
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:90
+#, elixir-autogen, elixir-format
+msgid "Event created successfully"
+msgstr "Event skapades"
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:75
+#, elixir-autogen, elixir-format
+msgid "Event updated successfully"
+msgstr "Event uppdaterades"
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:29
+#: lib/tiki_web/live/admin_live/ticket/batch_form_component.ex:34
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form_component.ex:39
+#, elixir-autogen, elixir-format
+msgid "Saving..."
+msgstr "Sparar..."
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:55
+#, elixir-autogen, elixir-format
+msgid "Something went wrong"
+msgstr "Något gick fel"
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:82
+#, elixir-autogen, elixir-format
+msgid "This will permanently delete the event"
+msgstr "Detta kommer radera eventet permanent"
+
+#: lib/tiki_web/live/admin_live/event/edit.ex:88
+#, elixir-autogen, elixir-format
+msgid "Type the full name of the event"
+msgstr "Skriv hela namnet på eventet"

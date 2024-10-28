@@ -23,6 +23,12 @@ defmodule TikiWeb.AdminLive.Event.Edit do
     |> assign(:event, Events.get_event!(id))
   end
 
+  defp apply_action(socket, :delete, map) do
+    socket
+    |> apply_action(:edit, map)
+    |> assign(:delete_form, to_form(%{"confirm" => ""}))
+  end
+
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, gettext("New event"))
@@ -34,9 +40,27 @@ defmodule TikiWeb.AdminLive.Event.Edit do
     |> assign(:event, %Event{})
   end
 
+  def handle_event("validate_delete", params, socket) do
+    {:noreply, assign(socket, :delete_form, to_form(params))}
+  end
+
+  def handle_event("save_delete", params, socket) do
+    case Events.delete_event(socket.assigns.event) do
+      {:ok, _event} ->
+        {:noreply,
+         put_flash(socket, :info, gettext("Deleted event"))
+         |> push_navigate(to: ~p"/admin/events")}
+
+      {:error, _event} ->
+        {:noreply,
+         put_flash(socket, :error, gettext("Something went wrong"))
+         |> assign(:delete_form, to_form(params))}
+    end
+  end
+
   def render(assigns) do
     ~H"""
-    <div :if={@live_action in [:edit, :new]}>
+    <div :if={@live_action in [:edit, :new, :delete]}>
       <.live_component
         module={TikiWeb.AdminLive.Event.FormComponent}
         id={@event.id || "new"}
@@ -45,6 +69,37 @@ defmodule TikiWeb.AdminLive.Event.Edit do
         event={@event}
       />
     </div>
+
+    <.dialog
+      :if={@live_action == :delete}
+      id="delete-dialog"
+      show={true}
+      on_cancel={JS.navigate(~p"/admin/events/#{@event}/edit")}
+    >
+      <.dialog_header>
+        <.dialog_title>
+          <%= gettext("Delete event?") %>
+        </.dialog_title>
+        <.dialog_description>
+          <%= gettext("This will permanently delete the event") %>
+        </.dialog_description>
+
+        <.form :let={f} for={@delete_form} phx-change="validate_delete" phx-submit="save_delete">
+          <div class="mt-2 space-y-4 bg-white">
+            <label for={f[:confirm].id} class="text-sm">
+              <span><%= gettext("Type the full name of the event") %></span>:
+              <span class="bg-accent text-accent-foreground rounded-sm px-1 py-0.5">
+                <%= @event.name %>
+              </span>
+            </label>
+            <.input field={f[:confirm]} />
+            <.button variant="destructive" type="submit" disabled={f[:confirm].value != @event.name}>
+              <%= gettext("Delete event") %>
+            </.button>
+          </div>
+        </.form>
+      </.dialog_header>
+    </.dialog>
     """
   end
 end

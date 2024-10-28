@@ -7,7 +7,8 @@ defmodule TikiWeb.OidccController do
       provider: Tiki.OpenIdConfigurationProvider,
       client_id: &__MODULE__.client_id/0,
       client_secret: &__MODULE__.client_secret/0,
-      redirect_uri: &__MODULE__.callback_uri/0
+      redirect_uri: &__MODULE__.callback_uri/0,
+      scopes: ["openid", "profile", "email"]
     ]
     when action in [:authorize]
   )
@@ -18,8 +19,7 @@ defmodule TikiWeb.OidccController do
       provider: Tiki.OpenIdConfigurationProvider,
       client_id: &__MODULE__.client_id/0,
       client_secret: &__MODULE__.client_secret/0,
-      redirect_uri: &__MODULE__.callback_uri/0,
-      retrieve_userinfo: true
+      redirect_uri: &__MODULE__.callback_uri/0
     ]
     when action in [:callback]
   )

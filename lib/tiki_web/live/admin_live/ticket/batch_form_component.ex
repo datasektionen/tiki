@@ -31,7 +31,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
 
         <:actions>
           <div>
-            <.button phx-disable-with="Saving...">Save batch</.button>
+            <.button phx-disable-with={gettext("Saving...")}>Save batch</.button>
             <.button
               :if={@action == :edit_batch}
               type="button"

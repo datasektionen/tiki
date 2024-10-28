@@ -41,7 +41,7 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.2.7",
+  version: "3.4.13",
   default: [
     args: ~w(
       --config=tailwind.config.js
@@ -65,7 +65,9 @@ config :salad_ui, :error_translator_function, {TikiWeb.CoreComponents, :translat
 config :tails, colors_file: Path.join(File.cwd!(), "assets/tailwind.colors.json")
 
 config :tiki, Oidcc,
-  issuer: "https://logout.datasektionen.se/op",
+  # issuer: "https://accounts.google.com",
+  issuer: "http://localhost:7005/op",
+  # issuer: "https://logout.datasektionen.se/op",
   client_id: System.get_env("OIDC_CLIENT_ID"),
   client_secret: System.get_env("OIDC_CLIENT_SECRET")
 

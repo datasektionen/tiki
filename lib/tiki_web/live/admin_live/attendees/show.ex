@@ -11,6 +11,19 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
     {:ok, assign(socket, event: event, ticket: ticket)}
   end
 
+  def handle_params(_params, _uri, socket) do
+    %{event: event, ticket: ticket} = socket.assigns
+
+    {:noreply,
+     assign_breadcrumbs(socket, [
+       {"Dashboard", ~p"/admin/"},
+       {"Events", ~p"/admin/events"},
+       {event.name, ~p"/admin/events/#{event.id}"},
+       {"Attendees", ~p"/admin/events/#{event.id}/attendees"},
+       {ticket.order.user.full_name, ~p"/admin/events/#{event.id}/attendees/#{ticket.id}"}
+     ])}
+  end
+
   def render(assigns) do
     ~H"""
     <div class="flex flex-col gap-4">

@@ -45,7 +45,7 @@ defmodule TikiWeb.Nav do
 
   tab AdminLive.Event.Index, :new, :new_event
 
-  tab AdminLive.Event.PurchaseSummary, :index, :live_status
+  tab AdminLive.Event.Status, :index, :live_status
 
   tab AdminLive.Event.Show, :show, :event_overview
   tab AdminLive.Event.Show, :edit, :event_overview

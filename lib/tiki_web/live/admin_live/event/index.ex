@@ -68,13 +68,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
         />
 
         <div>
-          <select
-            id="sort"
-            name="sort"
-            class="border-input bg-background ring-offset-background flex-0 h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <%= Phoenix.HTML.Form.options_for_select(["Sort by date"], "") %>
-          </select>
+          <.select id="sort" name="sort" options={["Sort by date"]} value="" />
         </div>
 
         <.button navigate={~p"/admin/events/new"} class="ml-auto">
