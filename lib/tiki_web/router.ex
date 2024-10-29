@@ -75,6 +75,8 @@ defmodule TikiWeb.Router do
       live "/events/:id/purchase", EventLive.Show, :purchase
     end
 
+    post "/admin/set_team", UserSessionController, :set_team
+
     scope "/admin", AdminLive do
       live_session :require_admin_user,
         on_mount: [
@@ -86,6 +88,19 @@ defmodule TikiWeb.Router do
 
         live "/user-settings", User.Settings, :index
 
+        live "/teams", Team.Index, :index
+        live "/teams/new", Team.Form, :new
+        live "/teams/:id", Team.Show, :show
+        live "/teams/:id/edit", Team.Form, :edit
+      end
+
+      live_session :active_group,
+        on_mount: [
+          {TikiWeb.UserAuth, :ensure_admin},
+          {TikiWeb.UserAuth, :ensure_team},
+          TikiWeb.Nav
+        ],
+        layout: {TikiWeb.Layouts, :admin} do
         # General event stuff
         live "/events", Event.Index, :index
         live "/events/new", Event.Edit, :new

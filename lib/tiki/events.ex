@@ -22,6 +22,19 @@ defmodule Tiki.Events do
   end
 
   @doc """
+  Returns the list of events, filtered by team.
+
+  ## Examples
+
+      iex> list_events()
+      [%Event{}, ...]
+
+  """
+  def list_team_events(team_id) do
+    Repo.all(from e in Event, where: e.team_id == ^team_id)
+  end
+
+  @doc """
   Gets a single event.
 
   Raises `Ecto.NoResultsError` if the Event does not exist.

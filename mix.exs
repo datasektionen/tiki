@@ -33,7 +33,7 @@ defmodule Tiki.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, "~> 1.7.10"},
+      {:phoenix, github: "phoenixframework/phoenix", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
@@ -57,7 +57,8 @@ defmodule Tiki.MixProject do
       {:tailwind_formatter, "~> 0.3.5", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:phx_gen_oidcc, "~> 0.1.0", only: :dev, runtime: false},
-      {:salad_ui, git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev]},
+      {:salad_ui,
+       git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev, :test]},
       {:oidcc_plug, "~> 0.1.0"}
     ]
   end

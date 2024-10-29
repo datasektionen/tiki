@@ -39,4 +39,10 @@ defmodule TikiWeb.UserSessionController do
     |> put_flash(:info, "Logged out successfully.")
     |> UserAuth.log_out_user()
   end
+
+  def set_team(conn, %{"team_id" => team_id}) do
+    conn
+    |> put_session(:current_team_id, team_id)
+    |> redirect(to: ~p"/admin")
+  end
 end

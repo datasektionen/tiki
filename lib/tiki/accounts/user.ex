@@ -17,6 +17,8 @@ defmodule Tiki.Accounts.User do
     field :locale, :string, default: "en"
     field :role, Ecto.Enum, values: [:user, :admin], default: :user
 
+    has_many :memberships, Tiki.Teams.Membership
+
     timestamps()
   end
 

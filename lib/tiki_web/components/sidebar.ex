@@ -11,10 +11,23 @@ defmodule TikiWeb.Component.Sidebar do
   attr :event, :map, default: nil
   attr :mobile, :boolean, default: false
 
+  def sidebar(%{current_team: nil} = assigns) do
+    ~H"""
+    <nav class="flex flex-col gap-1 px-2 py-5">
+      <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
+      <div class="flex w-full flex-col py-4">
+        <.sidebar_item to={~p"/admin/teams"} icon="hero-user-group" text={gettext("Teams")} />
+      </div>
+    </nav>
+    <!-- sidebar footer -->
+    <.sidebar_footer mobile={@mobile} current_user={@current_user} />
+    """
+  end
+
   def sidebar(%{event: nil} = assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} />
+      <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
       <div class="flex w-full flex-col py-4">
         <.sidebar_group>
           <:header>
@@ -55,7 +68,7 @@ defmodule TikiWeb.Component.Sidebar do
   def sidebar(assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} />
+      <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
       <div class="flex w-full flex-col py-4">
         <.sidebar_label><%= gettext("Event") %></.sidebar_label>
         <.sidebar_item
@@ -193,8 +206,12 @@ defmodule TikiWeb.Component.Sidebar do
           <div class="bg-primary flex h-8 w-8 items-center justify-center rounded-lg">
             <.tiki_logo class="fill-primary-foreground h-5 w-5" />
           </div>
-          <div class="grid flex-1 text-left text-sm leading-tight">
-            <span class="truncate font-semibold">Vårbalen</span><span class="truncate text-xs">Team</span>
+          <div :if={@current_team} class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate font-semibold"><%= @current_team.name %></span><span class="truncate text-xs">Team</span>
+          </div>
+
+          <div :if={!@current_team} class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate font-semibold"><%= gettext("No team") %></span><span class="truncate text-xs"><%= gettext("Create or join one") %></span>
           </div>
           <.icon name="hero-chevron-up-down" class="ml-auto h-5 w-5" />
         </button>
@@ -204,15 +221,27 @@ defmodule TikiWeb.Component.Sidebar do
           <.menu_label>Teams</.menu_label>
           <.menu_separator />
           <.menu_group>
-            <.menu_item :for={{org, index} <- ~w"Vårbalen Dårestaben DKM" |> Enum.with_index(1)}>
-              <span><%= org %></span>
-              <.menu_shortcut>⌘<%= index %></.menu_shortcut>
-            </.menu_item>
-            <.menu_item disabled>
-              <.icon name="hero-plus" class="mr-2 h-4 w-4" />
-              <span>New team</span>
-              <.menu_shortcut>⌘N</.menu_shortcut>
-            </.menu_item>
+            <.form for={%{}} action={~p"/admin/set_team"} method="post">
+              <button
+                :for={{membership, index} <- @current_user.memberships |> Enum.with_index(1)}
+                class="w-full"
+                name="team_id"
+                value={membership.team.id}
+              >
+                <.menu_item class="hover:cursor-pointer">
+                  <span><%= membership.team.name %></span>
+                  <.menu_shortcut>⌘<%= index %></.menu_shortcut>
+                </.menu_item>
+              </button>
+            </.form>
+
+            <.link navigate={~p"/admin/teams/new"}>
+              <.menu_item class="hover:cursor-pointer">
+                <.icon name="hero-plus" class="mr-2 h-4 w-4" />
+                <span>New team</span>
+                <.menu_shortcut>⌘N</.menu_shortcut>
+              </.menu_item>
+            </.link>
           </.menu_group>
         </.menu>
       </.dropdown_menu_content>

@@ -2,7 +2,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
   use TikiWeb, :live_view
 
   def mount(_params, _session, socket) do
-    events = Tiki.Events.list_events()
+    events = Tiki.Events.list_team_events(socket.assigns.current_team.id)
 
     {:ok, assign(socket, events: events)}
   end

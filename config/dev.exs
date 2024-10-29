@@ -83,3 +83,17 @@ config :stripity_stripe, api_key: System.get_env("STRIPE_API_KEY")
 
 # Path to install SaladUI components
 config :salad_ui, components_path: Path.join(File.cwd!(), "lib/tiki_web/components")
+
+config :tiki, Oidcc,
+  # issuer: "http://localhost:7005/op",
+  issuer: "https://logout.datasektionen.se/op",
+  client_id: System.get_env("OIDC_CLIENT_ID"),
+  client_secret: System.get_env("OIDC_CLIENT_SECRET")
+
+config :tiki, Oidcc.ProviderConfiguration,
+  issuer: "https://logout.datasektionen.se/op",
+  provider_configuration_opts: %{
+    quirks: %{
+      allow_unsafe_http: true
+    }
+  }

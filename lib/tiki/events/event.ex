@@ -10,6 +10,7 @@ defmodule Tiki.Events.Event do
     field :image_url, :string
 
     has_many :ticket_batches, Tiki.Tickets.TicketBatch
+    belongs_to :team, Tiki.Accounts.Team
 
     timestamps()
   end
@@ -17,7 +18,8 @@ defmodule Tiki.Events.Event do
   @doc false
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:name, :description, :event_date, :location, :image_url])
+    |> cast(attrs, [:name, :description, :event_date, :location, :image_url, :team_id])
     |> validate_required([:name, :description, :event_date])
+    |> foreign_key_constraint(:team_id)
   end
 end

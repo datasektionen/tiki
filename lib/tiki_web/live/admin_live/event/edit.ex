@@ -70,6 +70,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
         title={@page_title}
         action={@live_action}
         event={@event}
+        current_team={@current_team}
       />
     </div>
 

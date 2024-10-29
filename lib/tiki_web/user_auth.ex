@@ -5,6 +5,8 @@ defmodule TikiWeb.UserAuth do
   import Phoenix.Controller
 
   alias Tiki.Accounts
+  alias Tiki.Teams
+  use Gettext, backend: TikiWeb.Gettext
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
@@ -94,6 +96,7 @@ defmodule TikiWeb.UserAuth do
     user =
       user_token &&
         Accounts.get_user_by_session_token(user_token)
+        |> Teams.preload_teams()
 
     conn =
       if user do
@@ -175,7 +178,7 @@ defmodule TikiWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+        |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
         |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
       {:halt, socket}
@@ -193,7 +196,10 @@ defmodule TikiWeb.UserAuth do
         _ ->
           socket =
             socket
-            |> Phoenix.LiveView.put_flash(:error, "You need to be an admin to access this page.")
+            |> Phoenix.LiveView.put_flash(
+              :error,
+              gettext("You need to be an admin to access this page.")
+            )
             |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
           {:halt, socket}
@@ -201,8 +207,27 @@ defmodule TikiWeb.UserAuth do
     else
       socket =
         socket
-        |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+        |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
         |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+
+      {:halt, socket}
+    end
+  end
+
+  def on_mount(:ensure_team, _params, session, socket) do
+    socket =
+      mount_current_user(session, socket)
+
+    if socket.assigns.current_team do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(
+          :error,
+          gettext("You must select a team to access this page.")
+        )
+        |> Phoenix.LiveView.redirect(to: ~p"/admin/teams")
 
       {:halt, socket}
     end
@@ -221,13 +246,20 @@ defmodule TikiWeb.UserAuth do
   defp mount_current_user(session, socket) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
-        user = Accounts.get_user_by_session_token(user_token)
+        user =
+          Accounts.get_user_by_session_token(user_token)
+          |> Teams.preload_teams()
 
         if user do
           Gettext.put_locale(TikiWeb.Gettext, Map.get(user, :locale, "en"))
         end
 
         user
+      end
+    end)
+    |> Phoenix.Component.assign_new(:current_team, fn ->
+      if team_id = session["current_team_id"] do
+        Teams.get_team!(team_id)
       end
     end)
   end

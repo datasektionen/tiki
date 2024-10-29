@@ -62,6 +62,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   end
 
   def handle_event("save", %{"event" => event_params}, socket) do
+    event_params = Map.put(event_params, "team_id", socket.assigns.current_team.id)
     save_event(socket, socket.assigns.action, event_params)
   end
 
