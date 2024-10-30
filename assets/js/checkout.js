@@ -5,7 +5,7 @@ import {loadStripe} from '@stripe/stripe-js/pure';
 
 export const InitCheckout = {
     async mounted() {
-        stripe = await loadStripe("pk_test_51MsjG6HtzM6DR8bMIxBnzMHEmPaXA6Omph2d0jgyql55cMx2GB3TncfLllOTlL0A14KHdARbo0OPya1TqNomeZek00gj5AGuvM");
+        stripe = await loadStripe("pk_test_51QFDv6ENoY5GyA7jeRaxuUSGKGzDLHEu7uRfVgbcAYabj5oepxaZMQ8rNakOQTD6OibKHaxLgUeZqITqtoRZYz2L00t62OGcoq");
         const callback = intent => { this.pushEventTo(this.el, "payment-sucess", intent) };
         init(this.el, callback);
     }

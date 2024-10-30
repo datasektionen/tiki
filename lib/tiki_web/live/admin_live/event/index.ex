@@ -7,7 +7,14 @@ defmodule TikiWeb.AdminLive.Event.Index do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :events, Tiki.Events.list_team_events(socket.assigns.current_team.id))}
+    events =
+      if socket.assigns.current_team do
+        Tiki.Events.list_team_events(socket.assigns.current_team.id)
+      else
+        []
+      end
+
+    {:ok, stream(socket, :events, events)}
   end
 
   @impl Phoenix.LiveView
