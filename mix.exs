@@ -59,7 +59,8 @@ defmodule Tiki.MixProject do
       {:phx_gen_oidcc, "~> 0.1.0", only: :dev, runtime: false},
       {:salad_ui,
        git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev, :test]},
-      {:oidcc_plug, "~> 0.1.0"}
+      {:oidcc_plug, "~> 0.1.0"},
+      {:let_me, "~> 1.2"}
     ]
   end
 

@@ -6,6 +6,7 @@ defmodule TikiWeb.Component.Sidebar do
   import TikiWeb.Component.Sheet
   import TikiWeb.Component.Breadcrumb
 
+  alias Tiki.Policy
   alias Tiki.Events.Event
 
   attr :event, :map, default: nil
@@ -15,8 +16,9 @@ defmodule TikiWeb.Component.Sidebar do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
       <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
-      <div class="flex w-full flex-col py-4">
-        <.sidebar_item to={~p"/admin/teams"} icon="hero-user-group" text={gettext("Teams")} />
+
+      <div :if={Policy.authorize?(:tiki_admin, @current_user)} class="flex w-full flex-col py-4">
+        <.admin_items active_tab={@active_tab} />
       </div>
     </nav>
     <!-- sidebar footer -->
@@ -29,30 +31,10 @@ defmodule TikiWeb.Component.Sidebar do
     <nav class="flex flex-col gap-1 px-2 py-5">
       <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
       <div class="flex w-full flex-col py-4">
-        <.sidebar_group>
-          <:header>
-            <.icon name="hero-calendar-days" class="h-4 w-4" />
-            <span><%= gettext("Event") %></span>
-          </:header>
-          <:item
-            text={gettext("All events")}
-            to={~p"/admin/events"}
-            active={@active_tab == :all_events}
-          />
-          <:item
-            text={gettext("New event")}
-            to={~p"/admin/events/new"}
-            active={@active_tab == :new_event}
-          />
-        </.sidebar_group>
-        <.sidebar_group>
-          <:header>
-            <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
-            <span><%= gettext("Settings") %></span>
-          </:header>
-          <:item text={gettext("Members")} to={~p"/team/members"} />
-          <:item text={gettext("Payments")} to="" />
-        </.sidebar_group>
+        <.all_event_items active_tab={@active_tab} />
+      </div>
+      <div :if={Policy.authorize?(:tiki_admin, @current_user)} class="flex w-full flex-col py-4">
+        <.admin_items active_tab={@active_tab} />
       </div>
     </nav>
     <!-- sidebar footer -->
@@ -70,81 +52,109 @@ defmodule TikiWeb.Component.Sidebar do
     <nav class="flex flex-col gap-1 px-2 py-5">
       <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
       <div class="flex w-full flex-col py-4">
-        <.sidebar_label><%= gettext("Event") %></.sidebar_label>
-        <.sidebar_item
-          icon="hero-calendar-days"
-          text={gettext("Overview")}
-          to={~p"/admin/events/#{@event}"}
-          active={@active_tab == :event_overview}
-        />
-        <.sidebar_group>
-          <:header>
-            <.icon name="hero-user-group" class="h-4 w-4" />
-            <span><%= gettext("Registrations") %></span>
-          </:header>
-          <:item
-            text={gettext("Attendees")}
-            to={~p"/admin/events/#{@event}/attendees"}
-            active={@active_tab == :event_attendees}
-          />
-
-          <:item
-            text={gettext("Live status")}
-            to={~p"/admin/events/#{@event}/status"}
-            active={@active_tab == :live_status}
-          />
-        </.sidebar_group>
-
-        <.sidebar_group>
-          <:header>
-            <.icon name="hero-ticket" class="h-4 w-4" />
-            <span><%= gettext("Tickets") %></span>
-          </:header>
-
-          <:item
-            text={gettext("Ticket types")}
-            to={~p"/admin/events/#{@event}/tickets"}
-            active={@active_tab == :event_tickets}
-          />
-        </.sidebar_group>
-
-        <.sidebar_item
-          icon="hero-document-text"
-          text="Formulär"
-          to={~p"/admin/events/#{@event}/forms"}
-          active={@active_tab == :forms}
-        />
+        <.event_items active_tab={@active_tab} event={@event} />
       </div>
       <div class="flex w-full flex-col py-4">
-        <.sidebar_label><%= gettext("General") %></.sidebar_label>
-        <.sidebar_group>
-          <:header>
-            <.icon name="hero-calendar-days" class="h-4 w-4" />
-            <span><%= gettext("Event") %></span>
-          </:header>
-          <:item
-            text={gettext("All events")}
-            to={~p"/admin/events"}
-            active={@active_tab == :all_events}
-          />
-          <:item
-            text={gettext("New event")}
-            to={~p"/admin/events/new"}
-            active={@active_tab == :new_event}
-          />
-        </.sidebar_group>
-        <.sidebar_group>
-          <:header>
-            <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
-            <span><%= gettext("Settings") %></span>
-          </:header>
-          <:item text={gettext("Members")} to="" />
-          <:item text={gettext("Payments")} to="" />
-        </.sidebar_group>
+        <.all_event_items active_tab={@active_tab} />
+      </div>
+      <div :if={Policy.authorize?(:tiki_admin, @current_user)} class="flex w-full flex-col py-4">
+        <.admin_items active_tab={@active_tab} />
       </div>
     </nav>
     <!-- sidebar footer -->
     <.sidebar_footer mobile={@mobile} current_user={@current_user} />
+    """
+  end
+
+  attr :active_tab, :atom
+  attr :event, :map
+
+  defp event_items(assigns) do
+    ~H"""
+    <.sidebar_label><%= gettext("Event") %></.sidebar_label>
+    <.sidebar_item
+      icon="hero-calendar-days"
+      text={gettext("Overview")}
+      to={~p"/admin/events/#{@event}"}
+      active={@active_tab == :event_overview}
+    />
+    <.sidebar_group>
+      <:header>
+        <.icon name="hero-user-group" class="h-4 w-4" />
+        <span><%= gettext("Registrations") %></span>
+      </:header>
+      <:item
+        text={gettext("Attendees")}
+        to={~p"/admin/events/#{@event}/attendees"}
+        active={@active_tab == :event_attendees}
+      />
+
+      <:item
+        text={gettext("Live status")}
+        to={~p"/admin/events/#{@event}/status"}
+        active={@active_tab == :live_status}
+      />
+    </.sidebar_group>
+
+    <.sidebar_group>
+      <:header>
+        <.icon name="hero-ticket" class="h-4 w-4" />
+        <span><%= gettext("Tickets") %></span>
+      </:header>
+
+      <:item
+        text={gettext("Ticket types")}
+        to={~p"/admin/events/#{@event}/tickets"}
+        active={@active_tab == :event_tickets}
+      />
+    </.sidebar_group>
+
+    <.sidebar_item
+      icon="hero-document-text"
+      text="Formulär"
+      to={~p"/admin/events/#{@event}/forms"}
+      active={@active_tab == :forms}
+    />
+    """
+  end
+
+  defp all_event_items(assigns) do
+    ~H"""
+    <.sidebar_label><%= gettext("General") %></.sidebar_label>
+    <.sidebar_group>
+      <:header>
+        <.icon name="hero-calendar-days" class="h-4 w-4" />
+        <span><%= gettext("Event") %></span>
+      </:header>
+      <:item text={gettext("All events")} to={~p"/admin/events"} active={@active_tab == :all_events} />
+      <:item
+        text={gettext("New event")}
+        to={~p"/admin/events/new"}
+        active={@active_tab == :new_event}
+      />
+    </.sidebar_group>
+    <.sidebar_group>
+      <:header>
+        <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
+        <span><%= gettext("Settings") %></span>
+      </:header>
+      <:item text={gettext("Members")} to={~p"/team/members"} />
+      <:item text={gettext("Payments")} to="" />
+    </.sidebar_group>
+    """
+  end
+
+  defp admin_items(assigns) do
+    ~H"""
+    <.sidebar_label><%= gettext("Admin") %></.sidebar_label>
+    <.sidebar_group>
+      <:header>
+        <.icon name="hero-user-group" class="h-4 w-4" />
+        <span><%= gettext("Teams") %></span>
+      </:header>
+      <:item text={gettext("All teams")} to={~p"/admin/teams"} active={@active_tab == :all_teams} />
+      <:item text={gettext("New team")} to={~p"/admin/teams/new"} active={@active_tab == :new_team} />
+    </.sidebar_group>
     """
   end
 

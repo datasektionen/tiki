@@ -43,6 +43,9 @@ defmodule TikiWeb.Nav do
   tab AdminLive.Dashboard.Index, :index, :dashboard
   tab AdminLive.Event.Index, :index, :all_events
 
+  tab AdminLive.Team.Index, :index, :all_teams
+  tab AdminLive.Team.Form, :new, :new_team
+
   tab AdminLive.Event.Edit, :new, :new_event
 
   tab AdminLive.Event.Status, :index, :live_status
