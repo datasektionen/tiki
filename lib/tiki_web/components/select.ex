@@ -36,7 +36,8 @@ defmodule TikiWeb.Component.Select do
   attr :value, :any, default: nil, doc: "The value of the select"
   attr :"default-value", :any, default: nil, doc: "The default value of the select"
 
-  attr :field, Phoenix.HTML.FormField, doc: "a form field struct retrieved from the form, for example: @form[:email]"
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
   attr :label, :string,
     default: nil,
@@ -205,8 +206,8 @@ defmodule TikiWeb.Component.Select do
         phx-key="Escape"
         phx-keydown={JS.exec("x-hide-select", to: "##{@builder.id}")}
       />
-      <div class="absolute top-0 left-0 w-full h-full group-hover/item:bg-accent rounded"></div>
-      <span class="hidden peer-checked:block absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <div class="absolute top-0 left-0 h-full w-full rounded group-hover/item:bg-accent"></div>
+      <span class="absolute left-2 flex hidden h-3.5 w-3.5 items-center justify-center peer-checked:block">
         <span aria-hidden="true">
           <svg
             xmlns="http://www.w3.org/2000/svg"

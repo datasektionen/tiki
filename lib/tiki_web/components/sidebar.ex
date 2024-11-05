@@ -115,6 +115,13 @@ defmodule TikiWeb.Component.Sidebar do
       to={~p"/admin/events/#{@event}/forms"}
       active={@active_tab == :forms}
     />
+
+    <.sidebar_item
+      icon="hero-pencil"
+      text="Redigera"
+      to={~p"/admin/events/#{@event}/edit"}
+      active={@active_tab == :event_edit}
+    />
     """
   end
 

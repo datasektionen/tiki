@@ -86,7 +86,8 @@ defmodule TikiWeb.Component.Alert do
   @variants %{
     variant: %{
       "default" => "bg-background text-foreground",
-      "destructive" => "border-destructive/50 text-destructive dark:border-destructive [&>span]:text-destructive"
+      "destructive" =>
+        "border-destructive/50 text-destructive dark:border-destructive [&>span]:text-destructive"
     }
   }
 

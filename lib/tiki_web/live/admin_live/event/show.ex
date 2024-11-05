@@ -1,30 +1,51 @@
 defmodule TikiWeb.AdminLive.Event.Show do
   use TikiWeb, :live_view
 
-  alias Tiki.Tickets.TicketType
-  alias Tiki.Tickets
   alias Tiki.Events
-  alias Tiki.Tickets.TicketBatch
+  alias Tiki.Orders
+  alias Tiki.Presence
 
-  @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  import TikiWeb.Component.Card
+
+  @impl Phoenix.LiveView
+  def mount(%{"id" => event_id}, _session, socket) do
+    initial_count = Presence.list("presence:event:#{event_id}") |> map_size
+    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+
+    if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+
+    {:ok, assign(socket, online_count: initial_count)}
   end
 
-  @impl true
-  def handle_params(%{"id" => id} = params, _, socket) do
-    event = Events.get_event!(id, preload_ticket_types: true)
-    batches = get_batch_graph(event.ticket_batches)
+  @impl Phoenix.LiveView
+  def handle_info(
+        %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
+        %{assigns: %{online_count: count}} = socket
+      ) do
+    online_count = count + map_size(joins) - map_size(leaves)
+    {:noreply, assign(socket, :online_count, online_count)}
+  end
+
+  def handle_info({:order_confirmed, order}, socket) do
+    tickets_in_order = Enum.map(order.tickets, fn ticket -> Map.put(ticket, :order, order) end)
+
+    {:noreply, stream(socket, :recent_tickets, tickets_in_order, at: 0)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(%{"id" => event_id} = params, _, socket) do
+    event = Events.get_event!(event_id, preload_ticket_types: true)
+    recent_tickets = Orders.list_tickets_for_event(event.id, limit: 10)
 
     {:noreply,
      socket
-     |> assign(:batches, batches)
      |> assign(:event, event)
-     |> apply_action(socket.assigns.live_action, params)}
+     |> apply_action(socket.assigns.live_action, params)
+     |> stream(:recent_tickets, recent_tickets)}
   end
 
   def apply_action(socket, :show, _params) do
-    assign(socket, :page_title, "Show Event")
+    assign(socket, :page_title, socket.assigns.event.name)
     |> assign_breadcrumbs([
       {"Dashboard", ~p"/admin"},
       {"Events", ~p"/admin/events"},
@@ -32,110 +53,92 @@ defmodule TikiWeb.AdminLive.Event.Show do
     ])
   end
 
-  def apply_action(socket, :edit, _params), do: assign(socket, :page_title, "Edit Event")
-
-  def apply_action(socket, :edit_batch, %{"batch_id" => batch_id}) do
-    batch = Tickets.get_ticket_batch!(batch_id)
-
-    socket
-    |> assign(:page_title, "Edit Ticket Batch")
-    |> assign(:batch, batch)
-  end
-
-  def apply_action(socket, :new_batch, _params) do
-    socket
-    |> assign(:page_title, "New Ticket Batch")
-    |> assign(:batch, %TicketBatch{event_id: socket.assigns.event.id})
-  end
-
-  def apply_action(socket, :edit_ticket_type, %{"ticket_type_id" => tt_id}) do
-    ticket_type = Tickets.get_ticket_type!(tt_id)
-
-    socket
-    |> assign(:page_title, "Edit Ticket type")
-    |> assign(:ticket_type, ticket_type)
-  end
-
-  def apply_action(socket, :new_ticket_type, _params) do
-    socket
-    |> assign(:page_title, "New Ticket type")
-    |> assign(:ticket_type, %TicketType{})
-  end
-
-  defp get_batch_graph(batches) do
-    fake_root = %{batch: %TicketBatch{id: 0, name: "fake_root"}}
-    graph = :digraph.new()
-
-    batches = Enum.map(batches, fn batch -> %{batch: batch} end)
-
-    for %{batch: %TicketBatch{id: id}} = node <- [fake_root | batches] do
-      :digraph.add_vertex(graph, id, node)
-    end
-
-    for %{batch: %TicketBatch{id: id, parent_batch_id: parent_id}} <- batches do
-      :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
-    end
-
-    :digraph.vertices(graph)
-    :digraph.edges(graph)
-
-    %{children: batches} = build_graph(graph, fake_root.batch.id)
-
-    :digraph.delete(graph)
-
-    batches
-  end
-
-  defp build_graph(graph, node) do
-    children =
-      for child <- :digraph.in_neighbours(graph, node) do
-        build_graph(graph, child)
-      end
-
-    {^node, label} = :digraph.vertex(graph, node)
-
-    Map.put(label, :children, children)
-  end
-
-  attr :batch, :map
-  attr :level, :integer, default: 0
-
-  defp ticket_batch(assigns) do
+  @impl Phoenix.LiveView
+  def render(assigns) do
     ~H"""
-    <div class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm">
-      <.link
-        patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/batches/#{@batch.batch}/edit"}
-        phx-click={JS.push_focus()}
-        class="flex flex-row justify-between bg-gray-200 px-4 py-4 hover:bg-gray-300"
-      >
-        <div class="inline-flex items-center gap-2">
-          <.icon name="hero-rectangle-stack-mini h-4 w-4" />
-          <%= @batch.batch.name %>
-        </div>
-        <div :if={@batch.batch.max_size}>
-          max <%= @batch.batch.max_size %>
-        </div>
-      </.link>
-      <div :if={@batch.batch.ticket_types != []} class="flex flex-col">
-        <.link
-          :for={ticket_type <- @batch.batch.ticket_types}
-          patch={~p"/admin/events/#{@batch.batch.event_id}/ticket-types/#{ticket_type}/edit"}
-          class="flex flex-row justify-between px-4 py-4 hover:bg-white"
-        >
-          <div class="inline-flex items-center gap-2">
-            <.icon name="hero-ticket-mini h-4 w-4" />
-            <%= ticket_type.name %>
-          </div>
-          <div class="text-gray-500">
-            <%= ticket_type.price %> kr
-          </div>
-        </.link>
+    <.header>
+      <%= @event.name %>
+      <:subtitle>
+        <span>
+          <%= Tiki.Cldr.DateTime.to_string!(@event.event_date, format: :yMMMEd) |> String.capitalize() %>
+        </span>·
+        <span>
+          <%= @event.location %>
+        </span>
+      </:subtitle>
+      <:actions>
+        <.button navigate={~p"/admin/events/#{@event}/edit"} class="hidden lg:inline-block">
+          <%= gettext("Edit event") %>
+        </.button>
+        <.button navigate={~p"/events/#{@event}"}>
+          <%= gettext("View event page") %>
+        </.button>
+      </:actions>
+    </.header>
+    <div class="flex flex-col gap-8 py-8">
+      <div class="grid gap-8 lg:grid-cols-3">
+        <.card>
+          <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
+            <.card_title class="text-sm font-medium">
+              <%= gettext("Tickets sold") %>
+            </.card_title>
+            <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
+          </.card_header>
+          <.card_content>
+            <div class="text-2xl font-bold">N/A</div>
+          </.card_content>
+        </.card>
+        <.card>
+          <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
+            <.card_title class="text-sm font-medium">
+              <%= gettext("Total sales") %>
+            </.card_title>
+            <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
+          </.card_header>
+          <.card_content>
+            <div class="text-2xl font-bold">N/A</div>
+          </.card_content>
+        </.card>
+        <.card>
+          <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
+            <.card_title class="text-sm font-medium">
+              <%= gettext("Current visitors") %>
+            </.card_title>
+            <.icon name="hero-user-group" class="text-muted-foreground h-4 w-4" />
+          </.card_header>
+          <.card_content>
+            <div class="text-2xl font-bold">
+              <%= @online_count %>
+            </div>
+          </.card_content>
+        </.card>
       </div>
-
-      <div :if={@batch.children != []} class="my-4 mr-2 flex flex-col gap-4">
-        <div :for={child <- @batch.children} class="ml-4">
-          <.ticket_batch batch={child} level={@level + 1} />
-        </div>
+      <div class="grid gap-4 xl:grid-cols-7">
+        <.card class="xl:col-span-7">
+          <.card_header>
+            <.card_title>
+              <%= gettext("Recent orders") %>
+            </.card_title>
+          </.card_header>
+          <.card_content>
+            <.table
+              id="events"
+              rows={@streams.recent_tickets}
+              row_click={
+                fn {_id, ticket} ->
+                  JS.navigate(~p"/admin/events/#{@event}/attendees/#{ticket}")
+                end
+              }
+            >
+              <:col :let={{_id, ticket}} label={gettext("Name")}>
+                <%= ticket.order.user.full_name %>
+              </:col>
+              <:col :let={{_id, ticket}} label={gettext("Date")}>
+                <%= Calendar.strftime(ticket.inserted_at, "%Y-%m-%d") %>
+              </:col>
+            </.table>
+          </.card_content>
+        </.card>
       </div>
     </div>
     """

@@ -8,10 +8,12 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
   import TikiWeb.Component.Card
   import TikiWeb.Component.Select
 
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     {:ok, assign_data(socket, socket.assigns.current_team)}
   end
 
+  @impl Phoenix.LiveView
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
