@@ -114,6 +114,7 @@ defmodule TikiWeb.UserAuth do
   def fetch_locale(conn, _opts) do
     locale = get_session(conn, :locale) || "en"
     Gettext.put_locale(TikiWeb.Gettext, locale)
+    Cldr.put_locale(Tiki.Cldr, locale)
     conn
   end
 
@@ -251,7 +252,9 @@ defmodule TikiWeb.UserAuth do
           |> Teams.preload_teams()
 
         if user do
-          Gettext.put_locale(TikiWeb.Gettext, Map.get(user, :locale, "en"))
+          locale = Map.get(user, :locale, "en")
+          Gettext.put_locale(TikiWeb.Gettext, locale)
+          Cldr.put_locale(Tiki.Cldr, locale)
         end
 
         user
