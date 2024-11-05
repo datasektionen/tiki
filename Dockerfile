@@ -14,6 +14,9 @@ RUN apt-get update && \
     mix archive.install hex phx_new --force && \
     mix local.rebar --force
 
+COPY ./entrypoint.sh /bin/entrypoint.sh
+RUN chmod +x /bin/entrypoint.sh
+
 ENV APP_HOME /app
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME

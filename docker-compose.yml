@@ -23,7 +23,7 @@ services:
       context: .
       dockerfile: Dockerfile
     command:
-      - "/app/entrypoint.sh"
+      - "/bin/entrypoint.sh"
     environment:
       # Database stuff
       POSTGRES_USER: postgres
