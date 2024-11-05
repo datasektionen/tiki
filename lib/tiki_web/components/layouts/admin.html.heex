@@ -1,14 +1,14 @@
 <!-- Main -->
 <div class="bg-background flex min-h-screen w-full flex-col">
   <!-- sidebar -->
-  <aside class="bg-muted/40 fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r sm:flex">
+  <aside class="bg-muted/40 fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r md:flex">
     <%= sidebar(assigns) %>
   </aside>
-  <div class="flex flex-col py-4 sm:gap-4 sm:py-8 sm:pl-72">
-    <div class="mx-auto w-full max-w-7xl px-4 sm:px-6">
+  <div class="flex flex-col py-4 md:gap-4 md:py-8 md:pl-72">
+    <div class="mx-auto w-full max-w-7xl px-4 md:px-6">
       <%= nav_header(assigns) %>
     </div>
-    <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-4">
+    <main class="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-4">
       <%= @inner_content %>
     </main>
   </div>

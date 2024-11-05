@@ -30,10 +30,11 @@ defmodule Tiki.Tickets.TicketBatch do
     a_val = fetch_field(changeset, a)
     b_val = fetch_field(changeset, b)
 
-    if a_val == b_val do
-      add_error(changeset, a, "#{a} must not be equal to #{b}")
-    else
-      changeset
+    case {a_val, b_val} do
+      {{:data, nil}, _} -> changeset
+      {_, {:data, nil}} -> changeset
+      {{_, a}, {_, b}} when a == b -> add_error(changeset, a, "#{a} must not be equal to #{b}")
+      _ -> changeset
     end
   end
 end

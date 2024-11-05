@@ -76,6 +76,7 @@ defmodule TikiWeb.Router do
     end
 
     post "/admin/set_team", UserSessionController, :set_team
+    get "/admin/set_team/:team_id", UserSessionController, :set_team
 
     scope "/admin", AdminLive do
       live_session :require_admin_user,

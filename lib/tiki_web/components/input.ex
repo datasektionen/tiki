@@ -154,7 +154,7 @@ defmodule TikiWeb.Component.Input do
   attr :options, :list, required: true
   attr :value, :any
 
-  def select(assigns) do
+  def simple_select(assigns) do
     ~H"""
     <select
       id={@id}

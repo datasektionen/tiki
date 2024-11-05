@@ -121,6 +121,12 @@ defmodule TikiWeb.Component.Sidebar do
   defp all_event_items(assigns) do
     ~H"""
     <.sidebar_label><%= gettext("General") %></.sidebar_label>
+    <.sidebar_item
+      icon="hero-home"
+      text={gettext("Dashboard")}
+      to={~p"/admin/"}
+      active={@active_tab == :dashboard}
+    />
     <.sidebar_group>
       <:header>
         <.icon name="hero-calendar-days" class="h-4 w-4" />
@@ -160,10 +166,10 @@ defmodule TikiWeb.Component.Sidebar do
 
   def nav_header(assigns) do
     ~H"""
-    <header class="bg-background flex h-auto items-center sm:bg-transparent">
+    <header class="bg-background flex h-auto items-center md:bg-transparent">
       <.sheet>
         <.sheet_trigger target="sidebar-sheet">
-          <button class="flex flex-row items-center sm:hidden">
+          <button class="flex flex-row items-center md:hidden">
             <.icon name="hero-bars-2" class="h-5 w-5" />
             <span class="sr-only">Toggle Menu</span>
           </button>
@@ -175,7 +181,7 @@ defmodule TikiWeb.Component.Sidebar do
           </div>
         </.sheet_content>
       </.sheet>
-      <span class="bg-foreground/40 w-[1px] mx-4 h-4 shrink-0 sm:hidden" />
+      <span class="bg-foreground/40 w-[1px] mx-4 h-4 shrink-0 md:hidden" />
       <.breadcrumbs active_tab={@active_tab} breadcrumbs={@breadcrumbs} />
     </header>
     """

@@ -61,8 +61,6 @@ defmodule Tiki.Orders do
     defp available_helper(graph, vertex, count) do
       {^vertex, label} = :digraph.vertex(graph, vertex)
 
-      count = if count == :infinity, do: :infinity, else: count
-
       available =
         case label.batch.max_size do
           nil -> count
@@ -576,14 +574,48 @@ defmodule Tiki.Orders do
   end
 
   @doc """
+  Returns the orders for all events in a team, ordered by most recent first.
+
+  Options:
+    * `:limit` - The maximum number of tickets to return.
+
+  ## Examples
+
+      iex> list_team_orders(event_id)
+      [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
+  """
+  def list_team_orders(team_id, opts \\ []) do
+    query =
+      from o in Order,
+        join: e in assoc(o, :event),
+        where: e.team_id == ^team_id,
+        join: t in assoc(o, :tickets),
+        join: tt in assoc(t, :ticket_type),
+        join: u in assoc(o, :user),
+        order_by: [desc: o.inserted_at],
+        preload: [tickets: {t, ticket_type: tt}, user: u, event: e]
+
+    case Keyword.get(opts, :limit) do
+      nil -> query
+      limit -> query |> limit(^limit)
+    end
+    |> Repo.all()
+
+    Repo.all(query)
+  end
+
+  @doc """
   Returns the tikets for an event, ordered by most recent first.
+
+  Options:
+    * `:limit` - The maximum number of tickets to return.
 
   ## Examples
 
       iex> list_tickets_for_event(event_id)
       [%Ticket{ticket_type: %TicketType{}}, %Order{user: %User{}}], ...]
   """
-  def list_tickets_for_event(event_id) do
+  def list_tickets_for_event(event_id, opts \\ []) do
     query =
       from t in Ticket,
         join: o in assoc(t, :order),
@@ -593,7 +625,11 @@ defmodule Tiki.Orders do
         where: o.event_id == ^event_id,
         preload: [ticket_type: tt, order: {o, user: u}]
 
-    Repo.all(query)
+    case Keyword.get(opts, :limit) do
+      nil -> query
+      limit -> query |> limit(^limit)
+    end
+    |> Repo.all()
   end
 
   defp broadcast(event_id, :purchases, message) do
