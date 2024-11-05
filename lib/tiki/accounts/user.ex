@@ -15,7 +15,8 @@ defmodule Tiki.Accounts.User do
     field :confirmed_at, :naive_datetime
 
     field :locale, :string, default: "en"
-    field :role, Ecto.Enum, values: [:user, :admin], default: :user
+    # TODO: Change to :user
+    field :role, Ecto.Enum, values: [:user, :admin], default: :admin
 
     has_many :memberships, Tiki.Teams.Membership
 

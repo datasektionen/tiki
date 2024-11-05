@@ -1,9 +1,6 @@
 # Docker-compose file for setting up dependencies for a fully working development environment
 # This file is used to start up the following services:
 # - Postgres
-# - Minio (S3 local development replacement)
-# - Imgproxy (for local development)
-# - Nyckeln under dörrmattan (login service local replacement)
 # - The Phoenix application
 
 services:
@@ -40,9 +37,6 @@ services:
       - _elixir_build:/app/_build # So that we can have separate build files for the host and the container
     depends_on:
       - db
-      - minio
-      - imgproxy
-      - login
 
 volumes:
   _postgres:

@@ -12,6 +12,7 @@ config :tiki,
 
 # Configures the endpoint
 config :tiki, TikiWeb.Endpoint,
+  adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
   render_errors: [
     formats: [html: TikiWeb.ErrorHTML, json: TikiWeb.ErrorJSON],

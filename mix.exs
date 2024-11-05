@@ -50,17 +50,17 @@ defmodule Tiki.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"},
+      {:bandit, "~> 1.0"},
       {:stripity_stripe, "~> 3.0"},
-      {:httpoison, "~> 2.0"},
+      {:req, "~> 0.5"},
+      {:oidcc_plug, "~> 0.1.0"},
+      {:let_me, "~> 1.2"},
       {:k6, "~> 0.2.0", only: :dev, runtime: false},
       {:tailwind_formatter, "~> 0.3.5", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:phx_gen_oidcc, "~> 0.1.0", only: :dev, runtime: false},
       {:salad_ui,
-       git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev, :test]},
-      {:oidcc_plug, "~> 0.1.0"},
-      {:let_me, "~> 1.2"}
+       git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev, :test]}
     ]
   end
 
