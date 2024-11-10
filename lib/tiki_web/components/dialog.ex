@@ -41,6 +41,11 @@ defmodule TikiWeb.Component.Dialog do
   attr :show, :boolean, default: false
   attr :on_cancel, JS, default: %JS{}
   attr :class, :string, default: nil
+
+  attr :safe, :boolean,
+    default: false,
+    doc: "If true, the dialog will not close when clicking outside of it"
+
   slot :inner_block, required: true
 
   def dialog(assigns) do
@@ -63,7 +68,13 @@ defmodule TikiWeb.Component.Dialog do
         aria-modal="true"
         tabindex="0"
       >
-        <.focus_wrap id={"#{@id}-wrap"} class="w-full sm:max-w-[425px]">
+        <.focus_wrap
+          id={"#{@id}-wrap"}
+          phx-window-keydown={if !@safe, do: JS.exec("data-cancel", to: "##{@id}")}
+          phx-key="escape"
+          phx-click-away={if !@safe, do: JS.exec("data-cancel", to: "##{@id}")}
+          class="w-full sm:max-w-[425px]"
+        >
           <div
             role="dialog"
             aria-modal="true"

@@ -1,5 +1,5 @@
 <div>
-  <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)}>
+  <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)} safe>
     <div :if={@state == :timeout}>
       <.header>
         Tiden är slut.
