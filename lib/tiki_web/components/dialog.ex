@@ -63,13 +63,7 @@ defmodule TikiWeb.Component.Dialog do
         aria-modal="true"
         tabindex="0"
       >
-        <.focus_wrap
-          id={"#{@id}-wrap"}
-          phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
-          phx-key="escape"
-          phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
-          class="w-full sm:max-w-[425px]"
-        >
+        <.focus_wrap id={"#{@id}-wrap"} class="w-full sm:max-w-[425px]">
           <div
             role="dialog"
             aria-modal="true"
