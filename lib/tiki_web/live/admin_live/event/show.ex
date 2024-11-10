@@ -29,7 +29,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
   def handle_info({:order_confirmed, order}, socket) do
     tickets_in_order = Enum.map(order.tickets, fn ticket -> Map.put(ticket, :order, order) end)
 
-    {:noreply, stream(socket, :recent_tickets, tickets_in_order, at: 0)}
+    {:noreply, stream(socket, :recent_tickets, tickets_in_order, at: -1)}
   end
 
   @impl Phoenix.LiveView

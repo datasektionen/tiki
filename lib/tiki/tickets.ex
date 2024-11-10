@@ -68,9 +68,20 @@ defmodule Tiki.Tickets do
 
   """
   def update_ticket_batch(%TicketBatch{} = ticket_batch, attrs) do
-    ticket_batch
-    |> TicketBatch.changeset(attrs)
-    |> Repo.update()
+    case ticket_batch
+         |> TicketBatch.changeset(attrs)
+         |> Repo.update() do
+      {:ok, batch} ->
+        Tiki.Orders.broadcast(
+          ticket_batch.event_id,
+          {:tickets_updated, Tiki.Orders.get_availible_ticket_types(ticket_batch.event_id)}
+        )
+
+        {:ok, batch}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """

@@ -636,7 +636,7 @@ defmodule Tiki.Orders do
     PubSub.broadcast(Tiki.PubSub, "event:#{event_id}:purchases", message)
   end
 
-  defp broadcast(event_id, message) do
+  def broadcast(event_id, message) do
     PubSub.broadcast(Tiki.PubSub, "event:#{event_id}", message)
   end
 
