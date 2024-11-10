@@ -4,6 +4,8 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
   alias Tiki.Checkouts
   alias TikiWeb.EventLive.PurchaseMonitor
   alias Tiki.Orders
+  alias Tiki.Accounts
+  alias Tiki.Accounts.User
 
   def update(%{action: {:stripe_intent, intent}}, socket) do
     {:ok, assign(socket, intent: intent)}
@@ -85,7 +87,11 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
       Orders.maybe_cancel_reservation(socket.assigns.order)
     end
 
-    {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event.id}")}
+    case socket.assigns do
+      %{patch: url} when not is_nil(url) -> {:noreply, push_patch(socket, to: url)}
+      %{navigate: url} when not is_nil(url) -> {:noreply, push_navigate(socket, to: url)}
+      _ -> {:noreply, assign(socket, state: :cancelled)}
+    end
   end
 
   def handle_event("submit", _params, socket) do
@@ -95,7 +101,13 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
       end)
       |> Enum.filter(fn ticket -> ticket.count > 0 end)
 
-    %{current_user: %{id: user_id}, event: %{id: event_id}} = socket.assigns
+    %{event: %{id: event_id}} = socket.assigns
+
+    user_id =
+      case socket.assigns do
+        %{current_user: %User{id: user_id}} -> user_id
+        _ -> nil
+      end
 
     price = Enum.reduce(to_purchase, 0, fn ticket, sum -> sum + ticket.count * ticket.price end)
 
@@ -116,12 +128,6 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     end
   end
 
-  def handle_event("pay", _params, socket) do
-    {:ok, _} = Orders.confirm_order(socket.assigns.order)
-
-    {:noreply, assign(socket, state: :purchased)}
-  end
-
   def handle_event("update_promo", %{"code" => code}, socket) do
     {:noreply, assign(socket, promo_code: code)}
   end
@@ -132,9 +138,26 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     {:noreply, assign(socket, promo_code: "") |> assign_ticket_types(ticket_types, code)}
   end
 
+  def handle_event(
+        "payment-sucess",
+        %{"id" => id},
+        %{assigns: %{current_user: %User{id: user_id}}} = socket
+      ) do
+    with {:ok, order, _} <- Checkouts.confirm_stripe_payment(id),
+         {:ok, _} <- Orders.confirm_order(order, user_id) do
+      {:noreply, assign(socket, state: :purchased)}
+    else
+      _ ->
+        # TODO: Handle error
+        {:noreply, socket}
+    end
+  end
+
   def handle_event("payment-sucess", %{"id" => id}, socket) do
-    with {:ok, order} <- Checkouts.confirm_stripe_payment(id),
-         {:ok, _} <- Orders.confirm_order(order) do
+    # The user is not logged in, so we need to create a new user and assign the order to that user
+    with {:ok, order, email} <- Checkouts.confirm_stripe_payment(id),
+         {:ok, user} <- Accounts.upsert_user_email(email),
+         {:ok, _} <- Orders.confirm_order(order, user.id) do
       {:noreply, assign(socket, state: :purchased)}
     else
       _ ->

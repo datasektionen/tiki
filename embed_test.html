@@ -1,0 +1,45 @@
+<html>
+
+<head>
+    <title>Embedding Test</title>
+</head>
+
+<p>
+    Start a python web server in the root directory of the project to serve the embeddable purchase form.
+    <br>
+    <code>python -m http.server 4001</code>
+</p>
+   
+
+<a onclick="openPurchaseFrame()">
+    <button>
+        Open purchase form
+    </button>
+</a>
+
+<script>
+    var iframeId = 'tiki_purchaseFrame'; 
+
+    function openPurchaseFrame() {
+        var iframe = document.createElement('iframe');
+
+        iframe.id = iframeId;
+        iframe.src = 'http://localhost:4000/embed/events/4/purchase';
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.style = 'position: absolute; inset: 0; overflow: hidden; border: 0;';
+        document.body.appendChild(iframe);
+    }
+
+    window.addEventListener('message', (event) => {
+        // Check the origin of the message to enhance security
+        if (event.origin === 'http://localhost:4000') {
+            const { type } = event.data;
+            if (type === 'close') {
+                document.body.removeChild(document.getElementById(iframeId));
+            }
+        }
+    });
+</script>
+
+</html>

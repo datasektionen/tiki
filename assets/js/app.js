@@ -31,27 +31,38 @@ Hooks.Sortable = {
   mounted() {
     let batch = this.el.dataset.batch;
     new Sortable(this.el, {
-        animation: 150,
-        ghostClass: "bg-gray-200",
-        dragClass: "bg-gray-300",
-        fallbackOnBody: true,
-        invertSwap: true,
-        swapThreshold: 0.65,
-        group: "shared",
-        onEnd: (e) => {
-            let params = {old: e.oldIndex, new: e.newIndex, to: e.to.dataset, ...e.item.dataset};
-            this.pushEventTo(this.el, "drop", params);
-        }
+      animation: 150,
+      ghostClass: "bg-gray-200",
+      dragClass: "bg-gray-300",
+      fallbackOnBody: true,
+      invertSwap: true,
+      swapThreshold: 0.65,
+      group: "shared",
+      onEnd: (e) => {
+        let params = {
+          old: e.oldIndex,
+          new: e.newIndex,
+          to: e.to.dataset,
+          ...e.item.dataset,
+        };
+        this.pushEventTo(this.el, "drop", params);
+      },
     });
   },
 };
 
+let socketUrl = window.location.pathname.startsWith("/embed/")
+  ? "/embed/live"
+  : "/live";
+
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
-let liveSocket = new LiveSocket("/live", Socket, {
+
+let liveSocket = new LiveSocket(socketUrl, Socket, {
   params: { _csrf_token: csrfToken },
   hooks: Hooks,
+  longPollFallbackMs: socketUrl === "/embed/live" ? 2000 : undefined,
 });
 
 // Show progress bar on live navigation and form submits
@@ -69,8 +80,8 @@ liveSocket.connect();
 window.liveSocket = liveSocket;
 
 // Allows to execute JS commands from the server
-window.addEventListener("phx:js-exec", ({detail}) => {
-  document.querySelectorAll(detail.to).forEach(el => {
-    liveSocket.execJS(el, el.getAttribute(detail.attr))
-  })
-})
+window.addEventListener("phx:js-exec", ({ detail }) => {
+  document.querySelectorAll(detail.to).forEach((el) => {
+    liveSocket.execJS(el, el.getAttribute(detail.attr));
+  });
+});

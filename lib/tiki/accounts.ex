@@ -107,6 +107,20 @@ defmodule Tiki.Accounts do
     end
   end
 
+  @doc """
+  Either creates a new user, or returns an existing user with the same email.
+  """
+  def upsert_user_email(email) do
+    case Repo.get_by(User, email: email) do
+      nil ->
+        User.email_changeset(%User{}, %{email: email})
+        |> Repo.insert()
+
+      user ->
+        {:ok, user}
+    end
+  end
+
   ## Settings
 
   @doc """

@@ -42,10 +42,11 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
           Map.put(ticket, :order, order)
         end)
       end)
+      |> Enum.take(10)
 
     socket
     |> stream(:events, events)
-    |> stream(:recent_tickets, recent_tickets)
+    |> stream(:recent_tickets, recent_tickets, at: 0, limit: 10)
   end
 
   @impl Phoenix.LiveView

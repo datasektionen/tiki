@@ -50,14 +50,6 @@ defmodule TikiWeb.AdminLive.Event.Index do
   end
 
   @impl Phoenix.LiveView
-  def handle_event("delete", %{"id" => id}, socket) do
-    event = Events.get_event!(id)
-    {:ok, _} = Events.delete_event(event)
-
-    {:noreply, stream_delete(socket, :events, event)}
-  end
-
-  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">

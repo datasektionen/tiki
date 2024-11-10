@@ -111,7 +111,7 @@ defmodule Tiki.Orders do
         where: o.id == ^id,
         join: t in assoc(o, :tickets),
         join: tt in assoc(t, :ticket_type),
-        join: u in assoc(o, :user),
+        left_join: u in assoc(o, :user),
         preload: [tickets: {t, ticket_type: tt}, user: u]
 
     Repo.one!(query)
@@ -347,8 +347,8 @@ defmodule Tiki.Orders do
       iex> confirm_order(%Order{})
       {:error, %Ecto.Changeset{}}
   """
-  def confirm_order(order) do
-    case update_order(order, %{status: "paid"}) do
+  def confirm_order(order, user_id) do
+    case update_order(order, %{status: "paid", user_id: user_id}) do
       {:error, changeset} ->
         {:error, changeset}
 

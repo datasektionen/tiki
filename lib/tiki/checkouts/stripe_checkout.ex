@@ -25,6 +25,6 @@ defmodule Tiki.Checkouts.StripeCheckout do
       :payment_method_id,
       :status
     ])
-    |> validate_required([:user_id, :order_id])
+    |> validate_required([:payment_intent_id, :order_id])
   end
 end
