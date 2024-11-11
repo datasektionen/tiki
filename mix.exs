@@ -55,6 +55,7 @@ defmodule Tiki.MixProject do
       {:stripity_stripe, "~> 3.0"},
       {:req, "~> 0.5"},
       {:oidcc_plug, "~> 0.1.0"},
+      {:oidcc, "~> 3.2.0"},
       {:let_me, "~> 1.2"},
       {:k6, "~> 0.2.0", only: :dev, runtime: false},
       {:tailwind_formatter, "~> 0.3.5", only: [:dev, :test], runtime: false},
