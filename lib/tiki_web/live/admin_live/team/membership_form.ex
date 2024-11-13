@@ -10,23 +10,33 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
     ~H"""
     <.header>
       <%= @page_title %>
-      <:subtitle>Use this form to manage memberships in your database.</:subtitle>
+      <:subtitle><%= gettext("Use this form to manage memberships in your database") %>.</:subtitle>
     </.header>
 
     <.simple_form for={@form} id="team-form" phx-change="validate" phx-submit="save">
-      <.input
+      <.live_component
+        id="user-select-component"
+        module={TikiWeb.LiveComponents.SearchCombobox}
+        search_fn={&Tiki.Accounts.search_users/1}
+        all_fn={&Tiki.Accounts.list_users/1}
+        map_fn={fn user -> {user.id, user.email} end}
         field={@form[:user_id]}
-        type="select"
-        label="Name"
-        options={Enum.map(@users, &{&1.email, &1.id})}
+        label={gettext("User")}
+        chosen={@form[:user_id].value}
+        placeholder={
+          Ecto.assoc_loaded?(@form.data.user) && @form[:user].value &&
+            @form[:user].value.email
+        }
       />
-      <.input field={@form[:role]} type="select" label="Role" options={[:admin, :member]} />
+      <.input field={@form[:role]} type="select" label={gettext("Role")} options={[:admin, :member]} />
       <:actions>
-        <.button phx-disable-with="Saving..."><%= gettext("Save") %></.button>
+        <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save") %></.button>
       </:actions>
     </.simple_form>
 
-    <.back navigate={return_path(@return_to)}>Back</.back>
+    <.back navigate={return_path(@return_to)}>
+      <%= gettext("Back") %>
+    </.back>
     """
   end
 
@@ -51,15 +61,25 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
     |> assign(:page_title, "Edit Membership")
     |> assign(:membership, membership)
     |> assign(:form, to_form(Teams.change_membership(membership)))
+    |> assign_breadcrumbs([
+      {"Dashboard", ~p"/admin"},
+      {"Team members", ~p"/admin/team/members"},
+      {"Edit member", ""}
+    ])
   end
 
   defp apply_action(socket, :new, _params) do
     membership = %Membership{}
 
     socket
-    |> assign(:page_title, "New Membership")
+    |> assign(:page_title, gettext("New Membership"))
     |> assign(:membership, membership)
     |> assign(:form, to_form(Teams.change_membership(membership)))
+    |> assign_breadcrumbs([
+      {"Dashboard", ~p"/admin"},
+      {"Team members", ~p"/admin/team/members"},
+      {"New member", ~p"/admin/team/members/new"}
+    ])
   end
 
   @impl true
@@ -80,7 +100,7 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Membership updated successfully")
+         |> put_flash(:info, gettext("Membership updated successfully"))
          |> push_navigate(to: return_path(socket.assigns.return_to))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -93,7 +113,7 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Membership created successfully")
+         |> put_flash(:info, gettext("Membership created successfully"))
          |> push_navigate(to: return_path(socket.assigns.return_to))}
 
       {:error, %Ecto.Changeset{} = changeset} ->

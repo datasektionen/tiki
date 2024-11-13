@@ -144,7 +144,7 @@ msgstr "Plats"
 #: lib/tiki_web/live/admin_live/event/form_component.ex:22
 #: lib/tiki_web/live/admin_live/event/index.ex:92
 #: lib/tiki_web/live/admin_live/event/show.ex:133
-#: lib/tiki_web/live/admin_live/team/members.ex:15
+#: lib/tiki_web/live/admin_live/team/members.ex:41
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "Namn"
@@ -169,6 +169,7 @@ msgstr "Efternamn"
 msgid "Prefered language"
 msgstr "Föredraget språk"
 
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/user/settings.ex:61
 #, elixir-autogen, elixir-format
 msgid "Save"
@@ -265,6 +266,7 @@ msgid "Event updated successfully"
 msgstr "Event uppdaterades"
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:29
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/ticket/batch_form_component.ex:34
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form_component.ex:39
 #, elixir-autogen, elixir-format
@@ -293,6 +295,7 @@ msgid "Sort by date"
 msgstr "Sortera efter datum"
 
 #: lib/tiki_web/components/sidebar.ex:154
+#: lib/tiki_web/live/admin_live/team/members.ex:33
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr "Medlemmar"
@@ -431,12 +434,64 @@ msgstr "Välkommen tillbaka till Tiki!"
 msgid "from last month"
 msgstr "från förra månaden"
 
-#: lib/tiki_web/live/admin_live/team/members.ex:16
+#: lib/tiki_web/live/admin_live/team/members.ex:42
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr "Epostadress"
 
-#: lib/tiki_web/live/admin_live/team/members.ex:17
+#: lib/tiki_web/live/admin_live/team/members.ex:43
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:31
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr "Roll"
+
+#: lib/tiki_web/live/admin_live/team/members.ex:36
+#, elixir-autogen, elixir-format
+msgid "Add member"
+msgstr "Lägg till medlem"
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:38
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr "Tillbaka"
+
+#: lib/tiki_web/live/admin_live/team/members.ex:55
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr "Ta bort"
+
+#: lib/tiki_web/live/admin_live/team/members.ex:47
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr "Redigera"
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:116
+#, elixir-autogen, elixir-format
+msgid "Membership created successfully"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:103
+#, elixir-autogen, elixir-format
+msgid "Membership updated successfully"
+msgstr "Medlemskap uppdaterades"
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:75
+#, elixir-autogen, elixir-format
+msgid "New Membership"
+msgstr "Ny medlem"
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:13
+#, elixir-autogen, elixir-format
+msgid "Use this form to manage memberships in your database"
+msgstr "Använd formuläret för att hantera medlemskap i din databas"
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:24
+#, elixir-autogen, elixir-format
+msgid "User"
+msgstr "Användare"
+
+msgid "Team members"
+msgstr "Teammedlemmar"
+
+msgid "Edit member"
+msgstr "Redigera medlem"

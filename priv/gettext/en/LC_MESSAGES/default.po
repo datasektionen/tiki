@@ -144,7 +144,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/event/form_component.ex:22
 #: lib/tiki_web/live/admin_live/event/index.ex:92
 #: lib/tiki_web/live/admin_live/event/show.ex:133
-#: lib/tiki_web/live/admin_live/team/members.ex:15
+#: lib/tiki_web/live/admin_live/team/members.ex:41
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
@@ -169,6 +169,7 @@ msgstr ""
 msgid "Prefered language"
 msgstr ""
 
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/user/settings.ex:61
 #, elixir-autogen, elixir-format
 msgid "Save"
@@ -265,6 +266,7 @@ msgid "Event updated successfully"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:29
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/ticket/batch_form_component.ex:34
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form_component.ex:39
 #, elixir-autogen, elixir-format
@@ -293,6 +295,7 @@ msgid "Sort by date"
 msgstr ""
 
 #: lib/tiki_web/components/sidebar.ex:154
+#: lib/tiki_web/live/admin_live/team/members.ex:33
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr ""
@@ -431,12 +434,64 @@ msgstr ""
 msgid "from last month"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/team/members.ex:16
+#: lib/tiki_web/live/admin_live/team/members.ex:42
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/team/members.ex:17
+#: lib/tiki_web/live/admin_live/team/members.ex:43
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:31
 #, elixir-autogen, elixir-format
 msgid "Role"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/members.ex:36
+#, elixir-autogen, elixir-format
+msgid "Add member"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:38
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/members.ex:55
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/members.ex:47
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:116
+#, elixir-autogen, elixir-format
+msgid "Membership created successfully"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:103
+#, elixir-autogen, elixir-format
+msgid "Membership updated successfully"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:75
+#, elixir-autogen, elixir-format
+msgid "New Membership"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:13
+#, elixir-autogen, elixir-format
+msgid "Use this form to manage memberships in your database"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/membership_form.ex:24
+#, elixir-autogen, elixir-format
+msgid "User"
+msgstr ""
+
+msgid "Team members"
+msgstr ""
+
+msgid "Edit member"
 msgstr ""

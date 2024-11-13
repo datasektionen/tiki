@@ -128,7 +128,8 @@ defmodule Tiki.Teams do
   end
 
   @doc """
-  Gets a single membership.
+  Gets a single membership. Also preloads the user and team
+  for the membership.
 
   Raises `Ecto.NoResultsError` if the Membership does not exist.
 
@@ -141,7 +142,16 @@ defmodule Tiki.Teams do
       ** (Ecto.NoResultsError)
 
   """
-  def get_membership!(id), do: Repo.get!(Membership, id)
+  def get_membership!(id) do
+    query =
+      from m in Membership,
+        where: m.id == ^id,
+        join: u in assoc(m, :user),
+        join: t in assoc(m, :team),
+        preload: [user: u, team: t]
+
+    Repo.one!(query)
+  end
 
   @doc """
   Creates a membership.
@@ -227,7 +237,16 @@ defmodule Tiki.Teams do
   end
 
   @doc """
-  Preloads all the teams that a user is member of, given a user.
+  Preloads all the teams that a user is member of, given a user or
+  a list of users.
+
+  ## Examples
+
+      iex> preload_teams(users)
+      [%User{memberships: [%Membership{team: %Team{}}, ...]}, ...]
+
+      iex> preload_teams(user)
+      %User{memberships: [%Membership{team: %Team{}}, ...]}
   """
   def preload_teams(users) do
     query =
@@ -239,7 +258,12 @@ defmodule Tiki.Teams do
   end
 
   @doc """
-  Retrurns the current memebrs of a team.
+  Retrurns the current memebrships of a team.
+
+  ## Examples
+
+      iex> get_members_for_team(123)
+      [%Membership{user: %User{}}, ...]
   """
   def get_members_for_team(team_id) do
     query =

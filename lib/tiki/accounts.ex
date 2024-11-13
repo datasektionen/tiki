@@ -8,10 +8,31 @@ defmodule Tiki.Accounts do
 
   alias Tiki.Accounts.{User, UserToken, UserNotifier}
 
-  ## Database getters
+  @doc """
+  Lists all users.
 
-  def list_users do
-    Repo.all(User)
+  Options:
+    * `:limit` - The maximum number of users to return.
+  """
+  def list_users(opts \\ []) do
+    limit = Keyword.get(opts, :limit, nil)
+    Repo.all(from u in User, limit: ^limit)
+  end
+
+  @doc """
+  Searches users by email.
+
+  ## Examples
+
+      iex> search_users("adrian")
+      [%User{}, %User{}]
+  """
+  def search_users(search_term) do
+    query =
+      from u in User,
+        where: ilike(u.email, ^"%#{search_term}%")
+
+    Repo.all(query)
   end
 
   @doc """

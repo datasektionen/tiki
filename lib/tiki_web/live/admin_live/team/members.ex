@@ -3,18 +3,23 @@ defmodule TikiWeb.AdminLive.Team.Members do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    members =
-      Tiki.Teams.get_members_for_team(socket.assigns.current_team.id)
-      |> dbg()
+    members = Tiki.Teams.get_members_for_team(socket.assigns.current_team.id)
 
     {:ok, stream(socket, :members, members)}
   end
 
   @impl Phoenix.LiveView
+  def handle_params(_params, _url, socket) do
+    {:noreply,
+     assign_breadcrumbs(
+       socket,
+       [{"Dashboard", ~p"/admin"}, {"Team members", ~p"/admin/team/members"}]
+     )}
+  end
+
+  @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    membership =
-      Tiki.Teams.get_membership!(id)
-      |> dbg()
+    membership = Tiki.Teams.get_membership!(id)
 
     {:ok, _} = Tiki.Teams.delete_membership(membership)
 
@@ -25,7 +30,7 @@ defmodule TikiWeb.AdminLive.Team.Members do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= gettext("Member") %>
+      <%= gettext("Team members") %>
       <:actions>
         <.link navigate={~p"/admin/team/members/new"}>
           <.button><%= gettext("Add member") %></.button>
@@ -38,14 +43,16 @@ defmodule TikiWeb.AdminLive.Team.Members do
       <:col :let={{_id, membership}} label={gettext("Role")}><%= membership.role %></:col>
 
       <:action :let={{_id, membership}}>
-        <.link navigate={~p"/admin/team/members/#{membership}/edit"}>Edit</.link>
+        <.link navigate={~p"/admin/team/members/#{membership}/edit"}>
+          <%= gettext("Edit") %>
+        </.link>
       </:action>
       <:action :let={{id, membership}}>
         <.link
           phx-click={JS.push("delete", value: %{id: membership.id}) |> hide("##{id}")}
           data-confirm="Are you sure?"
         >
-          Delete
+          <%= gettext("Delete") %>
         </.link>
       </:action>
     </.table>
