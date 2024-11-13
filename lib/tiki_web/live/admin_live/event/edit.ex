@@ -28,6 +28,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
 
   defp apply_action(socket, :delete, map) do
     socket
+    |> assign(:page_title, gettext("Delete event"))
     |> apply_action(:edit, map)
     |> assign(:delete_form, to_form(%{"confirm" => ""}))
   end

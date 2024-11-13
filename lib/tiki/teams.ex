@@ -237,4 +237,17 @@ defmodule Tiki.Teams do
 
     Repo.preload(users, memberships: query)
   end
+
+  @doc """
+  Retrurns the current memebrs of a team.
+  """
+  def get_members_for_team(team_id) do
+    query =
+      from m in Membership,
+        join: u in assoc(m, :user),
+        where: m.team_id == ^team_id,
+        preload: [user: u]
+
+    Repo.all(query)
+  end
 end

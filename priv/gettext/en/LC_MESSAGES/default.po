@@ -26,7 +26,7 @@ msgstr ""
 msgid "Hang in there while we get back on track"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:46
+#: lib/tiki_web/live/admin_live/user/settings.ex:47
 #, elixir-autogen, elixir-format
 msgid "Modify user settings"
 msgstr ""
@@ -51,7 +51,7 @@ msgstr ""
 msgid "close"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:135
+#: lib/tiki_web/components/sidebar.ex:142
 #: lib/tiki_web/live/admin_live/event/index.ex:65
 #, elixir-autogen, elixir-format
 msgid "All events"
@@ -63,14 +63,13 @@ msgid "Attendees"
 msgstr ""
 
 #: lib/tiki_web/components/sidebar.ex:74
-#: lib/tiki_web/components/sidebar.ex:133
+#: lib/tiki_web/components/sidebar.ex:140
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:236
-#: lib/tiki_web/live/admin_live/event/show.html.heex:77
 #, elixir-autogen, elixir-format
 msgid "Event"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:123
+#: lib/tiki_web/components/sidebar.ex:130
 #, elixir-autogen, elixir-format
 msgid "General"
 msgstr ""
@@ -80,9 +79,9 @@ msgstr ""
 msgid "Live status"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:137
+#: lib/tiki_web/components/sidebar.ex:144
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:199
-#: lib/tiki_web/live/admin_live/event/edit.ex:37
+#: lib/tiki_web/live/admin_live/event/edit.ex:38
 #: lib/tiki_web/live/admin_live/event/index.ex:33
 #: lib/tiki_web/live/admin_live/event/index.ex:82
 #, elixir-autogen, elixir-format
@@ -94,7 +93,7 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:148
+#: lib/tiki_web/components/sidebar.ex:155
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr ""
@@ -104,8 +103,8 @@ msgstr ""
 msgid "Registrations"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:145
-#: lib/tiki_web/components/sidebar.ex:304
+#: lib/tiki_web/components/sidebar.ex:152
+#: lib/tiki_web/components/sidebar.ex:311
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
@@ -115,12 +114,12 @@ msgstr ""
 msgid "Tickets"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:312
+#: lib/tiki_web/components/sidebar.ex:319
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:43
+#: lib/tiki_web/live/admin_live/user/settings.ex:44
 #, elixir-autogen, elixir-format, fuzzy
 msgid "User settings"
 msgstr ""
@@ -128,7 +127,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:211
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:239
 #: lib/tiki_web/live/admin_live/event/index.ex:94
-#: lib/tiki_web/live/admin_live/event/show.html.heex:80
+#: lib/tiki_web/live/admin_live/event/show.ex:136
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr ""
@@ -144,7 +143,8 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:233
 #: lib/tiki_web/live/admin_live/event/form_component.ex:22
 #: lib/tiki_web/live/admin_live/event/index.ex:92
-#: lib/tiki_web/live/admin_live/event/show.html.heex:74
+#: lib/tiki_web/live/admin_live/event/show.ex:133
+#: lib/tiki_web/live/admin_live/team/members.ex:15
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
@@ -154,27 +154,27 @@ msgstr ""
 msgid "Search events"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:50
+#: lib/tiki_web/live/admin_live/user/settings.ex:51
 #, elixir-autogen, elixir-format
 msgid "First name"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:51
+#: lib/tiki_web/live/admin_live/user/settings.ex:52
 #, elixir-autogen, elixir-format
 msgid "Last name"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:54
+#: lib/tiki_web/live/admin_live/user/settings.ex:55
 #, elixir-autogen, elixir-format
 msgid "Prefered language"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:60
+#: lib/tiki_web/live/admin_live/user/settings.ex:61
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/user/settings.ex:30
+#: lib/tiki_web/live/admin_live/user/settings.ex:31
 #, elixir-autogen, elixir-format, fuzzy
 msgid "User settings updated"
 msgstr ""
@@ -184,7 +184,7 @@ msgstr ""
 msgid "Use this form to manage events"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:126
+#: lib/tiki_web/components/sidebar.ex:133
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:23
 #, elixir-autogen
 msgid "Dashboard"
@@ -207,6 +207,7 @@ msgstr ""
 
 #: lib/tiki_web/live/admin_live/event/edit.ex:19
 #: lib/tiki_web/live/admin_live/event/index.ex:27
+#: lib/tiki_web/live/admin_live/event/show.ex:71
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit event"
 msgstr ""
@@ -236,18 +237,19 @@ msgstr ""
 msgid "Sold tickets"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/edit.ex:101
+#: lib/tiki_web/live/admin_live/event/edit.ex:31
+#: lib/tiki_web/live/admin_live/event/edit.ex:102
 #: lib/tiki_web/live/admin_live/event/form_component.ex:35
 #, elixir-autogen, elixir-format
 msgid "Delete event"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/edit.ex:85
+#: lib/tiki_web/live/admin_live/event/edit.ex:86
 #, elixir-autogen, elixir-format
 msgid "Delete event?"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/edit.ex:54
+#: lib/tiki_web/live/admin_live/event/edit.ex:55
 #, elixir-autogen, elixir-format
 msgid "Deleted event"
 msgstr ""
@@ -269,17 +271,17 @@ msgstr ""
 msgid "Saving..."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/edit.ex:59
+#: lib/tiki_web/live/admin_live/event/edit.ex:60
 #, elixir-autogen, elixir-format
 msgid "Something went wrong"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/edit.ex:88
+#: lib/tiki_web/live/admin_live/event/edit.ex:89
 #, elixir-autogen, elixir-format
 msgid "This will permanently delete the event"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/edit.ex:94
+#: lib/tiki_web/live/admin_live/event/edit.ex:95
 #, elixir-autogen, elixir-format
 msgid "Type the full name of the event"
 msgstr ""
@@ -290,44 +292,44 @@ msgstr ""
 msgid "Sort by date"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:147
+#: lib/tiki_web/components/sidebar.ex:154
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:230
+#: lib/tiki_web/components/sidebar.ex:237
 #, elixir-autogen, elixir-format
 msgid "Create or join one"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:230
+#: lib/tiki_web/components/sidebar.ex:237
 #, elixir-autogen, elixir-format
 msgid "No team"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:159
+#: lib/tiki_web/components/sidebar.ex:166
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:100
 #, elixir-autogen, elixir-format
 msgid "Teams"
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:181
-#: lib/tiki_web/user_auth.ex:210
+#: lib/tiki_web/user_auth.ex:182
+#: lib/tiki_web/user_auth.ex:211
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:228
+#: lib/tiki_web/user_auth.ex:229
 #, elixir-autogen, elixir-format
 msgid "You must select a team to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:201
+#: lib/tiki_web/user_auth.ex:202
 #, elixir-autogen, elixir-format
 msgid "You need to be an admin to access this page."
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:155
+#: lib/tiki_web/components/sidebar.ex:162
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr ""
@@ -337,29 +339,14 @@ msgstr ""
 msgid "All events for this team"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:161
+#: lib/tiki_web/components/sidebar.ex:168
 #, elixir-autogen, elixir-format
 msgid "All teams"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:344
-#, elixir-autogen, elixir-format
-msgid "April"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:348
-#, elixir-autogen, elixir-format
-msgid "August"
-msgstr ""
-
-#: lib/tiki_web/live/admin_live/event/show.html.heex:46
+#: lib/tiki_web/live/admin_live/event/show.ex:105
 #, elixir-autogen, elixir-format
 msgid "Current visitors"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:352
-#, elixir-autogen, elixir-format
-msgid "December"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:191
@@ -367,52 +354,12 @@ msgstr ""
 msgid "Events"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:342
-#, elixir-autogen, elixir-format
-msgid "February"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:366
-#, elixir-autogen, elixir-format
-msgid "Friday"
-msgstr ""
-
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:75
 #, elixir-autogen, elixir-format
 msgid "Hi"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:341
-#, elixir-autogen, elixir-format
-msgid "January"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:347
-#, elixir-autogen, elixir-format
-msgid "July"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:346
-#, elixir-autogen, elixir-format
-msgid "June"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:343
-#, elixir-autogen, elixir-format
-msgid "March"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:345
-#, elixir-autogen, elixir-format
-msgid "May"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:362
-#, elixir-autogen, elixir-format
-msgid "Monday"
-msgstr ""
-
-#: lib/tiki_web/components/sidebar.ex:162
+#: lib/tiki_web/components/sidebar.ex:169
 #, elixir-autogen, elixir-format
 msgid "New team"
 msgstr ""
@@ -423,30 +370,15 @@ msgstr ""
 msgid "No team selected"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:351
-#, elixir-autogen, elixir-format
-msgid "November"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:350
-#, elixir-autogen, elixir-format
-msgid "October"
-msgstr ""
-
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:84
 #, elixir-autogen, elixir-format
 msgid "Please select a team to get started."
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:220
-#: lib/tiki_web/live/admin_live/event/show.html.heex:61
+#: lib/tiki_web/live/admin_live/event/show.ex:120
 #, elixir-autogen, elixir-format
 msgid "Recent orders"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:367
-#, elixir-autogen, elixir-format
-msgid "Saturday"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:94
@@ -454,23 +386,8 @@ msgstr ""
 msgid "Select a team"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:349
-#, elixir-autogen, elixir-format
-msgid "September"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:361
-#, elixir-autogen, elixir-format
-msgid "Sunday"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:365
-#, elixir-autogen, elixir-format
-msgid "Thursday"
-msgstr ""
-
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:145
-#: lib/tiki_web/live/admin_live/event/show.html.heex:24
+#: lib/tiki_web/live/admin_live/event/show.ex:83
 #, elixir-autogen, elixir-format
 msgid "Tickets sold"
 msgstr ""
@@ -486,24 +403,14 @@ msgid "Total events"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:173
-#: lib/tiki_web/live/admin_live/event/show.html.heex:35
+#: lib/tiki_web/live/admin_live/event/show.ex:94
 #, elixir-autogen, elixir-format
 msgid "Total sales"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:363
-#, elixir-autogen, elixir-format
-msgid "Tuesday"
-msgstr ""
-
-#: lib/tiki_web/live/admin_live/event/show.html.heex:15
+#: lib/tiki_web/live/admin_live/event/show.ex:74
 #, elixir-autogen, elixir-format
 msgid "View event page"
-msgstr ""
-
-#: lib/tiki_web/components/core_components.ex:364
-#, elixir-autogen, elixir-format
-msgid "Wednesday"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:71
@@ -522,4 +429,14 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:180
 #, elixir-autogen, elixir-format
 msgid "from last month"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/members.ex:16
+#, elixir-autogen, elixir-format
+msgid "Email"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/team/members.ex:17
+#, elixir-autogen, elixir-format
+msgid "Role"
 msgstr ""
