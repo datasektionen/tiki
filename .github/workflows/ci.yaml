@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 27.x
+          elixir-version: 1.17.x
+
+      - run: mix deps.get
+      - run: mix deps.unlock --check-unused
+      - run: mix deps.compile
+      - run: mix compile --warnings-as-errors
+      - run: mix format --check-formatted
+
+  test:
+    runs-on: ubuntu-22.04
+    env:
+      MIX_ENV: test
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 27.x
+          elixir-version: 1.17.x
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: deps-${{ hashFiles('**/mix.lock') }}
+          restore-keys: deps-
+
+      - run: mix deps.get
+      - run: mix deps.compile
+      - run: mix compile
+      - run: mix test

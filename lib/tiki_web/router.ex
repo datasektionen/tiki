@@ -136,18 +136,18 @@ defmodule TikiWeb.Router do
           live "/tickets/batches/new", Ticket.Index, :new_batch
           live "/tickets/batches/:batch_id/edit", Ticket.Index, :edit_batch
 
-          # Check-in
-          live "/check-in", Ticket.Checkin, :index
+          # TODO: Check-in
+          # live "/check-in", Ticket.Checkin, :index
 
           # Registrations
           live "/attendees", Attendees.Index, :index
           live "/queue", Attendees.Index, :index
-          live "/contact", Contact.Index, :index
+          # live "/contact", Contact.Index, :index
           live "/attendees/:ticket_id", Attendees.Show, :show
 
-          # Forms
-          live "/forms", Forms.Index, :index
-          live "/forms/:form_id/edit", Forms.Edit
+          # TODO: Forms
+          # live "/forms", Forms.Index, :index
+          # live "/forms/:form_id/edit", Forms.Edit
         end
       end
     end

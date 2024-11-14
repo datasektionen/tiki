@@ -109,12 +109,12 @@ defmodule TikiWeb.Component.Sidebar do
       />
     </.sidebar_group>
 
-    <.sidebar_item
+    <%!-- <.sidebar_item
       icon="hero-document-text"
       text={gettext("Forms")}
       to={~p"/admin/events/#{@event}/forms"}
       active={@active_tab == :forms}
-    />
+    /> --%>
 
     <.sidebar_item
       icon="hero-pencil"
