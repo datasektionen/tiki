@@ -1,17 +1,27 @@
 <div class="my-8">
   <div class="mb-4 flex flex-row items-center justify-between">
     <div>
-      <h2 class="mb-2 text-lg font-bold">Biljettyper</h2>
-      <div class="text-sm text-gray-700">Här visas biljettyper och batches.</div>
+      <h2 class="mb-2 text-lg font-bold">
+        <%= gettext("Tickets") %>
+      </h2>
+      <div class="text-sm text-gray-700">
+        <%= gettext(
+          "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
+        ) %>
+      </div>
     </div>
 
     <div class="flex flex-row justify-end gap-2">
       <.link patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
-        <.button>Ny batch</.button>
+        <.button>
+          <%= gettext("New batch") %>
+        </.button>
       </.link>
 
       <.link patch={~p"/admin/events/#{@event}/ticket-types/new"}>
-        <.button>Ny biljettyp</.button>
+        <.button>
+          <%= gettext("New ticket type") %>
+        </.button>
       </.link>
     </div>
   </div>

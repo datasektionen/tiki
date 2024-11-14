@@ -110,6 +110,8 @@ msgid "Settings"
 msgstr "Inställningar"
 
 #: lib/tiki_web/components/sidebar.ex:102
+#: lib/tiki_web/live/admin_live/ticket/index.ex:29
+#: lib/tiki_web/live/admin_live/ticket/index.html.heex:5
 #, elixir-autogen, elixir-format
 msgid "Tickets"
 msgstr "Biljetter"
@@ -295,7 +297,6 @@ msgid "Sort by date"
 msgstr "Sortera efter datum"
 
 #: lib/tiki_web/components/sidebar.ex:154
-#: lib/tiki_web/live/admin_live/team/members.ex:33
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr "Medlemmar"
@@ -490,8 +491,60 @@ msgstr "Använd formuläret för att hantera medlemskap i din databas"
 msgid "User"
 msgstr "Användare"
 
+#: lib/tiki_web/live/admin_live/team/members.ex:33
+#, elixir-autogen
 msgid "Team members"
 msgstr "Teammedlemmar"
 
 msgid "Edit member"
 msgstr "Redigera medlem"
+
+#: lib/tiki_web/live/admin_live/ticket/index.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
+msgstr "Hantera biljetter for detta evenemang. Varje biljetttyp måste tilldelas en batch innan de kan skapas."
+
+#: lib/tiki_web/live/admin_live/ticket/index.html.heex:17
+#, elixir-autogen, elixir-format
+msgid "New batch"
+msgstr "Ny batch"
+
+#: lib/tiki_web/live/admin_live/ticket/index.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "New ticket type"
+msgstr "Ny biljettyp"
+
+#: lib/tiki_web/live/components/search_combobox.ex:99
+#, elixir-autogen, elixir-format
+msgid "Search..."
+msgstr "Sök..."
+
+#: lib/tiki_web/live/admin_live/ticket/index.ex:35
+#, elixir-autogen, elixir-format
+msgid "Edit Ticket Batch"
+msgstr "Redigera batch"
+
+#: lib/tiki_web/live/admin_live/ticket/index.ex:49
+#, elixir-autogen, elixir-format
+msgid "Edit Ticket type"
+msgstr "Redigera biljettyp"
+
+#: lib/tiki_web/live/admin_live/ticket/index.ex:41
+#, elixir-autogen, elixir-format
+msgid "New Ticket Batch"
+msgstr "Ny batch"
+
+#: lib/tiki_web/live/admin_live/ticket/index.ex:55
+#, elixir-autogen, elixir-format
+msgid "New Ticket type"
+msgstr "Ny biljettyp"
+
+#: lib/tiki_web/live/admin_live/ticket/index.ex:186
+#, elixir-autogen, elixir-format
+msgid "No tickets"
+msgstr "Inga biljetter"
+
+#: lib/tiki_web/components/sidebar.ex:114
+#, elixir-autogen, elixir-format
+msgid "Forms"
+msgstr "Formulär"

@@ -26,19 +26,19 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
      |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def apply_action(socket, :index, _params), do: assign(socket, :page_title, "Biljetter")
+  def apply_action(socket, :index, _params), do: assign(socket, :page_title, gettext("Tickets"))
 
   def apply_action(socket, :edit_batch, %{"batch_id" => batch_id}) do
     batch = Tickets.get_ticket_batch!(batch_id)
 
     socket
-    |> assign(:page_title, "Edit Ticket Batch")
+    |> assign(:page_title, gettext("Edit Ticket Batch"))
     |> assign(:batch, batch)
   end
 
   def apply_action(socket, :new_batch, _params) do
     socket
-    |> assign(:page_title, "New Ticket Batch")
+    |> assign(:page_title, gettext("New Ticket Batch"))
     |> assign(:batch, %TicketBatch{event_id: socket.assigns.event.id})
   end
 
@@ -46,13 +46,13 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     ticket_type = Tickets.get_ticket_type!(tt_id)
 
     socket
-    |> assign(:page_title, "Edit Ticket type")
+    |> assign(:page_title, gettext("Edit Ticket type"))
     |> assign(:ticket_type, ticket_type)
   end
 
   def apply_action(socket, :new_ticket_type, _params) do
     socket
-    |> assign(:page_title, "New Ticket type")
+    |> assign(:page_title, gettext("New Ticket type"))
     |> assign(:ticket_type, %TicketType{})
   end
 
@@ -183,7 +183,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
         data-batch={@batch.batch.id}
         class="flex flex-col justify-between px-4 py-4 hover:bg-white"
       >
-        Inga biljetter
+        <%= gettext("No tickets") %>
       </div>
     </div>
     """

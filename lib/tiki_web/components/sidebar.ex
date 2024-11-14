@@ -111,14 +111,14 @@ defmodule TikiWeb.Component.Sidebar do
 
     <.sidebar_item
       icon="hero-document-text"
-      text="Formulär"
+      text={gettext("Forms")}
       to={~p"/admin/events/#{@event}/forms"}
       active={@active_tab == :forms}
     />
 
     <.sidebar_item
       icon="hero-pencil"
-      text="Redigera"
+      text={gettext("Edit")}
       to={~p"/admin/events/#{@event}/edit"}
       active={@active_tab == :event_edit}
     />
