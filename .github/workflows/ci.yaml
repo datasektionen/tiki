@@ -17,6 +17,14 @@ jobs:
           otp-version: 27.x
           elixir-version: 1.17.x
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
       - run: mix deps.get
       - run: mix deps.unlock --check-unused
       - run: mix deps.compile
@@ -60,8 +68,8 @@ jobs:
           path: |
             deps
             _build
-          key: deps-${{ hashFiles('**/mix.lock') }}
-          restore-keys: deps-
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
 
       - run: mix deps.get
       - run: mix deps.compile
