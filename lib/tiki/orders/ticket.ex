@@ -12,7 +12,7 @@ defmodule Tiki.Orders.Ticket do
   @doc false
   def changeset(ticket, attrs) do
     ticket
-    |> cast(attrs, [])
-    |> validate_required([])
+    |> cast(attrs, [:ticket_type_id, :order_id])
+    |> validate_required([:ticket_type_id, :order_id])
   end
 end

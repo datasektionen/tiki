@@ -55,14 +55,26 @@ defmodule Tiki.Teams do
     member_ids = Keyword.get(opts, :members, [])
     team = Team.changeset(%Team{}, attrs)
 
-    Multi.new()
-    |> Multi.insert(:team, team)
-    |> Multi.insert_all(:memberships, Membership, fn %{team: team} ->
-      Enum.map(member_ids, fn user_id ->
-        %{team_id: team.id, user_id: user_id, role: :admin}
+    result =
+      Multi.new()
+      |> Multi.insert(:team, team)
+      |> Multi.insert_all(:memberships, Membership, fn %{team: team} ->
+        Enum.map(member_ids, fn user_id ->
+          %{team_id: team.id, user_id: user_id, role: :admin}
+        end)
       end)
-    end)
-    |> Repo.transaction()
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{team: team}} ->
+        {:ok, team}
+
+      {:error, :memberships, message, _} ->
+        {:error, message}
+
+      {:error, :team, message, _} ->
+        {:error, message}
+    end
   end
 
   @doc """

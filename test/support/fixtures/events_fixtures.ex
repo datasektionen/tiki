@@ -8,12 +8,15 @@ defmodule Tiki.EventsFixtures do
   Generate a event.
   """
   def event_fixture(attrs \\ %{}) do
+    team = Tiki.TeamsFixtures.team_fixture()
+
     {:ok, event} =
       attrs
       |> Enum.into(%{
         description: "some description",
         event_date: ~U[2023-03-25 16:55:00Z],
-        name: "some name"
+        name: "some name",
+        team_id: team.id
       })
       |> Tiki.Events.create_event()
 

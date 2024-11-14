@@ -67,7 +67,7 @@ defmodule TikiWeb.UserRegistrationLiveTest do
         )
         |> render_submit()
 
-      assert result =~ "has already been taken"
+      assert result =~ "Has already been taken"
     end
   end
 

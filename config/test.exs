@@ -26,6 +26,21 @@ config :tiki, TikiWeb.Endpoint,
 # In test we don't send emails.
 config :tiki, Tiki.Mailer, adapter: Swoosh.Adapters.Test
 
+issuer = "http://localhost:7005/op"
+
+config :tiki, Oidcc,
+  issuer: issuer,
+  client_id: "test",
+  client_secret: "test"
+
+config :tiki, Oidcc.ProviderConfiguration,
+  issuer: issuer,
+  provider_configuration_opts: %{
+    quirks: %{
+      allow_unsafe_http: true
+    }
+  }
+
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 

@@ -22,10 +22,15 @@ defmodule Tiki.TeamsFixtures do
   Generate a membership.
   """
   def membership_fixture(attrs \\ %{}) do
+    user = Tiki.AccountsFixtures.user_fixture()
+    team = Tiki.TeamsFixtures.team_fixture()
+
     {:ok, membership} =
       attrs
       |> Enum.into(%{
-        role: :admin
+        role: :admin,
+        user_id: user.id,
+        team_id: team.id
       })
       |> Tiki.Teams.create_membership()
 

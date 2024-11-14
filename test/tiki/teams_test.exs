@@ -70,12 +70,15 @@ defmodule Tiki.TeamsTest do
     end
 
     test "get_membership!/1 returns the membership with given id" do
-      membership = membership_fixture()
+      membership = membership_fixture() |> Tiki.Repo.preload([:user, :team])
       assert Teams.get_membership!(membership.id) == membership
     end
 
     test "create_membership/1 with valid data creates a membership" do
-      valid_attrs = %{role: :admin}
+      team = team_fixture()
+      user = Tiki.AccountsFixtures.user_fixture()
+
+      valid_attrs = %{role: :admin, user_id: user.id, team_id: team.id}
 
       assert {:ok, %Membership{} = membership} = Teams.create_membership(valid_attrs)
       assert membership.role == :admin
@@ -94,7 +97,7 @@ defmodule Tiki.TeamsTest do
     end
 
     test "update_membership/2 with invalid data returns error changeset" do
-      membership = membership_fixture()
+      membership = membership_fixture() |> Tiki.Repo.preload([:user, :team])
       assert {:error, %Ecto.Changeset{}} = Teams.update_membership(membership, @invalid_attrs)
       assert membership == Teams.get_membership!(membership.id)
     end

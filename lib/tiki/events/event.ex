@@ -19,7 +19,7 @@ defmodule Tiki.Events.Event do
   def changeset(event, attrs) do
     event
     |> cast(attrs, [:name, :description, :event_date, :location, :image_url, :team_id])
-    |> validate_required([:name, :description, :event_date])
+    |> validate_required([:name, :description, :event_date, :team_id])
     |> foreign_key_constraint(:team_id)
   end
 end

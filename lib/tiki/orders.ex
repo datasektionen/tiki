@@ -109,8 +109,8 @@ defmodule Tiki.Orders do
     query =
       from o in Order,
         where: o.id == ^id,
-        join: t in assoc(o, :tickets),
-        join: tt in assoc(t, :ticket_type),
+        left_join: t in assoc(o, :tickets),
+        left_join: tt in assoc(t, :ticket_type),
         join: u in assoc(o, :user),
         preload: [tickets: {t, ticket_type: tt}, user: u]
 
@@ -239,24 +239,6 @@ defmodule Tiki.Orders do
     %Ticket{}
     |> Ticket.changeset(attrs)
     |> Repo.insert()
-  end
-
-  @doc """
-  Updates a ticket.
-
-  ## Examples
-
-      iex> update_ticket(ticket, %{field: new_value})
-      {:ok, %Ticket{}}
-
-      iex> update_ticket(ticket, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_ticket(%Ticket{} = ticket, attrs) do
-    ticket
-    |> Ticket.changeset(attrs)
-    |> Repo.update()
   end
 
   @doc """

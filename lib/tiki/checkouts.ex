@@ -74,35 +74,6 @@ defmodule Tiki.Checkouts do
   end
 
   @doc """
-  Deletes a stripe_checkout.
-
-  ## Examples
-
-      iex> delete_stripe_checkout(stripe_checkout)
-      {:ok, %StripeCheckout{}}
-
-      iex> delete_stripe_checkout(stripe_checkout)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_stripe_checkout(%StripeCheckout{} = stripe_checkout) do
-    Repo.delete(stripe_checkout)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking stripe_checkout changes.
-
-  ## Examples
-
-      iex> change_stripe_checkout(stripe_checkout)
-      %Ecto.Changeset{data: %StripeCheckout{}}
-
-  """
-  def change_stripe_checkout(%StripeCheckout{} = stripe_checkout, attrs \\ %{}) do
-    StripeCheckout.changeset(stripe_checkout, attrs)
-  end
-
-  @doc """
   Creates a stripe payment intent with the stripe API,
   and creates a stripe checkout in the database. Returns the intent.any()
 
