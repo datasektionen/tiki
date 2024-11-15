@@ -23,9 +23,12 @@ import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { InitCheckout } from "./checkout";
 import Sortable from "sortablejs";
+import { SearchCombobox } from "./searchCombobox";
 
-let Hooks = {};
-Hooks.InitCheckout = InitCheckout;
+let Hooks = {
+  InitCheckout: InitCheckout,
+  SearchCombobox: SearchCombobox,
+};
 
 Hooks.Sortable = {
   mounted() {

@@ -84,7 +84,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
   def render(assigns) do
     ~H"""
     <div>
-      <div>
+      <div phx-hook="SearchCombobox" id={"#{@id}-combobox"}>
         <label for="combobox" class="text-foreground block text-sm font-medium leading-6">
           <%= @label %>
         </label>
@@ -92,7 +92,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
           <input
             id="combobox"
             type="text"
-            class="py-[7px] px-[11px] text-foreground border-input mt-2 block w-full rounded-lg text-sm focus:ring-ring focus:border-input focus:outline-none focus:ring-2 sm:leading-6"
+            class="py-[7px] px-[11px] text-foreground border-input bg-background mt-2 block w-full rounded-lg text-sm focus:ring-ring focus:border-input focus:outline-none focus:ring-2 sm:leading-6"
             role="combobox"
             aria-controls="options"
             aria-expanded="false"
@@ -126,16 +126,18 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
           <div
             :if={@results != []}
             class="bg-background absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-            id="options"
+            id={"#{@id}-options"}
             role="listbox"
           >
             <li
               :for={{id, value} <- @results |> Enum.map(&@map_fn.(&1))}
-              class="text-foreground relative cursor-default select-none py-2 pr-9 pl-3 hover:bg-gray-50"
+              class="text-foreground relative cursor-pointer select-none py-2 pr-9 pl-3 hover:bg-accent/50 focus:bg-accent/50 focus:outline-none"
               role="option"
               tabindex="-1"
               phx-click={JS.push("chosen", value: %{id: id, value: value})}
               phx-target={@myself}
+              data-id={id}
+              data-value={value}
             >
               <span class={[
                 "block truncate",
