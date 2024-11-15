@@ -21,7 +21,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-       {"Biljetter", ~p"/admin/events/#{socket.assigns.event.id}/tickets"}
+       {"Tickets", ~p"/admin/events/#{socket.assigns.event.id}/tickets"}
      ])
      |> apply_action(socket.assigns.live_action, params)}
   end
@@ -150,7 +150,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
       >
         <.link
           :for={ticket_type <- @batch.batch.ticket_types}
-          patch={~p"/admin/events/#{@batch.batch.event_id}/ticket-types/#{ticket_type}/edit"}
+          patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/types/#{ticket_type}/edit"}
           class="flex flex-row justify-between px-4 py-4 hover:bg-white"
           data-ticket-type={ticket_type.id}
         >

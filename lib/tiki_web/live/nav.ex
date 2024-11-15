@@ -63,6 +63,11 @@ defmodule TikiWeb.Nav do
   tab AdminLive.Ticket.Index, :new_ticket_type, :event_tickets
   tab AdminLive.Ticket.Index, :edit_ticket_type, :event_tickets
 
+  tab AdminLive.Ticket.BatchForm, :edit, :event_tickets
+  tab AdminLive.Ticket.BatchForm, :new, :event_tickets
+  tab AdminLive.Ticket.TicketTypeForm, :edit, :event_tickets
+  tab AdminLive.Ticket.TicketTypeForm, :new, :event_tickets
+
   defp set_nav(_params, url, socket) do
     active_tab = active_tab(socket.view, socket.assigns.live_action)
 

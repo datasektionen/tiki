@@ -126,15 +126,12 @@ defmodule TikiWeb.Router do
           live "/tickets", Ticket.Index, :index
 
           # Ticket type settings
-          live "/ticket-types/new", Ticket.Index, :new_ticket_type
-
-          live "/ticket-types/:ticket_type_id/edit",
-               Ticket.Index,
-               :edit_ticket_type
+          live "/tickets/types/new", Ticket.TicketTypeForm, :new
+          live "/tickets/types/:ticket_type_id/edit", Ticket.TicketTypeForm, :edit
 
           # Ticket batch settings
-          live "/tickets/batches/new", Ticket.Index, :new_batch
-          live "/tickets/batches/:batch_id/edit", Ticket.Index, :edit_batch
+          live "/tickets/batches/new", Ticket.BatchForm, :new
+          live "/tickets/batches/:batch_id/edit", Ticket.BatchForm, :edit
 
           # TODO: Check-in
           # live "/check-in", Ticket.Checkin, :index
