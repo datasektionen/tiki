@@ -261,8 +261,9 @@ defmodule TikiWeb.UserAuth do
       end
     end)
     |> Phoenix.Component.assign_new(:current_team, fn ->
-      if team_id = session["current_team_id"] do
-        Teams.get_team!(team_id)
+      with team_id when not is_nil(team_id) <- session["current_team_id"],
+           team <- Teams.get_team(team_id) do
+        team
       end
     end)
   end

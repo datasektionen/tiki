@@ -40,6 +40,20 @@ defmodule Tiki.Teams do
   def get_team!(id), do: Repo.get!(Team, id)
 
   @doc """
+  Gets a single team. Returns either team or nil if not found.
+
+  ## Examples
+
+      iex> get_team(123)
+      %Team{}
+
+      iex> get_team(456)
+      nil
+
+  """
+  def get_team(id), do: Repo.get(Team, id)
+
+  @doc """
   Creates a team.
 
   ## Examples
