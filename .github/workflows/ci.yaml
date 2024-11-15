@@ -18,6 +18,7 @@ jobs:
           elixir-version: 1.17.x
 
       - uses: actions/cache@v3
+        id: cache-deps
         with:
           path: |
             deps
@@ -65,6 +66,7 @@ jobs:
           elixir-version: 1.17.x
 
       - uses: actions/cache@v3
+        id: cache-deps
         with:
           path: |
             deps
