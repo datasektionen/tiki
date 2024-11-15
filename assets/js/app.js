@@ -31,17 +31,22 @@ Hooks.Sortable = {
   mounted() {
     let batch = this.el.dataset.batch;
     new Sortable(this.el, {
-        animation: 150,
-        ghostClass: "bg-gray-200",
-        dragClass: "bg-gray-300",
-        fallbackOnBody: true,
-        invertSwap: true,
-        swapThreshold: 0.65,
-        group: "shared",
-        onEnd: (e) => {
-            let params = {old: e.oldIndex, new: e.newIndex, to: e.to.dataset, ...e.item.dataset};
-            this.pushEventTo(this.el, "drop", params);
-        }
+      animation: 150,
+      ghostClass: "bg-accent/50",
+      dragClass: "bg-accent/20",
+      fallbackOnBody: true,
+      invertSwap: true,
+      swapThreshold: 0.65,
+      group: "shared",
+      onEnd: (e) => {
+        let params = {
+          old: e.oldIndex,
+          new: e.newIndex,
+          to: e.to.dataset,
+          ...e.item.dataset,
+        };
+        this.pushEventTo(this.el, "drop", params);
+      },
     });
   },
 };
@@ -69,8 +74,26 @@ liveSocket.connect();
 window.liveSocket = liveSocket;
 
 // Allows to execute JS commands from the server
-window.addEventListener("phx:js-exec", ({detail}) => {
-  document.querySelectorAll(detail.to).forEach(el => {
-    liveSocket.execJS(el, el.getAttribute(detail.attr))
-  })
-})
+window.addEventListener("phx:js-exec", ({ detail }) => {
+  document.querySelectorAll(detail.to).forEach((el) => {
+    liveSocket.execJS(el, el.getAttribute(detail.attr));
+  });
+});
+
+// Set dark/light mode
+function applyColorMode(mode) {
+  document.documentElement.classList.toggle("dark", mode === "dark");
+}
+
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", (event) => {
+    console.log("event");
+    if (!("theme" in localStorage)) {
+      applyColorMode(event.matches ? "dark" : "light");
+    }
+  });
+
+applyColorMode(
+  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+);

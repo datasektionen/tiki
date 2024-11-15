@@ -5,7 +5,7 @@
 
   <div class="flex flex-row items-center justify-between">
     <div>
-      <div class="text-gray-500">
+      <div class="text-muted-foreground">
         <%= Calendar.strftime(@event.event_date, "%d %B", month_names: &month_name/1) %>
       </div>
       <h1 class="text-3xl font-bold"><%= @event.name %></h1>
@@ -16,7 +16,7 @@
     </.link>
   </div>
 
-  <div class="my-4 flex flex-col gap-1 text-gray-500">
+  <div class="text-muted-foreground my-4 flex flex-col gap-1">
     <div class="inline-flex items-center gap-2">
       <.icon name="hero-calendar" />
       <%= Calendar.strftime(@event.event_date, "%Y-%m-%d vid %H:%M") %>
@@ -43,6 +43,6 @@
   />
 </div>
 
-<div class="fixed right-4 bottom-4 rounded-full border bg-white px-4 py-2 shadow-sm">
+<div class="bg-background fixed right-4 bottom-4 rounded-full border px-4 py-2 shadow-sm">
   <%= max(@online_count, 0) %> online
 </div>

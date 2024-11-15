@@ -75,7 +75,7 @@ defmodule TikiWeb.Component.Input do
           name={@name}
           value="true"
           checked={@checked}
-          class="border-primary text-primary h-4 w-4 rounded shadow focus:ring-0"
+          class="border-primary text-primary bg-background h-4 w-4 rounded shadow focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
         />
         <!-- peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 checked:bg-primary checked:text-primary-foreground -->

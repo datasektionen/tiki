@@ -90,7 +90,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
         </.dialog_description>
 
         <.form :let={f} for={@delete_form} phx-change="validate_delete" phx-submit="save_delete">
-          <div class="mt-2 space-y-4 bg-white">
+          <div class="bg-bg-background mt-2 space-y-4">
             <label for={f[:confirm].id} class="text-sm">
               <span><%= gettext("Type the full name of the event") %></span>:
               <span class="bg-accent text-accent-foreground rounded-sm px-1 py-0.5">

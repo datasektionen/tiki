@@ -195,8 +195,9 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
                   </.card_description>
                 </div>
 
-                <.button navigate={~p"/admin/events/new"}>
-                  <%= gettext("New event") %>
+                <.button navigate={~p"/admin/events/new"} variant="outline" size="icon">
+                  <span class="sr-only"><%= gettext("New event") %></span>
+                  <.icon name="hero-plus-mini" class="h-4 w-4" />
                 </.button>
               </div>
             </.card_header>

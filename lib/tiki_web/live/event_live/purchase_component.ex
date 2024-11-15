@@ -154,7 +154,7 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
           </td>
           <td class="whitespace-nowrap py-1 text-right"><%= ticket.price * ticket.count %> kr</td>
         </tr>
-        <tr class="border-t-2 border-gray-300">
+        <tr class="border-accent border-t-2">
           <th></th>
           <td class="whitespace-nowrap py-1 pr-2 text-right">TOTALT</td>
           <td class="whitespace-nowrap py-1 text-right">

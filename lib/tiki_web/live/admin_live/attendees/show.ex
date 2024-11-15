@@ -4,6 +4,8 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
   alias Tiki.Events
   alias Tiki.Orders
 
+  import TikiWeb.Component.Card
+
   def mount(%{"id" => event_id, "ticket_id" => ticket_id}, _session, socket) do
     event = Events.get_event!(event_id)
     ticket = Orders.get_ticket!(ticket_id)
@@ -52,20 +54,21 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
 
   defp information_card(assigns) do
     ~H"""
-    <div class="overflow-hidden bg-white shadow sm:rounded-lg">
-      <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-base font-semibold leading-6 text-gray-900"><%= @name %></h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500"><%= @description %></p>
-      </div>
-      <div class="divide-y divide-gray-200 border-t border-gray-200">
-        <dl class="divide-y divide-gray-200">
+    <.card>
+      <.card_header>
+        <.card_title><%= @name %></.card_title>
+        <.card_description><%= @description %></.card_description>
+      </.card_header>
+
+      <div class="divide-accent border-accent divide-y border-t">
+        <dl class="divide-accent divide-y">
           <div :for={item <- @item} class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500"><%= item.name %></dt>
-            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0"><%= item.value %></dd>
+            <dt class="text-muted-foreground text-sm font-medium"><%= item.name %></dt>
+            <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0"><%= item.value %></dd>
           </div>
         </dl>
       </div>
-    </div>
+    </.card>
     """
   end
 end

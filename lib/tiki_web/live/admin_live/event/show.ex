@@ -67,11 +67,15 @@ defmodule TikiWeb.AdminLive.Event.Show do
         </span>
       </:subtitle>
       <:actions>
-        <.button navigate={~p"/admin/events/#{@event}/edit"} class="hidden lg:inline-block">
-          <%= gettext("Edit event") %>
-        </.button>
-        <.button navigate={~p"/events/#{@event}"}>
+        <.button variant="link" navigate={~p"/events/#{@event}"}>
           <%= gettext("View event page") %>
+        </.button>
+        <.button
+          variant="secondary"
+          navigate={~p"/admin/events/#{@event}/edit"}
+          class="hidden lg:inline-block"
+        >
+          <%= gettext("Edit event") %>
         </.button>
       </:actions>
     </.header>

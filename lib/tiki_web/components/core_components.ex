@@ -137,7 +137,7 @@ defmodule TikiWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="mt-6 space-y-4 bg-white">
+      <div class="bg-background mt-6 space-y-4">
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
           <%= render_slot(action, f) %>
@@ -155,7 +155,7 @@ defmodule TikiWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="text-foreground block text-sm font-semibold leading-6">
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -221,10 +221,10 @@ defmodule TikiWeb.CoreComponents do
   def list(assigns) do
     ~H"""
     <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100">
+      <dl class="divide-accent -my-4 divide-y">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="w-1/4 flex-none text-zinc-500"><%= item.title %></dt>
-          <dd class="text-zinc-700"><%= render_slot(item) %></dd>
+          <dt class="text-muted-foreground w-1/4 flex-none"><%= item.title %></dt>
+          <dd class="text-foreground"><%= render_slot(item) %></dd>
         </div>
       </dl>
     </div>
@@ -246,7 +246,7 @@ defmodule TikiWeb.CoreComponents do
     <div class="mt-16">
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+        class="text-foreground text-sm font-semibold leading-6 hover:foreground/80"
       >
         <.icon name="hero-arrow-left-solid" class="h-3 w-3" />
         <%= render_slot(@inner_block) %>

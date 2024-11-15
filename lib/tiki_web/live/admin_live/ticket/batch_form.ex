@@ -34,9 +34,9 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
             <.button
               :if={@live_action == :edit}
               type="button"
+              variant="destructive"
               phx-click="delete"
               phx-disable-with={gettext("Deleting...")}
-              class="bg-red-700 hover:bg-red-900"
               data-confirm={gettext("Are you sure?")}
             >
               <%= gettext("Delete batch") %>

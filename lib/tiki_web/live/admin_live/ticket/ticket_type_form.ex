@@ -42,8 +42,8 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
               :if={@live_action == :edit}
               type="button"
               phx-click="delete"
+              variant="destructive"
               phx-disable-with={gettext("Deleting...")}
-              class="bg-red-700 hover:bg-red-900"
               data-confirm={gettext("Are you sure?")}
             >
               <%= gettext("Delete ticket type") %>

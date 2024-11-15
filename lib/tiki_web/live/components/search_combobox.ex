@@ -85,14 +85,14 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
     ~H"""
     <div>
       <div>
-        <label for="combobox" class="block text-sm font-medium leading-6 text-gray-900">
+        <label for="combobox" class="text-foreground block text-sm font-medium leading-6">
           <%= @label %>
         </label>
         <div class="relative mt-2">
           <input
             id="combobox"
             type="text"
-            class="py-[7px] px-[11px] mt-2 block w-full rounded-lg border-zinc-300 text-zinc-900 focus:ring-zinc-800/5 focus:border-zinc-400 focus:outline-none focus:ring-4 phx-no-feedback:border-zinc-300 phx-no-feedback:focus:ring-zinc-800/5 phx-no-feedback:focus:border-zinc-400 sm:text-sm sm:leading-6"
+            class="py-[7px] px-[11px] text-foreground border-input mt-2 block w-full rounded-lg text-sm focus:ring-ring focus:border-input focus:outline-none focus:ring-2 sm:leading-6"
             role="combobox"
             aria-controls="options"
             aria-expanded="false"
@@ -110,7 +110,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
             phx-target={@myself}
           >
             <svg
-              class="h-5 w-5 text-gray-400"
+              class="text-muted-foreground h-5 w-5"
               viewBox="0 0 20 20"
               fill="currentColor"
               aria-hidden="true"
@@ -125,13 +125,13 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
 
           <div
             :if={@results != []}
-            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+            class="bg-background absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
             id="options"
             role="listbox"
           >
             <li
               :for={{id, value} <- @results |> Enum.map(&@map_fn.(&1))}
-              class="relative cursor-default select-none py-2 pr-9 pl-3 text-gray-900 hover:bg-gray-50"
+              class="text-foreground relative cursor-default select-none py-2 pr-9 pl-3 hover:bg-gray-50"
               role="option"
               tabindex="-1"
               phx-click={JS.push("chosen", value: %{id: id, value: value})}

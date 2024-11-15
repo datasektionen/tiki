@@ -4,7 +4,7 @@
       <h2 class="mb-2 text-lg font-bold">
         <%= gettext("Tickets") %>
       </h2>
-      <div class="text-sm text-gray-700">
+      <div class="text-muted-foreground text-sm">
         <%= gettext(
           "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
         ) %>
@@ -13,13 +13,13 @@
 
     <div class="flex flex-row justify-end gap-2">
       <.link patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
-        <.button>
+        <.button variant="secondary">
           <%= gettext("New batch") %>
         </.button>
       </.link>
 
       <.link patch={~p"/admin/events/#{@event}/tickets/types/new"}>
-        <.button>
+        <.button variant="secondary">
           <%= gettext("New ticket type") %>
         </.button>
       </.link>

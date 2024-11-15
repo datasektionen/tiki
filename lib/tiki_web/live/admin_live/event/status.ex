@@ -44,7 +44,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
     ~H"""
     <div class="mb-4">
       <h1 class="mb-1 text-xl font-bold">Livestatus för <%= @event.name %></h1>
-      <div class="text-gray-600">
+      <div class="text-muted-foreground text-sm">
         Det är <%= @online_count %> personer online just nu på biljettsidan.
       </div>
     </div>
@@ -53,7 +53,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <div
         :for={ticket_type <- @ticket_types}
-        class="rounded-xl border p-4 shadow-sm hover:bg-gray-50"
+        class="rounded-xl border p-4 shadow-sm hover:bg-accent/50"
       >
         <div class="text-lg font-bold"><%= ticket_type.name %></div>
         <div><span class="font-bold"><%= ticket_type.available %> </span>tillgängliga</div>

@@ -127,11 +127,14 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
 
   defp ticket_batch(assigns) do
     ~H"""
-    <div class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm" data-batch={@batch.batch.id}>
+    <div
+      class="bg-accent/50 border-border w-full overflow-hidden rounded-lg border shadow-sm"
+      data-batch={@batch.batch.id}
+    >
       <.link
         patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/batches/#{@batch.batch}/edit"}
         phx-click={JS.push_focus()}
-        class="flex flex-row justify-between bg-gray-200 px-4 py-4 hover:bg-gray-300"
+        class="bg-accent/50 flex flex-row justify-between px-4 py-4 hover:bg-accent"
       >
         <div class="inline-flex items-center gap-2">
           <.icon name="hero-rectangle-stack-mini h-4 w-4" />
@@ -151,14 +154,14 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
         <.link
           :for={ticket_type <- @batch.batch.ticket_types}
           patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/types/#{ticket_type}/edit"}
-          class="flex flex-row justify-between px-4 py-4 hover:bg-white"
+          class="flex flex-row justify-between px-4 py-4 hover:bg-accent"
           data-ticket-type={ticket_type.id}
         >
           <div class="inline-flex items-center gap-2">
             <.icon name="hero-ticket-mini h-4 w-4" />
             <%= ticket_type.name %>
           </div>
-          <div class="text-gray-500">
+          <div class="text-muted-foreground">
             <%= ticket_type.price %> kr
           </div>
         </.link>
@@ -181,7 +184,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
         id={"batch-zone-#{@batch.batch.id}-no-children"}
         phx-hook="Sortable"
         data-batch={@batch.batch.id}
-        class="flex flex-col justify-between px-4 py-4 hover:bg-white"
+        class="flex flex-col justify-between px-4 py-4 hover:bg-background"
       >
         <%= gettext("No tickets") %>
       </div>

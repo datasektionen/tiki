@@ -20,7 +20,7 @@ defmodule TikiWeb.EventLive.Index do
         class="flex flex-col gap-1 rounded-lg border px-4 py-4 shadow-sm hover:bg-gray-50"
       >
         <div class="text-lg font-bold"><%= event.name %></div>
-        <div class="text-sm text-gray-500">
+        <div class="text-muted-foreground text-sm">
           <%= Calendar.strftime(event.event_date, "%y-%m-%d %H:%M") %>
         </div>
       </.link>
