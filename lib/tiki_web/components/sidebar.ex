@@ -127,7 +127,7 @@ defmodule TikiWeb.Component.Sidebar do
 
   defp all_event_items(assigns) do
     ~H"""
-    <.sidebar_label><%= gettext("General") %></.sidebar_label>
+    <.sidebar_label><%= gettext("Team") %></.sidebar_label>
     <.sidebar_item
       icon="hero-home"
       text={gettext("Dashboard")}
@@ -151,7 +151,11 @@ defmodule TikiWeb.Component.Sidebar do
         <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
         <span><%= gettext("Settings") %></span>
       </:header>
-      <:item text={gettext("Members")} to={~p"/admin/team/members"} />
+      <:item
+        text={gettext("Members")}
+        to={~p"/admin/team/members"}
+        active={@active_tab == :team_members}
+      />
       <:item text={gettext("Payments")} to="" />
     </.sidebar_group>
     """
@@ -343,7 +347,7 @@ defmodule TikiWeb.Component.Sidebar do
     ~H"""
     <div class="flex flex-col gap-1">
       <details name={nil} class="group peer" open={Enum.any?(@item, & &1.active)}>
-        <summary class="cursor-pointer list-none">
+        <summary class="block cursor-pointer list-none">
           <div class="flex flex-row items-center gap-2 rounded-md p-2 text-sm hover:bg-accent">
             <%= render_slot(@header) %>
             <.icon

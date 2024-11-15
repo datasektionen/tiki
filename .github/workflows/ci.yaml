@@ -23,8 +23,8 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-
+          key: ${{ runner.os }}-mix-lint-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-lint-
 
       - run: mix do deps.get --check-locked, deps.compile
         if: steps.cache-deps.outputs.cache-hit != 'true'
@@ -71,8 +71,8 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-
+          key: ${{ runner.os }}-mix-test-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-test-
 
       - run: mix do deps.get --check-locked, deps.compile
         if: steps.cache-deps.outputs.cache-hit != 'true'

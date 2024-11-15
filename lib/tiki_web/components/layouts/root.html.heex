@@ -6,7 +6,8 @@
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
     <link rel="shortcut icon" href="/images/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="Tiki" />
+    <meta name="theme-color" content="hsl(240 10% 6%)" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" />
     <link rel="manifest" href="/images/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
@@ -17,7 +18,7 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
-  <body class="bg-background antialiased">
+  <body class="bg-background h-full antialiased">
     <!--
     <ul class="relative z-10 flex items-center justify-end gap-4 px-4 sm:px-6 lg:px-8">
       <%= if @current_user do %>

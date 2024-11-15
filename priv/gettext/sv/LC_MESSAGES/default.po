@@ -606,7 +606,7 @@ msgstr "Hantera en biljettbatch för denna evenemang."
 #: lib/tiki_web/live/admin_live/ticket/batch_form.ex:26
 #, elixir-autogen, elixir-format
 msgid "None"
-msgstr "Inga"
+msgstr "Ingen"
 
 #: lib/tiki_web/live/admin_live/ticket/batch_form.ex:20
 #, elixir-autogen, elixir-format
@@ -646,7 +646,7 @@ msgstr "Spara batch"
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:39
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Save ticket type"
-msgstr "Ny biljettyp"
+msgstr "Spara biljettyp"
 
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:31
 #, elixir-autogen, elixir-format

@@ -70,6 +70,10 @@
     }
 }
 
+summary::-webkit-details-marker {
+    display: none;
+}
+
 body {
     @apply bg-background text-foreground;
 }
