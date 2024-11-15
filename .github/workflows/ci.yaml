@@ -25,9 +25,10 @@ jobs:
           key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
           restore-keys: ${{ runner.os }}-mix-
 
-      - run: mix deps.get
+      - run: mix do deps.get --check-locked, deps.compile
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+
       - run: mix deps.unlock --check-unused
-      - run: mix deps.compile
       - run: mix compile --warnings-as-errors
       - run: mix format --check-formatted
 
@@ -71,7 +72,8 @@ jobs:
           key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
           restore-keys: ${{ runner.os }}-mix-
 
-      - run: mix deps.get
-      - run: mix deps.compile
+      - run: mix do deps.get --check-locked, deps.compile
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+
       - run: mix compile
       - run: mix test
