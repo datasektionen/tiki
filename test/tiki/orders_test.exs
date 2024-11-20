@@ -21,7 +21,9 @@ defmodule Tiki.OrdersTest do
     end
 
     test "create_order/1 with valid data creates a order" do
-      valid_attrs = %{}
+      event = Tiki.EventsFixtures.event_fixture()
+
+      valid_attrs = %{event_id: event.id, price: 100}
 
       assert {:ok, %Order{} = _order} = Orders.create_order(valid_attrs)
     end

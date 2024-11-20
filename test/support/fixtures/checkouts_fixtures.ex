@@ -9,7 +9,7 @@ defmodule Tiki.CheckoutsFixtures do
   """
   def stripe_checkout_fixture(attrs \\ %{}) do
     user = Tiki.AccountsFixtures.user_fixture()
-    order = Tiki.OrdersFixtures.order_fixture(%{user_id: user.id})
+    order = Tiki.OrdersFixtures.order_fixture(%{user_id: user.id, price: 100})
 
     {:ok, stripe_checkout} =
       attrs

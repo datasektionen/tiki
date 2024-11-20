@@ -67,7 +67,7 @@ defmodule Tiki.Orders do
   def create_order(attrs \\ %{}) do
     %Order{}
     |> Order.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(returning: [:id])
   end
 
   @doc """
@@ -173,7 +173,7 @@ defmodule Tiki.Orders do
   def create_ticket(attrs \\ %{}) do
     %Ticket{}
     |> Ticket.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(returning: [:id])
   end
 
   @doc """

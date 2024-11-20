@@ -161,7 +161,7 @@ defmodule Tiki.Tickets do
   def create_ticket_type(attrs \\ %{}) do
     %TicketType{}
     |> TicketType.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(returning: [:id])
   end
 
   @doc """

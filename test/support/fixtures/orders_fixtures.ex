@@ -13,7 +13,7 @@ defmodule Tiki.OrdersFixtures do
 
     {:ok, order} =
       attrs
-      |> Enum.into(%{user_id: user.id, event_id: event.id})
+      |> Enum.into(%{user_id: user.id, event_id: event.id, price: 100})
       |> Tiki.Orders.create_order()
 
     order
