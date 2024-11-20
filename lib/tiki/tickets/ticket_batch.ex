@@ -9,7 +9,7 @@ defmodule Tiki.Tickets.TicketBatch do
     field :min_size, :integer
     field :name, :string
 
-    belongs_to :event, Tiki.Events.Event
+    belongs_to :event, Tiki.Events.Event, type: :binary_id
 
     has_many :sub_batches, TicketBatch
     has_many :ticket_types, Tiki.Tickets.TicketType

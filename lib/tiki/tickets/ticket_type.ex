@@ -2,6 +2,7 @@ defmodule Tiki.Tickets.TicketType do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "ticket_types" do
     field :description, :string
     field :expire_time, :utc_datetime

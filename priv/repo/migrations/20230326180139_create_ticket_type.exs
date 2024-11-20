@@ -2,7 +2,8 @@ defmodule Tiki.Repo.Migrations.CreateTicketType do
   use Ecto.Migration
 
   def change do
-    create table(:ticket_types) do
+    create table(:ticket_types, primary_key: false) do
+      add :id, :uuid, primary_key: true, null: false, default: fragment("gen_random_uuid()")
       add :name, :string
       add :description, :text
       add :purchasable, :boolean, default: true, null: false
