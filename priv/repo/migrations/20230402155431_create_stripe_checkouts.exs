@@ -8,7 +8,7 @@ defmodule Tiki.Repo.Migrations.CreateStripeCheckouts do
       add :payment_method_id, :string
       add :status, :string
       add :user_id, references(:users, on_delete: :nothing)
-      add :order_id, references(:orders, on_delete: :nothing)
+      add :order_id, references(:orders, type: :binary_id, on_delete: :nothing)
 
       timestamps()
     end

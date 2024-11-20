@@ -9,10 +9,11 @@ defmodule Tiki.OrdersFixtures do
   """
   def order_fixture(attrs \\ %{}) do
     user = Tiki.AccountsFixtures.user_fixture()
+    event = Tiki.EventsFixtures.event_fixture()
 
     {:ok, order} =
       attrs
-      |> Enum.into(%{user_id: user.id})
+      |> Enum.into(%{user_id: user.id, event_id: event.id})
       |> Tiki.Orders.create_order()
 
     order

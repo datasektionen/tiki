@@ -3,7 +3,7 @@ defmodule Tiki.Repo.Migrations.AddEventToOrder do
 
   def change do
     alter table(:orders) do
-      add :event_id, references(:events, on_delete: :delete_all)
+      add :event_id, references(:events, type: :binary_id, on_delete: :delete_all)
     end
 
     create index(:orders, [:event_id])

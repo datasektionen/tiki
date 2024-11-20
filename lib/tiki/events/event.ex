@@ -2,6 +2,7 @@ defmodule Tiki.Events.Event do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "events" do
     field :description, :string
     field :event_date, :utc_datetime

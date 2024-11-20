@@ -2,9 +2,10 @@ defmodule Tiki.Orders.Ticket do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "tickets" do
-    belongs_to :ticket_type, Tiki.Tickets.TicketType
-    belongs_to :order, Tiki.Orders.Order
+    belongs_to :ticket_type, Tiki.Tickets.TicketType, type: :binary_id
+    belongs_to :order, Tiki.Orders.Order, type: :binary_id
 
     timestamps()
   end
