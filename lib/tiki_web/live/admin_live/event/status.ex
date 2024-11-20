@@ -3,10 +3,11 @@ defmodule TikiWeb.AdminLive.Event.Status do
 
   alias Tiki.Events
   alias Tiki.Orders
+  alias Tiki.Tickets
   alias Tiki.Presence
 
   def mount(%{"id" => event_id}, _session, socket) do
-    ticket_types = Orders.get_availible_ticket_types(event_id)
+    ticket_types = Tickets.get_availible_ticket_types(event_id)
     event = Events.get_event!(event_id)
 
     Orders.subscribe(event_id)
