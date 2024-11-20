@@ -63,20 +63,30 @@ defmodule TikiWeb.Router do
   end
 
   scope "/", TikiWeb do
+    pipe_through [:browser]
+
+    live_session :unauthenticated do
+      live "/events", EventLive.Index, :index
+      live "/events/:id", EventLive.Show, :index
+      live "/events/:event_id/purchase", PurchaseLive.Tickets, :tickets
+    end
+  end
+
+  scope "/", TikiWeb do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
       on_mount: [{TikiWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
-
-      live "/events", EventLive.Index, :index
-      live "/events/:id", EventLive.Show, :index
-      live "/events/:id/purchase", EventLive.Show, :purchase
     end
 
-    post "/admin/set_team", UserSessionController, :set_team
-    get "/admin/set_team/:team_id", UserSessionController, :set_team
+    scope "/admin" do
+      pipe_through [:require_admin_user]
+
+      post "/set_team", UserSessionController, :set_team
+      get "/set_team/:team_id", UserSessionController, :set_team
+    end
 
     scope "/admin", AdminLive do
       live_session :require_admin_user,
