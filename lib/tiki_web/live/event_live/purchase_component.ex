@@ -9,6 +9,11 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
     {:ok, assign(socket, intent: intent)}
   end
 
+  def update(%{action: {:swish_token, token}}, socket) do
+    {:ok, svg} = Tiki.Swish.get_svg_qr_code(token)
+    {:ok, assign(socket, swish_qr_code: svg)}
+  end
+
   def update(%{action: {:timeout, _}}, socket) do
     case socket.assigns.state do
       :purchase ->
@@ -39,10 +44,10 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
        promo_code: "",
        error: nil,
        order: nil,
-       intent: nil
+       intent: nil,
+       swish_qr_code: nil
      )
-     |> assign(assigns)
-     |> assign_ticket_types(ticket_types)}
+     |> assign(assigns)}
   end
 
   defp assign_ticket_types(socket, ticket_types, promo_code \\ "") do
@@ -101,7 +106,8 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
 
     with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase, user_id) do
       PurchaseMonitor.monitor(self(), %{id: socket.assigns.id, order: order})
-      send(self(), {:create_stripe_payment_intent, order.id, user_id, price})
+      # send(self(), {:create_stripe_payment_intent, order.id, user_id, price})
+      send(self(), {:create_swish_payment_request, order.id, user_id, price})
 
       {:noreply,
        assign(socket,
@@ -164,51 +170,5 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
       </tbody>
     </table>
     """
-  end
-end
-
-defmodule TikiWeb.EventLive.PurchaseMonitor do
-  use GenServer
-
-  alias Tiki.Orders
-
-  def start_link(init_arg) do
-    GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)
-  end
-
-  def monitor(pid, meta) do
-    GenServer.call(__MODULE__, {:monitor, pid, meta})
-  end
-
-  def init(_) do
-    {:ok, %{views: %{}}}
-  end
-
-  def handle_call({:monitor, pid, meta}, _, %{views: views} = state) do
-    Process.monitor(pid)
-    Process.send_after(self(), {:timeout, pid, meta}, 60_000)
-    {:reply, :ok, %{state | views: Map.put(views, pid, meta)}}
-  end
-
-  def handle_info({:timeout, view_pid, meta}, state) do
-    case maybe_cancel_reservation(meta) do
-      :cancelled -> send(view_pid, {:timeout, meta})
-      :not_cancelled -> nil
-    end
-
-    {:noreply, state}
-  end
-
-  def handle_info({:DOWN, _ref, :process, view_pid, _reason}, state) do
-    {meta, new_views} = Map.pop(state.views, view_pid)
-    maybe_cancel_reservation(meta)
-    {:noreply, %{state | views: new_views}}
-  end
-
-  defp maybe_cancel_reservation(%{order: order}) do
-    case Orders.maybe_cancel_reservation(order) do
-      {:ok, _} -> :cancelled
-      {:error, _} -> :not_cancelled
-    end
   end
 end

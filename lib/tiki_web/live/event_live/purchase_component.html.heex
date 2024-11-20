@@ -29,6 +29,12 @@
         <.ticket_summary tickets={@to_purchase} total_price={@total_price} />
       </div>
 
+      <div>
+        <span>Swish!</span>
+
+        <%= raw(@swish_qr_code) %>
+      </div>
+
       <form
         :if={@intent != nil}
         id="payment-form"
