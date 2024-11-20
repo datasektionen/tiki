@@ -80,7 +80,7 @@ defmodule Tiki.Events do
   def create_event(attrs \\ %{}) do
     %Event{}
     |> Event.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(returning: [:id])
   end
 
   @doc """
