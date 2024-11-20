@@ -4,9 +4,12 @@ defmodule Tiki.Checkouts do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
+  alias Tiki.Swish
   alias Tiki.Repo
 
   alias Tiki.Checkouts.StripeCheckout
+  alias Tiki.Checkouts.SwishCheckout
 
   @doc """
   Returns the list of stripe_checkouts.
@@ -73,6 +76,12 @@ defmodule Tiki.Checkouts do
     |> Repo.update()
   end
 
+  def create_swish_checkout(attrs \\ %{}) do
+    %SwishCheckout{}
+    |> SwishCheckout.changeset(attrs)
+    |> Repo.insert()
+  end
+
   @doc """
   Creates a stripe payment intent with the stripe API,
   and creates a stripe checkout in the database. Returns the intent.any()
@@ -121,11 +130,10 @@ defmodule Tiki.Checkouts do
   """
   def confirm_stripe_payment(intent_id) do
     query =
-      from(stc in StripeCheckout,
+      from stc in StripeCheckout,
         where: stc.payment_intent_id == ^intent_id,
         join: o in assoc(stc, :order),
         select: o
-      )
 
     with {:ok,
           %Stripe.PaymentIntent{
@@ -153,4 +161,41 @@ defmodule Tiki.Checkouts do
       {:error, err} -> {:error, err}
     end
   end
+
+  @doc """
+  Creates a Swish payment request with the Swish API,
+  and creates a Swish checkout in the database. Returns the request.
+  """
+  def create_swish_payment_request(order_id, user_id, price) do
+    with {:ok, swish_request} <- Swish.create_payment_request(price),
+         {:ok, checkout} <-
+           create_swish_checkout(
+             Map.merge(swish_request, %{user_id: user_id, order_id: order_id})
+           ) do
+      {:ok, checkout}
+    else
+      {:error, err} -> {:error, err}
+    end
+  end
+
+  def confirm_swish_payment(callback_identifier) do
+    query =
+      from sc in SwishCheckout,
+        where: sc.callback_identifier == ^callback_identifier,
+        join: o in assoc(sc, :order),
+        select: {o, sc}
+
+    Multi.new()
+    |> Multi.one(:order_checkout, query)
+    |> Multi.run(:confirm_payment, fn _repo, %{order_checkout: {order, checkout}} ->
+      if order.status != :pending do
+        {:error, "Order is not pending"}
+      else
+        status = swish_to_order_status(checkout.status)
+      end
+    end)
+  end
+
+  defp swish_to_order_status("PAID"), do: :paid
+  defp swish_to_order_status(_status) when is_binary(_status), do: :cancelled
 end

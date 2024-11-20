@@ -58,6 +58,22 @@ defmodule TikiWeb.EventLive.Show do
   end
 
   @impl true
+  def handle_info({:create_swish_payment_request, _order_id, _user_id, price}, socket) do
+    with {:ok, %{token: token, id: id}} <-
+           Tiki.Swish.create_payment_request(price) do
+      send_update(PurchaseComponent,
+        id: socket.assigns.event.id,
+        action: {:swish_token, token}
+      )
+
+      {:noreply, socket}
+    else
+      {:error, _error} ->
+        {:noreply, socket}
+    end
+  end
+
+  @impl true
   def handle_info({:create_stripe_payment_intent, order_id, user_id, price}, socket) do
     with {:ok, intent} <- Checkouts.create_stripe_payment_intent(order_id, user_id, price) do
       send_update(PurchaseComponent,
