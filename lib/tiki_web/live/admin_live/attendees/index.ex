@@ -1,4 +1,5 @@
 defmodule TikiWeb.AdminLive.Attendees.Index do
+  alias TikiWeb.AdminLive.Attendees
   use TikiWeb, :live_view
 
   alias Tiki.Events
@@ -22,7 +23,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   def handle_params(_params, _url, socket) do
     {:noreply,
-     assign(socket, :page_title, "Besökare")
+     assign(socket, :page_title, gettext("Attendees"))
      |> assign_breadcrumbs([
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
