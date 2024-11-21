@@ -349,9 +349,7 @@ defmodule Tiki.Tickets do
         inner_join: ctb in "batch_tree",
         on: tb.parent_batch_id == ctb.id
 
-    batches_query =
-      root_batches_query
-      |> union_all(^batches_recursion_query)
+    batches_query = union_all(root_batches_query, ^batches_recursion_query)
 
     query =
       TicketBatch

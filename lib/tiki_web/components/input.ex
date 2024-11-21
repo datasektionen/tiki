@@ -67,7 +67,7 @@ defmodule TikiWeb.Component.Input do
 
     ~H"""
     <div class={@rest[:class]}>
-      <label class="text-muted-foreground flex items-center gap-4 text-sm leading-6">
+      <label class="text-muted-foreground flex items-center gap-4 text-sm">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -75,10 +75,9 @@ defmodule TikiWeb.Component.Input do
           name={@name}
           value="true"
           checked={@checked}
-          class="border-primary text-primary bg-background h-4 w-4 rounded shadow focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
+          class="border-primary text-primary bg-background size-4 rounded shadow focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
         />
-        <!-- peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 checked:bg-primary checked:text-primary-foreground -->
         <%= @label %>
       </label>
       <.error :for={msg <- @errors}><%= msg %></.error>
@@ -197,6 +196,59 @@ defmodule TikiWeb.Component.Input do
           />
         </span>
       </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Provides a radio group input for a given form field.
+
+  ## Examples
+
+      <.radio_group field={@form[:tip]}>
+        <:radio value="0">No Tip</:radio>
+        <:radio value="10">10%</:radio>
+        <:radio value="20">20%</:radio>
+      </.radio_group>
+  """
+  attr :field, Phoenix.HTML.FormField, required: true
+
+  slot :radio, required: true do
+    attr :value, :string, required: true
+    attr :class, :string
+  end
+
+  attr :rest, :global
+
+  slot :inner_block
+
+  def radio_group(%{field: %Phoenix.HTML.FormField{}} = assigns) do
+    assigns = prepare_assign(assigns)
+
+    ~H"""
+    <div>
+      <div class={@rest[:class]}>
+        <%= render_slot(@inner_block) %>
+        <div
+          :for={
+            {%{value: value, class: class} = rad, idx} <-
+              Enum.map(@radio, &Map.put_new(&1, :class, nil)) |> Enum.with_index()
+          }
+          class={class}
+        >
+          <label for={"#{@id}-#{idx}"}><%= render_slot(rad) %></label>
+          <input
+            type="radio"
+            name={@name}
+            id={"#{@id}-#{idx}"}
+            value={value}
+            checked={to_string(@value) == to_string(value)}
+            class="aspect-square border-primary text-foreground h-4 w-4 rounded-full border shadow focus:ring-0 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:checked:bg-dark-radio"
+            }
+          />
+        </div>
+      </div>
+      <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
   end

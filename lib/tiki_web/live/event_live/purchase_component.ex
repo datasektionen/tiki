@@ -29,10 +29,10 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
   end
 
   def update(assigns, socket) do
-    ticket_types =
+    _ticket_types =
       if connected?(socket) do
         Orders.subscribe(assigns.event.id)
-        Orders.get_availible_ticket_types(assigns.event.id)
+        # Orders.get_availible_ticket_types(assigns.event.id)
       else
         []
       end

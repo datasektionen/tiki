@@ -30,6 +30,7 @@ defmodule Tiki.OrdersFixtures do
       attrs
       |> Enum.into(%{
         ticket_type_id: ticket_type.id,
+        price: order.price,
         order_id: order.id
       })
       |> Tiki.Orders.create_ticket()
