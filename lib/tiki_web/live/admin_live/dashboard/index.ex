@@ -117,13 +117,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
     </div>
 
     <div :if={@current_team}>
-      <.header>
-        <%= @page_title %>
-        <:subtitle>
-          <%= @current_team.name %>
-        </:subtitle>
-      </.header>
-      <div class="flex flex-col gap-8 py-8">
+      <div class="flex flex-col gap-8">
         <div class="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
           <.card>
             <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -191,7 +185,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
                     <%= gettext("Events") %>
                   </.card_title>
                   <.card_description class="pt-1">
-                    <%= gettext("All events for this team") %>
+                    <%= gettext("All events for %{team}", team: @current_team.name) %>
                   </.card_description>
                 </div>
 
