@@ -3,6 +3,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
 
   alias Phoenix.LiveView.AsyncResult
   alias TikiWeb.PurchaseLive.PurchaseMonitor
+
   import TikiWeb.Component.Skeleton
 
   alias Tiki.Events
@@ -107,6 +108,14 @@ defmodule TikiWeb.PurchaseLive.Tickets do
           <span>Fortsätt</span>
         </.button>
       </div>
+      <.live_component
+        :if={@live_action == :purchase}
+        module={TikiWeb.PurchaseLive.PurchaseComponent}
+        id={@event.id}
+        event={@event}
+        order={@order}
+        patch={~p"/events/#{@event}"}
+      />
     </div>
     """
   end
@@ -122,6 +131,11 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     {:ok,
      assign(socket, event: event, promo_code: "", error: nil, ticket_types: AsyncResult.loading())
      |> start_async(:ticket_types, fn -> get_availible_ticket_types(event.id) end)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(_params, _uri, socket) do
+    {:noreply, socket}
   end
 
   defp get_availible_ticket_types(event_id, promo_code \\ "") do
@@ -175,12 +189,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
       # send(self(), {:create_stripe_payment_intent, order.id, user_id, price})
       # send(self(), {:create_swish_payment_request, order.id, user_id})
 
-      {:noreply,
-       assign(socket,
-         state: :purchase,
-         order: order,
-         to_purchase: to_purchase
-       )}
+      {:noreply, assign(socket, live_action: :purchase, order: order)}
     else
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}

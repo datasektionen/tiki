@@ -6,9 +6,11 @@ defmodule TikiWeb.ComponentHelpers do
   Prepare input assigns for use in a form. Extract required attribute from the Form.Field struct and update current assigns.
   """
   def prepare_assign(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
+
     assigns
     |> assign(field: nil, id: assigns[:id] || field.id)
-    |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
+    |> assign(:errors, Enum.map(errors, &translate_error(&1)))
     |> assign(
       :name,
       assigns[:name] || if(assigns[:multiple], do: field.name <> "[]", else: field.name)

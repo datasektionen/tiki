@@ -58,6 +58,7 @@ msgid "All events"
 msgstr "Alla events"
 
 #: lib/tiki_web/components/sidebar.ex:87
+#: lib/tiki_web/live/admin_live/attendees/index.ex:26
 #, elixir-autogen, elixir-format
 msgid "Attendees"
 msgstr "Besökare"
@@ -68,11 +69,6 @@ msgstr "Besökare"
 #, elixir-autogen, elixir-format
 msgid "Event"
 msgstr "Event"
-
-#: lib/tiki_web/components/sidebar.ex:130
-#, elixir-autogen, elixir-format
-msgid "General"
-msgstr "Allmänt"
 
 #: lib/tiki_web/components/sidebar.ex:93
 #, elixir-autogen, elixir-format
@@ -93,7 +89,7 @@ msgstr "Nytt event"
 msgid "Overview"
 msgstr "Översikt"
 
-#: lib/tiki_web/components/sidebar.ex:155
+#: lib/tiki_web/components/sidebar.ex:159
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr "Betalningar"
@@ -104,7 +100,7 @@ msgid "Registrations"
 msgstr "Anmälningar"
 
 #: lib/tiki_web/components/sidebar.ex:152
-#: lib/tiki_web/components/sidebar.ex:311
+#: lib/tiki_web/components/sidebar.ex:315
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Inställningar"
@@ -116,7 +112,7 @@ msgstr "Inställningar"
 msgid "Tickets"
 msgstr "Biljetter"
 
-#: lib/tiki_web/components/sidebar.ex:319
+#: lib/tiki_web/components/sidebar.ex:323
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr "Logga ut"
@@ -228,17 +224,17 @@ msgstr "Spara event"
 msgid "Ticket types"
 msgstr "Biljettyper"
 
-#: lib/tiki_web/live/admin_live/attendees/index.ex:65
+#: lib/tiki_web/live/admin_live/attendees/index.ex:66
 #, elixir-autogen, elixir-format
 msgid "New attendee"
 msgstr "Ny besökare"
 
-#: lib/tiki_web/live/admin_live/attendees/index.ex:56
+#: lib/tiki_web/live/admin_live/attendees/index.ex:57
 #, elixir-autogen, elixir-format
 msgid "Search"
 msgstr "Sök"
 
-#: lib/tiki_web/live/admin_live/attendees/index.ex:48
+#: lib/tiki_web/live/admin_live/attendees/index.ex:49
 #, elixir-autogen, elixir-format
 msgid "Sold tickets"
 msgstr "Sålda biljetter"
@@ -294,28 +290,28 @@ msgstr "Detta kommer radera eventet permanent"
 msgid "Type the full name of the event"
 msgstr "Skriv hela namnet på eventet"
 
-#: lib/tiki_web/live/admin_live/attendees/index.ex:61
+#: lib/tiki_web/live/admin_live/attendees/index.ex:62
 #: lib/tiki_web/live/admin_live/event/index.ex:78
 #, elixir-autogen, elixir-format
 msgid "Sort by date"
 msgstr "Sortera efter datum"
 
-#: lib/tiki_web/components/sidebar.ex:154
+#: lib/tiki_web/components/sidebar.ex:155
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr "Medlemmar"
 
-#: lib/tiki_web/components/sidebar.ex:237
+#: lib/tiki_web/components/sidebar.ex:241
 #, elixir-autogen, elixir-format
 msgid "Create or join one"
 msgstr "Skapa eller gå med i ett"
 
-#: lib/tiki_web/components/sidebar.ex:237
+#: lib/tiki_web/components/sidebar.ex:241
 #, elixir-autogen, elixir-format
 msgid "No team"
 msgstr "Inget team"
 
-#: lib/tiki_web/components/sidebar.ex:166
+#: lib/tiki_web/components/sidebar.ex:170
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:100
 #, elixir-autogen, elixir-format
 msgid "Teams"
@@ -337,7 +333,7 @@ msgstr "Du måste välja ett team för att komma åt denna sida."
 msgid "You need to be an admin to access this page."
 msgstr "Du måste vara admin för att komma åt denna sida."
 
-#: lib/tiki_web/components/sidebar.ex:162
+#: lib/tiki_web/components/sidebar.ex:166
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr "Admin"
@@ -347,7 +343,7 @@ msgstr "Admin"
 msgid "All events for this team"
 msgstr "Alla event för teamet"
 
-#: lib/tiki_web/components/sidebar.ex:168
+#: lib/tiki_web/components/sidebar.ex:172
 #, elixir-autogen, elixir-format
 msgid "All teams"
 msgstr "Alla team"
@@ -367,7 +363,7 @@ msgstr "Events"
 msgid "Hi"
 msgstr "Hej"
 
-#: lib/tiki_web/components/sidebar.ex:169
+#: lib/tiki_web/components/sidebar.ex:173
 #, elixir-autogen, elixir-format
 msgid "New team"
 msgstr "Nytt team"
@@ -668,7 +664,43 @@ msgstr "Biljetttypen raderades"
 msgid "Ticket type updated successfully"
 msgstr "Biljetttypen uppdaterades"
 
-#: lib/tiki_web/live/admin_live/attendees/index.ex:106
+#: lib/tiki_web/live/admin_live/attendees/index.ex:107
 #, elixir-autogen, elixir-format
 msgid "Purchased"
 msgstr "Köpta"
+
+#: lib/tiki_web/components/sidebar.ex:130
+#, elixir-autogen, elixir-format
+msgid "Team"
+msgstr "Team"
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:78
+#, elixir-autogen, elixir-format
+msgid "E-post"
+msgstr "E-post"
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:77
+#, elixir-autogen, elixir-format
+msgid "Namn"
+msgstr "Namn"
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:35
+#, elixir-autogen, elixir-format
+msgid "Payment"
+msgstr "Betalning"
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:37
+#, elixir-autogen, elixir-format
+msgid "Purchase tickets for %{event}. You have %{count} minutes to complete your order."
+msgstr "Köp biljetter till %{event}. Du har %{count} minuter på dig att slutföra din beställning."
+
+#: lib/tiki/accounts/user.ex:68
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:17
+#, elixir-autogen, elixir-format
+msgid "must have the @ sign and no spaces"
+msgstr "Måste innehålla @-tecken och inga mellanslag"
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:59
+#, elixir-autogen, elixir-format
+msgid "Total"
+msgstr "Totalt"
