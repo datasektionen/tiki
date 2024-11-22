@@ -219,7 +219,7 @@ defmodule Tiki.Orders do
       iex> reserve_tickets(232, [], 456)
       {:error, "Du måste välja minst en biljett"}
   """
-  def reserve_tickets(event_id, ticket_types, user_id \\ nil) do
+  def reserve_tickets(event_id, ticket_types, _user_id \\ nil) do
     result =
       Multi.new()
       |> Multi.run(:positive_tickets, fn _repo, _ ->
@@ -438,10 +438,6 @@ defmodule Tiki.Orders do
 
   def broadcast_order(order_id, :paid, order) do
     PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:paid, order})
-  end
-
-  defp broadcast(event_id, :purchases, message) do
-    PubSub.broadcast(Tiki.PubSub, "event:#{event_id}:purchases", message)
   end
 
   def broadcast(event_id, message) do

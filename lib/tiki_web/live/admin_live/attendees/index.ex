@@ -1,5 +1,4 @@
 defmodule TikiWeb.AdminLive.Attendees.Index do
-  alias TikiWeb.AdminLive.Attendees
   use TikiWeb, :live_view
 
   alias Tiki.Events

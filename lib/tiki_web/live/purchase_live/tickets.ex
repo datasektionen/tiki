@@ -2,8 +2,6 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   use TikiWeb, :live_view
 
   alias Phoenix.LiveView.AsyncResult
-  alias TikiWeb.PurchaseLive.PurchaseMonitor
-
   import TikiWeb.Component.Skeleton
 
   alias Tiki.Events
@@ -160,11 +158,6 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     {:noreply, assign_ticket_types(socket, ticket_types)}
   end
 
-  @impl true
-  def handle_info({:tickets_updated, ticket_types}, socket) do
-    {:noreply, assign_ticket_types(socket, ticket_types)}
-  end
-
   defp assign_ticket_types(socket, ticket_types) do
     %{ticket_types: tts} = socket.assigns
 
@@ -205,6 +198,10 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   end
 
   @impl true
+  def handle_info({:tickets_updated, ticket_types}, socket) do
+    {:noreply, assign_ticket_types(socket, ticket_types)}
+  end
+
   def handle_info({:cancelled, order}, socket) do
     {:noreply, assign(socket, order: order)}
   end
