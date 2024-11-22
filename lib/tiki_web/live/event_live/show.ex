@@ -1,10 +1,63 @@
 defmodule TikiWeb.EventLive.Show do
   use TikiWeb, :live_view
 
-  alias Tiki.Checkouts
   alias TikiWeb.EventLive.PurchaseComponent
   alias Tiki.Events
   alias Tiki.Presence
+
+  @impl Phoenix.LiveView
+  def render(assigns) do
+    ~H"""
+    <div class="mb-2 flex flex-col gap-2">
+      <div :if={@event.image_url != nil} class="pb-4">
+        <img class="aspect-video w-full rounded-xl object-cover" src={@event.image_url} />
+      </div>
+
+      <div class="flex flex-row items-center justify-between">
+        <div>
+          <div class="text-muted-foreground">
+            <%= Calendar.strftime(@event.event_date, "%d %B", month_names: &month_name/1) %>
+          </div>
+          <h1 class="text-3xl font-bold"><%= @event.name %></h1>
+        </div>
+
+        <.link patch={~p"/events/#{@event}/purchase"}>
+          <.button>Köp biljetter</.button>
+        </.link>
+      </div>
+
+      <div class="text-muted-foreground my-4 flex flex-col gap-1">
+        <div class="inline-flex items-center gap-2">
+          <.icon name="hero-calendar" />
+          <%= Calendar.strftime(@event.event_date, "%Y-%m-%d vid %H:%M") %>
+        </div>
+        <div class="inline-flex items-center gap-2">
+          <.icon name="hero-map-pin" />
+          <%= @event.location %>
+        </div>
+      </div>
+      <p class="-mt-8 whitespace-pre-wrap">
+        <%= @event.description %>
+      </p>
+    </div>
+
+    <div :if={@live_action == :purchase}>
+      <.live_component
+        module={TikiWeb.EventLive.PurchaseComponent}
+        id={@event.id}
+        title={@page_title}
+        action={@live_action}
+        event={@event}
+        patch={~p"/events/#{@event}"}
+        current_user={@current_user}
+      />
+    </div>
+
+    <div class="bg-background fixed right-4 bottom-4 rounded-full border px-4 py-2 shadow-sm">
+      <%= max(@online_count, 0) %> online
+    </div>
+    """
+  end
 
   @impl true
   def mount(%{"id" => event_id}, _session, socket) do
@@ -55,37 +108,6 @@ defmodule TikiWeb.EventLive.Show do
   def handle_info({:tickets_updated, _ticket_types} = msg, socket) do
     send_update(PurchaseComponent, id: socket.assigns.event.id, action: msg)
     {:noreply, socket}
-  end
-
-  @impl true
-  def handle_info({:create_swish_payment_request, _order_id, _user_id, price}, socket) do
-    with {:ok, %{token: token, id: id}} <-
-           Tiki.Swish.create_payment_request(price) do
-      send_update(PurchaseComponent,
-        id: socket.assigns.event.id,
-        action: {:swish_token, token}
-      )
-
-      {:noreply, socket}
-    else
-      {:error, _error} ->
-        {:noreply, socket}
-    end
-  end
-
-  @impl true
-  def handle_info({:create_stripe_payment_intent, order_id, user_id, price}, socket) do
-    with {:ok, intent} <- Checkouts.create_stripe_payment_intent(order_id, user_id, price) do
-      send_update(PurchaseComponent,
-        id: socket.assigns.event.id,
-        action: {:stripe_intent, intent}
-      )
-
-      {:noreply, socket}
-    else
-      {:error, _error} ->
-        {:noreply, socket}
-    end
   end
 
   defp month_name(month) do

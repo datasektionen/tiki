@@ -242,10 +242,6 @@ defmodule Tiki.Checkouts do
     end
   end
 
-  defp record_swish_status(status, %{order_checkout: {order, swish_checkout}}) do
-    update_swish_checkout(swish_checkout, %{status: "PAID"})
-  end
-
   defp swish_to_order_status("PAID"), do: :paid
   defp swish_to_order_status(status) when is_binary(status), do: :cancelled
 

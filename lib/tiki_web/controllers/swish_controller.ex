@@ -2,11 +2,11 @@ defmodule TikiWeb.SwishController do
   use TikiWeb, :controller
   alias Tiki.Checkouts
 
-  import Logger
+  require Logger
 
   def callback(
         conn,
-        %{"status" => status} = params
+        %{"status" => status}
       ) do
     [callback_identifier] = get_req_header(conn, "callbackidentifier")
 
