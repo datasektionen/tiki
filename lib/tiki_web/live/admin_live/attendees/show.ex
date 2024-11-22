@@ -22,7 +22,8 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
        {"Events", ~p"/admin/events"},
        {event.name, ~p"/admin/events/#{event.id}"},
        {"Attendees", ~p"/admin/events/#{event.id}/attendees"},
-       {ticket.order.user.full_name, ~p"/admin/events/#{event.id}/attendees/#{ticket.id}"}
+       {ticket.order.user.full_name || "No Name",
+        ~p"/admin/events/#{event.id}/attendees/#{ticket.id}"}
      ])}
   end
 

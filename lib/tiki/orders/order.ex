@@ -11,6 +11,9 @@ defmodule Tiki.Orders.Order do
     belongs_to :event, Tiki.Events.Event, type: :binary_id
     has_many :tickets, Tiki.Orders.Ticket
 
+    has_one :stripe_checkout, Tiki.Checkouts.StripeCheckout
+    has_one :swish_checkout, Tiki.Checkouts.SwishCheckout
+
     timestamps()
   end
 

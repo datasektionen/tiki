@@ -122,9 +122,30 @@ defmodule Tiki.Accounts do
   Either creates a new user, or returns an existing user with the same KTH ID.
   """
   def upsert_user_with_userinfo(%{"kth_id" => id} = attrs) do
-    case Repo.get_by(User, email: "#{id}@kth.se") do
+    case Repo.get_by(User, kth_id: id) do
       nil ->
         User.oidcc_changeset(%User{}, attrs)
+        |> Repo.insert()
+
+      user ->
+        {:ok, user}
+    end
+  end
+
+  @doc """
+  Either creates a new user, or returns an existing user with the same email.
+  """
+  def upsert_user_email(email, name) do
+    case Repo.get_by(User, email: email) do
+      nil ->
+        [first_name | last_name] = String.split(name, " ", parts: 2, trim: true)
+        last_name = Enum.join(last_name, " ")
+
+        User.email_changeset(%User{}, %{
+          email: email,
+          first_name: first_name,
+          last_name: last_name
+        })
         |> Repo.insert()
 
       user ->

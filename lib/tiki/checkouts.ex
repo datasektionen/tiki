@@ -10,6 +10,9 @@ defmodule Tiki.Checkouts do
 
   alias Tiki.Checkouts.StripeCheckout
   alias Tiki.Checkouts.SwishCheckout
+  alias Tiki.Orders
+  alias Tiki.Orders.Order
+  alias Tiki.Tickets
 
   @doc """
   Returns the list of stripe_checkouts.
@@ -83,31 +86,49 @@ defmodule Tiki.Checkouts do
   end
 
   @doc """
+  Updates a swish_checkout.
+
+  ## Examples
+
+      iex> update_swish_checkout(stripe_checkout, %{field: new_value})
+      {:ok, %StripeCheckout{}}
+
+      iex> update_swish_checkout(stripe_checkout, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_swish_checkout(%SwishCheckout{} = swish_checkout, attrs) do
+    swish_checkout
+    |> SwishCheckout.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
   Creates a stripe payment intent with the stripe API,
   and creates a stripe checkout in the database. Returns the intent.any()
 
   ## Examples
 
-      iex> create_stripe_payment_intent(1, 1, 10000)
+      iex> create_stripe_payment_intent(%Order{user_id: 1, price: 10000})
       {:ok, %Stripe.PaymentIntent{}}
 
-      iex> create_stripe_payment_intent(1, 1, 10000)
+      iex> create_stripe_payment_intent(%Order{user_id: 1, price: 0})
       {:error, %Stripe.Error{}}
   """
-  def create_stripe_payment_intent(order_id, user_id, price) do
+  def create_stripe_payment_intent(%Order{user_id: user_id, price: price} = order) do
     with {:ok, intent} <-
            Stripe.PaymentIntent.create(%{
              amount: price * 100,
              currency: "sek"
            }),
-         {:ok, _stripe_ceckout} <-
+         {:ok, stripe_ceckout} <-
            create_stripe_checkout(%{
              user_id: user_id,
-             order_id: order_id,
+             order_id: order.id,
              price: price * 100,
              payment_intent_id: intent.id
            }) do
-      {:ok, intent}
+      {:ok, Map.put(stripe_ceckout, :client_secret, intent.client_secret)}
     else
       {:error, err} -> {:error, err}
     end
@@ -166,11 +187,11 @@ defmodule Tiki.Checkouts do
   Creates a Swish payment request with the Swish API,
   and creates a Swish checkout in the database. Returns the request.
   """
-  def create_swish_payment_request(order_id, user_id, price) do
+  def create_swish_payment_request(%Order{user_id: user_id, price: price} = order) do
     with {:ok, swish_request} <- Swish.create_payment_request(price),
          {:ok, checkout} <-
            create_swish_checkout(
-             Map.merge(swish_request, %{user_id: user_id, order_id: order_id})
+             Map.merge(swish_request, %{user_id: user_id, order_id: order.id})
            ) do
       {:ok, checkout}
     else
@@ -178,24 +199,63 @@ defmodule Tiki.Checkouts do
     end
   end
 
-  def confirm_swish_payment(callback_identifier) do
+  def confirm_swish_payment(callback_identifier, status) do
     query =
       from sc in SwishCheckout,
         where: sc.callback_identifier == ^callback_identifier,
         join: o in assoc(sc, :order),
         select: {o, sc}
 
-    Multi.new()
-    |> Multi.one(:order_checkout, query)
-    |> Multi.run(:confirm_payment, fn _repo, %{order_checkout: {order, checkout}} ->
-      if order.status != :pending do
-        {:error, "Order is not pending"}
-      else
-        status = swish_to_order_status(checkout.status)
-      end
-    end)
+    multi =
+      Multi.new()
+      |> Multi.one(:order_checkout, query)
+      |> Multi.run(:status, fn _repo, %{order_checkout: {order, _}} ->
+        if order.status != :pending do
+          {:error, :already_finished}
+        else
+          {:ok, swish_to_order_status(status)}
+        end
+      end)
+      |> Multi.run(:swish_checkout, fn _repo, %{order_checkout: {_, swish_checkout}} ->
+        update_swish_checkout(swish_checkout, %{status: status})
+      end)
+      |> Multi.update(:order, fn %{status: status, order_checkout: {order, _}} ->
+        Order.changeset(order, %{status: status})
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{order: order}} ->
+        Orders.broadcast(
+          order.event_id,
+          {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
+        )
+
+        Orders.broadcast_order(order.id, :paid, order)
+
+        :ok
+
+      {:error, :status, :already_finished, _} ->
+        :ok
+
+      {:error, _, msg, _} ->
+        {:error, msg}
+    end
+  end
+
+  defp record_swish_status(status, %{order_checkout: {order, swish_checkout}}) do
+    update_swish_checkout(swish_checkout, %{status: "PAID"})
   end
 
   defp swish_to_order_status("PAID"), do: :paid
-  defp swish_to_order_status(_status) when is_binary(_status), do: :cancelled
+  defp swish_to_order_status(status) when is_binary(status), do: :cancelled
+
+  def load_stripe_client_secret!(%StripeCheckout{payment_intent_id: intent_id} = checkout) do
+    {:ok, %Stripe.PaymentIntent{client_secret: client_secret}} =
+      Stripe.PaymentIntent.retrieve(intent_id)
+
+    Map.put(checkout, :client_secret, client_secret)
+  end
+
+  def load_stripe_client_secret!(%Ecto.Association.NotLoaded{} = not_loaded), do: not_loaded
+  def load_stripe_client_secret!(nil), do: nil
 end

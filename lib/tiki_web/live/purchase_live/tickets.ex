@@ -134,8 +134,20 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(_params, _uri, socket) do
-    {:noreply, socket}
+  def handle_params(params, _uri, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :tickets, _params), do: socket
+
+  defp apply_action(socket, :purchase, %{"order_id" => order_id}) do
+    order = Orders.get_order!(order_id)
+
+    if connected?(socket) do
+      Orders.subscribe_to_order(order_id)
+    end
+
+    assign(socket, order: order)
   end
 
   defp get_availible_ticket_types(event_id, promo_code \\ "") do
@@ -185,14 +197,19 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     %{event: %{id: event_id}} = socket.assigns
 
     with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase, user_id) do
-      PurchaseMonitor.monitor(self(), %{order: order})
-      # send(self(), {:create_stripe_payment_intent, order.id, user_id, price})
-      # send(self(), {:create_swish_payment_request, order.id, user_id})
-
-      {:noreply, assign(socket, live_action: :purchase, order: order)}
+      {:noreply, push_patch(socket, to: ~p"/events/#{event_id}/purchase/#{order}")}
     else
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}
     end
+  end
+
+  @impl true
+  def handle_info({:cancelled, order}, socket) do
+    {:noreply, assign(socket, order: order)}
+  end
+
+  def handle_info({:paid, order}, socket) do
+    {:noreply, assign(socket, order: order)}
   end
 end

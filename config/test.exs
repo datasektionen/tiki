@@ -16,6 +16,14 @@ config :tiki, Tiki.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
+config :tiki, Tiki.Swish,
+  api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
+  cacert: "swish_certs/Swish_TLS_RootCA.pem",
+  cert: "swish_certs/myCertificate.pem",
+  key: "swish_certs/myPrivateKey.key",
+  merchant_number: System.get_env("SWISH_MERCHANT_NUMBER"),
+  callback_url: System.get_env("SWISH_CALLBACK_URL")
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :tiki, TikiWeb.Endpoint,

@@ -174,6 +174,60 @@ defmodule Tiki.AccountsTest do
     end
   end
 
+  describe "upsert_user_email/3" do
+    test "gets a user if it exists" do
+      user = user_fixture()
+      assert Accounts.upsert_user_email(user.email, "New Name") == {:ok, user}
+    end
+
+    test "creates a user if it doesn't exist" do
+      assert {:ok, user} = Accounts.upsert_user_email("my@email.com", "Ture Teknolog")
+
+      assert user.first_name == "Ture"
+      assert user.last_name == "Teknolog"
+      assert user.email == "my@email.com"
+    end
+
+    test "creates a user with many names" do
+      assert {:ok, user} = Accounts.upsert_user_email("my@email.com", "Ture Ture Ture Teknolog")
+
+      assert user.first_name == "Ture"
+      assert user.last_name == "Ture Ture Teknolog"
+      assert user.email == "my@email.com"
+    end
+
+    test "creates a user with one name" do
+      assert {:ok, user} = Accounts.upsert_user_email("my@email.com", "Ture")
+
+      assert user.first_name == "Ture"
+      assert user.last_name == nil
+      assert user.email == "my@email.com"
+    end
+  end
+
+  describe "upsert_user_with_userinfo/1" do
+    @valid_userinfo %{
+      "kth_id" => "turetek",
+      "email" => "turetek@kth.se",
+      "first_name" => "Ture",
+      "last_name" => "Teknolog"
+    }
+
+    test "gets a user if it exists" do
+      user = user_fixture(%{kth_id: "turetek"})
+      assert Accounts.upsert_user_with_userinfo(%{"kth_id" => "turetek"}) == {:ok, user}
+    end
+
+    test "creates a user with valid userinfo" do
+      assert {:ok, user} = Accounts.upsert_user_with_userinfo(@valid_userinfo)
+
+      assert user.first_name == "Ture"
+      assert user.last_name == "Teknolog"
+      assert user.email == "turetek@kth.se"
+      assert user.kth_id == "turetek"
+    end
+  end
+
   describe "deliver_user_update_email_instructions/3" do
     setup do
       %{user: user_fixture()}
