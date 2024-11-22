@@ -45,3 +45,4 @@ swish_certs/
 .elixir-tools/
 .lexical/
 .elixir_ls/
+.cloudflared/

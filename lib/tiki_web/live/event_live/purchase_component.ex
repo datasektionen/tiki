@@ -87,7 +87,7 @@ defmodule TikiWeb.EventLive.PurchaseComponent do
 
   def handle_event("cancel", _params, socket) do
     if socket.assigns.state == :purchase do
-      Orders.maybe_cancel_reservation(socket.assigns.order)
+      Orders.maybe_cancel_reservation(socket.assigns.order.id)
     end
 
     {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event.id}")}

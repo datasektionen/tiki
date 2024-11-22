@@ -5,8 +5,8 @@ defmodule Tiki.Swish do
 
   @api_url Application.compile_env(:tiki, Tiki.Swish)[:api_url]
   @prod_api_url "https://mpc.getswish.net/qrg-swish/api"
-  @alphabet ~C"ABCDEF0123456789"
-  @full_alphabet ~C"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
+  @alphabet ~c"ABCDEF0123456789"
+  @full_alphabet ~c"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
   @full_alph_len length(@full_alphabet)
   @alph_len length(@alphabet)
 
@@ -30,7 +30,7 @@ defmodule Tiki.Swish do
         }
 
   @type success_response :: %{
-          id: id(),
+          swish_id: id(),
           token: String.t(),
           callback_identifier: String.t()
         }
@@ -59,7 +59,7 @@ defmodule Tiki.Swish do
         "amount" => amount,
         "payeeAlias" => Application.get_env(:tiki, Tiki.Swish)[:merchant_number],
         "currency" => "SEK",
-        "callbackUrl" => "https://localhost:4000",
+        "callbackUrl" => Application.get_env(:tiki, Tiki.Swish)[:callback_url],
         "callbackIdentifier" => callback_identifier
       }
 
@@ -71,7 +71,7 @@ defmodule Tiki.Swish do
 
     case res do
       {:ok, %Req.Response{status: 201, headers: %{"paymentrequesttoken" => [token]}}} ->
-        {:ok, %{id: id, token: token, callback_identifier: callback_identifier}}
+        {:ok, %{swish_id: id, token: token, callback_identifier: callback_identifier}}
 
       {:ok, %Req.Response{status: status, body: body}} when status >= 400 and status < 500 ->
         {:error, body}
@@ -145,6 +145,13 @@ defmodule Tiki.Swish do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  def get_svg_qr_code!(token) do
+    case get_svg_qr_code(token) do
+      {:ok, qr_code} -> qr_code
+      {:error, reason} -> raise reason
     end
   end
 

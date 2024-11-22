@@ -9,6 +9,7 @@ defmodule Tiki.OrdersTest do
     import Tiki.OrdersFixtures
 
     @invalid_attrs %{"status" => "wierd"}
+    @standard_preloads [:user, [tickets: :ticket_type], :stripe_checkout, :swish_checkout]
 
     test "list_order/0 returns all order" do
       order = order_fixture()
@@ -16,7 +17,7 @@ defmodule Tiki.OrdersTest do
     end
 
     test "get_order!/1 returns the order with given id" do
-      order = order_fixture() |> Tiki.Repo.preload([:user, [tickets: :ticket_type]])
+      order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order
     end
 
@@ -40,7 +41,8 @@ defmodule Tiki.OrdersTest do
     end
 
     test "update_order/2 with invalid data returns error changeset" do
-      order = order_fixture() |> Tiki.Repo.preload([:user, [tickets: :ticket_type]])
+      order = Tiki.Repo.preload(order_fixture(), @standard_preloads)
+
       assert {:error, %Ecto.Changeset{}} = Orders.update_order(order, @invalid_attrs)
 
       assert order ==
@@ -79,14 +81,18 @@ defmodule Tiki.OrdersTest do
 
     alias Tiki.Orders.Order
 
-    test "reserve_tickets/3 reserves tickets" do
+    test "reserve_tickets/3" do
       ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
       to_purchase = Map.put(%{}, ticket_type.id, 2)
       cost = ticket_type.price * 2
 
+      Orders.subscribe(ticket_type.ticket_batch.event.id)
+
       result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert {:ok, %Order{status: :pending, price: ^cost}} = result
+      assert {:ok, %Order{status: :pending, price: ^cost, id: id}} = result
+
+      Orders.subscribe_to_order(id)
 
       {:ok, order} = result
 
@@ -96,6 +102,8 @@ defmodule Tiki.OrdersTest do
 
       assert Enum.all?(order.tickets, fn %{order_id: order_id} -> order_id == order.id end)
       assert cost == Enum.map(order.tickets, & &1.price) |> Enum.sum()
+
+      assert_receive {:tickets_updated, _}
     end
 
     test "reserve_tickets/3 fails if reserving too many tickets" do
@@ -117,6 +125,10 @@ defmodule Tiki.OrdersTest do
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
       assert msg =~ "not enough tickets"
+    end
+
+    test "maybe_cancel_reservation/1" do
+      # TODO
     end
   end
 end

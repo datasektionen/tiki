@@ -69,6 +69,7 @@ defmodule TikiWeb.Router do
       live "/events", EventLive.Index, :index
       live "/events/:id", EventLive.Show, :index
       live "/events/:event_id/purchase", PurchaseLive.Tickets, :tickets
+      live "/events/:event_id/purchase/:order_id", PurchaseLive.Tickets, :purchase
     end
   end
 
@@ -172,10 +173,15 @@ defmodule TikiWeb.Router do
     end
   end
 
-  scope("/oidcc", TikiWeb) do
+  scope "/oidcc", TikiWeb do
     pipe_through :browser
     get "/authorize", OidccController, :authorize
     get "/callback", OidccController, :callback
     post "/callback", OidccController, :callback
+  end
+
+  scope "/swish", TikiWeb do
+    pipe_through :api
+    post "/callback", SwishController, :callback
   end
 end

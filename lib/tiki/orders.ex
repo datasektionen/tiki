@@ -41,15 +41,19 @@ defmodule Tiki.Orders do
 
   """
   def get_order!(id) do
-    query =
-      from o in Order,
-        where: o.id == ^id,
-        left_join: t in assoc(o, :tickets),
-        left_join: tt in assoc(t, :ticket_type),
-        join: u in assoc(o, :user),
-        preload: [tickets: {t, ticket_type: tt}, user: u]
+    order_query()
+    |> where([o], o.id == ^id)
+    |> Repo.one!()
+  end
 
-    Repo.one!(query)
+  defp order_query(_opts \\ []) do
+    from o in Order,
+      left_join: t in assoc(o, :tickets),
+      left_join: tt in assoc(t, :ticket_type),
+      left_join: u in assoc(o, :user),
+      left_join: stc in assoc(o, :stripe_checkout),
+      left_join: swc in assoc(o, :swish_checkout),
+      preload: [tickets: {t, ticket_type: tt}, user: u, stripe_checkout: stc, swish_checkout: swc]
   end
 
   @doc """
@@ -284,10 +288,15 @@ defmodule Tiki.Orders do
 
     case result do
       {:ok, %{preloaded_order: order, ticket_types_availible: ticket_types}} ->
+        # Monitor the order, automatically cancels it if it's not paid in time
+        Tiki.PurchaseMonitor.monitor(order)
+
         broadcast(
           order.event_id,
           {:tickets_updated, Tickets.put_avalable_ticket_meta(ticket_types)}
         )
+
+        broadcast_order(order.id, :created, order)
 
         {:ok, order}
 
@@ -296,37 +305,6 @@ defmodule Tiki.Orders do
 
       {:error, :positive_tickets, message, _} ->
         {:error, message}
-    end
-  end
-
-  @doc """
-  Confirms an order, ie. marks it as paid. Returns the order.
-
-  ## Examples
-      iex> confirm_order(%Order{})
-      {:ok, %Order{}}
-
-      iex> confirm_order(%Order{})
-      {:error, %Ecto.Changeset{}}
-  """
-  def confirm_order(order) do
-    case update_order(order, %{status: "paid"}) do
-      {:error, changeset} ->
-        {:error, changeset}
-
-      {:ok, order} ->
-        broadcast(
-          order.event_id,
-          {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
-        )
-
-        broadcast(
-          order.event_id,
-          :purchases,
-          {:order_confirmed, get_order!(order.id)}
-        )
-
-        {:ok, order}
     end
   end
 
@@ -340,31 +318,31 @@ defmodule Tiki.Orders do
       iex> cancel_order(%Order{})
       {:error, reason}
   """
-  def maybe_cancel_reservation(order) do
+  def maybe_cancel_reservation(order_id) do
     multi =
       Multi.new()
       |> Multi.run(:order, fn repo, _changes ->
-        case repo.one(from o in Order, where: o.id == ^order.id) do
+        case repo.one(from o in Order, where: o.id == ^order_id) do
           nil -> {:error, :not_found}
-          %Order{status: :pending} -> {:ok, order}
+          %Order{status: :pending} = order -> {:ok, order}
           %Order{} -> {:error, :not_pending}
         end
       end)
       |> Multi.delete_all(:delete_tickets, fn %{order: order} ->
         from t in Ticket, where: t.order_id == ^order.id
       end)
-      |> Multi.update(:set_order_failed, fn %{order: order} ->
+      |> Multi.update(:order_failed, fn %{order: order} ->
         change_order(order, %{status: :cancelled})
       end)
 
-    result = multi |> Repo.transaction()
-
-    case result do
-      {:ok, _} ->
+    case Repo.transaction(multi) do
+      {:ok, %{order_failed: order}} ->
         broadcast(
           order.event_id,
           {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
         )
+
+        broadcast_order(order.id, :cancelled, order)
 
         {:ok, order}
 
@@ -388,16 +366,10 @@ defmodule Tiki.Orders do
       [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
   """
   def list_orders_for_event(event_id) do
-    query =
-      from o in Order,
-        where: o.event_id == ^event_id,
-        join: t in assoc(o, :tickets),
-        join: tt in assoc(t, :ticket_type),
-        join: u in assoc(o, :user),
-        order_by: [desc: o.inserted_at],
-        preload: [tickets: {t, ticket_type: tt}, user: u]
-
-    Repo.all(query)
+    order_query()
+    |> where([o], o.event_id == ^event_id)
+    |> order_by([o], desc: o.inserted_at)
+    |> Repo.all()
   end
 
   @doc """
@@ -413,14 +385,11 @@ defmodule Tiki.Orders do
   """
   def list_team_orders(team_id, opts \\ []) do
     query =
-      from o in Order,
-        join: e in assoc(o, :event),
-        where: e.team_id == ^team_id,
-        join: t in assoc(o, :tickets),
-        join: tt in assoc(t, :ticket_type),
-        join: u in assoc(o, :user),
-        order_by: [desc: o.inserted_at],
-        preload: [tickets: {t, ticket_type: tt}, user: u, event: e]
+      order_query()
+      |> join(:inner, [o], e in assoc(o, :event))
+      |> where([..., e], e.team_id == ^team_id)
+      |> order_by([o], desc: o.inserted_at)
+      |> preload([..., e], event: e)
 
     case Keyword.get(opts, :limit) do
       nil -> query
@@ -459,6 +428,18 @@ defmodule Tiki.Orders do
     |> Repo.all()
   end
 
+  def broadcast_order(order_id, :created, order) do
+    PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:created, order})
+  end
+
+  def broadcast_order(order_id, :cancelled, order) do
+    PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:cancelled, order})
+  end
+
+  def broadcast_order(order_id, :paid, order) do
+    PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:paid, order})
+  end
+
   defp broadcast(event_id, :purchases, message) do
     PubSub.broadcast(Tiki.PubSub, "event:#{event_id}:purchases", message)
   end
@@ -469,6 +450,10 @@ defmodule Tiki.Orders do
 
   def subscribe(event_id, :purchases) do
     PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:purchases")
+  end
+
+  def subscribe_to_order(order_id) do
+    PubSub.subscribe(Tiki.PubSub, "order:#{order_id}")
   end
 
   def subscribe(event_id) do

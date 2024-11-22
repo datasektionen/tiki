@@ -21,13 +21,6 @@ config :tiki, TikiWeb.Endpoint,
   pubsub_server: Tiki.PubSub,
   live_view: [signing_salt: "FxCBFsEw"]
 
-config :tiki, Tiki.Swish,
-  api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
-  cacert: "swish_certs/Swish_TLS_RootCA.pem",
-  cert: "swish_certs/myCertificate.pem",
-  key: "swish_certs/myPrivateKey.key",
-  merchant_number: "1233908225"
-
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
