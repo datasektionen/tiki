@@ -54,7 +54,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
       <div
         :for={ticket_type <- @ticket_types}
-        class="rounded-xl border p-4 shadow-sm hover:bg-accent/50"
+        class="shadow-xs rounded-xl border p-4 hover:bg-accent/50"
       >
         <div class="text-lg font-bold"><%= ticket_type.name %></div>
         <div><span class="font-bold"><%= ticket_type.available %> </span>tillgängliga</div>

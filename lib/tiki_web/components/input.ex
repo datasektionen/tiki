@@ -75,7 +75,7 @@ defmodule TikiWeb.Component.Input do
           name={@name}
           value="true"
           checked={@checked}
-          class="border-primary text-primary bg-background size-4 rounded shadow focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
+          class="border-primary text-primary bg-background size-4 rounded-sm shadow-sm focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
         />
         <%= @label %>
@@ -92,7 +92,7 @@ defmodule TikiWeb.Component.Input do
       <select
         id={@id}
         name={@name}
-        class="border-input bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        class="border-input bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         multiple={@multiple}
         {@rest}
       >
@@ -113,7 +113,7 @@ defmodule TikiWeb.Component.Input do
         name={@name}
         class={[
           @errors == [] && "border-input",
-          "mt-2 min-h-[10rem] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:ring-offset-background focus:border-input focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "mt-2 min-h-[10rem] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:ring-offset-background focus:border-input focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
@@ -135,7 +135,7 @@ defmodule TikiWeb.Component.Input do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 flex h-10 w-full focus:ring-offset-background focus:border-input rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "mt-2 flex h-10 w-full focus:ring-offset-background focus:border-input rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
@@ -158,7 +158,7 @@ defmodule TikiWeb.Component.Input do
     <select
       id={@id}
       name={@name}
-      class="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      class="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       {@rest}
     >
       <option :if={@prompt} value=""><%= @prompt %></option>
@@ -191,7 +191,7 @@ defmodule TikiWeb.Component.Input do
             name={@name}
             id={@id}
             value={@value}
-            class="bg-background border-input ring-offset-background block h-10 w-full rounded-md border px-3 py-2 pl-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-ring focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            class="bg-background border-input ring-offset-background block h-10 w-full rounded-md border px-3 py-2 pl-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             {@rest}
           />
         </span>
@@ -243,7 +243,7 @@ defmodule TikiWeb.Component.Input do
             id={"#{@id}-#{idx}"}
             value={value}
             checked={to_string(@value) == to_string(value)}
-            class="aspect-square border-primary text-foreground h-4 w-4 rounded-full border shadow focus:ring-0 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:checked:bg-dark-radio"
+            class="aspect-square border-primary text-foreground h-4 w-4 rounded-full border shadow-sm focus:ring-0 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:checked:bg-dark-radio"
             }
           />
         </div>

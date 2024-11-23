@@ -128,7 +128,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   defp ticket_batch(assigns) do
     ~H"""
     <div
-      class="bg-accent/50 border-border w-full overflow-hidden rounded-lg border shadow-sm"
+      class="bg-accent/50 border-border shadow-xs w-full overflow-hidden rounded-lg border"
       data-batch={@batch.batch.id}
     >
       <.link
