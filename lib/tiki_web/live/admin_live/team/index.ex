@@ -30,7 +30,7 @@ defmodule TikiWeb.AdminLive.Team.Index do
       <:action :let={{id, team}}>
         <.link
           phx-click={JS.push("delete", value: %{id: team.id}) |> hide("##{id}")}
-          data-confirm="Are you sure?"
+          data-confirm={gettext("Are you sure?")}
         >
           Delete
         </.link>

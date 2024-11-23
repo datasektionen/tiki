@@ -17,6 +17,7 @@ defmodule TikiWeb.Component do
 
       import TikiWeb.ComponentHelpers
       import Tails, only: [classes: 1]
+      use Gettext, backend: TikiWeb.Gettext
 
       alias Phoenix.LiveView.JS
     end

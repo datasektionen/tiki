@@ -38,7 +38,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)}>
+      <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)} safe>
         <div :if={@order.status == :cancelled}>
           <%= gettext("Ya messed up, order is cancelled") %>
         </div>
