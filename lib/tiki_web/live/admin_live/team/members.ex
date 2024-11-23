@@ -50,7 +50,7 @@ defmodule TikiWeb.AdminLive.Team.Members do
       <:action :let={{id, membership}}>
         <.link
           phx-click={JS.push("delete", value: %{id: membership.id}) |> hide("##{id}")}
-          data-confirm="Are you sure?"
+          data-confirm={gettext("Are you sure?")}
         >
           <%= gettext("Delete") %>
         </.link>
