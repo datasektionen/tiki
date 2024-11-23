@@ -17,7 +17,7 @@ defmodule TikiWeb.EventLive.Index do
       <.link
         :for={event <- @events}
         navigate={~p"/events/#{event}"}
-        class="flex flex-col gap-1 rounded-lg border px-4 py-4 shadow-sm hover:bg-accent/50"
+        class="shadow-xs flex flex-col gap-1 rounded-lg border px-4 py-4 hover:bg-accent/50"
       >
         <div class="text-lg font-bold"><%= event.name %></div>
         <div class="text-muted-foreground text-sm">

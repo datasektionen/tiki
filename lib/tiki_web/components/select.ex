@@ -87,7 +87,7 @@ defmodule TikiWeb.Component.Select do
       type="button"
       class={
         classes([
-          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
           @class
         ])
       }
@@ -188,7 +188,7 @@ defmodule TikiWeb.Component.Select do
       class={
         classes([
           "group/item",
-          "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+          "relative flex w-full cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden data-disabled:pointer-events-none data-disabled:opacity-50",
           @class
         ])
       }
@@ -206,7 +206,7 @@ defmodule TikiWeb.Component.Select do
         phx-key="Escape"
         phx-keydown={JS.exec("x-hide-select", to: "##{@builder.id}")}
       />
-      <div class="absolute top-0 left-0 h-full w-full rounded group-hover/item:bg-accent"></div>
+      <div class="absolute top-0 left-0 h-full w-full rounded-sm group-hover/item:bg-accent"></div>
       <span class="absolute left-2 flex hidden h-3.5 w-3.5 items-center justify-center peer-checked:block">
         <span aria-hidden="true">
           <svg

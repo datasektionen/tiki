@@ -16,11 +16,11 @@
 @theme {
     --font-sans: "Inter", "ui-sans-serif", "system-ui", "sans-serif";
 
-    --color-background: oklch(100% 0 NaN);
+    --color-background: #fff;
     --color-foreground: oklch(14.1% 0.004 285.8);
-    --color-card: oklch(100% 0 NaN);
+    --color-card: #fff;
     --color-card-foreground: oklch(14.1% 0.004 285.8);
-    --color-popover: oklch(100% 0 NaN);
+    --color-popover: #fff;
     --color-popover-foreground: oklch(14.1% 0.004 285.8);
     --color-primary: oklch(21% 0.006 285.9);
     --color-primary-foreground: oklch(98.48% 0 0);

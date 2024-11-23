@@ -116,7 +116,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                 field={@form[:email]}
                 label={gettext("Email")}
                 placeholder={gettext("Your email")}
-                phx-debounce="blur"
+                phx-debounce="blur-sm"
               />
 
               <.input

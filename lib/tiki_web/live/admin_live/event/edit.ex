@@ -93,7 +93,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
           <div class="bg-bg-background mt-2 space-y-4">
             <label for={f[:confirm].id} class="text-sm">
               <span><%= gettext("Type the full name of the event") %></span>:
-              <span class="bg-accent text-accent-foreground rounded-sm px-1 py-0.5">
+              <span class="bg-accent text-accent-foreground rounded-xs px-1 py-0.5">
                 <%= @event.name %>
               </span>
             </label>

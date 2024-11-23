@@ -53,7 +53,7 @@ defmodule TikiWeb.EventLive.Show do
       />
     </div>
 
-    <div class="bg-background fixed right-4 bottom-4 rounded-full border px-4 py-2 shadow-sm">
+    <div class="bg-background shadow-xs fixed right-4 bottom-4 rounded-full border px-4 py-2">
       <%= max(@online_count, 0) %> online
     </div>
     """
