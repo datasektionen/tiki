@@ -163,19 +163,12 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             <div id="payment-element">
               <!--Stripe.js injects the Payment Element-->
             </div>
-            <button
-              id="submit"
-              class={[
-                "phx-submit-loading:opacity-75 rounded-lg bg-foreground hover:bg-foreground/80 py-2 px-3",
-                "text-sm font-semibold leading-6 text-white active:text-white/80",
-                "self-end"
-              ]}
-            >
-              <div class="spinner hidden" id="spinner"></div>
+            <.button id="submit" phx-click={JS.show(to: "#spinner")} class="space-x-2">
+              <.spinner class="size-4 hidden" id="spinner" />
               <span id="button-text">
                 Betala <%= @order.price %> kr
               </span>
-            </button>
+            </.button>
             <div id="payment-message" class="hidden"></div>
           </form>
         </div>

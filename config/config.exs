@@ -62,7 +62,33 @@ config :phoenix, :json_library, Jason
 config :salad_ui, :error_translator_function, {TikiWeb.CoreComponents, :translate_error}
 
 # SaladUI use tails to properly merge Tailwind CSS classes
-config :tails, colors_file: Path.join(File.cwd!(), "assets/tailwind.colors.json")
+config :tails,
+  color_classes: [
+    "background",
+    "foreground",
+    "card",
+    "card-foreground",
+    "popover",
+    "popover-foreground",
+    "primary",
+    "primary-foreground",
+    "secondary",
+    "secondary-foreground",
+    "muted",
+    "muted-foreground",
+    "accent",
+    "accent-foreground",
+    "destructive",
+    "destructive-foreground",
+    "border",
+    "input",
+    "ring",
+    "chart-1",
+    "chart-2",
+    "chart-3",
+    "chart-4",
+    "chart-5"
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

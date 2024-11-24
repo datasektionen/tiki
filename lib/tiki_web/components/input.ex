@@ -75,7 +75,7 @@ defmodule TikiWeb.Component.Input do
           name={@name}
           value="true"
           checked={@checked}
-          class="border-primary text-primary bg-background size-4 rounded-sm shadow-sm focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
+          class="border-primary text-primary bg-background size-4 rounded-sm shadow-sm checked:bg-primary focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
         />
         <%= @label %>
