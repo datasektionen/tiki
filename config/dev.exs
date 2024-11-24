@@ -87,7 +87,9 @@ config :phoenix, :plug_init_mode, :runtime
 config :swoosh, :api_client, false
 
 # Config for Stripe
-config :stripity_stripe, api_key: System.get_env("STRIPE_API_KEY")
+config :stripity_stripe,
+  api_key: System.get_env("STRIPE_API_KEY"),
+  webhook_secret: System.get_env("STRIPE_WEBHOOK_SECRET")
 
 # Path to install SaladUI components
 config :salad_ui, components_path: Path.join(File.cwd!(), "lib/tiki_web/components")

@@ -149,37 +149,51 @@ defmodule Tiki.Checkouts do
       iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
       {:error, "Payment intent status is not succeeded"}
   """
-  def confirm_stripe_payment(intent_id) do
+  def confirm_stripe_payment(%Stripe.PaymentIntent{status: "succeeded"} = intent) do
     query =
       from stc in StripeCheckout,
-        where: stc.payment_intent_id == ^intent_id,
+        where: stc.payment_intent_id == ^intent.id,
         join: o in assoc(stc, :order),
-        select: o
+        select: {o, stc}
 
-    with {:ok,
-          %Stripe.PaymentIntent{
-            status: status,
-            id: ^intent_id,
-            currency: currency,
-            payment_method: pm
-          }} <- Stripe.PaymentIntent.retrieve(intent_id, %{}),
-         checkout <- Repo.get_by!(StripeCheckout, payment_intent_id: intent_id),
-         {:ok, _} <-
-           update_stripe_checkout(checkout, %{
-             status: status,
-             payment_method_id: pm,
-             currency: currency
-           }) do
-      if status == "succeeded" do
-        case Repo.one(query) do
-          nil -> {:error, "Order not found"}
-          order -> {:ok, order}
+    multi =
+      Multi.new()
+      |> Multi.one(:order_checkout, query)
+      |> Multi.run(:status, fn _repo, %{order_checkout: {order, _}} ->
+        if order.status != :pending do
+          {:error, :already_finished}
+        else
+          # TODO: convert to status
+          {:ok, :paid}
         end
-      else
-        {:error, "Payment intent status is not succeeded"}
-      end
-    else
-      {:error, err} -> {:error, err}
+      end)
+      |> Multi.run(:checkout, fn _repo, %{order_checkout: {_, checkout}} ->
+        update_stripe_checkout(checkout, %{
+          status: intent.status,
+          payment_method_id: intent.payment_method,
+          currency: intent.currency
+        })
+      end)
+      |> Multi.update(:order, fn %{order_checkout: {order, _}, status: status} ->
+        Order.changeset(order, %{status: status})
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{order: order}} ->
+        Orders.broadcast(
+          order.event_id,
+          {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
+        )
+
+        Orders.broadcast_order(order.id, :paid, order)
+
+        :ok
+
+      {:error, :status, :already_finished, _} ->
+        :ok
+
+      {:error, _, msg, _} ->
+        {:error, msg}
     end
   end
 

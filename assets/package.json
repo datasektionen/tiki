@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@stripe/stripe-js": "^1.52.0",
+    "@stripe/stripe-js": "^5.2.0",
     "sortablejs": "^1.15.0"
   },
   "devDependencies": {
