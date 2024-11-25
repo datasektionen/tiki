@@ -5,6 +5,9 @@ defmodule Tiki.Orders.Ticket do
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "tickets" do
     field :price, :integer
+
+    has_one :form_response, Tiki.Forms.Response
+
     belongs_to :ticket_type, Tiki.Tickets.TicketType, type: :binary_id
     belongs_to :order, Tiki.Orders.Order, type: :binary_id
 

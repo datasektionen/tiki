@@ -13,6 +13,8 @@ defmodule Tiki.Tickets.TicketType do
     field :promo_code, :string
 
     belongs_to :ticket_batch, Tiki.Tickets.TicketBatch
+    belongs_to :form, Tiki.Forms.Form
+
     has_many :tickets, Tiki.Orders.Ticket
 
     timestamps()
