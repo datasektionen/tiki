@@ -116,45 +116,59 @@ defmodule Tiki.Forms do
   end
 
   @doc """
-  Retruns a changeset for a form submission
+  Returns a changeset for a form submission, raises on error
   """
   def get_form_changeset!(form_id, %Response{} = response) do
+    {:ok, changeset} = get_form_changeset(form_id, response)
+    changeset
+  end
+
+  @doc """
+  Returns a changeset for a form submission
+  """
+  def get_form_changeset(form_id, %Response{} = response) do
     attrs =
       response.question_responses
       |> Enum.reduce(%{}, fn qr, acc ->
         Map.put(acc, String.to_atom("#{qr.question_id}"), qr.answer || qr.multi_answer)
       end)
 
-    get_form_changeset!(form_id, attrs)
+    get_form_changeset(form_id, attrs)
   end
 
-  def get_form_changeset!(form_id, attrs) do
+  def get_form_changeset(form_id, attrs) do
     query =
       from f in Form,
         where: f.id == ^form_id,
         left_join: q in assoc(f, :questions),
         preload: [questions: q]
 
-    form = Repo.one!(query)
+    case Repo.one(query) do
+      nil ->
+        {:error, "form not found"}
 
-    data = %{}
+      form ->
+        data = %{}
 
-    types =
-      Enum.reduce(form.questions, %{}, fn q, acc ->
-        case q.type do
-          :multi_select ->
-            Map.put(acc, String.to_atom("#{q.id}"), {:array, :string})
+        types =
+          Enum.reduce(form.questions, %{}, fn q, acc ->
+            case q.type do
+              :multi_select ->
+                Map.put(acc, String.to_atom("#{q.id}"), {:array, :string})
 
-          _ ->
-            Map.put(acc, String.to_atom("#{q.id}"), :string)
-        end
-      end)
+              _ ->
+                Map.put(acc, String.to_atom("#{q.id}"), :string)
+            end
+          end)
 
-    {data, types}
-    |> Ecto.Changeset.cast(attrs, Map.keys(types))
-    |> validate_required(form.questions)
-    |> validate_required_multi(form.questions)
-    |> validate_options(form.questions)
+        changeset =
+          {data, types}
+          |> Ecto.Changeset.cast(attrs, Map.keys(types))
+          |> validate_required(form.questions)
+          |> validate_options(form.questions)
+
+        {:ok, changeset}
+    end
   end
 
   defp validate_required(changeset, questions) do
@@ -163,24 +177,6 @@ defmodule Tiki.Forms do
       |> Enum.map(fn %{id: id} -> String.to_atom("#{id}") end)
 
     Ecto.Changeset.validate_required(changeset, required)
-  end
-
-  defp validate_required_multi(changeset, questions) do
-    Enum.reduce(questions, changeset, fn q, acc ->
-      field = String.to_atom("#{q.id}")
-
-      if q.type == :multi_select && q.required do
-        acc
-        |> Ecto.Changeset.validate_change(field, fn field, values ->
-          case values do
-            [] -> [{field, "At least one value must be selected"}]
-            _ -> []
-          end
-        end)
-      else
-        acc
-      end
-    end)
   end
 
   defp validate_options(changeset, questions) do
@@ -193,7 +189,7 @@ defmodule Tiki.Forms do
           |> Ecto.Changeset.validate_change(field, fn field, value ->
             case value in q.options do
               true -> []
-              false -> [{field, "Value must be an availible option"}]
+              false -> [{field, "value must be an availible option"}]
             end
           end)
 
@@ -202,7 +198,7 @@ defmodule Tiki.Forms do
           |> Ecto.Changeset.validate_change(field, fn field, values ->
             case Enum.all?(values, &Enum.member?(q.options, &1)) do
               true -> []
-              false -> [{field, "All values must be availible options"}]
+              false -> [{field, "all values must be availible options"}]
             end
           end)
 
@@ -226,37 +222,32 @@ defmodule Tiki.Forms do
 
   """
   def submit_response(%Response{form_id: form_id} = response) do
-    changeset = get_form_changeset!(form_id, response)
+    with {:ok, changeset} <- get_form_changeset(form_id, response),
+         {:ok, data} <- Ecto.Changeset.apply_action(changeset, :create) do
+      multi =
+        Multi.new()
+        |> Multi.one(:form, from(f in Form, where: f.id == ^form_id))
+        |> Multi.insert(:response, fn %{form: form} -> %Response{form_id: form.id} end)
+        |> Multi.merge(fn %{response: response} ->
+          Enum.reduce(data, Multi.new(), fn {key, val}, acc ->
+            id = Atom.to_string(key) |> String.to_integer()
 
-    case changeset |> Ecto.Changeset.apply_action(:create) do
-      {:ok, data} ->
-        multi =
-          Multi.new()
-          |> Multi.one(:form, from(f in Form, where: f.id == ^form_id))
-          |> Multi.insert(:response, fn %{form: form} -> %Response{form_id: form.id} end)
-          |> Multi.merge(fn %{response: response} ->
-            Enum.reduce(data, Multi.new(), fn {key, val}, acc ->
-              id = Atom.to_string(key) |> String.to_integer()
-
-              Multi.insert(acc, "question_response_#{key}", fn _ ->
-                QuestionResponse.from_answer(response, id, val)
-              end)
+            Multi.insert(acc, "question_response_#{key}", fn _ ->
+              QuestionResponse.from_answer(response, id, val)
             end)
           end)
-          |> Multi.run(:preloaded_response, fn repo, %{response: response} ->
-            {:ok, repo.preload(response, :question_responses)}
-          end)
+        end)
+        |> Multi.run(:preloaded_response, fn repo, %{response: response} ->
+          {:ok, repo.preload(response, :question_responses)}
+        end)
 
-        case Repo.transaction(multi) do
-          {:ok, %{preloaded_response: response}} ->
-            {:ok, response}
-
-          other ->
-            other
-        end
-
-      {:error, changeset} ->
-        {:error, changeset}
+      case Repo.transaction(multi) do
+        {:ok, %{preloaded_response: response}} ->
+          {:ok, response}
+      end
+    else
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -273,40 +264,41 @@ defmodule Tiki.Forms do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_form_response(form_id, form_response, attrs) do
-    changeset = get_form_changeset!(form_id, attrs)
+  def update_form_response(form_response, attrs) do
+    form_id = form_response.form_id
 
-    case Ecto.Changeset.apply_action(changeset, :create) do
-      {:ok, data} ->
-        question_responses =
-          Enum.map(data, fn {key, val} ->
+    with {:ok, changeset} <- get_form_changeset(form_id, attrs),
+         {:ok, data} <- Ecto.Changeset.apply_action(changeset, :create) do
+      multi =
+        Multi.new()
+        |> Multi.one(:form, from(f in Form, where: f.id == ^form_id))
+        |> Multi.one(:response, from(r in Response, where: r.id == ^form_response.id))
+        |> Multi.delete_all(
+          :question_responses,
+          fn %{response: response} ->
+            from(qr in QuestionResponse, where: qr.response_id == ^response.id)
+          end
+        )
+        |> Multi.merge(fn %{response: response} ->
+          Enum.reduce(data, Multi.new(), fn {key, val}, acc ->
             id = Atom.to_string(key) |> String.to_integer()
 
-            case val do
-              ans when is_list(ans) -> %QuestionResponse{question_id: id, multi_answer: ans}
-              ans -> %QuestionResponse{question_id: id, answer: ans}
-            end
+            Multi.insert(acc, "question_response_#{key}", fn _ ->
+              QuestionResponse.from_answer(response, id, val)
+            end)
           end)
+        end)
+        |> Multi.run(:preloaded_response, fn repo, %{response: response} ->
+          {:ok, repo.preload(response, :question_responses)}
+        end)
 
-        multi =
-          Multi.new()
-          |> Multi.delete_all(
-            :question_responses,
-            from(qr in QuestionResponse, where: qr.response_id == ^form_response.id)
-          )
-
-        {_n, multi} =
-          Enum.reduce(question_responses, {0, multi}, fn qr, {n, m} ->
-            {n + 1,
-             Multi.insert(m, n, fn _ ->
-               %QuestionResponse{qr | response_id: form_response.id}
-             end)}
-          end)
-
-        Repo.transaction(multi)
-
-      {:error, changeset} ->
-        {:error, changeset}
+      case Repo.transaction(multi) do
+        {:ok, %{preloaded_response: response}} ->
+          {:ok, response}
+      end
+    else
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 end

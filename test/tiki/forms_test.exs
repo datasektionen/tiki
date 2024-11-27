@@ -4,15 +4,29 @@ defmodule Tiki.FormsTest do
   describe "form" do
     import Tiki.FormsFixtures
 
+    test "list_forms_for_event/1 returns all forms" do
+      form = form_fixture()
+      assert Tiki.Forms.list_forms_for_event(form.event_id) == [form]
+    end
+
     test "create_form/1 with valid data creates a form" do
+      event = Tiki.EventsFixtures.event_fixture()
+
       assert {:ok, %Tiki.Forms.Form{}} =
-               Tiki.Forms.create_form(%{description: "some description", name: "some name"})
+               Tiki.Forms.create_form(%{
+                 description: "some description",
+                 name: "some name",
+                 event_id: event.id
+               })
     end
 
     test "create_form/1 with questions creates a form with questions" do
+      event = Tiki.EventsFixtures.event_fixture()
+
       attrs = %{
         description: "some description",
         name: "some name",
+        event_id: event.id,
         questions: [
           %{
             name: "Quesiton name",
@@ -23,6 +37,30 @@ defmodule Tiki.FormsTest do
 
       assert {:ok, %Tiki.Forms.Form{questions: [%Tiki.Forms.Question{type: :text}]}} =
                Tiki.Forms.create_form(attrs)
+    end
+
+    test "create_form/1 with invalid data returns an invalid changeset" do
+      assert {:error, %Ecto.Changeset{valid?: false}} = Tiki.Forms.create_form()
+    end
+
+    test "update_form/2 with valid data updates the form" do
+      form = form_fixture()
+
+      assert {:ok, %Tiki.Forms.Form{} = form} =
+               Tiki.Forms.update_form(form, %{name: "New name"})
+
+      assert form.name == "New name"
+    end
+
+    test "delete_form/1 deletes the form" do
+      form = form_fixture()
+      assert {:ok, %Tiki.Forms.Form{}} = Tiki.Forms.delete_form(form)
+      assert_raise Ecto.NoResultsError, fn -> Tiki.Forms.get_form!(form.id) end
+    end
+
+    test "change_form/1 returns a form changeset" do
+      form = form_fixture()
+      assert %Ecto.Changeset{} = Tiki.Forms.change_form(form)
     end
 
     test "get_form_changeset!/2 with valid data returns a valid changeset" do
@@ -37,6 +75,12 @@ defmodule Tiki.FormsTest do
             name: "Quesiton 2",
             type: "select",
             options: ["option 1", "option 2"]
+          },
+          %{
+            name: "Quesiton 3",
+            type: "multi_select",
+            required: true,
+            options: ["alternative 1", "alternative 2"]
           }
         ]
       }
@@ -47,14 +91,129 @@ defmodule Tiki.FormsTest do
       response = %Tiki.Forms.Response{
         question_responses: [
           %{question_id: Enum.at(question_ids, 0), answer: "Answer 1"},
-          %{question_id: Enum.at(question_ids, 1), answer: "option 1"}
+          %{question_id: Enum.at(question_ids, 1), answer: "option 1"},
+          %{
+            question_id: Enum.at(question_ids, 2),
+            answer: ["alternative 1", "alternative 2"]
+          }
         ]
       }
 
       assert %Ecto.Changeset{valid?: true} = Tiki.Forms.get_form_changeset!(form.id, response)
     end
 
-    # TODO: test get_form_changeset!/2 with different types of invalid data
+    test "get_form_changeset!/2 without required data returns an invalid changeset" do
+      attrs = %{
+        questions: [
+          %{
+            name: "Quesiton 3",
+            type: "multi_select",
+            required: true,
+            options: ["option 1", "option 2"]
+          }
+        ]
+      }
+
+      form = form_fixture(attrs)
+
+      response = %Tiki.Forms.Response{
+        question_responses: []
+      }
+
+      assert %Ecto.Changeset{valid?: false} =
+               changeset = Tiki.Forms.get_form_changeset!(form.id, response)
+
+      assert Enum.count(changeset.errors) == 1
+
+      assert [{"can't be blank", [validation: :required]}] ==
+               Enum.map(changeset.errors, fn {_, value} -> value end)
+    end
+
+    test "get_form_changeset!/2 with invalid option returns an invalid changeset" do
+      attrs = %{
+        questions: [
+          %{
+            name: "Quesiton 3",
+            type: "select",
+            options: ["option 1", "option 2"]
+          }
+        ]
+      }
+
+      form = form_fixture(attrs)
+      question_ids = Enum.map(form.questions, & &1.id)
+
+      response = %Tiki.Forms.Response{
+        question_responses: [
+          %{question_id: Enum.at(question_ids, 0), answer: "Not a valid option"}
+        ]
+      }
+
+      assert %Ecto.Changeset{valid?: false} =
+               changeset = Tiki.Forms.get_form_changeset!(form.id, response)
+
+      assert Enum.count(changeset.errors) == 1
+
+      assert [{"value must be an availible option", _}] =
+               Enum.map(changeset.errors, fn {_, value} -> value end)
+    end
+
+    test "get_form_changeset!/2 with no selected multi_select option returns an invalid changeset" do
+      attrs = %{
+        questions: [
+          %{
+            name: "Quesiton 3",
+            type: "multi_select",
+            options: ["option 1", "option 2"],
+            required: true
+          }
+        ]
+      }
+
+      form = form_fixture(attrs)
+      question_ids = Enum.map(form.questions, & &1.id)
+
+      response = %Tiki.Forms.Response{
+        question_responses: [
+          %{question_id: Enum.at(question_ids, 0), answer: ["option 1", "not an option"]}
+        ]
+      }
+
+      assert %Ecto.Changeset{valid?: false} =
+               changeset = Tiki.Forms.get_form_changeset!(form.id, response)
+
+      assert Enum.count(changeset.errors) == 1
+
+      assert [{"all values must be availible options", _}] =
+               Enum.map(changeset.errors, fn {_, value} -> value end)
+    end
+
+    test "get_form_changeset!/2 with invalid selected multi_select option returns an invalid changeset" do
+      attrs = %{
+        questions: [
+          %{
+            name: "Quesiton 3",
+            type: "multi_select",
+            options: ["option 1", "option 2"],
+            required: true
+          }
+        ]
+      }
+
+      form = form_fixture(attrs)
+
+      response = %Tiki.Forms.Response{
+        question_responses: []
+      }
+
+      assert %Ecto.Changeset{valid?: false} =
+               changeset = Tiki.Forms.get_form_changeset!(form.id, response)
+
+      assert Enum.count(changeset.errors) == 1
+
+      assert [{"can't be blank", _}] =
+               Enum.map(changeset.errors, fn {_, value} -> value end)
+    end
 
     test "submit_response/2 with valid data submits the form" do
       attrs = %{
@@ -84,8 +243,90 @@ defmodule Tiki.FormsTest do
       assert Enum.at(response.question_responses, 0).answer == "Answer 1"
     end
 
-    # TODO: test submit_form/2 with different types of invalid data
+    test "submit_response/2 with invalid data returns a changeset" do
+      attrs = %{
+        questions: [
+          %{
+            name: "Quesiton name",
+            type: "text",
+            required: true
+          }
+        ]
+      }
 
-    # TODO: test update_form_response/3
+      form = form_fixture(attrs)
+
+      response = %Tiki.Forms.Response{
+        form_id: form.id,
+        question_responses: []
+      }
+
+      assert {:error, %Ecto.Changeset{valid?: false}} = Tiki.Forms.submit_response(response)
+    end
+
+    test "submit_response/2 with invalid form returns a changeset" do
+      response = %Tiki.Forms.Response{
+        form_id: 191_212,
+        question_responses: []
+      }
+
+      assert {:error, "form not found"} = Tiki.Forms.submit_response(response)
+    end
+
+    test "update_form_response/3 with valid data updates the form response" do
+      attrs = %{
+        form: %{
+          questions: [
+            %{
+              name: "Quesiton name",
+              type: "text",
+              required: true
+            }
+          ]
+        }
+      }
+
+      response = response_fixture(attrs)
+      form = Tiki.Forms.get_form!(response.form_id) |> Tiki.Repo.preload(:questions)
+      question_ids = Enum.map(form.questions, & &1.id)
+
+      response_attrs = %Tiki.Forms.Response{
+        form_id: form.id,
+        question_responses: [
+          %{question_id: Enum.at(question_ids, 0), answer: "Coolest answer ever"}
+        ]
+      }
+
+      assert {:ok, %Tiki.Forms.Response{} = response} =
+               Tiki.Forms.update_form_response(response, response_attrs)
+
+      assert Enum.count(response.question_responses) == 1
+      assert Enum.at(response.question_responses, 0).answer == "Coolest answer ever"
+    end
+
+    test "update_form_response/3 with invalid data returns an invalid changeset" do
+      attrs = %{
+        form: %{
+          questions: [
+            %{
+              name: "Quesiton name",
+              type: "text",
+              required: true
+            }
+          ]
+        }
+      }
+
+      response = response_fixture(attrs)
+      form = Tiki.Forms.get_form!(response.form_id)
+
+      response_attrs = %Tiki.Forms.Response{
+        form_id: form.id,
+        question_responses: []
+      }
+
+      assert {:error, %Ecto.Changeset{valid?: false}} =
+               Tiki.Forms.update_form_response(response, response_attrs)
+    end
   end
 end

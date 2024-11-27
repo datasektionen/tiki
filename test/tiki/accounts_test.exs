@@ -202,6 +202,9 @@ defmodule Tiki.AccountsTest do
       assert user.first_name == "Ture"
       assert user.last_name == nil
       assert user.email == "my@email.com"
+
+      user = Accounts.get_user!(user.id)
+      assert user.full_name == "Ture"
     end
   end
 
