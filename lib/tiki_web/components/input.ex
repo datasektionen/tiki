@@ -252,4 +252,61 @@ defmodule TikiWeb.Component.Input do
     </div>
     """
   end
+
+  @doc """
+  A generic form component that works with Changesets generated from Haj.Form.
+
+  Question types are: :select, :multi_select, :text_area, :text
+  """
+
+  attr :question, :any, required: true
+  attr :field, :any, required: true
+  attr :class, :string, default: ""
+
+  def form_input(%{question: %{type: :select}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="select" options={@question.options} label={@question.name} />
+    </div>
+    """
+  end
+
+  def form_input(%{question: %{type: :multi_select}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <label class="block text-sm font-semibold leading-6 text-zinc-800">
+        <%= @question.name %>
+      </label>
+      <div class="mt-2 flex flex-col gap-1">
+        <div :for={option <- @question.options}>
+          <.input
+            name={"#{@field.name}[#{option}]"}
+            type="checkbox"
+            value={
+              option in Ecto.Changeset.get_field(assigns.field.form.source, assigns.field.field, [])
+            }
+            label={option}
+          />
+        </div>
+        <.error :for={msg <- @errors}><%= msg %></.error>
+      </div>
+    </div>
+    """
+  end
+
+  def form_input(%{question: %{type: :text_area}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="textarea" label={@question.name} />
+    </div>
+    """
+  end
+
+  def form_input(assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="text" label={@question.name} />
+    </div>
+    """
+  end
 end

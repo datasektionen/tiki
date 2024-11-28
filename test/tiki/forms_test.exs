@@ -215,7 +215,7 @@ defmodule Tiki.FormsTest do
                Enum.map(changeset.errors, fn {_, value} -> value end)
     end
 
-    test "submit_response/2 with valid data submits the form" do
+    test "submit_response/3 with valid data submits the form" do
       attrs = %{
         questions: [
           %{
@@ -227,6 +227,7 @@ defmodule Tiki.FormsTest do
       }
 
       form = form_fixture(attrs)
+      ticket = Tiki.OrdersFixtures.ticket_fixture()
       question_ids = Enum.map(form.questions, & &1.id)
 
       response = %Tiki.Forms.Response{
@@ -237,13 +238,15 @@ defmodule Tiki.FormsTest do
       }
 
       assert {:ok, %Tiki.Forms.Response{} = response} =
-               Tiki.Forms.submit_response(response)
+               Tiki.Forms.submit_response(form.id, ticket.id, response)
 
       assert Enum.count(response.question_responses) == 1
       assert Enum.at(response.question_responses, 0).answer == "Answer 1"
+      assert response.ticket_id == ticket.id
+      assert response.form_id == form.id
     end
 
-    test "submit_response/2 with invalid data returns a changeset" do
+    test "submit_response/3 with invalid data returns a changeset" do
       attrs = %{
         questions: [
           %{
@@ -255,22 +258,20 @@ defmodule Tiki.FormsTest do
       }
 
       form = form_fixture(attrs)
+      ticket = Tiki.OrdersFixtures.ticket_fixture()
 
-      response = %Tiki.Forms.Response{
-        form_id: form.id,
-        question_responses: []
-      }
+      response = %{question_responses: []}
 
-      assert {:error, %Ecto.Changeset{valid?: false}} = Tiki.Forms.submit_response(response)
+      assert {:error, %Ecto.Changeset{valid?: false}} =
+               Tiki.Forms.submit_response(form.id, ticket.id, response)
     end
 
-    test "submit_response/2 with invalid form returns a changeset" do
-      response = %Tiki.Forms.Response{
-        form_id: 191_212,
+    test "submit_response/3 with invalid form returns a changeset" do
+      response = %{
         question_responses: []
       }
 
-      assert {:error, "form not found"} = Tiki.Forms.submit_response(response)
+      assert {:error, "form not found"} = Tiki.Forms.submit_response(123_123, 1231, response)
     end
 
     test "update_form_response/3 with valid data updates the form response" do

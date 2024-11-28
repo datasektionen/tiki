@@ -118,7 +118,7 @@ defmodule Tiki.Forms do
   @doc """
   Returns a changeset for a form submission, raises on error
   """
-  def get_form_changeset!(form_id, %Response{} = response) do
+  def get_form_changeset!(form_id, response) do
     {:ok, changeset} = get_form_changeset(form_id, response)
     changeset
   end
@@ -221,13 +221,15 @@ defmodule Tiki.Forms do
       {:error, %Ecto.Changeset{}}
 
   """
-  def submit_response(%Response{form_id: form_id} = response) do
-    with {:ok, changeset} <- get_form_changeset(form_id, response),
+  def submit_response(form_id, ticket_id, attrs) do
+    with {:ok, changeset} <- get_form_changeset(form_id, attrs),
          {:ok, data} <- Ecto.Changeset.apply_action(changeset, :create) do
       multi =
         Multi.new()
         |> Multi.one(:form, from(f in Form, where: f.id == ^form_id))
-        |> Multi.insert(:response, fn %{form: form} -> %Response{form_id: form.id} end)
+        |> Multi.insert(:response, fn %{form: form} ->
+          %Response{form_id: form.id, ticket_id: ticket_id}
+        end)
         |> Multi.merge(fn %{response: response} ->
           Enum.reduce(data, Multi.new(), fn {key, val}, acc ->
             id = Atom.to_string(key) |> String.to_integer()
