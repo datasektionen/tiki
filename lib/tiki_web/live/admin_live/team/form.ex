@@ -13,9 +13,11 @@ defmodule TikiWeb.AdminLive.Team.Form do
     </.header>
 
     <.simple_form for={@form} id="team-form" phx-change="validate" phx-submit="save">
-      <.input field={@form[:name]} type="text" label="Name" />
+      <.input field={@form[:name]} type="text" label={gettext("Name")} />
       <:actions>
-        <.button phx-disable-with="Saving...">Save Team</.button>
+        <.button phx-disable-with={gettext("Saving...")}>
+          <%= gettext("Save team") %>
+        </.button>
       </:actions>
     </.simple_form>
 
