@@ -3,8 +3,8 @@ defmodule Tiki.Forms.Form do
   import Ecto.Changeset
 
   schema "forms" do
-    field :description, :string
     field :name, :string
+    field :description, :string
 
     belongs_to :event, Tiki.Events.Event, type: :binary_id
     has_many :questions, Tiki.Forms.Question, on_replace: :delete

@@ -154,8 +154,9 @@ defmodule TikiWeb.Router do
           live "/attendees/:ticket_id", Attendees.Show, :show
 
           # TODO: Forms
-          # live "/forms", Forms.Index, :index
-          # live "/forms/:form_id/edit", Forms.Edit
+          live "/forms", Forms.Index, :index
+          live "/forms/new", Forms.Form, :new
+          live "/forms/:form_id/edit", Forms.Form, :edit
         end
       end
     end

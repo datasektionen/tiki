@@ -68,6 +68,10 @@ defmodule TikiWeb.Nav do
   tab AdminLive.Ticket.TicketTypeForm, :edit, :event_tickets
   tab AdminLive.Ticket.TicketTypeForm, :new, :event_tickets
 
+  tab AdminLive.Forms.Index, :index, :event_forms
+  tab AdminLive.Forms.Form, :new, :event_forms
+  tab AdminLive.Forms.Form, :edit, :event_forms
+
   tab AdminLive.Team.Members, :index, :team_members
   tab AdminLive.Team.MembershipForm, :new, :team_members
   tab AdminLive.Team.MembershipForm, :edit, :team_members
