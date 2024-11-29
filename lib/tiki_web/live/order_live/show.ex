@@ -11,8 +11,9 @@ defmodule TikiWeb.OrderLive.Show do
     <div class="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
       <div class="flex sm:items-baseline sm:space-x-4">
         <h1 class="text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-          <%= gettext("Your order") %>
+          <%= gettext("Thank you for your order!") %>
         </h1>
+        <!-- TODO: Reciept link -->
         <.link
           href="#"
           class="text-secondary-foreground hidden text-sm font-medium hover:text-secondary-foreground/80 sm:block"
@@ -27,6 +28,7 @@ defmodule TikiWeb.OrderLive.Show do
           <%= Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short) %>
         </time>
       </p>
+      <!-- TODO: Reciept link -->
       <.link href="#" class="text-sm font-medium sm:hidden">
         <%= gettext("View receipt") %> <span aria-hidden="true"> &rarr;</span>
       </.link>
@@ -40,9 +42,11 @@ defmodule TikiWeb.OrderLive.Show do
           <div class="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
             <div class="sm:flex lg:col-span-7">
               <div>
-                <h3 class="text-foreground text-base font-medium">
-                  <%= ticket.ticket_type.name %>
-                </h3>
+                <.link navigate={~p"/tickets/#{ticket}"}>
+                  <h3 class="text-foreground text-base font-medium">
+                    <%= ticket.ticket_type.name %>
+                  </h3>
+                </.link>
                 <p class="text-foreground mt-2 text-sm font-medium">
                   <%= ticket.ticket_type.price %> SEK
                 </p>

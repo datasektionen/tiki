@@ -145,7 +145,13 @@ defmodule TikiWeb.PurchaseLive.Tickets do
       Orders.subscribe_to_order(order_id)
     end
 
-    assign(socket, order: order)
+    case order.status do
+      :paid ->
+        push_navigate(socket, to: ~p"/orders/#{order.id}")
+
+      _ ->
+        assign(socket, order: order)
+    end
   end
 
   defp get_availible_ticket_types(event_id, promo_code \\ "") do
@@ -207,6 +213,12 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   end
 
   def handle_info({:paid, order}, socket) do
-    {:noreply, assign(socket, order: order)}
+    if order.status == :paid do
+      {:noreply,
+       put_flash(socket, :info, gettext("Order paid!"))
+       |> push_navigate(to: ~p"/orders/#{order.id}")}
+    else
+      {:noreply, assign(socket, order: order)}
+    end
   end
 end

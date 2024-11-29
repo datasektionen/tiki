@@ -243,12 +243,12 @@ defmodule TikiWeb.CoreComponents do
 
   def back(assigns) do
     ~H"""
-    <div class="mt-16">
+    <div>
       <.link
         navigate={@navigate}
         class="text-foreground text-sm font-semibold leading-6 hover:foreground/80"
       >
-        <.icon name="hero-arrow-left-solid" class="h-3 w-3" />
+        <span aria-hidden="true">&larr; </span>
         <%= render_slot(@inner_block) %>
       </.link>
     </div>
