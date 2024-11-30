@@ -1,30 +1,3 @@
-<header class="px-4 sm:px-6 lg:px-8">
-  <div class="border-accent flex items-center justify-between border-b py-3 text-sm">
-    <div class="flex items-center gap-4">
-      <a href="/">
-        <img src={~p"/images/logo.svg"} width="36" />
-      </a>
-      <p class="bg-brand/5 text-brand rounded-full px-2 font-medium leading-6">
-        v<%= Application.spec(:phoenix, :vsn) %>
-      </p>
-    </div>
-    <div class="text-foreground flex items-center gap-4 font-semibold leading-6">
-      <a href="https://twitter.com/elixirphoenix" class="hover:text-foreground/80">
-        @elixirphoenix
-      </a>
-      <a href="https://github.com/phoenixframework/phoenix" class="hover:text-foreground/80">
-        GitHub
-      </a>
-      <a
-        href="https://hexdocs.pm/phoenix/overview.html"
-        class="bg-accent rounded-lg px-2 py-1 hover:bg-zinc-200/80"
-      >
-        Get Started <span aria-hidden="true">&rarr;</span>
-      </a>
-    </div>
-  </div>
-</header>
-
 <.nav current_user={assigns[:current_user]} />
 <main class="mx-auto max-w-7xl p-6 py-32 lg:px-8">
   <.flash_group flash={@flash} />

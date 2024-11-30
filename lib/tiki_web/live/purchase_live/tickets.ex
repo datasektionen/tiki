@@ -192,7 +192,12 @@ defmodule TikiWeb.PurchaseLive.Tickets do
       Enum.filter(socket.assigns.counts, fn {_, count} -> count > 0 end)
       |> Enum.into(%{})
 
-    user_id = get_in(socket.assigns, [:current_user, :id])
+    user_id =
+      case socket.assigns.current_user do
+        nil -> nil
+        user -> user.id
+      end
+
     %{event: %{id: event_id}} = socket.assigns
 
     with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase, user_id) do
