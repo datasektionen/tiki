@@ -156,10 +156,11 @@ defmodule Tiki.Orders do
         join: u in assoc(o, :user),
         left_join: fr in assoc(t, :form_response),
         left_join: fqr in assoc(fr, :question_responses),
+        left_join: q in assoc(fqr, :question),
         preload: [
           ticket_type: tt,
           order: {o, user: u},
-          form_response: {fr, question_responses: fqr}
+          form_response: {fr, question_responses: {fqr, question: q}}
         ]
 
     Repo.one!(query)

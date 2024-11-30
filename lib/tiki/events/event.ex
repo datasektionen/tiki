@@ -15,7 +15,7 @@ defmodule Tiki.Events.Event do
 
     has_many :ticket_batches, Tiki.Tickets.TicketBatch
 
-    belongs_to :team, Tiki.Accounts.Team
+    belongs_to :team, Tiki.Teams.Team
 
     timestamps()
   end

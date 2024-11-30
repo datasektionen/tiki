@@ -282,6 +282,27 @@ defmodule TikiWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders a payment method logo.
+
+  ## Examples
+
+      <.payment_method_logo name="paymentlogo-mastercard" />
+      <.payment_method_logo name="paymentlogo-visa" />
+      <.payment_method_logo name="paymentlogo-american-express" />
+      <.payment_method_logo name="swish" />
+
+
+  """
+  attr :name, :string, required: true
+  attr :class, :string, default: nil
+
+  def payment_method_logo(%{name: "paymentlogo-" <> _} = assigns) do
+    ~H"""
+    <span class={[@name, @class]} />
+    """
+  end
+
   attr :id, :string, default: nil
   attr :class, :string, default: nil
 
@@ -303,6 +324,25 @@ defmodule TikiWeb.CoreComponents do
       >
       </path>
     </svg>
+    """
+  end
+
+  attr :data, :string, required: true
+  attr :size, :integer, default: 100
+  attr :rest, :global
+
+  def svg_qr(assigns) do
+    ~H"""
+    <div {@rest}>
+      <%= Phoenix.HTML.raw(
+        QRCodeEx.encode(@data)
+        |> QRCodeEx.svg(
+          color: "var(--color-foreground)",
+          viewbox: true,
+          background_color: :transparent
+        )
+      ) %>
+    </div>
     """
   end
 
