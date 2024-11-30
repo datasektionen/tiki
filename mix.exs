@@ -64,6 +64,7 @@ defmodule Tiki.MixProject do
       {:oidcc_plug, "~> 0.1.0"},
       {:oidcc, "~> 3.2.0"},
       {:let_me, "~> 1.2"},
+      {:qrcode_ex, "~> 0.1.0"},
       {:excoveralls, "~> 0.18", only: :test},
       {:k6, "~> 0.2.0", only: :dev, runtime: false},
       {:tailwind_formatter, "~> 0.3.5", only: [:dev, :test], runtime: false},
