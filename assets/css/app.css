@@ -2,6 +2,7 @@
 
 @import "tailwindcss";
 @plugin "./heroicons.tailwind.plugin.js";
+@plugin "./payment-logos.tailwind.plugin.js";
 
 /* This file is for your main application CSS */
 @plugin "@tailwindcss/forms";
