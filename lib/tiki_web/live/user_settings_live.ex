@@ -13,6 +13,28 @@ defmodule TikiWeb.UserSettingsLive do
     <div class="space-y-12 divide-y">
       <div>
         <.simple_form
+          for={@user_form}
+          class="flex flex-col gap-2 pt-6"
+          phx-submit="update_user"
+          phx-change="validate_user"
+        >
+          <.input field={@user_form[:first_name]} label={gettext("First name")} />
+          <.input field={@user_form[:last_name]} label={gettext("Last name")} />
+          <.input
+            field={@user_form[:locale]}
+            label={gettext("Prefered language")}
+            type="select"
+            options={[{"English", "en"}, {"Svenska", "sv"}]}
+          />
+          <div class="mt-4">
+            <.button type="submit">
+              <%= gettext("Save") %>
+            </.button>
+          </div>
+        </.simple_form>
+      </div>
+      <div>
+        <.simple_form
           for={@email_form}
           id="email_form"
           phx-submit="update_email"
@@ -90,6 +112,7 @@ defmodule TikiWeb.UserSettingsLive do
     user = socket.assigns.current_user
     email_changeset = Accounts.change_user_email(user)
     password_changeset = Accounts.change_user_password(user)
+    user_changeset = Accounts.change_user_data(user)
 
     socket =
       socket
@@ -98,9 +121,29 @@ defmodule TikiWeb.UserSettingsLive do
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
+      |> assign(:user_form, to_form(user_changeset))
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
+  end
+
+  def handle_event("validate_user", %{"user" => user_params}, socket) do
+    changeset = Accounts.change_user_data(socket.assigns.current_user, user_params)
+
+    {:noreply, assign(socket, user_form: to_form(changeset))}
+  end
+
+  def handle_event("update_user", %{"user" => user_params}, socket) do
+    case Accounts.update_user_data(socket.assigns.current_user, user_params) do
+      {:ok, _user} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("User settings updated"))
+         |> redirect(to: ~p"/users/settings")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
   end
 
   def handle_event("validate_email", params, socket) do

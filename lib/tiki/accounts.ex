@@ -278,7 +278,7 @@ defmodule Tiki.Accounts do
   @doc """
   Returns an %Ecto.Changeset{}  for changing user settings (but not email or passsord)
   """
-  def change_user_data(user, attrs) do
+  def change_user_data(user, attrs \\ %{}) do
     User.user_data_changeset(user, attrs)
   end
 
