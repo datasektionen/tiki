@@ -24,9 +24,9 @@
     </div>
   </div>
 </header>
-<main class="px-4 py-20 sm:px-6 lg:px-8">
-  <div class="mx-auto max-w-4xl">
-    <.flash_group flash={@flash} />
-    <%= @inner_content %>
-  </div>
+
+<.nav current_user={assigns[:current_user]} />
+<main class="mx-auto max-w-7xl p-6 py-32 lg:px-8">
+  <.flash_group flash={@flash} />
+  <%= @inner_content %>
 </main>

@@ -18,12 +18,6 @@ defmodule TikiWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", TikiWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", TikiWeb do
   #   pipe_through :api
@@ -65,7 +59,16 @@ defmodule TikiWeb.Router do
   scope "/", TikiWeb do
     pipe_through [:browser]
 
-    live_session :unauthenticated do
+    get "/", PageController, :home
+    get "/about", PageController, :about
+
+    delete "/users/log_out", UserSessionController, :delete
+
+    live_session :current_user,
+      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
+      live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirm", UserConfirmationInstructionsLive, :new
+
       live "/events", EventLive.Index, :index
       live "/events/:id", EventLive.Show, :index
       live "/events/:event_id/purchase", PurchaseLive.Tickets, :tickets
@@ -163,18 +166,6 @@ defmodule TikiWeb.Router do
           live "/forms/:form_id/edit", Forms.Form, :edit
         end
       end
-    end
-  end
-
-  scope "/", TikiWeb do
-    pipe_through [:browser]
-
-    delete "/users/log_out", UserSessionController, :delete
-
-    live_session :current_user,
-      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
   end
 
