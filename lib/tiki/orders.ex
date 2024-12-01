@@ -313,37 +313,6 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  <<<<<<< HEAD
-  Confirms an order, ie. marks it as paid. Returns the order.
-
-  ## Examples
-      iex> confirm_order(%Order{})
-      {:ok, %Order{}}
-
-      iex> confirm_order(%Order{})
-      {:error, %Ecto.Changeset{}}
-  """
-  def confirm_order(order, user_id) do
-    case update_order(order, %{status: "paid", user_id: user_id}) do
-      {:error, changeset} ->
-        {:error, changeset}
-
-      {:ok, order} ->
-        broadcast(order.event_id, {:tickets_updated, get_availible_ticket_types(order.event_id)})
-
-        broadcast(
-          order.event_id,
-          :purchases,
-          {:order_confirmed, get_order!(order.id)}
-        )
-
-        {:ok, order}
-    end
-  end
-
-  @doc """
-  =======
-  >>>>>>> main
   Cancels an order if it exists. Returns the order.
 
   ## Examples
@@ -422,6 +391,7 @@ defmodule Tiki.Orders do
     query =
       order_query()
       |> join(:inner, [o], e in assoc(o, :event))
+      |> where([o], o.status == ^:paid)
       |> where([..., e], e.team_id == ^team_id)
       |> order_by([o], desc: o.inserted_at)
       |> preload([..., e], event: e)
