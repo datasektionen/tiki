@@ -9,7 +9,7 @@ defmodule Tiki.Repo.Migrations.AddSwishCheckouts do
       add :status, :string
 
       add :user_id, references(:users, on_delete: :nothing)
-      add :order_id, references(:orders, on_delete: :nothing, type: :binary_id)
+      add :order_id, references(:orders, type: :binary_id, on_delete: :nothing)
 
       timestamps()
     end

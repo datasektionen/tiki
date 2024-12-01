@@ -1,7 +1,7 @@
 defmodule Tiki.Repo.Migrations.CreateEvents do
   use Ecto.Migration
 
-  def change do
+  def up do
     execute "CREATE EXTENSION IF NOT EXISTS pgcrypto"
 
     create table(:events, primary_key: false) do
@@ -12,5 +12,11 @@ defmodule Tiki.Repo.Migrations.CreateEvents do
 
       timestamps()
     end
+  end
+
+  def down do
+    drop table(:events)
+
+    execute "DROP EXTENSION IF EXISTS pgcrypto"
   end
 end
