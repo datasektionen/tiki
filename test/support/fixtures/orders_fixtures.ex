@@ -8,9 +8,12 @@ defmodule Tiki.OrdersFixtures do
   Generate a order.
   """
   def order_fixture(attrs \\ %{}) do
+    user = Tiki.AccountsFixtures.user_fixture()
+    event = Tiki.EventsFixtures.event_fixture()
+
     {:ok, order} =
       attrs
-      |> Enum.into(%{})
+      |> Enum.into(%{user_id: user.id, event_id: event.id, price: 100})
       |> Tiki.Orders.create_order()
 
     order
@@ -20,9 +23,16 @@ defmodule Tiki.OrdersFixtures do
   Generate a ticket.
   """
   def ticket_fixture(attrs \\ %{}) do
+    ticket_type = Tiki.TicketsFixtures.ticket_type_fixture()
+    order = Tiki.OrdersFixtures.order_fixture()
+
     {:ok, ticket} =
       attrs
-      |> Enum.into(%{})
+      |> Enum.into(%{
+        ticket_type_id: ticket_type.id,
+        price: order.price,
+        order_id: order.id
+      })
       |> Tiki.Orders.create_ticket()
 
     ticket

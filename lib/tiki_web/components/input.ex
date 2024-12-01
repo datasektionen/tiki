@@ -67,7 +67,7 @@ defmodule TikiWeb.Component.Input do
 
     ~H"""
     <div class={@rest[:class]}>
-      <label class="text-muted-foreground flex items-center gap-4 text-sm leading-6">
+      <label class="text-muted-foreground flex items-center gap-4 text-sm">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -75,10 +75,9 @@ defmodule TikiWeb.Component.Input do
           name={@name}
           value="true"
           checked={@checked}
-          class="border-primary text-primary h-4 w-4 rounded shadow focus:ring-0"
+          class="border-primary text-primary bg-background size-4 rounded-sm shadow-sm checked:bg-primary focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
         />
-        <!-- peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 checked:bg-primary checked:text-primary-foreground -->
         <%= @label %>
       </label>
       <.error :for={msg <- @errors}><%= msg %></.error>
@@ -93,7 +92,7 @@ defmodule TikiWeb.Component.Input do
       <select
         id={@id}
         name={@name}
-        class="border-input bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        class="border-input bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         multiple={@multiple}
         {@rest}
       >
@@ -114,7 +113,7 @@ defmodule TikiWeb.Component.Input do
         name={@name}
         class={[
           @errors == [] && "border-input",
-          "mt-2 min-h-[10rem] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:ring-offset-background focus:border-input focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "mt-2 min-h-[10rem] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:ring-offset-background focus:border-input focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
@@ -136,7 +135,7 @@ defmodule TikiWeb.Component.Input do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 flex h-10 w-full focus:ring-offset-background focus:border-input rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "mt-2 flex h-10 w-full focus:ring-offset-background focus:border-input rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
@@ -159,7 +158,7 @@ defmodule TikiWeb.Component.Input do
     <select
       id={@id}
       name={@name}
-      class="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      class="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       {@rest}
     >
       <option :if={@prompt} value=""><%= @prompt %></option>
@@ -192,11 +191,121 @@ defmodule TikiWeb.Component.Input do
             name={@name}
             id={@id}
             value={@value}
-            class="bg-background border-input ring-offset-background block h-10 w-full rounded-md border px-3 py-2 pl-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-ring focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            class="bg-background border-input ring-offset-background block h-10 w-full rounded-md border px-3 py-2 pl-10 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             {@rest}
           />
         </span>
       </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Provides a radio group input for a given form field.
+
+  ## Examples
+
+      <.radio_group field={@form[:tip]}>
+        <:radio value="0">No Tip</:radio>
+        <:radio value="10">10%</:radio>
+        <:radio value="20">20%</:radio>
+      </.radio_group>
+  """
+  attr :field, Phoenix.HTML.FormField, required: true
+
+  slot :radio, required: true do
+    attr :value, :string, required: true
+    attr :class, :string
+  end
+
+  attr :rest, :global
+
+  slot :inner_block
+
+  def radio_group(%{field: %Phoenix.HTML.FormField{}} = assigns) do
+    assigns = prepare_assign(assigns)
+
+    ~H"""
+    <div>
+      <div class={@rest[:class]}>
+        <%= render_slot(@inner_block) %>
+        <div
+          :for={
+            {%{value: value, class: class} = rad, idx} <-
+              Enum.map(@radio, &Map.put_new(&1, :class, nil)) |> Enum.with_index()
+          }
+          class={class}
+        >
+          <label for={"#{@id}-#{idx}"}><%= render_slot(rad) %></label>
+          <input
+            type="radio"
+            name={@name}
+            id={"#{@id}-#{idx}"}
+            value={value}
+            checked={to_string(@value) == to_string(value)}
+            class="aspect-square border-primary text-foreground h-4 w-4 rounded-full border shadow-sm focus:ring-0 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background dark:checked:bg-dark-radio"
+            }
+          />
+        </div>
+      </div>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  @doc """
+  A generic form component that works with Changesets generated from Haj.Form.
+
+  Question types are: :select, :multi_select, :text_area, :text
+  """
+
+  attr :question, :any, required: true
+  attr :field, :any, required: true
+  attr :class, :string, default: ""
+
+  def form_input(%{question: %{type: :select}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="select" options={@question.options} label={@question.name} />
+    </div>
+    """
+  end
+
+  def form_input(%{question: %{type: :multi_select}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <label class="block text-sm font-semibold leading-6 text-zinc-800">
+        <%= @question.name %>
+      </label>
+      <div class="mt-2 flex flex-col gap-1">
+        <div :for={option <- @question.options}>
+          <.input
+            name={"#{@field.name}[#{option}]"}
+            type="checkbox"
+            value={
+              option in Ecto.Changeset.get_field(assigns.field.form.source, assigns.field.field, [])
+            }
+            label={option}
+          />
+        </div>
+        <.error :for={msg <- @errors}><%= msg %></.error>
+      </div>
+    </div>
+    """
+  end
+
+  def form_input(%{question: %{type: :text_area}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="textarea" label={@question.name} />
+    </div>
+    """
+  end
+
+  def form_input(assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="text" label={@question.name} />
     </div>
     """
   end

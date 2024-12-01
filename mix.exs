@@ -9,7 +9,14 @@ defmodule Tiki.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -55,7 +62,10 @@ defmodule Tiki.MixProject do
       {:stripity_stripe, "~> 3.0"},
       {:req, "~> 0.5"},
       {:oidcc_plug, "~> 0.1.0"},
+      {:oidcc, "~> 3.2.0"},
       {:let_me, "~> 1.2"},
+      {:qrcode_ex, "~> 0.1.0"},
+      {:excoveralls, "~> 0.18", only: :test},
       {:k6, "~> 0.2.0", only: :dev, runtime: false},
       {:tailwind_formatter, "~> 0.3.5", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},

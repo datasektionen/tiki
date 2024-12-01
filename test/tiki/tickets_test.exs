@@ -21,7 +21,8 @@ defmodule Tiki.TicketsTest do
     end
 
     test "create_ticket_batch/1 with valid data creates a ticket_batch" do
-      valid_attrs = %{max_size: 42, min_size: 42, name: "some name"}
+      event = Tiki.EventsFixtures.event_fixture()
+      valid_attrs = %{max_size: 42, min_size: 42, name: "some name", event_id: event.id}
 
       assert {:ok, %TicketBatch{} = ticket_batch} = Tickets.create_ticket_batch(valid_attrs)
       assert ticket_batch.max_size == 42
@@ -91,13 +92,16 @@ defmodule Tiki.TicketsTest do
     end
 
     test "create_ticket_type/1 with valid data creates a ticket_types" do
+      batch = ticket_batch_fixture()
+
       valid_attrs = %{
         description: "some description",
         expire_time: ~U[2023-03-25 18:01:00Z],
         name: "some name",
         price: 42,
         purchasable: true,
-        release_time: ~U[2023-03-25 18:01:00Z]
+        release_time: ~U[2023-03-25 18:01:00Z],
+        ticket_batch_id: batch.id
       }
 
       assert {:ok, %TicketType{} = ticket_types} = Tickets.create_ticket_type(valid_attrs)

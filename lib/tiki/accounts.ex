@@ -8,7 +8,32 @@ defmodule Tiki.Accounts do
 
   alias Tiki.Accounts.{User, UserToken, UserNotifier}
 
-  ## Database getters
+  @doc """
+  Lists all users.
+
+  Options:
+    * `:limit` - The maximum number of users to return.
+  """
+  def list_users(opts \\ []) do
+    limit = Keyword.get(opts, :limit, nil)
+    Repo.all(from u in User, limit: ^limit)
+  end
+
+  @doc """
+  Searches users by email.
+
+  ## Examples
+
+      iex> search_users("adrian")
+      [%User{}, %User{}]
+  """
+  def search_users(search_term) do
+    query =
+      from u in User,
+        where: ilike(u.email, ^"%#{search_term}%")
+
+    Repo.all(query)
+  end
 
   @doc """
   Gets a user by email.
@@ -110,10 +135,17 @@ defmodule Tiki.Accounts do
   @doc """
   Either creates a new user, or returns an existing user with the same email.
   """
-  def upsert_user_email(email) do
+  def upsert_user_email(email, name) do
     case Repo.get_by(User, email: email) do
       nil ->
-        User.email_changeset(%User{}, %{email: email})
+        [first_name | last_name] = String.split(name, " ", parts: 2, trim: true)
+        last_name = Enum.join(last_name, " ")
+
+        User.email_changeset(%User{}, %{
+          email: email,
+          first_name: first_name,
+          last_name: last_name
+        })
         |> Repo.insert()
 
       user ->
@@ -246,7 +278,7 @@ defmodule Tiki.Accounts do
   @doc """
   Returns an %Ecto.Changeset{}  for changing user settings (but not email or passsord)
   """
-  def change_user_data(user, attrs) do
+  def change_user_data(user, attrs \\ %{}) do
     User.user_data_changeset(user, attrs)
   end
 

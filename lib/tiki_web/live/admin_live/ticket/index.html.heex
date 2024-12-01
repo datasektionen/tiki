@@ -1,17 +1,27 @@
 <div class="my-8">
   <div class="mb-4 flex flex-row items-center justify-between">
     <div>
-      <h2 class="mb-2 text-lg font-bold">Biljettyper</h2>
-      <div class="text-sm text-gray-700">Här visas biljettyper och batches.</div>
+      <h2 class="mb-2 text-lg font-bold">
+        <%= gettext("Tickets") %>
+      </h2>
+      <div class="text-muted-foreground text-sm">
+        <%= gettext(
+          "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
+        ) %>
+      </div>
     </div>
 
     <div class="flex flex-row justify-end gap-2">
       <.link patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
-        <.button>Ny batch</.button>
+        <.button variant="secondary">
+          <%= gettext("New batch") %>
+        </.button>
       </.link>
 
-      <.link patch={~p"/admin/events/#{@event}/ticket-types/new"}>
-        <.button>Ny biljettyp</.button>
+      <.link patch={~p"/admin/events/#{@event}/tickets/types/new"}>
+        <.button variant="secondary">
+          <%= gettext("New ticket type") %>
+        </.button>
       </.link>
     </div>
   </div>
@@ -20,37 +30,3 @@
     <.ticket_batch :for={batch <- @batches} batch={batch} />
   </div>
 </div>
-
-<.dialog
-  :if={@live_action in [:edit_batch, :new_batch]}
-  id="batch-modal"
-  show
-  on_cancel={JS.patch(~p"/admin/events/#{@event}/tickets")}
->
-  <.live_component
-    module={TikiWeb.AdminLive.Ticket.BatchFormComponent}
-    id={@batch.id || :new}
-    title={@page_title}
-    action={@live_action}
-    batch={@batch}
-    batches={@event.ticket_batches}
-    patch={~p"/admin/events/#{@event}/tickets"}
-  />
-</.dialog>
-
-<.dialog
-  :if={@live_action in [:edit_ticket_type, :new_ticket_type]}
-  id="ticket-type-modal"
-  show
-  on_cancel={JS.patch(~p"/admin/events/#{@event}/tickets")}
->
-  <.live_component
-    module={TikiWeb.AdminLive.Ticket.TicketTypeFormComponent}
-    id={@ticket_type.id || :new}
-    title={@page_title}
-    action={@live_action}
-    ticket_type={@ticket_type}
-    batches={@event.ticket_batches}
-    patch={~p"/admin/events/#{@event}/tickets"}
-  />
-</.dialog>

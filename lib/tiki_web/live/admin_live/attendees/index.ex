@@ -5,6 +5,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   alias Tiki.Orders
 
   import TikiWeb.Component.Card
+  import TikiWeb.Component.Badge
 
   def mount(%{"id" => event_id}, _sesison, socket) do
     event = Events.get_event!(event_id)
@@ -22,12 +23,12 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   def handle_params(_params, _url, socket) do
     {:noreply,
-     assign(socket, :page_title, "Besökare")
+     assign(socket, :page_title, gettext("Attendees"))
      |> assign_breadcrumbs([
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-       {"Besökare", ~p"/admin/events/#{socket.assigns.event.id}/attendees"}
+       {"Attendees", ~p"/admin/events/#{socket.assigns.event.id}/attendees"}
      ])}
   end
 
@@ -67,8 +68,8 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
       </div>
 
       <.card class="sm:col-span-6">
-        <ul id="tickets" phx-update="stream" role="list" class="divide-y divide-gray-100">
-          <.ticket_card :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
+        <ul id="tickets" phx-update="stream" role="list" class="divide-accent divide-y">
+          <.ticket_item :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
         </ul>
       </.card>
     </div>
@@ -78,27 +79,32 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   attr :ticket, :map
   attr :rest, :global
 
-  defp ticket_card(assigns) do
+  defp ticket_item(assigns) do
     ~H"""
-    <li class="relative flex items-center justify-between gap-x-6 px-2 py-4 first:rounded-t-xl last:rounded-b-xl hover:bg-gray-50 sm:px-4 lg:px-6">
+    <li class="relative flex items-center justify-between gap-x-6 px-2 py-4 first:rounded-t-xl last:rounded-b-xl hover:bg-accent/50 sm:px-4 lg:px-6">
       <div class="min-w-0">
         <div class="flex items-start gap-x-3">
           <.link navigate={~p"/admin/events/#{@ticket.order.event_id}/attendees/#{@ticket}"}>
             <span class="absolute inset-x-0 -top-px bottom-0"></span>
-            <p class="text-sm font-semibold leading-6 text-gray-900">Namn Namnsson</p>
+            <p
+              :if={@ticket.order.user.full_name}
+              class="text-foreground text-sm font-semibold leading-6"
+            >
+              <%= @ticket.order.user.full_name %>
+            </p>
           </.link>
-          <p class="ring-green-600/20 mt-0.5 inline-flex items-center gap-0.5 whitespace-nowrap rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset">
+          <.badge variant="outline">
             <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
             <span class="text-xs"><%= @ticket.ticket_type.name %></span>
-          </p>
+          </.badge>
         </div>
-        <div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
+        <div class="text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5">
           <p class="truncate"><%= @ticket.order.user.email %></p>
           <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
             <circle cx="1" cy="1" r="1" />
           </svg>
           <p class="whitespace-nowrap">
-            Kötes
+            <%= gettext("Purchased") %>
             <time datetime="2023-03-17T00:00Z">
               <%= Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M") %>
             </time>
@@ -107,7 +113,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
       </div>
       <div class="flex flex-none items-center gap-x-4"></div>
       <svg
-        class="h-5 w-5 flex-none text-gray-400"
+        class="text-muted-foreground h-5 w-5 flex-none"
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"

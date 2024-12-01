@@ -1,89 +1,84 @@
-let stripe;
 let elements;
 
-import {loadStripe} from '@stripe/stripe-js/pure';
+import { loadStripe } from "@stripe/stripe-js/pure";
 
 export const InitCheckout = {
-    async mounted() {
-        stripe = await loadStripe("pk_test_51QFDv6ENoY5GyA7jeRaxuUSGKGzDLHEu7uRfVgbcAYabj5oepxaZMQ8rNakOQTD6OibKHaxLgUeZqITqtoRZYz2L00t62OGcoq");
-        const callback = intent => { this.pushEventTo(this.el, "payment-sucess", intent) };
-        init(this.el, callback);
-    }
-}
+  async mounted() {
+    stripe = await loadStripe(
+      "pk_test_51QFDv6ENoY5GyA7jeRaxuUSGKGzDLHEu7uRfVgbcAYabj5oepxaZMQ8rNakOQTD6OibKHaxLgUeZqITqtoRZYz2L00t62OGcoq",
+    );
 
+    init(this.el);
+  },
+};
 
-const init = (form, callback) => {
-    const clientSecret = form.dataset.secret;
+const init = (form) => {
+  const clientSecret = form.dataset.secret;
+  const appearance = { theme: "stripe" };
 
-    const appearance = { theme: 'stripe' };
-    elements = stripe.elements({ appearance, clientSecret });
+  elements = stripe.elements({ appearance, clientSecret });
 
-    const linkAuthenticationElement = elements.create("linkAuthentication");
-    linkAuthenticationElement.mount("#link-authentication-element");
+  const paymentElementOptions = {
+    layout: "tabs",
+  };
 
-    linkAuthenticationElement.on('change', (event) => {
-        emailAddress = event.value.email;
-    });
+  const paymentElement = elements.create("payment", paymentElementOptions);
+  paymentElement.mount("#payment-element");
 
-    const paymentElementOptions = {
-        layout: "tabs",
-    };
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-    const paymentElement = elements.create("payment", paymentElementOptions);
-    paymentElement.mount("#payment-element");
+    stripe
+      .confirmPayment({
+        elements,
+        confirmParams: {
+          // Make sure to change this to your payment completion page
+          return_url: "http://localhost:4000/events",
+        },
+        redirect: "if_required",
+      })
+      .then((result) => {
+        if (result.error) {
+          if (
+            result.error.type === "card_error" ||
+            result.error.type === "validation_error"
+          ) {
+            showMessage(result.error.message);
+          } else {
+            showMessage("An unexpected error occurred.");
+          }
 
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        setLoading(true);
-    
-        stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                // Make sure to change this to your payment completion page
-                return_url: "http://localhost:4000/events",
-                receipt_email: emailAddress,
-            },
-            redirect: "if_required"
-        }).then((result) => {
-            if (result.error) {
-                if (result.error.type === "card_error" || result.error.type === "validation_error") {
-                    showMessage(result.error.message);
-                } else {
-                    showMessage("An unexpected error occurred.");
-                }
-            
-                setLoading(false);
-            } else {
-                callback(result.paymentIntent)
-            }
-        })
-    });
-}
+          setLoading(false);
+        } else {
+          callback(result.paymentIntent);
+        }
+      });
+  });
+};
 
 // ------- UI helpers -------
 
 function showMessage(messageText) {
-    const messageContainer = document.querySelector("#payment-message");
+  const messageContainer = document.querySelector("#payment-message");
 
-    messageContainer.classList.remove("hidden");
-    messageContainer.textContent = messageText;
+  messageContainer.classList.remove("hidden");
+  messageContainer.textContent = messageText;
 
-    setTimeout(function () {
-        messageContainer.classList.add("hidden");
-        messageText.textContent = "";
-    }, 4000);
+  setTimeout(function () {
+    messageContainer.classList.add("hidden");
+    messageText.textContent = "";
+  }, 4000);
 }
 
 // Show a spinner on payment submission
 function setLoading(isLoading) {
-    if (isLoading) {
-        // Disable the button and show a spinner
-        document.querySelector("#submit").disabled = true;
-        document.querySelector("#spinner").classList.remove("hidden");
-        document.querySelector("#button-text").classList.add("hidden");
-    } else {
-        document.querySelector("#submit").disabled = false;
-        document.querySelector("#spinner").classList.add("hidden");
-        document.querySelector("#button-text").classList.remove("hidden");
-    }
+  if (isLoading) {
+    // Disable the button and show a spinner
+    document.querySelector("#submit").disabled = true;
+    document.querySelector("#spinner").classList.remove("hidden");
+  } else {
+    document.querySelector("#submit").disabled = false;
+    document.querySelector("#spinner").classList.add("hidden");
+  }
 }

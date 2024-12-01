@@ -16,6 +16,14 @@ config :tiki, Tiki.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
+config :tiki, Tiki.Swish,
+  api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
+  cacert: "swish_certs/Swish_TLS_RootCA.pem",
+  cert: "swish_certs/myCertificate.pem",
+  key: "swish_certs/myPrivateKey.key",
+  merchant_number: System.get_env("SWISH_MERCHANT_NUMBER"),
+  callback_url: System.get_env("SWISH_CALLBACK_URL")
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :tiki, TikiWeb.Endpoint,
@@ -25,6 +33,21 @@ config :tiki, TikiWeb.Endpoint,
 
 # In test we don't send emails.
 config :tiki, Tiki.Mailer, adapter: Swoosh.Adapters.Test
+
+issuer = "http://localhost:7005/op"
+
+config :tiki, Oidcc,
+  issuer: issuer,
+  client_id: "test",
+  client_secret: "test"
+
+config :tiki, Oidcc.ProviderConfiguration,
+  issuer: issuer,
+  provider_configuration_opts: %{
+    quirks: %{
+      allow_unsafe_http: true
+    }
+  }
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false

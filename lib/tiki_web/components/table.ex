@@ -32,6 +32,11 @@ defmodule TikiWeb.Component.Table do
   attr :rest, :global
 
   def table(assigns) do
+    assigns =
+      with %{rows: %Phoenix.LiveView.LiveStream{}} <- assigns do
+        assign(assigns, row_id: assigns.row_id || fn {id, _item} -> id end)
+      end
+
     ~H"""
     <table class={classes(["w-full caption-bottom text-sm", @class])} {@rest}>
       <.table_header>
@@ -156,7 +161,7 @@ defmodule TikiWeb.Component.Table do
     <div
       class={
         classes([
-          "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+          "border-t bg-muted/50 font-medium last:[&>tr]:border-b-0",
           @class
         ])
       }

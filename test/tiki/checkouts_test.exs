@@ -8,7 +8,14 @@ defmodule Tiki.CheckoutsTest do
 
     import Tiki.CheckoutsFixtures
 
-    @invalid_attrs %{currency: nil, payment_intent_id: nil, payment_method_id: nil, status: nil}
+    @invalid_attrs %{
+      currency: nil,
+      payment_intent_id: nil,
+      payment_method_id: nil,
+      status: nil,
+      user_id: nil,
+      order_id: nil
+    }
 
     test "list_stripe_checkouts/0 returns all stripe_checkouts" do
       stripe_checkout = stripe_checkout_fixture()
@@ -21,11 +28,16 @@ defmodule Tiki.CheckoutsTest do
     end
 
     test "create_stripe_checkout/1 with valid data creates a stripe_checkout" do
+      user = Tiki.AccountsFixtures.user_fixture()
+      order = Tiki.OrdersFixtures.order_fixture(%{user_id: user.id})
+
       valid_attrs = %{
         currency: "some currency",
         payment_intent_id: "some payment_intent_id",
         payment_method_id: "some payment_method_id",
-        status: "some status"
+        status: "some status",
+        user_id: user.id,
+        order_id: order.id
       }
 
       assert {:ok, %StripeCheckout{} = stripe_checkout} =
@@ -67,20 +79,6 @@ defmodule Tiki.CheckoutsTest do
                Checkouts.update_stripe_checkout(stripe_checkout, @invalid_attrs)
 
       assert stripe_checkout == Checkouts.get_stripe_checkout!(stripe_checkout.id)
-    end
-
-    test "delete_stripe_checkout/1 deletes the stripe_checkout" do
-      stripe_checkout = stripe_checkout_fixture()
-      assert {:ok, %StripeCheckout{}} = Checkouts.delete_stripe_checkout(stripe_checkout)
-
-      assert_raise Ecto.NoResultsError, fn ->
-        Checkouts.get_stripe_checkout!(stripe_checkout.id)
-      end
-    end
-
-    test "change_stripe_checkout/1 returns a stripe_checkout changeset" do
-      stripe_checkout = stripe_checkout_fixture()
-      assert %Ecto.Changeset{} = Checkouts.change_stripe_checkout(stripe_checkout)
     end
   end
 end

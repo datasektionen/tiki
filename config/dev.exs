@@ -10,6 +10,14 @@ config :tiki, Tiki.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+config :tiki, Tiki.Swish,
+  api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
+  cacert: "swish_certs/Swish_TLS_RootCA.pem",
+  cert: "swish_certs/myCertificate.pem",
+  key: "swish_certs/myPrivateKey.key",
+  merchant_number: System.get_env("SWISH_MERCHANT_NUMBER"),
+  callback_url: System.get_env("SWISH_CALLBACK_URL")
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -79,7 +87,9 @@ config :phoenix, :plug_init_mode, :runtime
 config :swoosh, :api_client, false
 
 # Config for Stripe
-config :stripity_stripe, api_key: System.get_env("STRIPE_API_KEY")
+config :stripity_stripe,
+  api_key: System.get_env("STRIPE_API_KEY"),
+  webhook_secret: System.get_env("STRIPE_WEBHOOK_SECRET")
 
 # Path to install SaladUI components
 config :salad_ui, components_path: Path.join(File.cwd!(), "lib/tiki_web/components")

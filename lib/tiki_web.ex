@@ -43,7 +43,7 @@ defmodule TikiWeb do
         layouts: [html: TikiWeb.Layouts]
 
       import Plug.Conn
-      import TikiWeb.Gettext
+      use Gettext, backend: TikiWeb.Gettext
 
       unquote(verified_routes())
     end

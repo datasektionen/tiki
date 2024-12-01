@@ -261,8 +261,9 @@ defmodule TikiWeb.UserAuth do
       end
     end)
     |> Phoenix.Component.assign_new(:current_team, fn ->
-      if team_id = session["current_team_id"] do
-        Teams.get_team!(team_id)
+      with team_id when not is_nil(team_id) <- session["current_team_id"],
+           team <- Teams.get_team(team_id) do
+        team
       end
     end)
   end
@@ -292,6 +293,20 @@ defmodule TikiWeb.UserAuth do
     else
       conn
       |> put_flash(:error, "You must log in to access this page.")
+      |> maybe_store_return_to()
+      |> redirect(to: ~p"/users/log_in")
+      |> halt()
+    end
+  end
+
+  def require_admin_user(conn, opts) do
+    conn = require_authenticated_user(conn, opts)
+
+    if Tiki.Policy.authorize?(:tiki_admin, conn.assigns.current_user) do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You need to be an admin to access this page.")
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log_in")
       |> halt()

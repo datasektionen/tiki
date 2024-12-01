@@ -21,10 +21,13 @@ defmodule Tiki.EventsTest do
     end
 
     test "create_event/1 with valid data creates a event" do
+      team = Tiki.TeamsFixtures.team_fixture()
+
       valid_attrs = %{
         description: "some description",
         event_date: ~U[2023-03-25 16:55:00Z],
-        name: "some name"
+        name: "some name",
+        team_id: team.id
       }
 
       assert {:ok, %Event{} = event} = Events.create_event(valid_attrs)

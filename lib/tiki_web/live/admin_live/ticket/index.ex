@@ -21,24 +21,24 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-       {"Biljetter", ~p"/admin/events/#{socket.assigns.event.id}/tickets"}
+       {"Tickets", ~p"/admin/events/#{socket.assigns.event.id}/tickets"}
      ])
      |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def apply_action(socket, :index, _params), do: assign(socket, :page_title, "Biljetter")
+  def apply_action(socket, :index, _params), do: assign(socket, :page_title, gettext("Tickets"))
 
   def apply_action(socket, :edit_batch, %{"batch_id" => batch_id}) do
     batch = Tickets.get_ticket_batch!(batch_id)
 
     socket
-    |> assign(:page_title, "Edit Ticket Batch")
+    |> assign(:page_title, gettext("Edit Ticket Batch"))
     |> assign(:batch, batch)
   end
 
   def apply_action(socket, :new_batch, _params) do
     socket
-    |> assign(:page_title, "New Ticket Batch")
+    |> assign(:page_title, gettext("New Ticket Batch"))
     |> assign(:batch, %TicketBatch{event_id: socket.assigns.event.id})
   end
 
@@ -46,13 +46,13 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     ticket_type = Tickets.get_ticket_type!(tt_id)
 
     socket
-    |> assign(:page_title, "Edit Ticket type")
+    |> assign(:page_title, gettext("Edit Ticket type"))
     |> assign(:ticket_type, ticket_type)
   end
 
   def apply_action(socket, :new_ticket_type, _params) do
     socket
-    |> assign(:page_title, "New Ticket type")
+    |> assign(:page_title, gettext("New Ticket type"))
     |> assign(:ticket_type, %TicketType{})
   end
 
@@ -127,11 +127,14 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
 
   defp ticket_batch(assigns) do
     ~H"""
-    <div class="w-full overflow-hidden rounded-lg bg-gray-50 shadow-sm" data-batch={@batch.batch.id}>
+    <div
+      class="bg-accent/50 border-border shadow-xs w-full overflow-hidden rounded-lg border"
+      data-batch={@batch.batch.id}
+    >
       <.link
         patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/batches/#{@batch.batch}/edit"}
         phx-click={JS.push_focus()}
-        class="flex flex-row justify-between bg-gray-200 px-4 py-4 hover:bg-gray-300"
+        class="bg-accent/50 flex flex-row justify-between px-4 py-4 hover:bg-accent"
       >
         <div class="inline-flex items-center gap-2">
           <.icon name="hero-rectangle-stack-mini h-4 w-4" />
@@ -150,15 +153,15 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
       >
         <.link
           :for={ticket_type <- @batch.batch.ticket_types}
-          patch={~p"/admin/events/#{@batch.batch.event_id}/ticket-types/#{ticket_type}/edit"}
-          class="flex flex-row justify-between px-4 py-4 hover:bg-white"
+          patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/types/#{ticket_type}/edit"}
+          class="flex flex-row justify-between px-4 py-4 hover:bg-accent"
           data-ticket-type={ticket_type.id}
         >
           <div class="inline-flex items-center gap-2">
             <.icon name="hero-ticket-mini h-4 w-4" />
             <%= ticket_type.name %>
           </div>
-          <div class="text-gray-500">
+          <div class="text-muted-foreground">
             <%= ticket_type.price %> kr
           </div>
         </.link>
@@ -181,9 +184,9 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
         id={"batch-zone-#{@batch.batch.id}-no-children"}
         phx-hook="Sortable"
         data-batch={@batch.batch.id}
-        class="flex flex-col justify-between px-4 py-4 hover:bg-white"
+        class="flex flex-col justify-between px-4 py-4 hover:bg-background"
       >
-        Inga biljetter
+        <%= gettext("No tickets") %>
       </div>
     </div>
     """

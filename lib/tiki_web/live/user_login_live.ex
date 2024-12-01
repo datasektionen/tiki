@@ -45,7 +45,7 @@ defmodule TikiWeb.UserLoginLive do
         <div class="mt-6 grid grid-cols-2 gap-4">
           <.link
             navigate={~p"/oidcc/authorize"}
-            class="ring-foreground col-span-2 flex w-full items-center justify-center gap-3 rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset hover:bg-accent focus-visible:ring-transparent"
+            class="ring-foreground shadow-xs col-span-2 flex w-full items-center justify-center gap-3 rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset hover:bg-accent focus-visible:ring-transparent"
           >
             <img src="/images/dskold.svg" alt="Datasektionen" class="h-5 w-5 aria-hidden:hidden" />
             <span class="text-sm font-semibold leading-6">Datasektionen</span>

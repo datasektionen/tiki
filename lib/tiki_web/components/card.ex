@@ -29,7 +29,7 @@ defmodule TikiWeb.Component.Card do
 
   def card(assigns) do
     ~H"""
-    <div class={classes(["rounded-xl border bg-card text-card-foreground shadow", @class])} {@rest}>
+    <div class={classes(["rounded-xl border bg-card text-card-foreground shadow-sm", @class])} {@rest}>
       <%= render_slot(@inner_block) %>
     </div>
     """
@@ -53,7 +53,7 @@ defmodule TikiWeb.Component.Card do
 
   def card_title(assigns) do
     ~H"""
-    <h3 class={classes(["text-2xl font-semibold leading-none tracking-tight", @class])} {@rest}>
+    <h3 class={classes(["text-lg font-semibold leading-6 tracking-tight", @class])} {@rest}>
       <%= render_slot(@inner_block) %>
     </h3>
     """

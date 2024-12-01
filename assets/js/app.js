@@ -23,17 +23,20 @@ import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { InitCheckout } from "./checkout";
 import Sortable from "sortablejs";
+import { SearchCombobox } from "./searchCombobox";
 
-let Hooks = {};
-Hooks.InitCheckout = InitCheckout;
+let Hooks = {
+  InitCheckout: InitCheckout,
+  SearchCombobox: SearchCombobox,
+};
 
 Hooks.Sortable = {
   mounted() {
     let batch = this.el.dataset.batch;
     new Sortable(this.el, {
       animation: 150,
-      ghostClass: "bg-gray-200",
-      dragClass: "bg-gray-300",
+      ghostClass: "bg-accent/50",
+      dragClass: "bg-accent/20",
       fallbackOnBody: true,
       invertSwap: true,
       swapThreshold: 0.65,
@@ -85,3 +88,21 @@ window.addEventListener("phx:js-exec", ({ detail }) => {
     liveSocket.execJS(el, el.getAttribute(detail.attr));
   });
 });
+
+// Set dark/light mode
+function applyColorMode(mode) {
+  document.documentElement.classList.toggle("dark", mode === "dark");
+}
+
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", (event) => {
+    console.log("event");
+    if (!("theme" in localStorage)) {
+      applyColorMode(event.matches ? "dark" : "light");
+    }
+  });
+
+applyColorMode(
+  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+);

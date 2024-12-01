@@ -4,7 +4,10 @@ defmodule Tiki.Swish do
   """
 
   @api_url Application.compile_env(:tiki, Tiki.Swish)[:api_url]
-  @alphabet ~C"ABCDEF0123456789"
+  @prod_api_url "https://mpc.getswish.net/qrg-swish/api"
+  @alphabet ~c"ABCDEF0123456789"
+  @full_alphabet ~c"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
+  @full_alph_len length(@full_alphabet)
   @alph_len length(@alphabet)
 
   @type id :: String.t()
@@ -26,26 +29,39 @@ defmodule Tiki.Swish do
           callbackIdentifier: String.t() | nil
         }
 
+  @type success_response :: %{
+          swish_id: id(),
+          token: String.t(),
+          callback_identifier: String.t()
+        }
+
   @doc """
   Create a payment request. The ID _must_ be a 32-character string.
   The payment request object _must_ contain the following fields:
 
-  * `payeeAlias`. The Swish number to which the payment will be sent.
-      This _must_ be the same number as the CN (Common Name) in the
-      merchant certificate used to sign the request.
-  * `callbackUrl`. The URL to which Swish will send a callback when
-      the payment request has been accepted or rejected.
   * `amount`. The amount to be paid. This must be a positive float
       with a maximum of two decimal places.
-  * `currency`. The currency in which the payment is to be made. This
-      must be "SEK".
+
 
   The rest of the fields are optional.
   """
-  @spec create_payment_request(payment_request()) :: {:ok, id()} | {:error, [map()] | String.t()}
-  def create_payment_request(payment_request) do
+  @spec create_payment_request(float()) ::
+          {:ok, success_response()} | {:error, [map()] | String.t()}
+  def create_payment_request(amount) do
     _ = :crypto.rand_seed()
     id = for _ <- 1..32, into: "", do: <<Enum.at(@alphabet, :rand.uniform(@alph_len) - 1)>>
+
+    callback_identifier =
+      for _ <- 1..36, into: "", do: <<Enum.at(@full_alphabet, :rand.uniform(@full_alph_len) - 1)>>
+
+    payment_request =
+      %{
+        "amount" => amount,
+        "payeeAlias" => Application.get_env(:tiki, Tiki.Swish)[:merchant_number],
+        "currency" => "SEK",
+        "callbackUrl" => Application.get_env(:tiki, Tiki.Swish)[:callback_url],
+        "callbackIdentifier" => callback_identifier
+      }
 
     res =
       Req.put(base_request(),
@@ -54,8 +70,8 @@ defmodule Tiki.Swish do
       )
 
     case res do
-      {:ok, %Req.Response{status: 201}} ->
-        {:ok, id}
+      {:ok, %Req.Response{status: 201, headers: %{"paymentrequesttoken" => [token]}}} ->
+        {:ok, %{swish_id: id, token: token, callback_identifier: callback_identifier}}
 
       {:ok, %Req.Response{status: status, body: body}} when status >= 400 and status < 500 ->
         {:error, body}
@@ -126,6 +142,31 @@ defmodule Tiki.Swish do
 
       {:ok, %Req.Response{status: 500}} ->
         {:error, "Internal server error"}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  def get_svg_qr_code!(token) do
+    case get_svg_qr_code(token) do
+      {:ok, qr_code} -> qr_code
+      {:error, reason} -> raise reason
+    end
+  end
+
+  def get_svg_qr_code(token) do
+    url = @prod_api_url <> "/v1/commerce"
+
+    request =
+      Req.post(url,
+        headers: [{"Content-Type", "application/json"}],
+        json: %{token: token, format: "svg"}
+      )
+
+    case request do
+      {:ok, %Req.Response{status: 200, body: svg}} ->
+        {:ok, svg}
 
       {:error, reason} ->
         {:error, reason}

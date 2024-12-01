@@ -21,12 +21,6 @@ config :tiki, TikiWeb.Endpoint,
   pubsub_server: Tiki.PubSub,
   live_view: [signing_salt: "FxCBFsEw"]
 
-config :tiki, Tiki.Swish,
-  api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
-  cacert: "swish_certs/Swish_TLS_RootCA.pem",
-  cert: "swish_certs/myCertificate.pem",
-  key: "swish_certs/myPrivateKey.key"
-
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
@@ -48,14 +42,13 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.4.13",
+  version: "4.0.0-beta.2",
   default: [
     args: ~w(
-      --config=tailwind.config.js
-      --input=css/app.css
-      --output=../priv/static/assets/app.css
+      --input=assets/css/app.css
+      --output=./priv/static/assets/app.css
     ),
-    cd: Path.expand("../assets", __DIR__)
+    cd: Path.expand("../", __DIR__)
   ]
 
 # Configures Elixir's Logger
@@ -69,7 +62,33 @@ config :phoenix, :json_library, Jason
 config :salad_ui, :error_translator_function, {TikiWeb.CoreComponents, :translate_error}
 
 # SaladUI use tails to properly merge Tailwind CSS classes
-config :tails, colors_file: Path.join(File.cwd!(), "assets/tailwind.colors.json")
+config :tails,
+  color_classes: [
+    "background",
+    "foreground",
+    "card",
+    "card-foreground",
+    "popover",
+    "popover-foreground",
+    "primary",
+    "primary-foreground",
+    "secondary",
+    "secondary-foreground",
+    "muted",
+    "muted-foreground",
+    "accent",
+    "accent-foreground",
+    "destructive",
+    "destructive-foreground",
+    "border",
+    "input",
+    "ring",
+    "chart-1",
+    "chart-2",
+    "chart-3",
+    "chart-4",
+    "chart-5"
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

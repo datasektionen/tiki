@@ -17,7 +17,7 @@ defmodule Tiki.Application do
       Tiki.Presence,
       # Start Finch
       {Finch, name: Tiki.Finch},
-      TikiWeb.EventLive.PurchaseMonitor,
+      Tiki.PurchaseMonitor,
       {Oidcc.ProviderConfiguration.Worker,
        Application.get_env(:tiki, Oidcc.ProviderConfiguration, [])
        |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})},

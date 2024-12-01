@@ -5,7 +5,9 @@ defmodule Tiki.Tickets do
 
   import Ecto.Query, warn: false
   alias Tiki.Repo
+  alias Ecto.Multi
 
+  alias Tiki.Tickets.TreeBuilder
   alias Tiki.Tickets.TicketBatch
 
   @doc """
@@ -74,7 +76,7 @@ defmodule Tiki.Tickets do
       {:ok, batch} ->
         Tiki.Orders.broadcast(
           ticket_batch.event_id,
-          {:tickets_updated, Tiki.Orders.get_availible_ticket_types(ticket_batch.event_id)}
+          {:tickets_updated, get_availible_ticket_types(ticket_batch.event_id)}
         )
 
         {:ok, batch}
@@ -159,7 +161,7 @@ defmodule Tiki.Tickets do
   def create_ticket_type(attrs \\ %{}) do
     %TicketType{}
     |> TicketType.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(returning: [:id])
   end
 
   @doc """
@@ -207,5 +209,175 @@ defmodule Tiki.Tickets do
   """
   def change_ticket_type(%TicketType{} = ticket_types, attrs \\ %{}) do
     TicketType.changeset(ticket_types, attrs)
+  end
+
+  @doc """
+  Returns the availible ticket types for an event. Returns a list of ticket types,
+  with the number of available tickets, purchased tickets and pending tickets.
+
+  ## Examples
+      iex> get_availible_ticket_types(123)
+      [
+        %TicketType{
+          available: 10,
+          purchased: 0,
+          pending: 0,
+          ...
+        },
+        %TicketType{
+          available: 10,
+          purchased: 4,
+          pending: 2,
+          ...
+        }
+      ]
+  """
+  def get_availible_ticket_types(event_id) do
+    result =
+      Multi.new()
+      |> get_availible_ticket_types_multi(event_id)
+      |> Repo.transaction()
+
+    case result do
+      {:ok, %{ticket_types_availible: ticket_types}} ->
+        put_avalable_ticket_meta(ticket_types)
+
+      other ->
+        other
+    end
+  end
+
+  @doc """
+  Puts the available, purchased and pending meta data for each ticket type on the ticket types.
+
+  ## Examples
+
+      iex> put_avalable_ticket_meta([%{tichet_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...])
+      [
+        %TicketType{
+          available: 10,
+          purchased: 2,
+          pending: 1,
+          ...
+        },
+        ...
+      ]
+  """
+  def put_avalable_ticket_meta(ticket_types) do
+    Enum.map(ticket_types, fn tt ->
+      tt.ticket_type
+      |> Map.put(:available, tt.available)
+      |> Map.put(:purchased, tt.purchased)
+      |> Map.put(:pending, tt.pending)
+    end)
+  end
+
+  @doc """
+  An Ecto Multi that returns the avalible ticket types for an event.
+  The final result can be found from the `ticket_types_availible` key.
+  It will look like this:
+
+  ```
+  # :ticket_types_availible
+  %{ticket_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...]
+  """
+
+  def get_availible_ticket_types_multi(multi, event_id) do
+    # Subquery for counting tickets based on status
+    sub =
+      from tt in TicketType,
+        join: tb in assoc(tt, :ticket_batch),
+        left_join: t in assoc(tt, :tickets),
+        join: o in assoc(t, :order),
+        where: tb.event_id == ^event_id,
+        group_by: tt.id,
+        select: %{ticket_type_id: tt.id, count: count(t.id)}
+
+    sub_pending = sub |> where([tt, tb, t, o], o.status == ^"pending")
+    sub_purchased = sub |> where([tt, tb, t, o], o.status == ^"paid")
+
+    # Query for ticket types and their counts
+    query =
+      from tt in TicketType,
+        join: tb in assoc(tt, :ticket_batch),
+        left_join: pt in subquery(sub_pending),
+        on: tt.id == pt.ticket_type_id,
+        left_join: pt2 in subquery(sub_purchased),
+        on: tt.id == pt2.ticket_type_id,
+        where: tb.event_id == ^event_id,
+        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count}
+
+    multi
+    |> get_batch_tree_multi(event_id)
+    |> Multi.run(:available, fn _repo, %{graph: {batch_tree, root}} ->
+      # Propagate the number of purchased tickets up the tree
+      TreeBuilder.build(batch_tree, root)
+
+      # Get the number of available tickets for each batch
+      available = TreeBuilder.available(batch_tree, root)
+
+      # Not garbage collected, so we need to delete it!
+      :digraph.delete(batch_tree)
+
+      {:ok, available}
+    end)
+    |> Multi.all(:ticket_types, query)
+    |> Multi.run(:ticket_types_availible, fn _repo,
+                                             %{available: available, ticket_types: ticket_types} ->
+      ticket_types =
+        Enum.map(ticket_types, fn tt ->
+          Map.put(tt, :purchased, tt.purchased || 0)
+          |> Map.put(:pending, tt.pending || 0)
+          |> Map.put(:available, available[tt.ticket_type.ticket_batch_id])
+        end)
+
+      {:ok, ticket_types}
+    end)
+  end
+
+  defp get_batch_tree_multi(multi, event_id) do
+    # Get the root batches
+    root_batches_query =
+      from tb in TicketBatch,
+        where: tb.event_id == ^event_id,
+        where: is_nil(tb.parent_batch_id)
+
+    # Get all batches recursively
+    batches_recursion_query =
+      from tb in TicketBatch,
+        where: tb.event_id == ^event_id,
+        inner_join: ctb in "batch_tree",
+        on: tb.parent_batch_id == ctb.id
+
+    batches_query = union_all(root_batches_query, ^batches_recursion_query)
+
+    query =
+      TicketBatch
+      |> where([tb], tb.event_id == ^event_id)
+      |> recursive_ctes(true)
+      |> with_cte("batch_tree", as: ^batches_query)
+      |> join(:left, [tb], tt in assoc(tb, :ticket_types))
+      |> join(:left, [tb, tt], t in assoc(tt, :tickets))
+      |> group_by([tb, tt, t], tb.id)
+      |> select([tb, tt, t], %{batch: tb, purchased: count(t.id)})
+
+    Multi.all(multi, :batches, query)
+    |> Multi.run(:graph, fn _repo, %{batches: batches} ->
+      # We now have an array of batches with the number of tickets purchased for
+      # each batch. We now need to build the tree.
+      fake_root = %{batch: %TicketBatch{id: 0, name: "fake_root"}, purchased: 0}
+
+      graph = :digraph.new()
+
+      for %{batch: %TicketBatch{id: id}} = node <- [fake_root | batches] do
+        :digraph.add_vertex(graph, id, node)
+      end
+
+      for %{batch: %TicketBatch{id: id, parent_batch_id: parent_id}} <- batches do
+        :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
+      end
+
+      {:ok, {graph, fake_root.batch.id}}
+    end)
   end
 end

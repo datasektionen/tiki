@@ -28,12 +28,6 @@ defmodule TikiWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", TikiWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", TikiWeb do
   #   pipe_through :api
@@ -69,6 +63,16 @@ defmodule TikiWeb.Router do
     end
   end
 
+  defp allow_iframe(conn, _opts) do
+    conn
+    |> delete_resp_header("x-frame-options")
+    |> put_resp_header(
+      "content-security-policy",
+      # Add your list of allowed domain(s) here
+      "frame-ancestors 'self' http://localhost:4001"
+    )
+  end
+
   ## Authentication routes
 
   scope "/", TikiWeb do
@@ -86,20 +90,44 @@ defmodule TikiWeb.Router do
   end
 
   scope "/", TikiWeb do
+    pipe_through [:browser]
+
+    get "/", PageController, :home
+    get "/about", PageController, :about
+
+    delete "/users/log_out", UserSessionController, :delete
+
+    live_session :current_user,
+      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
+      live "/users/confirm/:token", UserConfirmationLive, :edit
+      live "/users/confirm", UserConfirmationInstructionsLive, :new
+
+      live "/events", EventLive.Index, :index
+      live "/events/:id", EventLive.Show, :index
+      live "/events/:event_id/purchase", PurchaseLive.Tickets, :tickets
+      live "/events/:event_id/purchase/:order_id", PurchaseLive.Tickets, :purchase
+
+      live "/orders/:id", OrderLive.Show, :show
+      live "/tickets/:id", OrderLive.Ticket, :show
+      live "/tickets/:id/form", OrderLive.TicketForm, :edit
+    end
+  end
+
+  scope "/", TikiWeb do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
       on_mount: [{TikiWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
-
-      live "/events", EventLive.Index, :index
-      live "/events/:id", EventLive.Show, :index
-      live "/events/:id/purchase", EventLive.Show, :purchase
     end
 
-    post "/admin/set_team", UserSessionController, :set_team
-    get "/admin/set_team/:team_id", UserSessionController, :set_team
+    scope "/admin" do
+      pipe_through [:require_admin_user]
+
+      post "/set_team", UserSessionController, :set_team
+      get "/set_team/:team_id", UserSessionController, :set_team
+    end
 
     scope "/admin", AdminLive do
       live_session :require_admin_user,
@@ -129,6 +157,11 @@ defmodule TikiWeb.Router do
         live "/events", Event.Index, :index
         live "/events/new", Event.Edit, :new
 
+        # Membership management for team
+        live "/team/members", Team.Members, :index
+        live "/team/members/new", Team.MembershipForm, :new
+        live "/team/members/:id/edit", Team.MembershipForm, :edit
+
         scope "/events/:id" do
           # Event dashboard
           live "/", Event.Show, :show
@@ -144,42 +177,28 @@ defmodule TikiWeb.Router do
           live "/tickets", Ticket.Index, :index
 
           # Ticket type settings
-          live "/ticket-types/new", Ticket.Index, :new_ticket_type
-
-          live "/ticket-types/:ticket_type_id/edit",
-               Ticket.Index,
-               :edit_ticket_type
+          live "/tickets/types/new", Ticket.TicketTypeForm, :new
+          live "/tickets/types/:ticket_type_id/edit", Ticket.TicketTypeForm, :edit
 
           # Ticket batch settings
-          live "/tickets/batches/new", Ticket.Index, :new_batch
-          live "/tickets/batches/:batch_id/edit", Ticket.Index, :edit_batch
+          live "/tickets/batches/new", Ticket.BatchForm, :new
+          live "/tickets/batches/:batch_id/edit", Ticket.BatchForm, :edit
 
-          # Check-in
-          live "/check-in", Ticket.Checkin, :index
+          # TODO: Check-in
+          # live "/check-in", Ticket.Checkin, :index
 
           # Registrations
           live "/attendees", Attendees.Index, :index
           live "/queue", Attendees.Index, :index
-          live "/contact", Contact.Index, :index
+          # live "/contact", Contact.Index, :index
           live "/attendees/:ticket_id", Attendees.Show, :show
 
-          # Forms
+          # TODO: Forms
           live "/forms", Forms.Index, :index
-          live "/forms/:form_id/edit", Forms.Edit
+          live "/forms/new", Forms.Form, :new
+          live "/forms/:form_id/edit", Forms.Form, :edit
         end
       end
-    end
-  end
-
-  scope "/", TikiWeb do
-    pipe_through [:browser]
-
-    delete "/users/log_out", UserSessionController, :delete
-
-    live_session :current_user,
-      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
   end
 
@@ -190,13 +209,8 @@ defmodule TikiWeb.Router do
     post "/callback", OidccController, :callback
   end
 
-  defp allow_iframe(conn, _opts) do
-    conn
-    |> delete_resp_header("x-frame-options")
-    |> put_resp_header(
-      "content-security-policy",
-      # Add your list of allowed domain(s) here
-      "frame-ancestors 'self' http://localhost:4001"
-    )
+  scope "/swish", TikiWeb do
+    pipe_through :api
+    post "/callback", SwishController, :callback
   end
 end

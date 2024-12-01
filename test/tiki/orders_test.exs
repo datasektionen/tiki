@@ -1,16 +1,15 @@
 defmodule Tiki.OrdersTest do
   use Tiki.DataCase
 
-  alias Tiki.Tickets.TicketBatch
   alias Tiki.Orders
 
   describe "order" do
     alias Tiki.Orders.Order
 
     import Tiki.OrdersFixtures
-    import Tiki.EventsFixtures
 
     @invalid_attrs %{"status" => "wierd"}
+    @standard_preloads [:user, [tickets: :ticket_type], :stripe_checkout, :swish_checkout]
 
     test "list_order/0 returns all order" do
       order = order_fixture()
@@ -18,12 +17,14 @@ defmodule Tiki.OrdersTest do
     end
 
     test "get_order!/1 returns the order with given id" do
-      order = order_fixture()
+      order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order
     end
 
     test "create_order/1 with valid data creates a order" do
-      valid_attrs = %{}
+      event = Tiki.EventsFixtures.event_fixture()
+
+      valid_attrs = %{event_id: event.id, price: 100}
 
       assert {:ok, %Order{} = _order} = Orders.create_order(valid_attrs)
     end
@@ -40,9 +41,12 @@ defmodule Tiki.OrdersTest do
     end
 
     test "update_order/2 with invalid data returns error changeset" do
-      order = order_fixture()
+      order = Tiki.Repo.preload(order_fixture(), @standard_preloads)
+
       assert {:error, %Ecto.Changeset{}} = Orders.update_order(order, @invalid_attrs)
-      assert order == Orders.get_order!(order.id)
+
+      assert order ==
+               Orders.get_order!(order.id)
     end
 
     test "delete_order/1 deletes the order" do
@@ -58,11 +62,7 @@ defmodule Tiki.OrdersTest do
   end
 
   describe "ticket" do
-    alias Tiki.Orders.Ticket
-
     import Tiki.OrdersFixtures
-
-    @invalid_attrs %{}
 
     test "list_ticket/0 returns all ticket" do
       ticket = ticket_fixture()
@@ -70,42 +70,68 @@ defmodule Tiki.OrdersTest do
     end
 
     test "get_ticket!/1 returns the ticket with given id" do
-      ticket = ticket_fixture()
+      ticket =
+        ticket_fixture()
+        |> Tiki.Repo.preload([:ticket_type, order: [:user], form_response: [:question_responses]])
+
       assert Orders.get_ticket!(ticket.id) == ticket
     end
+  end
 
-    test "create_ticket/1 with valid data creates a ticket" do
-      valid_attrs = %{}
+  describe "order reservation" do
+    import Tiki.OrdersFixtures
+    import Tiki.TicketsFixtures
 
-      assert {:ok, %Ticket{} = _ticket} = Orders.create_ticket(valid_attrs)
+    alias Tiki.Orders.Order
+
+    test "reserve_tickets/3" do
+      ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+      cost = ticket_type.price * 2
+
+      Orders.subscribe(ticket_type.ticket_batch.event.id)
+
+      result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{status: :pending, price: ^cost, id: id}} = result
+
+      Orders.subscribe_to_order(id)
+
+      {:ok, order} = result
+
+      assert to_purchase ==
+               Enum.group_by(order.tickets, & &1.ticket_type.id)
+               |> Enum.into(%{}, fn {tt, tickets} -> {tt, length(tickets)} end)
+
+      assert Enum.all?(order.tickets, fn %{order_id: order_id} -> order_id == order.id end)
+      assert cost == Enum.map(order.tickets, & &1.price) |> Enum.sum()
+
+      assert_receive {:tickets_updated, _}
     end
 
-    # test "create_ticket/1 with invalid data returns error changeset" do
-    #   assert {:error, %Ecto.Changeset{}} = Orders.create_ticket(@invalid_attrs)
-    # end
+    test "reserve_tickets/3 fails if reserving too many tickets" do
+      ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
+      to_purchase = Map.put(%{}, ticket_type.id, 43)
 
-    test "update_ticket/2 with valid data updates the ticket" do
-      ticket = ticket_fixture()
-      update_attrs = %{}
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert {:ok, %Ticket{} = _ticket} = Orders.update_ticket(ticket, update_attrs)
+      assert msg =~ "not enough tickets"
     end
 
-    # test "update_ticket/2 with invalid data returns error changeset" do
-    #   ticket = ticket_fixture()
-    #   assert {:error, %Ecto.Changeset{}} = Orders.update_ticket(ticket, @invalid_attrs)
-    #   assert ticket == Orders.get_ticket!(ticket.id)
-    # end
+    test "reserve_tickets/3 fails if reserving tickets to wrong event" do
+      ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
+      invalid_ticket_type = ticket_type_fixture()
+      to_purchase = Map.put(%{}, ticket_type.id, 2) |> Map.put(invalid_ticket_type.id, 1)
 
-    test "delete_ticket/1 deletes the ticket" do
-      ticket = ticket_fixture()
-      assert {:ok, %Ticket{}} = Orders.delete_ticket(ticket)
-      assert_raise Ecto.NoResultsError, fn -> Orders.get_ticket!(ticket.id) end
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert msg =~ "not enough tickets"
     end
 
-    test "change_ticket/1 returns a ticket changeset" do
-      ticket = ticket_fixture()
-      assert %Ecto.Changeset{} = Orders.change_ticket(ticket)
+    test "maybe_cancel_reservation/1" do
+      # TODO
     end
   end
 end

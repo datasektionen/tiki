@@ -9,7 +9,7 @@ defmodule Tiki.Checkouts.StripeCheckout do
     field :status, :string
 
     belongs_to :user, Tiki.Accounts.User
-    belongs_to :order, Tiki.Orders.Order
+    belongs_to :order, Tiki.Orders.Order, type: :binary_id
 
     timestamps()
   end

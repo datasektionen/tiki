@@ -137,7 +137,7 @@ defmodule TikiWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="mt-6 space-y-4 bg-white">
+      <div class="bg-background mt-6 space-y-4">
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
           <%= render_slot(action, f) %>
@@ -155,7 +155,7 @@ defmodule TikiWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class="text-foreground block text-sm font-semibold leading-6">
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -221,10 +221,10 @@ defmodule TikiWeb.CoreComponents do
   def list(assigns) do
     ~H"""
     <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100">
+      <dl class="divide-accent -my-4 divide-y">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="w-1/4 flex-none text-zinc-500"><%= item.title %></dt>
-          <dd class="text-zinc-700"><%= render_slot(item) %></dd>
+          <dt class="text-muted-foreground w-1/4 flex-none"><%= item.title %></dt>
+          <dd class="text-foreground"><%= render_slot(item) %></dd>
         </div>
       </dl>
     </div>
@@ -243,12 +243,12 @@ defmodule TikiWeb.CoreComponents do
 
   def back(assigns) do
     ~H"""
-    <div class="mt-16">
+    <div>
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+        class="text-foreground text-sm font-semibold leading-6 hover:foreground/80"
       >
-        <.icon name="hero-arrow-left-solid" class="h-3 w-3" />
+        <span aria-hidden="true">&larr; </span>
         <%= render_slot(@inner_block) %>
       </.link>
     </div>
@@ -279,6 +279,70 @@ defmodule TikiWeb.CoreComponents do
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
     <span class={[@name, @class]} />
+    """
+  end
+
+  @doc """
+  Renders a payment method logo.
+
+  ## Examples
+
+      <.payment_method_logo name="paymentlogo-mastercard" />
+      <.payment_method_logo name="paymentlogo-visa" />
+      <.payment_method_logo name="paymentlogo-american-express" />
+      <.payment_method_logo name="swish" />
+
+
+  """
+  attr :name, :string, required: true
+  attr :class, :string, default: nil
+
+  def payment_method_logo(%{name: "paymentlogo-" <> _} = assigns) do
+    ~H"""
+    <span class={[@name, @class]} />
+    """
+  end
+
+  attr :id, :string, default: nil
+  attr :class, :string, default: nil
+
+  def spinner(assigns) do
+    ~H"""
+    <svg
+      id={@id}
+      class={["animate-spin", @class]}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+      </circle>
+      <path
+        class="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      >
+      </path>
+    </svg>
+    """
+  end
+
+  attr :data, :string, required: true
+  attr :size, :integer, default: 100
+  attr :rest, :global
+
+  def svg_qr(assigns) do
+    ~H"""
+    <div {@rest}>
+      <%= Phoenix.HTML.raw(
+        QRCodeEx.encode(@data)
+        |> QRCodeEx.svg(
+          color: "var(--color-foreground)",
+          viewbox: true,
+          background_color: :transparent
+        )
+      ) %>
+    </div>
     """
   end
 
