@@ -7,6 +7,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   alias Tiki.Events
   alias Tiki.Tickets
   alias Tiki.Orders
+  alias Tiki.Presence
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -96,7 +97,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
           <input
             type="text"
             name="code"
-            placeholder="Ange rabattkod"
+            placeholder={gettext("Promo code")}
             value={@promo_code}
             class="border-input bg-background ring-offset-background flex h-10 rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-offset-background focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2"
           />
@@ -124,10 +125,17 @@ defmodule TikiWeb.PurchaseLive.Tickets do
 
     if connected?(socket) do
       Orders.subscribe(event.id)
+      Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
     end
 
     {:ok,
-     assign(socket, event: event, promo_code: "", error: nil, ticket_types: AsyncResult.loading())
+     assign(socket,
+       event: event,
+       promo_code: "",
+       promo_codes: [],
+       error: nil,
+       ticket_types: AsyncResult.loading()
+     )
      |> start_async(:ticket_types, fn -> get_availible_ticket_types(event.id) end)}
   end
 
@@ -154,9 +162,8 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     end
   end
 
-  defp get_availible_ticket_types(event_id, promo_code \\ "") do
+  defp get_availible_ticket_types(event_id) do
     Tickets.get_availible_ticket_types(event_id)
-    |> Enum.filter(fn tt -> tt.promo_code == nil || tt.promo_code == promo_code end)
   end
 
   @impl Phoenix.LiveView
@@ -173,6 +180,22 @@ defmodule TikiWeb.PurchaseLive.Tickets do
         {tt.id, min(value, tt.available)}
       end
 
+    ticket_types =
+      ticket_types
+      |> Enum.filter(fn tt ->
+        tt.promo_code == nil || tt.promo_code in socket.assigns.promo_codes
+      end)
+      |> Enum.filter(fn tt -> tt.purchasable end)
+      |> Enum.sort(fn tt_a, tt_b ->
+        dawn_of_time = DateTime.from_unix!(0)
+
+        case DateTime.compare(tt_a.start_time || dawn_of_time, tt_b.start_time || dawn_of_time) do
+          :gt -> true
+          :lt -> false
+          :eq -> tt_a.price < tt_b.price
+        end
+      end)
+
     assign(socket, ticket_types: AsyncResult.ok(tts, ticket_types), counts: counts)
   end
 
@@ -185,6 +208,19 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   def handle_event("dec", %{"id" => id}, socket) do
     counts = Map.update(socket.assigns.counts, id, 0, &(&1 - 1))
     {:noreply, assign(socket, counts: counts)}
+  end
+
+  def handle_event("update_promo", %{"code" => code}, socket) do
+    {:noreply, assign(socket, promo_code: code)}
+  end
+
+  def handle_event("activate_promo", %{"code" => code}, socket) do
+    %{event: %{id: event_id}, promo_codes: codes} = socket.assigns
+    codes = [code | codes]
+
+    {:noreply,
+     assign(socket, promo_code: "", promo_codes: codes)
+     |> start_async(:ticket_types, fn -> get_availible_ticket_types(event_id) end)}
   end
 
   def handle_event("request-tickets", _params, socket) do
@@ -225,5 +261,14 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     else
       {:noreply, assign(socket, order: order)}
     end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info(
+        %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
+        %{assigns: %{online_count: count}} = socket
+      ) do
+    online_count = count + map_size(joins) - map_size(leaves)
+    {:noreply, assign(socket, :online_count, online_count)}
   end
 end

@@ -21,9 +21,17 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
       >
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+        <.input
+          field={@form[:default_form_id]}
+          type="select"
+          label={gettext("Default signup form")}
+          options={options_for_forms(@forms)}
+        />
         <.input field={@form[:event_date]} type="datetime-local" label={gettext("Event date")} />
+
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
         <.input field={@form[:image_url]} type="text" label={gettext("Image url")} />
+
         <:actions>
           <div class="flex flex-row gap-2">
             <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save event") %></.button>
@@ -44,10 +52,12 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   @impl true
   def update(%{event: event} = assigns, socket) do
     changeset = Events.change_event(event)
+    forms = Tiki.Forms.list_forms_for_event(event.id)
 
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:forms, forms)
      |> assign_form(changeset)}
   end
 
@@ -98,6 +108,10 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
+  end
+
+  defp options_for_forms(forms) do
+    Enum.map(forms, fn form -> {form.name, form.id} end)
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
