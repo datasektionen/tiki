@@ -22,7 +22,9 @@ defmodule Tiki.Tickets.TicketBatch do
   def changeset(ticket_batch, attrs) do
     ticket_batch
     |> cast(attrs, [:name, :min_size, :max_size, :event_id, :parent_batch_id])
-    |> validate_required([:name, :event_id])
+    |> validate_number(:max_size, greater_than_or_equal_to: 0)
+    |> validate_number(:min_size, greater_than_or_equal_to: 0)
+    |> validate_required([:name, :event_id, :max_size])
     |> validate_not_equal(:id, :parent_batch_id)
   end
 

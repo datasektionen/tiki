@@ -1,5 +1,5 @@
-defmodule TikiWeb.AdminLive.Ticket.BatchForm do
-  use TikiWeb, :live_view
+defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
+  use TikiWeb, :live_component
 
   alias Tiki.Tickets
   alias Tiki.Tickets.TicketBatch
@@ -9,13 +9,19 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
     ~H"""
     <div>
       <.header>
-        <%= @page_title %>
+        <%= title(@action) %>
         <:subtitle>
           <%= gettext("Manage a ticket batch for this event.") %>
         </:subtitle>
       </.header>
 
-      <.simple_form for={@form} id="batch-form" phx-change="validate" phx-submit="save">
+      <.simple_form
+        for={@form}
+        id="batch-form"
+        phx-change="validate"
+        phx-submit="save"
+        phx-target={@myself}
+      >
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:max_size]} type="number" label={gettext("Number of tickets")} />
         <.input
@@ -32,7 +38,8 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
               <%= gettext("Save batch") %>
             </.button>
             <.button
-              :if={@live_action == :edit}
+              :if={@action == :edit_batch}
+              phx-target={@myself}
               type="button"
               variant="destructive"
               phx-click="delete"
@@ -49,45 +56,12 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
   end
 
   @impl true
-  def mount(%{"id" => event_id} = params, _session, socket) do
-    event = Tiki.Events.get_event!(event_id, preload_ticket_types: true)
+  def update(assigns, socket) do
+    changeset = Tickets.change_ticket_batch(assigns.batch)
 
     {:ok,
-     assign(socket, event: event)
-     |> apply_action(socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :edit, %{"batch_id" => id}) do
-    batch = Tickets.get_ticket_batch!(id)
-
-    socket
-    |> assign(:page_title, gettext("Edit batch"))
-    |> assign(:batch, batch)
-    |> assign(:form, to_form(Tickets.change_ticket_batch(batch)))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-      {"Tickets", ~p"/admin/events/#{socket.assigns.event.id}/tickets"},
-      {"Edit batch",
-       ~p"/admin/events/#{socket.assigns.event.id}/tickets/batches/#{batch.id}/edit"}
-    ])
-  end
-
-  defp apply_action(socket, :new, _params) do
-    batch = %TicketBatch{}
-
-    socket
-    |> assign(:page_title, gettext("New batch"))
-    |> assign(:batch, batch)
-    |> assign(:form, to_form(Tickets.change_ticket_batch(batch)))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-      {"Tickets", ~p"/admin/events/#{socket.assigns.event.id}/tickets"},
-      {"New batch", ~p"/admin/events/#{socket.assigns.event.id}/tickets/batches/new"}
-    ])
+     assign(socket, form: to_form(changeset))
+     |> assign(assigns)}
   end
 
   @impl true
@@ -101,7 +75,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
   end
 
   def handle_event("save", %{"ticket_batch" => batch_params}, socket) do
-    save_batch(socket, socket.assigns.live_action, batch_params)
+    save_batch(socket, socket.assigns.action, batch_params)
   end
 
   def handle_event("delete", _, socket) do
@@ -113,7 +87,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
      |> push_navigate(to: return_path(socket.assigns.event))}
   end
 
-  defp save_batch(socket, :edit, batch_params) do
+  defp save_batch(socket, :edit_batch, batch_params) do
     case Tickets.update_ticket_batch(socket.assigns.batch, batch_params) do
       {:ok, _batch} ->
         {:noreply,
@@ -126,7 +100,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
     end
   end
 
-  defp save_batch(socket, :new, batch_params) do
+  defp save_batch(socket, :new_batch, batch_params) do
     batch_params = Map.put(batch_params, "event_id", socket.assigns.event.id)
 
     case Tickets.create_ticket_batch(batch_params) do
@@ -152,4 +126,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchForm do
       |> Enum.reject(fn {_, id} -> id == batch.id end)
 
   defp return_path(event), do: ~p"/admin/events/#{event}/tickets"
+
+  defp title(:edit_batch), do: gettext("Edit batch")
+  defp title(:new_batch), do: gettext("New batch")
 end

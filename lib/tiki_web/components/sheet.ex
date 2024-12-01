@@ -81,6 +81,8 @@ defmodule TikiWeb.Component.Sheet do
 
   attr :id, :string, required: true, doc: "The id of the sheet"
   attr :class, :string, default: nil
+  attr :show, :boolean, default: false
+  attr :on_cancel, JS, default: %JS{}
 
   attr :side, :string,
     default: "right",
@@ -93,8 +95,8 @@ defmodule TikiWeb.Component.Sheet do
   def sheet_content(assigns) do
     variant_class =
       case assigns.side do
-        "left" -> "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm"
-        "right" -> "inset-y-0 right-0 h-full w-3/4  border-l sm:max-w-sm"
+        "left" -> "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-xl"
+        "right" -> "inset-y-0 right-0 h-full w-3/4  border-l sm:max-w-xl"
         "top" -> "inset-x-0 top-0 border-b"
         "bottom" -> "inset-x-0 bottom-0 border-t"
       end
@@ -105,15 +107,17 @@ defmodule TikiWeb.Component.Sheet do
     <div
       class="sheet-content relative z-50"
       id={@id}
+      phx-mounted={@show && show_sheet(@id, @side)}
+      phx-remove={hide_sheet(@id, @side)}
       phx-show-sheet={show_sheet(@id, @side)}
       phx-hide-sheet={hide_sheet(@id, @side)}
     >
       <.sheet_overlay />
       <.focus_wrap
         id={"sheet-" <> @id}
-        phx-window-keydown={JS.exec("phx-hide-sheet", to: "#" <> @id)}
+        phx-window-keydown={JS.exec(@on_cancel, "phx-hide-sheet", to: "#" <> @id)}
         phx-key="escape"
-        phx-click-away={JS.exec("phx-hide-sheet", to: "#" <> @id)}
+        phx-click-away={JS.exec(@on_cancel, "phx-hide-sheet", to: "#" <> @id)}
         role="sheet"
         class={
           classes([
@@ -134,7 +138,7 @@ defmodule TikiWeb.Component.Sheet do
             <button
               type="button"
               class="ring-offset-background rounded-xs absolute top-4 right-4 opacity-70 transition-opacity hover:opacity-100 focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
-              phx-click={hide_sheet(@id, @side)}
+              phx-click={JS.exec(@on_cancel, "phx-hide-sheet", to: "#" <> @id)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
