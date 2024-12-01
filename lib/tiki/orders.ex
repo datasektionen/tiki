@@ -7,11 +7,10 @@ defmodule Tiki.Orders do
   alias Tiki.Tickets.TicketType
   alias Ecto.Multi
   alias Phoenix.PubSub
-  alias Tiki.Tickets.Ticket
+  alias Tiki.Orders.Order
+  alias Tiki.Orders.Ticket
   alias Tiki.Tickets
   alias Tiki.Repo
-
-  alias Tiki.Orders.Order
 
   @doc """
   Returns the list of order.
@@ -121,8 +120,6 @@ defmodule Tiki.Orders do
     Order.changeset(order, attrs)
   end
 
-  alias Tiki.Orders.Ticket
-
   @doc """
   Returns the list of ticket.
 
@@ -157,7 +154,14 @@ defmodule Tiki.Orders do
         join: tt in assoc(t, :ticket_type),
         join: o in assoc(t, :order),
         join: u in assoc(o, :user),
-        preload: [ticket_type: tt, order: {o, user: u}]
+        left_join: fr in assoc(t, :form_response),
+        left_join: fqr in assoc(fr, :question_responses),
+        left_join: q in assoc(fqr, :question),
+        preload: [
+          ticket_type: tt,
+          order: {o, user: u},
+          form_response: {fr, question_responses: {fqr, question: q}}
+        ]
 
     Repo.one!(query)
   end

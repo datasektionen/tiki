@@ -4,15 +4,17 @@ defmodule Tiki.Tickets.TicketType do
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "ticket_types" do
+    field :name, :string
     field :description, :string
     field :expire_time, :utc_datetime
-    field :name, :string
     field :price, :integer
     field :purchasable, :boolean, default: true
     field :release_time, :utc_datetime
     field :promo_code, :string
 
     belongs_to :ticket_batch, Tiki.Tickets.TicketBatch
+    belongs_to :form, Tiki.Forms.Form
+
     has_many :tickets, Tiki.Orders.Ticket
 
     timestamps()

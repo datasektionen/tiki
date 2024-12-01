@@ -5,6 +5,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   alias Tiki.Orders
 
   import TikiWeb.Component.Card
+  import TikiWeb.Component.Badge
 
   def mount(%{"id" => event_id}, _sesison, socket) do
     event = Events.get_event!(event_id)
@@ -27,7 +28,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
        {"Dashboard", ~p"/admin"},
        {"Events", ~p"/admin/events"},
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-       {"Besökare", ~p"/admin/events/#{socket.assigns.event.id}/attendees"}
+       {"Attendees", ~p"/admin/events/#{socket.assigns.event.id}/attendees"}
      ])}
   end
 
@@ -92,10 +93,10 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
               <%= @ticket.order.user.full_name %>
             </p>
           </.link>
-          <p class="ring-green-600/20 text-muted-foreground bg-accent/50 mt-0.5 inline-flex items-center gap-0.5 whitespace-nowrap rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset dark:ring-green-400/20">
+          <.badge variant="outline">
             <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
             <span class="text-xs"><%= @ticket.ticket_type.name %></span>
-          </p>
+          </.badge>
         </div>
         <div class="text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5">
           <p class="truncate"><%= @ticket.order.user.email %></p>

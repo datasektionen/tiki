@@ -70,7 +70,10 @@ defmodule Tiki.OrdersTest do
     end
 
     test "get_ticket!/1 returns the ticket with given id" do
-      ticket = ticket_fixture() |> Tiki.Repo.preload([:ticket_type, order: [:user]])
+      ticket =
+        ticket_fixture()
+        |> Tiki.Repo.preload([:ticket_type, order: [:user], form_response: [:question_responses]])
+
       assert Orders.get_ticket!(ticket.id) == ticket
     end
   end

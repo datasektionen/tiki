@@ -10,8 +10,12 @@ defmodule Tiki.Events.Event do
     field :location, :string
     field :image_url, :string
 
+    has_many :forms, Tiki.Forms.Form
+    has_one :default_form, Tiki.Forms.Form
+
     has_many :ticket_batches, Tiki.Tickets.TicketBatch
-    belongs_to :team, Tiki.Accounts.Team
+
+    belongs_to :team, Tiki.Teams.Team
 
     timestamps()
   end

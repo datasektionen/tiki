@@ -172,15 +172,6 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             <div id="payment-message" class="hidden"></div>
           </form>
         </div>
-
-        <div :if={@order.status == :paid}>
-          <.header class="border-none">
-            <%= gettext("Thank you for your purchase!") %>
-          </.header>
-          <p class="text-sm">
-            <%= gettext("Your order has been paid, you will receive an email with the receipt.") %>
-          </p>
-        </div>
       </.dialog>
     </div>
     """
