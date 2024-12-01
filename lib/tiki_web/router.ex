@@ -58,8 +58,14 @@ defmodule TikiWeb.Router do
     get "/close", EmbeddedController, :close
 
     live_session :embedded,
-      layout: {TikiWeb.Layouts, :embedded} do
-      live "/events/:id/purchase", EmbeddedLive.Event, :purchase
+      layout: {TikiWeb.Layouts, :embedded},
+      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
+      live "/events/:event_id/tickets", PurchaseLive.Tickets, :embedded_tickets
+      live "/events/:event_id/purchase/:order_id", PurchaseLive.Tickets, :embedded_purchase
+
+      live "/orders/:id", OrderLive.Show, :embedded_show
+      live "/tickets/:id/form", OrderLive.TicketForm, :embedded_form
+      live "/tickets/:id", OrderLive.Ticket, :embedded_show
     end
   end
 

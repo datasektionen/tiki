@@ -7,7 +7,7 @@ defmodule TikiWeb.OrderLive.Ticket do
   def render(assigns) do
     ~H"""
     <div class="space-y-8">
-      <.back navigate={~p"/orders/#{@ticket.order_id}"}>
+      <.back navigate={@return_to}>
         <%= gettext("Back to order") %>
       </.back>
 
@@ -57,7 +57,7 @@ defmodule TikiWeb.OrderLive.Ticket do
         </dl>
       </div>
 
-      <.link navigate={~p"/tickets/#{@ticket}/form"}>
+      <.link navigate={@form_url}>
         <.button variant="secondary">
           <%= gettext("Edit details") %>
         </.button>
@@ -67,7 +67,7 @@ defmodule TikiWeb.OrderLive.Ticket do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => ticket_id}, _session, socket) do
+  def mount(%{"id" => ticket_id} = params, session, socket) do
     # TODO: fix this preloading nonsense
     ticket =
       Orders.get_ticket!(ticket_id)
@@ -76,10 +76,37 @@ defmodule TikiWeb.OrderLive.Ticket do
         ticket_type: [ticket_batch: :event]
       )
 
+    order_url =
+      case socket.assigns.live_action do
+        :embedded_show -> ~p"/embed/orders/#{ticket.order_id}"
+        :show -> ~p"/orders/#{ticket.order_id}"
+      end
+
     if ticket.form_response do
-      {:ok, assign(socket, ticket: ticket)}
+      form_url =
+        case socket.assigns.live_action do
+          :embedded_show ->
+            ~p"/embed/tickets/#{ticket}/form?return_to=#{~p"/embed/tickets/#{ticket}"}"
+
+          :show ->
+            ~p"/tickets/#{ticket}/form?return_to=#{~p"/tickets/#{ticket}"}"
+        end
+
+      {:ok,
+       assign(socket, ticket: ticket)
+       |> assign(form_url: form_url)
+       |> assign(return_to: order_url)}
     else
-      {:ok, push_navigate(socket, to: ~p"/tickets/#{ticket}/form")}
+      form_url =
+        case socket.assigns.live_action do
+          :embedded_show ->
+            ~p"/embed/tickets/#{ticket}/form?return_to=#{~p"/embed/orders/#{ticket.order_id}"}"
+
+          :show ->
+            ~p"/tickets/#{ticket}/form?return_to=#{~p"/orders/#{ticket.order_id}"}"
+        end
+
+      {:ok, push_navigate(socket, to: form_url)}
     end
   end
 end

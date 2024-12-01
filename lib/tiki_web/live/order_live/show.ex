@@ -46,9 +46,9 @@ defmodule TikiWeb.OrderLive.Show do
                 <.svg_qr data={ticket.id} />
               </div>
               <div class="ml-6">
-                <.link navigate={~p"/tickets/#{ticket}"}>
+                <.link navigate={ticket_path(ticket, @live_action)}>
                   <h3 class="text-foreground text-base font-medium">
-                    <%= ticket.ticket_type.name %>
+                    <%= ticket.ticket_type.name %> <span aria-hidden="true"> &rarr;</span>
                   </h3>
                 </.link>
                 <p class="text-foreground mt-2 text-sm font-medium">
@@ -93,7 +93,7 @@ defmodule TikiWeb.OrderLive.Show do
               <%= gettext("You need to fill in attendance information for this ticket") %>
             </p>
 
-            <.link navigate={~p"/tickets/#{ticket.id}/form"}>
+            <.link navigate={ticket_path(ticket, @live_action)}>
               <.button variant="secondary">
                 <%= gettext("Fill in") %>
               </.button>
@@ -243,5 +243,12 @@ defmodule TikiWeb.OrderLive.Show do
       </div>
     </dd>
     """
+  end
+
+  defp ticket_path(ticket, live_action) do
+    case live_action do
+      :embedded_show -> ~p"/embed/tickets/#{ticket}?return_to=/embed/orders/#{ticket.order_id}"
+      :show -> ~p"/tickets/#{ticket}?return_to=/orders/#{ticket.order_id}"
+    end
   end
 end

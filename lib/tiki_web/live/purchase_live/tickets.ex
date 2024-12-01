@@ -11,7 +11,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div>
+    <div :if={@live_action != :embedded_purchase}>
       <.header>
         <%= @event.name %>
         <:subtitle>
@@ -106,20 +106,36 @@ defmodule TikiWeb.PurchaseLive.Tickets do
           <span>Fortsätt</span>
         </.button>
       </div>
-      <.live_component
+
+      <.dialog
         :if={@live_action == :purchase}
-        module={TikiWeb.PurchaseLive.PurchaseComponent}
-        id={@event.id}
-        event={@event}
-        order={@order}
-        patch={~p"/events/#{@event}"}
-      />
+        id="purchase-modal"
+        show
+        on_cancel={JS.push("cancel", target: "#purchase-component")}
+        safe
+      >
+        <.live_component
+          module={TikiWeb.PurchaseLive.PurchaseComponent}
+          id={@event.id}
+          event={@event}
+          order={@order}
+          patch={~p"/events/#{@event}"}
+        />
+      </.dialog>
     </div>
+
+    <.live_component
+      :if={@live_action == :embedded_purchase}
+      module={TikiWeb.PurchaseLive.PurchaseComponent}
+      id={@event.id}
+      event={@event}
+      order={@order}
+    />
     """
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"event_id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, session, socket) do
     event = Events.get_event!(event_id)
 
     if connected?(socket) do
@@ -132,11 +148,12 @@ defmodule TikiWeb.PurchaseLive.Tickets do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(params, _uri, socket) do
+  def handle_params(params, uri, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :tickets, _params), do: socket
+  defp apply_action(socket, action, _params) when action in [:tickets, :embedded_tickets],
+    do: socket
 
   defp apply_action(socket, :purchase, %{"order_id" => order_id}) do
     order = Orders.get_order!(order_id)
@@ -148,6 +165,22 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     case order.status do
       :paid ->
         push_navigate(socket, to: ~p"/orders/#{order.id}")
+
+      _ ->
+        assign(socket, order: order)
+    end
+  end
+
+  defp apply_action(socket, :embedded_purchase, %{"order_id" => order_id}) do
+    order = Orders.get_order!(order_id)
+
+    if connected?(socket) do
+      Orders.subscribe_to_order(order_id)
+    end
+
+    case order.status do
+      :paid ->
+        push_navigate(socket, to: ~p"/embed/orders/#{order.id}")
 
       _ ->
         assign(socket, order: order)
@@ -201,7 +234,13 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     %{event: %{id: event_id}} = socket.assigns
 
     with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase, user_id) do
-      {:noreply, push_patch(socket, to: ~p"/events/#{event_id}/purchase/#{order}")}
+      to =
+        case socket.assigns.live_action do
+          :embedded_tickets -> ~p"/embed/events/#{event_id}/purchase/#{order}"
+          :tickets -> ~p"/events/#{event_id}/purchase/#{order}"
+        end
+
+      {:noreply, push_patch(socket, to: to)}
     else
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}
@@ -219,9 +258,15 @@ defmodule TikiWeb.PurchaseLive.Tickets do
 
   def handle_info({:paid, order}, socket) do
     if order.status == :paid do
+      to =
+        case socket.assigns.live_action do
+          :embedded_purchase -> ~p"/embed/orders/#{order.id}"
+          :purchase -> ~p"/orders/#{order.id}"
+        end
+
       {:noreply,
        put_flash(socket, :info, gettext("Order paid!"))
-       |> push_navigate(to: ~p"/orders/#{order.id}")}
+       |> push_navigate(to: to)}
     else
       {:noreply, assign(socket, order: order)}
     end

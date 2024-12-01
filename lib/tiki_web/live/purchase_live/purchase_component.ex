@@ -37,142 +37,140 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <div>
-      <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)} safe>
-        <div :if={@order.status == :cancelled}>
-          <%= gettext("Ya messed up, order is cancelled") %>
+    <div id="purchase-component">
+      <div :if={@order.status == :cancelled}>
+        <%= gettext("Ya messed up, order is cancelled") %>
+      </div>
+
+      <div :if={@order.status == :pending}>
+        <div>
+          <.header class="border-none">
+            <%= gettext("Payment") %>
+            <:subtitle>
+              <%= gettext(
+                "Purchase tickets for %{event}. You have %{count} minutes to complete your order.",
+                event: @event.name,
+                count: 2
+              ) %>
+            </:subtitle>
+          </.header>
+
+          <table class="w-full border-collapse border-spacing-0">
+            <tbody class="text-sm">
+              <tr :for={{_id, %{ticket_type: tt, count: count}} <- @order.tickets} class="border-t">
+                <th class="py-1 pr-2 text-left"><%= tt.name %></th>
+                <td class="whitespace-nowrap py-1 pr-2 text-right">
+                  <%= "#{count} x #{tt.price} kr" %>
+                </td>
+                <td class="whitespace-nowrap py-1 text-right">
+                  <%= tt.price * count %> kr
+                </td>
+              </tr>
+              <tr class="border-zink-400 border-t-2">
+                <th></th>
+                <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
+                  <%= gettext("Total") %>
+                </td>
+                <td class="whitespace-nowrap py-1 text-right">
+                  <%= @order.price %> kr
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div :if={@order.status == :pending}>
-          <div>
-            <.header class="border-none">
-              <%= gettext("Payment") %>
-              <:subtitle>
-                <%= gettext(
-                  "Purchase tickets for %{event}. You have %{count} minutes to complete your order.",
-                  event: @event.name,
-                  count: 2
-                ) %>
-              </:subtitle>
-            </.header>
-
-            <table class="w-full border-collapse border-spacing-0">
-              <tbody class="text-sm">
-                <tr :for={{_id, %{ticket_type: tt, count: count}} <- @order.tickets} class="border-t">
-                  <th class="py-1 pr-2 text-left"><%= tt.name %></th>
-                  <td class="whitespace-nowrap py-1 pr-2 text-right">
-                    <%= "#{count} x #{tt.price} kr" %>
-                  </td>
-                  <td class="whitespace-nowrap py-1 text-right">
-                    <%= tt.price * count %> kr
-                  </td>
-                </tr>
-                <tr class="border-zink-400 border-t-2">
-                  <th></th>
-                  <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
-                    <%= gettext("Total") %>
-                  </td>
-                  <td class="whitespace-nowrap py-1 text-right">
-                    <%= @order.price %> kr
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div :if={!(@order.swish_checkout || @order.stripe_checkout)}>
-            <.form
-              for={@form}
-              phx-target={@myself}
-              phx-change="validate"
-              phx-submit="submit"
-              class="flex w-full flex-col gap-4"
-            >
-              <div>
-                <.label for={@form[:payment_method].id}>
-                  <%= gettext("Payment method") %>
-                </.label>
-                <.radio_group
-                  field={@form[:payment_method]}
-                  class="text-bold mt-2 flex flex-row gap-10 text-sm"
-                >
-                  <:radio value="credit_card" class="flex flex-row-reverse items-center gap-3">
-                    <%= gettext("Credit card") %>
-                  </:radio>
-                  <:radio value="swish" class="flex flex-row-reverse items-center gap-3">
-                    <%= gettext("Swish") %>
-                  </:radio>
-
-                  <:radio value="" class="hidden"></:radio>
-                </.radio_group>
-              </div>
-              <.input
-                field={@form[:name]}
-                label={gettext("Name")}
-                placeholder={gettext("Your name")}
-                phx-debounce="300"
-              />
-              <.input
-                field={@form[:email]}
-                label={gettext("Email")}
-                placeholder={gettext("Your email")}
-                phx-debounce="blur-sm"
-              />
-
-              <.input
-                type="checkbox"
-                field={@form[:terms_of_service]}
-                label={
-                  gettext(
-                    "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
-                  )
-                }
-              />
-
-              <.button type="submit">
-                <%= gettext("Continue") %>
-              </.button>
-            </.form>
-          </div>
-
-          <div :if={@order.swish_checkout} class="flex flex-col">
-            <.label>
-              <%= gettext("Pay using Swish") %>
-            </.label>
-            <div class="max-w-96 w-full self-center">
-              <%= raw(Swish.get_svg_qr_code!(@order.swish_checkout.token)) %>
-            </div>
-
-            <.link href={{:swish, "//paymentrequest?token=#{@order.swish_checkout.token}"}}>
-              <.button class="w-full" variant="outline">
-                <%= gettext("Open swish on this device") %>
-              </.button>
-            </.link>
-          </div>
-
-          <form
-            :if={@order.stripe_checkout}
-            id="payment-form"
-            phx-hook="InitCheckout"
-            data-secret={@order.stripe_checkout.client_secret}
-            class="flex flex-col gap-4"
+        <div :if={!(@order.swish_checkout || @order.stripe_checkout)}>
+          <.form
+            for={@form}
+            phx-target={@myself}
+            phx-change="validate"
+            phx-submit="submit"
+            class="flex w-full flex-col gap-4"
           >
-            <div id="link-authentication-element">
-              <!--Stripe.js injects the Link Authentication Element-->
+            <div>
+              <.label for={@form[:payment_method].id}>
+                <%= gettext("Payment method") %>
+              </.label>
+              <.radio_group
+                field={@form[:payment_method]}
+                class="text-bold mt-2 flex flex-row gap-10 text-sm"
+              >
+                <:radio value="credit_card" class="flex flex-row-reverse items-center gap-3">
+                  <%= gettext("Credit card") %>
+                </:radio>
+                <:radio value="swish" class="flex flex-row-reverse items-center gap-3">
+                  <%= gettext("Swish") %>
+                </:radio>
+
+                <:radio value="" class="hidden"></:radio>
+              </.radio_group>
             </div>
-            <div id="payment-element">
-              <!--Stripe.js injects the Payment Element-->
-            </div>
-            <.button id="submit" phx-click={JS.show(to: "#spinner")} class="space-x-2">
-              <.spinner class="size-4 hidden" id="spinner" />
-              <span id="button-text">
-                Betala <%= @order.price %> kr
-              </span>
+            <.input
+              field={@form[:name]}
+              label={gettext("Name")}
+              placeholder={gettext("Your name")}
+              phx-debounce="300"
+            />
+            <.input
+              field={@form[:email]}
+              label={gettext("Email")}
+              placeholder={gettext("Your email")}
+              phx-debounce="blur-sm"
+            />
+
+            <.input
+              type="checkbox"
+              field={@form[:terms_of_service]}
+              label={
+                gettext(
+                  "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
+                )
+              }
+            />
+
+            <.button type="submit">
+              <%= gettext("Continue") %>
             </.button>
-            <div id="payment-message" class="hidden"></div>
-          </form>
+          </.form>
         </div>
-      </.dialog>
+
+        <div :if={@order.swish_checkout} class="flex flex-col">
+          <.label>
+            <%= gettext("Pay using Swish") %>
+          </.label>
+          <div class="max-w-96 w-full self-center">
+            <%= raw(Swish.get_svg_qr_code!(@order.swish_checkout.token)) %>
+          </div>
+
+          <.link href={{:swish, "//paymentrequest?token=#{@order.swish_checkout.token}"}}>
+            <.button class="w-full" variant="outline">
+              <%= gettext("Open swish on this device") %>
+            </.button>
+          </.link>
+        </div>
+
+        <form
+          :if={@order.stripe_checkout}
+          id="payment-form"
+          phx-hook="InitCheckout"
+          data-secret={@order.stripe_checkout.client_secret}
+          class="flex flex-col gap-4"
+        >
+          <div id="link-authentication-element">
+            <!--Stripe.js injects the Link Authentication Element-->
+          </div>
+          <div id="payment-element">
+            <!--Stripe.js injects the Payment Element-->
+          </div>
+          <.button id="submit" phx-click={JS.show(to: "#spinner")} class="space-x-2">
+            <.spinner class="size-4 hidden" id="spinner" />
+            <span id="button-text">
+              Betala <%= @order.price %> kr
+            </span>
+          </.button>
+          <div id="payment-message" class="hidden"></div>
+        </form>
+      </div>
     </div>
     """
   end

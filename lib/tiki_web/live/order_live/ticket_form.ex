@@ -8,8 +8,8 @@ defmodule TikiWeb.OrderLive.TicketForm do
   def render(assigns) do
     ~H"""
     <div>
-      <.back navigate={~p"/orders/#{@ticket.order_id}"}>
-        <%= gettext("Back to order") %>
+      <.back navigate={@return_to}>
+        <%= gettext("Back") %>
       </.back>
     </div>
     <div class="mt-4 space-y-8">
@@ -39,7 +39,7 @@ defmodule TikiWeb.OrderLive.TicketForm do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => id}, _session, socket) do
+  def mount(%{"id" => id} = params, _session, socket) do
     ticket =
       Orders.get_ticket!(id)
 
@@ -53,6 +53,7 @@ defmodule TikiWeb.OrderLive.TicketForm do
 
     {:ok,
      assign(socket, :ticket, ticket)
+     |> assign(return_to: params["return_to"] || ~p"/orders/#{ticket.order_id}")
      |> assign(:form, form)
      |> assign(:response, ticket.form_response)
      |> assign_form(changeset)}
@@ -80,7 +81,7 @@ defmodule TikiWeb.OrderLive.TicketForm do
       {:ok, _response} ->
         {:noreply,
          put_flash(socket, :info, gettext("Saved response"))
-         |> push_navigate(to: ~p"/orders/#{socket.assigns.ticket.order_id}")}
+         |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -94,7 +95,7 @@ defmodule TikiWeb.OrderLive.TicketForm do
       {:ok, _response} ->
         {:noreply,
          put_flash(socket, :info, gettext("Saved response"))
-         |> push_navigate(to: ~p"/orders/#{socket.assigns.ticket.order_id}")}
+         |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
