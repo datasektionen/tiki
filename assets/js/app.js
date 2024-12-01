@@ -89,6 +89,11 @@ window.addEventListener("phx:js-exec", ({ detail }) => {
   });
 });
 
+window.addEventListener("embedded:close", (event) => {
+  event.preventDefault();
+  parent.postMessage({ type: "close" }, "*");
+});
+
 // Set dark/light mode
 function applyColorMode(mode) {
   document.documentElement.classList.toggle("dark", mode === "dark");
