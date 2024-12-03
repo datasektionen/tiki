@@ -130,7 +130,16 @@ defmodule Tiki.Events do
     Event.changeset(event, attrs)
   end
 
-  def get_ticket_types(event_id) do
+  @doc """
+  Returns a list of all ticket types for an event.
+
+  ## Examples
+
+      iex> get_event_ticket_types(123)
+      [%TicketType{}, ...]
+
+  """
+  def get_event_ticket_types(event_id) do
     query =
       from e in Event,
         join: tb in assoc(e, :ticket_batches),

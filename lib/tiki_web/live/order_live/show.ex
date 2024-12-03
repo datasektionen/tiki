@@ -184,7 +184,7 @@ defmodule TikiWeb.OrderLive.Show do
        payment_method =
          cond do
            order.stripe_checkout ->
-             Stripe.PaymentMethod.retrieve(order.stripe_checkout.payment_method_id)
+             Tiki.Checkouts.retrive_stripe_payment_method(order.stripe_checkout.payment_method_id)
 
            order.swish_checkout ->
              Tiki.Swish.get_payment_request(order.swish_checkout.swish_id)

@@ -53,6 +53,9 @@ defmodule Tiki.TicketsTest do
                Tickets.update_ticket_batch(ticket_batch, @invalid_attrs)
 
       assert ticket_batch == Tickets.get_ticket_batch!(ticket_batch.id)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Tickets.update_ticket_batch(ticket_batch, %{:parent_batch_id => ticket_batch.id})
     end
 
     test "delete_ticket_batch/1 deletes the ticket_batch" do

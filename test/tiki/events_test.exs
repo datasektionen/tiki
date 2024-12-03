@@ -15,9 +15,36 @@ defmodule Tiki.EventsTest do
       assert Events.list_events() == [event]
     end
 
+    test "list_team_events/1 returns all events for a team" do
+      team = Tiki.TeamsFixtures.team_fixture()
+      event = event_fixture(%{team_id: team.id})
+      assert Events.list_team_events(team.id) == [event]
+    end
+
     test "get_event!/1 returns the event with given id" do
       event = event_fixture()
       assert Events.get_event!(event.id) == event
+    end
+
+    test "get_event!/1 can preload tickt types" do
+      event = event_fixture() |> Tiki.Repo.preload(ticket_batches: [:ticket_types])
+      assert Events.get_event!(event.id, preload_ticket_types: true) == event
+    end
+
+    test "get_event_ticket_types/1 returns a list of ticket types for an event" do
+      event = event_fixture()
+      assert Events.get_event_ticket_types(event.id) == []
+
+      ticket_types =
+        Enum.flat_map(1..3, fn _ ->
+          batch = Tiki.TicketsFixtures.ticket_batch_fixture(%{event_id: event.id})
+
+          Enum.map(1..3, fn _ ->
+            Tiki.TicketsFixtures.ticket_type_fixture(%{ticket_batch_id: batch.id})
+          end)
+        end)
+
+      assert Events.get_event_ticket_types(event.id) == ticket_types
     end
 
     test "create_event/1 with valid data creates a event" do

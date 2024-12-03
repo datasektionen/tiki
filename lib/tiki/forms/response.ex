@@ -14,7 +14,7 @@ defmodule Tiki.Forms.Response do
   @doc false
   def changeset(response, attrs) do
     response
-    |> cast(attrs, [:form_id, :ticket_id, :question_id])
-    |> validate_required([])
+    |> cast(attrs, [:form_id, :ticket_id])
+    |> validate_required([:form_id, :ticket_id])
   end
 end

@@ -79,3 +79,4 @@ jobs:
 
       - run: mix compile
       - run: mix test
+      - run: mix coveralls.github

@@ -228,7 +228,7 @@ defmodule Tiki.Forms do
         Multi.new()
         |> Multi.one(:form, from(f in Form, where: f.id == ^form_id))
         |> Multi.insert(:response, fn %{form: form} ->
-          %Response{form_id: form.id, ticket_id: ticket_id}
+          Response.changeset(%Response{}, %{form_id: form.id, ticket_id: ticket_id})
         end)
         |> Multi.merge(fn %{response: response} ->
           Enum.reduce(data, Multi.new(), fn {key, val}, acc ->

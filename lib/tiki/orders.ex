@@ -239,8 +239,11 @@ defmodule Tiki.Orders do
           Map.keys(ticket_types)
           |> Enum.all?(fn tt -> Enum.any?(available, &(&1.ticket_type.id == tt)) end)
 
+        chosen =
+          Enum.filter(available, fn tt -> Map.has_key?(ticket_types, tt.ticket_type.id) end)
+
         with true <- valid_for_event?,
-             true <- Enum.all?(available, &(&1.available >= 0)) do
+             true <- Enum.all?(chosen, &(&1.available >= 0)) do
           {:ok, :ok}
         else
           _ -> {:error, "not enough tickets available"}

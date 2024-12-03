@@ -8,7 +8,9 @@
 import Config
 
 config :tiki,
-  ecto_repos: [Tiki.Repo]
+  ecto_repos: [Tiki.Repo],
+  stripe_module: Stripe,
+  swish_module: Tiki.Swish
 
 config :tiki, Tiki.Repo,
   migration_timestamps: [

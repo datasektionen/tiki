@@ -20,15 +20,39 @@ defmodule Tiki.TeamsTest do
       assert Teams.get_team!(team.id) == team
     end
 
-    test "create_team/1 with valid data creates a team" do
+    test "create_team/2 with valid data creates a team" do
       valid_attrs = %{name: "some name"}
 
       assert {:ok, %Team{} = team} = Teams.create_team(valid_attrs)
       assert team.name == "some name"
     end
 
-    test "create_team/1 with invalid data returns error changeset" do
+    test "create_team/2 with a list of members creates a team and memberships" do
+      valid_attrs = %{name: "some name"}
+      user_ids = Enum.map(1..3, fn _ -> Tiki.AccountsFixtures.user_fixture().id end)
+
+      assert {:ok, %Team{} = team} = Teams.create_team(valid_attrs, members: user_ids)
+      assert team.name == "some name"
+
+      team = Tiki.Repo.preload(team, members: [:user])
+
+      assert length(team.members) == 3
+
+      assert Enum.all?(team.members, fn %{user_id: user_id} ->
+               Enum.member?(user_ids, user_id)
+             end)
+    end
+
+    test "create_team/2 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Teams.create_team(@invalid_attrs)
+    end
+
+    test "create_team/2 with invalid members returns error changeset" do
+      valid_attrs = %{name: "some name"}
+
+      user_ids = [12_342_342_134]
+
+      assert {:error, %Ecto.Changeset{}} = Teams.create_team(valid_attrs, members: user_ids)
     end
 
     test "update_team/2 with valid data updates the team" do
@@ -111,6 +135,20 @@ defmodule Tiki.TeamsTest do
     test "change_membership/1 returns a membership changeset" do
       membership = membership_fixture()
       assert %Ecto.Changeset{} = Teams.change_membership(membership)
+    end
+
+    test "get_teams_for_user/1 returns the teams for a user" do
+      user = Tiki.AccountsFixtures.user_fixture()
+      {:ok, team} = Teams.create_team(%{name: "some name"}, members: [user.id])
+
+      assert Teams.get_teams_for_user(user.id) == [team]
+    end
+
+    test "get_members_for_team/1 returns the members for a team" do
+      user = Tiki.AccountsFixtures.user_fixture()
+      {:ok, team} = Teams.create_team(%{name: "some name"}, members: [user.id])
+
+      assert Teams.get_members_for_team(team.id) |> Enum.map(& &1.user) == [user]
     end
   end
 end

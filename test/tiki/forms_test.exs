@@ -222,6 +222,12 @@ defmodule Tiki.FormsTest do
             name: "Quesiton name",
             type: "text",
             required: true
+          },
+          %{
+            name: "Quesiton name",
+            type: "multi_select",
+            options: ["option 1", "option 2"],
+            required: true
           }
         ]
       }
@@ -233,15 +239,17 @@ defmodule Tiki.FormsTest do
       response = %Tiki.Forms.Response{
         form_id: form.id,
         question_responses: [
-          %{question_id: Enum.at(question_ids, 0), answer: "Answer 1"}
+          %{question_id: Enum.at(question_ids, 0), answer: "Answer 1"},
+          %{question_id: Enum.at(question_ids, 1), answer: ["option 1", "option 2"]}
         ]
       }
 
       assert {:ok, %Tiki.Forms.Response{} = response} =
                Tiki.Forms.submit_response(form.id, ticket.id, response)
 
-      assert Enum.count(response.question_responses) == 1
+      assert Enum.count(response.question_responses) == 2
       assert Enum.at(response.question_responses, 0).answer == "Answer 1"
+      assert Enum.at(response.question_responses, 1).multi_answer == ["option 1", "option 2"]
       assert response.ticket_id == ticket.id
       assert response.form_id == form.id
     end
@@ -328,6 +336,25 @@ defmodule Tiki.FormsTest do
 
       assert {:error, %Ecto.Changeset{valid?: false}} =
                Tiki.Forms.update_form_response(response, response_attrs)
+    end
+
+    test "Tiki.Forms.QuestionResponse implements Phoenix.HTML.Safe" do
+      assert "Answer 1" ==
+               Phoenix.HTML.Safe.to_iodata(%Tiki.Forms.QuestionResponse{
+                 question_id: 1,
+                 answer: "Answer 1"
+               })
+
+      assert "Answer 1, Answer 2" ==
+               Phoenix.HTML.Safe.to_iodata(%Tiki.Forms.QuestionResponse{
+                 question_id: 1,
+                 multi_answer: ["Answer 1", "Answer 2"]
+               })
+
+      assert "" ==
+               Phoenix.HTML.Safe.to_iodata(%Tiki.Forms.QuestionResponse{
+                 question_id: 1
+               })
     end
   end
 end
