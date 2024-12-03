@@ -1,6 +1,6 @@
 defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   defmodule Response do
-    use Ecto.Schema
+    use Tiki.Schema
     import Ecto.Changeset
     use Gettext, backend: TikiWeb.Gettext
 
@@ -235,7 +235,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   end
 
   def handle_event("cancel", _params, socket) do
-    Orders.maybe_cancel_reservation(socket.assigns.order.id)
+    Orders.maybe_cancel_order(socket.assigns.order.id)
     {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}/purchase")}
   end
 

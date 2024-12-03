@@ -1,5 +1,5 @@
 defmodule Tiki.Tickets.TicketType do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}

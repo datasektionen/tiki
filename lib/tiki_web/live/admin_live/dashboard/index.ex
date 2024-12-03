@@ -36,7 +36,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
     events = Events.list_team_events(team.id)
 
     recent_tickets =
-      Orders.list_team_orders(team.id, limit: 10)
+      Orders.list_team_orders(team.id, limit: 10, status: [:paid])
       |> Enum.flat_map(fn order ->
         Enum.map(order.tickets, fn ticket ->
           Map.put(ticket, :order, order)

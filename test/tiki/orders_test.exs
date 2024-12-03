@@ -16,6 +16,131 @@ defmodule Tiki.OrdersTest do
       assert Orders.list_orders() == [order]
     end
 
+    test "list_team_orders/1 returns all orders for a given team" do
+      order = order_fixture() |> Tiki.Repo.preload([:event | @standard_preloads])
+
+      assert Orders.list_team_orders(order.event.team_id) == [order]
+    end
+
+    test "list_team_orders/1 returns works for multiple orders" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      orders =
+        Enum.map(1..10, fn _ ->
+          user = Tiki.AccountsFixtures.user_fixture()
+
+          {:ok, order} =
+            Tiki.Orders.create_order(%{user_id: user.id, event_id: event.id, price: 100})
+
+          order
+        end)
+        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Tiki.Repo.preload([:event | @standard_preloads])
+
+      assert Orders.list_team_orders(event.team_id) == orders
+    end
+
+    test "list_team_orders/1 limits results" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      orders =
+        Enum.map(1..10, fn _ ->
+          user = Tiki.AccountsFixtures.user_fixture()
+
+          {:ok, order} =
+            Tiki.Orders.create_order(%{user_id: user.id, event_id: event.id, price: 100})
+
+          order
+        end)
+        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Tiki.Repo.preload([:event | @standard_preloads])
+
+      assert Orders.list_team_orders(event.team_id, limit: 3) == Enum.take(orders, 3)
+    end
+
+    test "list_team_orders/1 filters based on status" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      order_1 =
+        order_fixture(%{status: :pending}, event: event)
+        |> Tiki.Repo.preload([:event | @standard_preloads])
+
+      order_2 =
+        order_fixture(%{status: :paid}, event: event)
+        |> Tiki.Repo.preload([:event | @standard_preloads])
+
+      assert Orders.list_team_orders(event.team_id, status: [:pending]) == [order_1]
+      assert Orders.list_team_orders(event.team_id, status: [:paid]) == [order_2]
+    end
+
+    test "list_orders_for_event/1 returns all orders for a given event" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      orders =
+        Enum.map(1..5, fn _ ->
+          status = Enum.random(Ecto.Enum.dump_values(Orders.Order, :status))
+
+          order_fixture(%{status: status}, event: event)
+          |> Tiki.Repo.preload(@standard_preloads)
+        end)
+        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Tiki.Repo.preload(@standard_preloads)
+
+      assert Orders.list_orders_for_event(event.id) == orders
+    end
+
+    test "list_orders_for_event/1 filters based on status" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      :rand.seed(:exs64, {1, 1, 1})
+
+      orders =
+        Enum.map(1..5, fn _ ->
+          status = Enum.random(Ecto.Enum.dump_values(Orders.Order, :status))
+
+          order_fixture(%{status: status}, event: event)
+          |> Tiki.Repo.preload(@standard_preloads)
+        end)
+        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Tiki.Repo.preload(@standard_preloads)
+
+      assert Orders.list_orders_for_event(event.id, status: [:paid]) == [Enum.at(orders, 2)]
+    end
+
+    test "list_tickets_for_event/1 returns all tickets for a given event" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      tickets =
+        Enum.map(1..5, fn _ ->
+          batch = Tiki.TicketsFixtures.ticket_batch_fixture(%{event_id: event.id})
+          ticket_type = Tiki.TicketsFixtures.ticket_type_fixture(%{batch_id: batch.id})
+          order = Tiki.OrdersFixtures.order_fixture(%{event_id: event.id})
+
+          ticket_fixture(%{order_id: order.id, ticket_type_id: ticket_type.id})
+        end)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
+        |> Repo.preload(order: [:user], ticket_type: [])
+
+      assert Orders.list_tickets_for_event(event.id) == tickets
+    end
+
+    test "list_tickets_for_event/1 limits the number of tickets returned" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      tickets =
+        Enum.map(1..5, fn _ ->
+          batch = Tiki.TicketsFixtures.ticket_batch_fixture(%{event_id: event.id})
+          ticket_type = Tiki.TicketsFixtures.ticket_type_fixture(%{batch_id: batch.id})
+          order = Tiki.OrdersFixtures.order_fixture(%{event_id: event.id})
+
+          ticket_fixture(%{order_id: order.id, ticket_type_id: ticket_type.id})
+        end)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
+        |> Repo.preload(order: [:user], ticket_type: [])
+
+      assert Orders.list_tickets_for_event(event.id, limit: 3) == Enum.take(tickets, 3)
+    end
+
     test "get_order!/1 returns the order with given id" do
       order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order
@@ -109,6 +234,16 @@ defmodule Tiki.OrdersTest do
       assert_receive {:tickets_updated, _}
     end
 
+    test "reserve_tickets/3 fails if reserving no tickets" do
+      ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
+      to_purchase = Map.put(%{}, ticket_type.id, 0)
+
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert msg =~ "order must contain at least one ticket"
+    end
+
     test "reserve_tickets/3 fails if reserving too many tickets" do
       ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
       to_purchase = Map.put(%{}, ticket_type.id, 43)
@@ -130,8 +265,36 @@ defmodule Tiki.OrdersTest do
       assert msg =~ "not enough tickets"
     end
 
-    test "maybe_cancel_reservation/1" do
-      # TODO
+    test "maybe_cancel_order/1 cancels a pending order" do
+      order = order_fixture(%{status: "pending"})
+
+      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+      assert order.status == :cancelled
+      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 does not modify paid orders" do
+      order = order_fixture(%{status: "paid"})
+      ticket = ticket_fixture(%{order_id: order.id}) |> Repo.preload(:ticket_type)
+
+      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
+      assert msg =~ "order is not pending"
+
+      assert %Orders.Order{status: :paid, tickets: [^ticket]} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 does not modify cancelled orders" do
+      order = order_fixture(%{status: "cancelled"}) |> Repo.preload(@standard_preloads)
+
+      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
+      assert msg =~ "order is not pending"
+
+      assert Orders.get_order!(order.id) == order
+    end
+
+    test "maybe_cancel_order/1 returns an error if the order does not exist" do
+      assert {:error, msg} = Orders.maybe_cancel_order(Ecto.UUID.generate())
+      assert msg =~ "order not found, nothing to cancel"
     end
   end
 end

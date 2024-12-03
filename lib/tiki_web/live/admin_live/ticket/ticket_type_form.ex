@@ -2,7 +2,6 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
   use TikiWeb, :live_component
 
   alias Tiki.Tickets
-  alias Tiki.Tickets.TicketType
 
   @impl true
   def render(assigns) do

@@ -28,6 +28,7 @@ defmodule Tiki.TicketsFixtures do
   """
   def ticket_type_fixture(attrs \\ %{}) do
     batch = ticket_batch_fixture()
+    form = Tiki.FormsFixtures.form_fixture()
 
     {:ok, ticket_types} =
       attrs
@@ -38,7 +39,8 @@ defmodule Tiki.TicketsFixtures do
         price: 42,
         purchasable: true,
         release_time: ~U[2023-03-25 18:01:00Z],
-        ticket_batch_id: batch.id
+        ticket_batch_id: batch.id,
+        form_id: form.id
       })
       |> Tiki.Tickets.create_ticket_type()
 

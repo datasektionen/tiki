@@ -185,43 +185,14 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  Deletes a ticket.
-
-  ## Examples
-
-      iex> delete_ticket(ticket)
-      {:ok, %Ticket{}}
-
-      iex> delete_ticket(ticket)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_ticket(%Ticket{} = ticket) do
-    Repo.delete(ticket)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking ticket changes.
-
-  ## Examples
-
-      iex> change_ticket(ticket)
-      %Ecto.Changeset{data: %Ticket{}}
-
-  """
-  def change_ticket(%Ticket{} = ticket, attrs \\ %{}) do
-    Ticket.changeset(ticket, attrs)
-  end
-
-  @doc """
   Reserves tickets for an event. Returns the order.
 
   ## Examples
-      iex> reserve_tickets(123, [12, 1, ...], 456)
+      iex> reserve_tickets(123, %{12 => 2, 1 => 1, ...}, 456)
       {:ok, %Order{}}
 
-      iex> reserve_tickets(232, [], 456)
-      {:error, "Du måste välja minst en biljett"}
+      iex> reserve_tickets(232, %{12 => 0}, 456)
+      {:error, "order must contain at least one ticket"}
   """
   def reserve_tickets(event_id, ticket_types, _user_id \\ nil) do
     result =
@@ -313,7 +284,8 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  Cancels an order if it exists. Returns the order.
+  Cancels a pending order if it exists. Does not modify paid or cancelled orders.
+  Returns the order.
 
   ## Examples
       iex> cancel_order(%Order{})
@@ -322,7 +294,7 @@ defmodule Tiki.Orders do
       iex> cancel_order(%Order{})
       {:error, reason}
   """
-  def maybe_cancel_reservation(order_id) do
+  def maybe_cancel_order(order_id) do
     multi =
       Multi.new()
       |> Multi.run(:order, fn repo, _changes ->
@@ -351,27 +323,33 @@ defmodule Tiki.Orders do
         {:ok, order}
 
       {:error, :order, :not_found, _} ->
-        {:error, "Order not found, nothing to cancel"}
+        {:error, "order not found, nothing to cancel"}
 
       {:error, :order, :not_pending, _} ->
-        {:error, "Order is not pending"}
+        {:error, "order is not pending"}
 
       _ ->
-        {:error, "Could not cancel reservation"}
+        {:error, "could not cancel reservation"}
     end
   end
 
   @doc """
   Returns the orders for an event, ordered by most recent first.
 
+  Options:
+    * `:status` - The status of the orders to return.
+
   ## Examples
 
-      iex> list_orders_for_event(event_id)
+      iex> list_orders_for_event(event_id, status: [:paid])
       [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
   """
-  def list_orders_for_event(event_id) do
+  def list_orders_for_event(event_id, opts \\ []) do
+    statuses = Keyword.get(opts, :status, Ecto.Enum.dump_values(Order, :status))
+
     order_query()
     |> where([o], o.event_id == ^event_id)
+    |> where([o], o.status in ^statuses)
     |> order_by([o], desc: o.inserted_at)
     |> Repo.all()
   end
@@ -381,27 +359,28 @@ defmodule Tiki.Orders do
 
   Options:
     * `:limit` - The maximum number of tickets to return.
+    * `:status` - The status of the orders to return.
 
   ## Examples
 
-      iex> list_team_orders(event_id)
+      iex> list_team_orders(event_id, limit: 10, status: [:paid])
       [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
   """
   def list_team_orders(team_id, opts \\ []) do
-    query =
-      order_query()
-      |> join(:inner, [o], e in assoc(o, :event))
-      |> where([..., e], e.team_id == ^team_id)
-      |> order_by([o], desc: o.inserted_at)
-      |> preload([..., e], event: e)
+    statuses = Keyword.get(opts, :status, Ecto.Enum.dump_values(Order, :status))
 
-    case Keyword.get(opts, :limit) do
-      nil -> query
-      limit -> query |> limit(^limit)
-    end
+    order_query()
+    |> join(:inner, [o], e in assoc(o, :event))
+    |> where([o, ..., e], e.team_id == ^team_id and o.status in ^statuses)
+    |> order_by([o], desc: o.inserted_at)
+    |> preload([..., e], event: e)
+    |> then(fn query ->
+      case Keyword.get(opts, :limit) do
+        nil -> query
+        limit -> limit(query, ^limit)
+      end
+    end)
     |> Repo.all()
-
-    Repo.all(query)
   end
 
   @doc """
@@ -416,19 +395,20 @@ defmodule Tiki.Orders do
       [%Ticket{ticket_type: %TicketType{}}, %Order{user: %User{}}], ...]
   """
   def list_tickets_for_event(event_id, opts \\ []) do
-    query =
-      from t in Ticket,
-        join: o in assoc(t, :order),
-        join: tt in assoc(t, :ticket_type),
-        join: u in assoc(o, :user),
-        order_by: [desc: o.inserted_at],
-        where: o.event_id == ^event_id,
-        preload: [ticket_type: tt, order: {o, user: u}]
-
-    case Keyword.get(opts, :limit) do
-      nil -> query
-      limit -> query |> limit(^limit)
-    end
+    from(t in Ticket,
+      join: o in assoc(t, :order),
+      join: tt in assoc(t, :ticket_type),
+      join: u in assoc(o, :user),
+      order_by: [desc: o.inserted_at],
+      where: o.event_id == ^event_id,
+      preload: [ticket_type: tt, order: {o, user: u}]
+    )
+    |> then(fn query ->
+      case Keyword.get(opts, :limit) do
+        nil -> query
+        limit -> query |> limit(^limit)
+      end
+    end)
     |> Repo.all()
   end
 

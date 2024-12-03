@@ -1,5 +1,5 @@
 defmodule Tiki.Teams.Membership do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "team_memberships" do

@@ -10,6 +10,11 @@ import Config
 config :tiki,
   ecto_repos: [Tiki.Repo]
 
+config :tiki, Tiki.Repo,
+  migration_timestamps: [
+    type: :naive_datetime_usec
+  ]
+
 # Configures the endpoint
 config :tiki, TikiWeb.Endpoint,
   adapter: Bandit.PhoenixAdapter,

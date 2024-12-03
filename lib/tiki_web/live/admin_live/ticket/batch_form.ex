@@ -2,7 +2,6 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
   use TikiWeb, :live_component
 
   alias Tiki.Tickets
-  alias Tiki.Tickets.TicketBatch
 
   @impl true
   def render(assigns) do

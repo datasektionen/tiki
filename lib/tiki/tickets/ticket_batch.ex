@@ -1,5 +1,5 @@
 defmodule Tiki.Tickets.TicketBatch do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   alias Tiki.Tickets.TicketBatch

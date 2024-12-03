@@ -1,5 +1,5 @@
 defmodule Tiki.Forms.Response do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "form_responses" do
