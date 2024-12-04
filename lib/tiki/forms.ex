@@ -189,7 +189,7 @@ defmodule Tiki.Forms do
           |> Ecto.Changeset.validate_change(field, fn field, value ->
             case value in q.options do
               true -> []
-              false -> [{field, "value must be an availible option"}]
+              false -> [{field, "value must be an available option"}]
             end
           end)
 
@@ -198,7 +198,7 @@ defmodule Tiki.Forms do
           |> Ecto.Changeset.validate_change(field, fn field, values ->
             case Enum.all?(values, &Enum.member?(q.options, &1)) do
               true -> []
-              false -> [{field, "all values must be availible options"}]
+              false -> [{field, "all values must be available options"}]
             end
           end)
 

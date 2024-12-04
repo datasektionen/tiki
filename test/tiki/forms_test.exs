@@ -154,7 +154,7 @@ defmodule Tiki.FormsTest do
 
       assert Enum.count(changeset.errors) == 1
 
-      assert [{"value must be an availible option", _}] =
+      assert [{"value must be an available option", _}] =
                Enum.map(changeset.errors, fn {_, value} -> value end)
     end
 
@@ -184,7 +184,7 @@ defmodule Tiki.FormsTest do
 
       assert Enum.count(changeset.errors) == 1
 
-      assert [{"all values must be availible options", _}] =
+      assert [{"all values must be available options", _}] =
                Enum.map(changeset.errors, fn {_, value} -> value end)
     end
 

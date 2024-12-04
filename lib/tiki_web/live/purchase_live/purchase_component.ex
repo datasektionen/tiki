@@ -27,7 +27,6 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
     end
   end
 
-  alias Tiki.Swish
   use TikiWeb, :live_component
 
   alias Tiki.Orders
@@ -67,7 +66,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                     <%= tt.price * count %> kr
                   </td>
                 </tr>
-                <tr class="border-zink-400 border-t-2">
+                <tr class="border-border border-t-2">
                   <th></th>
                   <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
                     <%= gettext("Total") %>
@@ -140,7 +139,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
               <%= gettext("Pay using Swish") %>
             </.label>
             <div class="max-w-96 w-full self-center">
-              <%= raw(Swish.get_svg_qr_code!(@order.swish_checkout.token)) %>
+              <%= raw(Tiki.Checkouts.get_swisg_svg_qr_code!(@order.swish_checkout.token)) %>
             </div>
 
             <.link href={{:swish, "//paymentrequest?token=#{@order.swish_checkout.token}"}}>

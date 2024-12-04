@@ -18,10 +18,12 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
        payment_method =
          cond do
            order.stripe_checkout ->
-             Tiki.Checkouts.retrive_stripe_payment_method(order.stripe_checkout.payment_method_id)
+             Tiki.Checkouts.retrieve_stripe_payment_method(
+               order.stripe_checkout.payment_method_id
+             )
 
            order.swish_checkout ->
-             Tiki.Swish.get_payment_request(order.swish_checkout.swish_id)
+             Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
          end
 
        case payment_method do
@@ -218,7 +220,7 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
       </dd>
     </div>
     <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-      <dt class="text-muted-foreground text-sm font-medium"><%= gettext("Swish numner") %></dt>
+      <dt class="text-muted-foreground text-sm font-medium"><%= gettext("Swish number") %></dt>
       <.async_result :let={payment_method} assign={@payment_method}>
         <:loading>
           <span class="text-foreground text-sm"><%= gettext("Loading...") %></span>

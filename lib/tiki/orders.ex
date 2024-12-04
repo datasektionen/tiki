@@ -233,8 +233,8 @@ defmodule Tiki.Orders do
         end,
         returning: true
       )
-      |> Tickets.get_availible_ticket_types_multi(event_id)
-      |> Multi.run(:check_availability, fn _repo, %{ticket_types_availible: available} ->
+      |> Tickets.get_available_ticket_types_multi(event_id)
+      |> Multi.run(:check_availability, fn _repo, %{ticket_types_available: available} ->
         valid_for_event? =
           Map.keys(ticket_types)
           |> Enum.all?(fn tt -> Enum.any?(available, &(&1.ticket_type.id == tt)) end)
@@ -253,7 +253,7 @@ defmodule Tiki.Orders do
                                         %{
                                           order: order,
                                           tickets: {_, tickets},
-                                          ticket_types_availible: available
+                                          ticket_types_available: available
                                         } ->
         ticket_types =
           Enum.map(available, & &1.ticket_type)
@@ -265,13 +265,13 @@ defmodule Tiki.Orders do
       |> Repo.transaction()
 
     case result do
-      {:ok, %{preloaded_order: order, ticket_types_availible: ticket_types}} ->
+      {:ok, %{preloaded_order: order, ticket_types_available: ticket_types}} ->
         # Monitor the order, automatically cancels it if it's not paid in time
         Tiki.PurchaseMonitor.monitor(order)
 
         broadcast(
           order.event_id,
-          {:tickets_updated, Tickets.put_avalable_ticket_meta(ticket_types)}
+          {:tickets_updated, Tickets.put_available_ticket_meta(ticket_types)}
         )
 
         broadcast_order(order.id, :created, order)
@@ -318,7 +318,7 @@ defmodule Tiki.Orders do
       {:ok, %{order_failed: order}} ->
         broadcast(
           order.event_id,
-          {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
+          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
         )
 
         broadcast_order(order.id, :cancelled, order)

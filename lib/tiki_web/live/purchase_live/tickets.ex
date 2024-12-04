@@ -136,7 +136,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
        error: nil,
        ticket_types: AsyncResult.loading()
      )
-     |> start_async(:ticket_types, fn -> get_availible_ticket_types(event.id) end)}
+     |> start_async(:ticket_types, fn -> get_available_ticket_types(event.id) end)}
   end
 
   @impl Phoenix.LiveView
@@ -162,8 +162,8 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     end
   end
 
-  defp get_availible_ticket_types(event_id) do
-    Tickets.get_availible_ticket_types(event_id)
+  defp get_available_ticket_types(event_id) do
+    Tickets.get_available_ticket_types(event_id)
   end
 
   @impl Phoenix.LiveView
@@ -220,7 +220,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
 
     {:noreply,
      assign(socket, promo_code: "", promo_codes: codes)
-     |> start_async(:ticket_types, fn -> get_availible_ticket_types(event_id) end)}
+     |> start_async(:ticket_types, fn -> get_available_ticket_types(event_id) end)}
   end
 
   def handle_event("request-tickets", _params, socket) do

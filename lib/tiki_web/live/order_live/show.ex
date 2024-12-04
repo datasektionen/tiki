@@ -14,7 +14,7 @@ defmodule TikiWeb.OrderLive.Show do
         <h1 class="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
           <%= gettext("Thank you for your order!") %>
         </h1>
-        <!-- TODO: Reciept link -->
+        <!-- TODO: Receipt link -->
         <.link
           href="#"
           class="text-secondary-foreground hidden text-sm font-medium hover:text-secondary-foreground/80 sm:block"
@@ -29,7 +29,7 @@ defmodule TikiWeb.OrderLive.Show do
           <%= Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short) %>
         </time>
       </p>
-      <!-- TODO: Reciept link -->
+      <!-- TODO: Receipt link -->
       <.link href="#" class="text-sm font-medium sm:hidden">
         <%= gettext("View receipt") %> <span aria-hidden="true"> &rarr;</span>
       </.link>
@@ -184,10 +184,12 @@ defmodule TikiWeb.OrderLive.Show do
        payment_method =
          cond do
            order.stripe_checkout ->
-             Tiki.Checkouts.retrive_stripe_payment_method(order.stripe_checkout.payment_method_id)
+             Tiki.Checkouts.retrieve_stripe_payment_method(
+               order.stripe_checkout.payment_method_id
+             )
 
            order.swish_checkout ->
-             Tiki.Swish.get_payment_request(order.swish_checkout.swish_id)
+             Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
          end
 
        case payment_method do

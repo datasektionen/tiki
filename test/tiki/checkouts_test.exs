@@ -153,11 +153,11 @@ defmodule Tiki.CheckoutsTest do
       assert {:error, :invalid_status} = Checkouts.confirm_stripe_payment(payment_intent)
     end
 
-    test "retrive_stripe_payment_method/1 retrieves a stripe payment method" do
+    test "retrieve_stripe_payment_method/1 retrieves a stripe payment method" do
       id = Ecto.UUID.generate()
 
       {:ok, %Stripe.PaymentMethod{id: ^id}} =
-        Checkouts.retrive_stripe_payment_method(id)
+        Checkouts.retrieve_stripe_payment_method(id)
     end
 
     test "load_stripe_client_secret!/1 loads a stripe client secret for a payment intent" do
