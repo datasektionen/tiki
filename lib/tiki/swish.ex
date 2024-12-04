@@ -2,6 +2,7 @@ defmodule Tiki.Swish do
   @moduledoc """
   A module for integrating with the Swish API
   """
+  @behaviour Tiki.Swish
 
   @api_url Application.compile_env(:tiki, Tiki.Swish)[:api_url]
   @prod_api_url "https://mpc.getswish.net/qrg-swish/api"
@@ -45,8 +46,8 @@ defmodule Tiki.Swish do
 
   The rest of the fields are optional.
   """
-  @spec create_payment_request(float()) ::
-          {:ok, success_response()} | {:error, [map()] | String.t()}
+  @callback create_payment_request(float()) ::
+              {:ok, success_response()} | {:error, [map()] | String.t()}
   def create_payment_request(amount) do
     _ = :crypto.rand_seed()
     id = for _ <- 1..32, into: "", do: <<Enum.at(@alphabet, :rand.uniform(@alph_len) - 1)>>
@@ -87,7 +88,8 @@ defmodule Tiki.Swish do
   @doc """
   Get a payment request by its ID. The ID _must_ be a 32-character string.
   """
-  @spec get_payment_request(id()) :: {:ok, map()} | {:error, String.t()}
+
+  @callback get_payment_request(id()) :: {:ok, map()} | {:error, String.t()}
   def get_payment_request(id) do
     res = Req.get(base_request(), url: @api_url <> "/v1/paymentrequests/#{id}")
 
@@ -106,8 +108,8 @@ defmodule Tiki.Swish do
   time before the request has been accepted or completed - status
   “ERROR”, “PAID”, “CANCELLED”, "DECLINED" etc.
   """
-  @spec cancel_payment_request(id()) ::
-          {:ok, map()} | {:error, String.t() | [map()]}
+  @callback cancel_payment_request(id()) ::
+              {:ok, map()} | {:error, String.t() | [map()]}
   def cancel_payment_request(id) do
     # The body has to contain a list of Operation objects. There is only
     # support for one operation at the moment in the Swish API.
@@ -148,6 +150,7 @@ defmodule Tiki.Swish do
     end
   end
 
+  @callback get_svg_qr_code!(String.t()) :: String.t()
   def get_svg_qr_code!(token) do
     case get_svg_qr_code(token) do
       {:ok, qr_code} -> qr_code
@@ -155,6 +158,7 @@ defmodule Tiki.Swish do
     end
   end
 
+  @callback get_svg_qr_code(String.t()) :: {:ok, String.t()} | {:error, String.t()}
   def get_svg_qr_code(token) do
     url = @prod_api_url <> "/v1/commerce"
 
