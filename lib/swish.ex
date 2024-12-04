@@ -1,8 +1,9 @@
-defmodule Tiki.Swish do
+defmodule Swish do
   @moduledoc """
   A module for integrating with the Swish API
   """
-  @behaviour Tiki.Swish
+
+  @behaviour Swish
 
   @api_url Application.compile_env(:tiki, Tiki.Swish)[:api_url]
   @prod_api_url "https://mpc.getswish.net/qrg-swish/api"

@@ -10,7 +10,7 @@ import Config
 config :tiki,
   ecto_repos: [Tiki.Repo],
   stripe_module: Stripe,
-  swish_module: Tiki.Swish
+  swish_module: Swish
 
 config :tiki, Tiki.Repo,
   migration_timestamps: [

@@ -195,7 +195,7 @@ defmodule Tiki.Checkouts do
       {:ok, %{order: order}} ->
         Orders.broadcast(
           order.event_id,
-          {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
+          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
         )
 
         Orders.broadcast_order(order.id, :paid, order)
@@ -264,7 +264,7 @@ defmodule Tiki.Checkouts do
       {:ok, %{order: order}} ->
         Orders.broadcast(
           order.event_id,
-          {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
+          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
         )
 
         Orders.broadcast_order(order.id, :paid, order)
@@ -282,9 +282,12 @@ defmodule Tiki.Checkouts do
   defp swish_to_order_status("PAID"), do: :paid
   defp swish_to_order_status(status) when is_binary(status), do: :cancelled
 
-  def retrive_stripe_payment_method(payment_method_id) do
-    @stripe.PaymentMethod.retrieve(payment_method_id)
-  end
+  defdelegate retrieve_stripe_payment_method(payment_method_id),
+    to: Module.concat(@stripe, PaymentMethod),
+    as: :retrieve
+
+  defdelegate get_swish_payment_request(id), to: @swish, as: :get_payment_request
+  defdelegate get_swisg_svg_qr_code!(token), to: @swish, as: :get_svg_qr_code!
 
   def load_stripe_client_secret!(%StripeCheckout{payment_intent_id: intent_id} = checkout) do
     {:ok, %Stripe.PaymentIntent{client_secret: client_secret}} =
