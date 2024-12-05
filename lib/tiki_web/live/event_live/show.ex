@@ -16,9 +16,9 @@ defmodule TikiWeb.EventLive.Show do
       <div class="flex flex-row items-center justify-between">
         <div>
           <div class="text-muted-foreground">
-            <%= Calendar.strftime(@event.event_date, "%d %B", month_names: &month_name/1) %>
+            {Calendar.strftime(@event.event_date, "%d %B", month_names: &month_name/1)}
           </div>
-          <h1 class="text-3xl font-bold"><%= @event.name %></h1>
+          <h1 class="text-3xl font-bold">{@event.name}</h1>
         </div>
 
         <.link patch={~p"/events/#{@event}/purchase"}>
@@ -29,15 +29,15 @@ defmodule TikiWeb.EventLive.Show do
       <div class="text-muted-foreground my-4 flex flex-col gap-1">
         <div class="inline-flex items-center gap-2">
           <.icon name="hero-calendar" />
-          <%= Calendar.strftime(@event.event_date, "%Y-%m-%d vid %H:%M") %>
+          {Calendar.strftime(@event.event_date, "%Y-%m-%d vid %H:%M")}
         </div>
         <div class="inline-flex items-center gap-2">
           <.icon name="hero-map-pin" />
-          <%= @event.location %>
+          {@event.location}
         </div>
       </div>
       <p class="-mt-8 whitespace-pre-wrap">
-        <%= @event.description %>
+        {@event.description}
       </p>
     </div>
 
@@ -54,7 +54,7 @@ defmodule TikiWeb.EventLive.Show do
     </div>
 
     <div class="bg-background shadow-xs fixed right-4 bottom-4 rounded-full border px-4 py-2">
-      <%= max(@online_count, 0) %> online
+      {max(@online_count, 0)} online
     </div>
     """
   end

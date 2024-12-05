@@ -13,23 +13,23 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     ~H"""
     <div class="my-8">
       <.header>
-        <%= gettext("Tickets") %>
+        {gettext("Tickets")}
         <:subtitle>
-          <%= gettext(
+          {gettext(
             "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
-          ) %>
+          )}
         </:subtitle>
 
         <:actions>
           <.link patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
             <.button variant="secondary">
-              <%= gettext("New batch") %>
+              {gettext("New batch")}
             </.button>
           </.link>
 
           <.link patch={~p"/admin/events/#{@event}/tickets/types/new"}>
             <.button variant="secondary">
-              <%= gettext("New ticket type") %>
+              {gettext("New ticket type")}
             </.button>
           </.link>
         </:actions>
@@ -41,16 +41,16 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
         <div :if={@batches == []} class="p-4 text-center">
           <.icon name="hero-rectangle-stack" class="text-muted-foreground size-12" />
           <h3 class="text-foreground mt-2 text-sm font-semibold">
-            <%= gettext("No ticket batches") %>
+            {gettext("No ticket batches")}
           </h3>
           <p class="text-muted-foreground mt-1 text-sm">
-            <%= gettext("Create a new batch to get started.") %>
+            {gettext("Create a new batch to get started.")}
           </p>
           <div class="mt-6">
             <.link :if={@batches == []} patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
               <.button>
                 <.icon name="hero-plus" class="size-4 mr-2" />
-                <%= gettext("Create batch") %>
+                {gettext("Create batch")}
               </.button>
             </.link>
           </div>
@@ -166,10 +166,10 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
       >
         <div class="inline-flex items-center gap-2">
           <.icon name="hero-rectangle-stack h-4 w-4" />
-          <%= @batch.batch.name %>
+          {@batch.batch.name}
         </div>
         <div :if={@batch.batch.max_size} class="text-muted-foreground">
-          <%= "#{@batch.batch.max_size} #{gettext("tickets")}" %>
+          {"#{@batch.batch.max_size} #{gettext("tickets")}"}
         </div>
       </.link>
 
@@ -189,10 +189,10 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
             <div class="text-foreground inline-flex items-center gap-2 rounded-md p-4 hover:bg-accent">
               <div class="inline-flex items-center gap-2">
                 <.icon name="hero-ticket h-4 w-4" />
-                <%= ticket_type.name %>
+                {ticket_type.name}
               </div>
               <div class="text-muted-foreground">
-                <%= ticket_type.price %> kr
+                {ticket_type.price} kr
               </div>
             </div>
           </div>
@@ -226,7 +226,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
       >
         <div class="text-foreground inline-flex items-center gap-2 rounded-md text-sm">
           <.icon name="hero-plus-circle" class="size-4 ml-[1px]" />
-          <%= gettext("Add ticket") %>
+          {gettext("Add ticket")}
         </div>
       </.link>
     </div>

@@ -39,40 +39,40 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
     <div>
       <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)} safe>
         <div :if={@order.status == :cancelled}>
-          <%= gettext("Ya messed up, order is cancelled") %>
+          {gettext("Ya messed up, order is cancelled")}
         </div>
 
         <div :if={@order.status == :pending}>
           <div>
             <.header class="border-none">
-              <%= gettext("Payment") %>
+              {gettext("Payment")}
               <:subtitle>
-                <%= gettext(
+                {gettext(
                   "Purchase tickets for %{event}. You have %{count} minutes to complete your order.",
                   event: @event.name,
                   count: 2
-                ) %>
+                )}
               </:subtitle>
             </.header>
 
             <table class="w-full border-collapse border-spacing-0">
               <tbody class="text-sm">
                 <tr :for={{_id, %{ticket_type: tt, count: count}} <- @order.tickets} class="border-t">
-                  <th class="py-1 pr-2 text-left"><%= tt.name %></th>
+                  <th class="py-1 pr-2 text-left">{tt.name}</th>
                   <td class="whitespace-nowrap py-1 pr-2 text-right">
-                    <%= "#{count} x #{tt.price} kr" %>
+                    {"#{count} x #{tt.price} kr"}
                   </td>
                   <td class="whitespace-nowrap py-1 text-right">
-                    <%= tt.price * count %> kr
+                    {tt.price * count} kr
                   </td>
                 </tr>
                 <tr class="border-border border-t-2">
                   <th></th>
                   <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
-                    <%= gettext("Total") %>
+                    {gettext("Total")}
                   </td>
                   <td class="whitespace-nowrap py-1 text-right">
-                    <%= @order.price %> kr
+                    {@order.price} kr
                   </td>
                 </tr>
               </tbody>
@@ -89,17 +89,17 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             >
               <div>
                 <.label for={@form[:payment_method].id}>
-                  <%= gettext("Payment method") %>
+                  {gettext("Payment method")}
                 </.label>
                 <.radio_group
                   field={@form[:payment_method]}
                   class="text-bold mt-2 flex flex-row gap-10 text-sm"
                 >
                   <:radio value="credit_card" class="flex flex-row-reverse items-center gap-3">
-                    <%= gettext("Credit card") %>
+                    {gettext("Credit card")}
                   </:radio>
                   <:radio value="swish" class="flex flex-row-reverse items-center gap-3">
-                    <%= gettext("Swish") %>
+                    {gettext("Swish")}
                   </:radio>
 
                   <:radio value="" class="hidden"></:radio>
@@ -129,22 +129,22 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
               />
 
               <.button type="submit">
-                <%= gettext("Continue") %>
+                {gettext("Continue")}
               </.button>
             </.form>
           </div>
 
           <div :if={@order.swish_checkout} class="flex flex-col">
             <.label>
-              <%= gettext("Pay using Swish") %>
+              {gettext("Pay using Swish")}
             </.label>
             <div class="max-w-96 w-full self-center">
-              <%= raw(Tiki.Checkouts.get_swisg_svg_qr_code!(@order.swish_checkout.token)) %>
+              {raw(Tiki.Checkouts.get_swisg_svg_qr_code!(@order.swish_checkout.token))}
             </div>
 
             <.link href={{:swish, "//paymentrequest?token=#{@order.swish_checkout.token}"}}>
               <.button class="w-full" variant="outline">
-                <%= gettext("Open swish on this device") %>
+                {gettext("Open swish on this device")}
               </.button>
             </.link>
           </div>
@@ -165,7 +165,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             <.button id="submit" phx-click={JS.show(to: "#spinner")} class="space-x-2">
               <.spinner class="size-4 hidden" id="spinner" />
               <span id="button-text">
-                Betala <%= @order.price %> kr
+                Betala {@order.price} kr
               </span>
             </.button>
             <div id="payment-message" class="hidden"></div>

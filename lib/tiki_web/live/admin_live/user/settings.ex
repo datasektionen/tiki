@@ -41,10 +41,10 @@ defmodule TikiWeb.AdminLive.User.Settings do
     <div class="sm:max-w-3xl">
       <div class="flex flex-col gap-1 border-b pb-4">
         <.card_title>
-          <%= gettext("User settings") %>
+          {gettext("User settings")}
         </.card_title>
         <.card_description>
-          <%= gettext("Modify user settings") %>
+          {gettext("Modify user settings")}
         </.card_description>
       </div>
       <.form for={@form} class="flex flex-col gap-2 pt-6" phx-change="validate" phx-submit="save">
@@ -58,7 +58,7 @@ defmodule TikiWeb.AdminLive.User.Settings do
         />
         <div class="mt-4">
           <.button type="submit">
-            <%= gettext("Save") %>
+            {gettext("Save")}
           </.button>
         </div>
       </.form>

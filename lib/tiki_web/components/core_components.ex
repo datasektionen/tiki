@@ -56,9 +56,9 @@ defmodule TikiWeb.CoreComponents do
         <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" />
 
         <div class="flex flex-col">
-          <div :if={@title} class="mb-1 font-medium leading-none tracking-tight"><%= @title %></div>
+          <div :if={@title} class="mb-1 font-medium leading-none tracking-tight">{@title}</div>
           <div class="text-sm">
-            <%= msg %>
+            {msg}
           </div>
         </div>
         <button type="button" class="ml-auto" aria-label={gettext("close")}>
@@ -92,7 +92,7 @@ defmodule TikiWeb.CoreComponents do
         phx-connected={hide("#client-error")}
         hidden
       >
-        <%= gettext("Attempting to reconnect") %>
+        {gettext("Attempting to reconnect")}
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 motion-safe:animate-spin" />
       </.flash>
 
@@ -104,7 +104,7 @@ defmodule TikiWeb.CoreComponents do
         phx-connected={hide("#server-error")}
         hidden
       >
-        <%= gettext("Hang in there while we get back on track") %>
+        {gettext("Hang in there while we get back on track")}
         <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 motion-safe:animate-spin" />
       </.flash>
     </div>
@@ -138,9 +138,9 @@ defmodule TikiWeb.CoreComponents do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class="bg-background mt-6 space-y-4">
-        <%= render_slot(@inner_block, f) %>
+        {render_slot(@inner_block, f)}
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
-          <%= render_slot(action, f) %>
+          {render_slot(action, f)}
         </div>
       </div>
     </.form>
@@ -156,7 +156,7 @@ defmodule TikiWeb.CoreComponents do
   def label(assigns) do
     ~H"""
     <label for={@for} class="text-foreground block text-sm font-semibold leading-6">
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </label>
     """
   end
@@ -170,7 +170,7 @@ defmodule TikiWeb.CoreComponents do
     ~H"""
     <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
       <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" />
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </p>
     """
   end
@@ -194,13 +194,13 @@ defmodule TikiWeb.CoreComponents do
       <div class="flex w-full flex-col gap-2">
         <div class="flex flex-row items-center justify-between">
           <h1 class="text-2xl font-semibold leading-none tracking-tight">
-            <%= render_slot(@inner_block) %>
+            {render_slot(@inner_block)}
           </h1>
-          <div class="flex-none"><%= render_slot(@actions) %></div>
+          <div class="flex-none">{render_slot(@actions)}</div>
         </div>
 
         <p :if={@subtitle != []} class="text-muted-foreground text-sm">
-          <%= render_slot(@subtitle) %>
+          {render_slot(@subtitle)}
         </p>
       </div>
     </header>
@@ -213,8 +213,8 @@ defmodule TikiWeb.CoreComponents do
   ## Examples
 
       <.list>
-        <:item title="Title"><%= @post.title %></:item>
-        <:item title="Views"><%= @post.views %></:item>
+        <:item title="Title">{@post.title}</:item>
+        <:item title="Views">{@post.views}</:item>
       </.list>
   """
   slot :item, required: true do
@@ -226,8 +226,8 @@ defmodule TikiWeb.CoreComponents do
     <div class="mt-14">
       <dl class="divide-accent -my-4 divide-y">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="text-muted-foreground w-1/4 flex-none"><%= item.title %></dt>
-          <dd class="text-foreground"><%= render_slot(item) %></dd>
+          <dt class="text-muted-foreground w-1/4 flex-none">{item.title}</dt>
+          <dd class="text-foreground">{render_slot(item)}</dd>
         </div>
       </dl>
     </div>
@@ -251,8 +251,7 @@ defmodule TikiWeb.CoreComponents do
         navigate={@navigate}
         class="text-foreground text-sm font-semibold leading-6 hover:foreground/80"
       >
-        <span aria-hidden="true">&larr; </span>
-        <%= render_slot(@inner_block) %>
+        <span aria-hidden="true">&larr; </span> {render_slot(@inner_block)}
       </.link>
     </div>
     """
@@ -337,14 +336,14 @@ defmodule TikiWeb.CoreComponents do
   def svg_qr(assigns) do
     ~H"""
     <div {@rest}>
-      <%= Phoenix.HTML.raw(
+      {Phoenix.HTML.raw(
         QRCodeEx.encode(@data)
         |> QRCodeEx.svg(
           color: "var(--color-foreground)",
           viewbox: true,
           background_color: :transparent
         )
-      ) %>
+      )}
     </div>
     """
   end

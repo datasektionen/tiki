@@ -10,8 +10,8 @@ defmodule TikiWeb.Component.Table do
   ## Examples
 
       <.table id="users" rows={@users}>
-        <:col :let={user} label="id"><%= user.id %></:col>
-        <:col :let={user} label="username"><%= user.username %></:col>
+        <:col :let={user} label="id">{user.id}</:col>
+        <:col :let={user} label="username">{user.username}</:col>
       </.table>
   """
   attr :id, :string, required: true
@@ -42,7 +42,7 @@ defmodule TikiWeb.Component.Table do
       <.table_header>
         <.table_row>
           <.table_head :for={col <- @col}>
-            <%= col[:label] %>
+            {col[:label]}
           </.table_head>
           <.table_head :if={@action != []}><span class="sr-only">"Actions"</span></.table_head>
         </.table_row>
@@ -54,7 +54,7 @@ defmodule TikiWeb.Component.Table do
             phx-click={@row_click && @row_click.(row)}
             class={@row_click && "hover:cursor-pointer"}
           >
-            <%= render_slot(col, @row_item.(row)) %>
+            {render_slot(col, @row_item.(row))}
           </.table_cell>
           <.table_cell
             :if={@action != []}
@@ -64,7 +64,7 @@ defmodule TikiWeb.Component.Table do
               :for={action <- @action}
               class="text-foreground relative leading-6 hover:text-muted-foreground"
             >
-              <%= render_slot(action, @row_item.(row)) %>
+              {render_slot(action, @row_item.(row))}
             </span>
           </.table_cell>
         </.table_row>
@@ -80,7 +80,7 @@ defmodule TikiWeb.Component.Table do
   def table_header(assigns) do
     ~H"""
     <thead class={classes(["[&_tr]:border-b", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </thead>
     """
   end
@@ -100,7 +100,7 @@ defmodule TikiWeb.Component.Table do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </tr>
     """
   end
@@ -120,7 +120,7 @@ defmodule TikiWeb.Component.Table do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </th>
     """
   end
@@ -132,7 +132,7 @@ defmodule TikiWeb.Component.Table do
   def table_body(assigns) do
     ~H"""
     <tbody class={classes(["[&_tr:last-child]:border-0", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </tbody>
     """
   end
@@ -144,7 +144,7 @@ defmodule TikiWeb.Component.Table do
   def table_cell(assigns) do
     ~H"""
     <td class={classes(["p-4 align-middle [&:has([role=checkbox])]:pr-0", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </td>
     """
   end
@@ -167,7 +167,7 @@ defmodule TikiWeb.Component.Table do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -179,7 +179,7 @@ defmodule TikiWeb.Component.Table do
   def table_caption(assigns) do
     ~H"""
     <caption class={classes(["mt-4 text-sm text-muted-foreground", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </caption>
     """
   end

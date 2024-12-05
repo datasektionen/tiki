@@ -28,7 +28,7 @@ defmodule TikiWeb.Component.Button do
     ~H"""
     <.link navigate={@navigate} class={@class}>
       <.button type={@type} variant={@variant} size={@size} {@rest}>
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </.button>
     </.link>
     """
@@ -49,7 +49,7 @@ defmodule TikiWeb.Component.Button do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </button>
     """
   end

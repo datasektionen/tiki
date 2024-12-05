@@ -41,7 +41,7 @@ defmodule TikiWeb.Component.Breadcrumb do
       {@rest}
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </nav>
     """
   end
@@ -65,7 +65,7 @@ defmodule TikiWeb.Component.Breadcrumb do
       {@rest}
       }
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </ol>
     """
   end
@@ -88,7 +88,7 @@ defmodule TikiWeb.Component.Breadcrumb do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </li>
     """
   end
@@ -114,7 +114,7 @@ defmodule TikiWeb.Component.Breadcrumb do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </.link>
     """
   end
@@ -140,7 +140,7 @@ defmodule TikiWeb.Component.Breadcrumb do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </span>
     """
   end

@@ -30,7 +30,7 @@ defmodule TikiWeb.Component.Tooltip do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -42,7 +42,7 @@ defmodule TikiWeb.Component.Tooltip do
 
   def tooltip_trigger(assigns) do
     ~H"""
-    <%= render_slot(@inner_block) %>
+    {render_slot(@inner_block)}
     """
   end
 
@@ -71,7 +71,7 @@ defmodule TikiWeb.Component.Tooltip do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end

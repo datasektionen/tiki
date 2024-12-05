@@ -83,23 +83,23 @@ defmodule TikiWeb.AdminLive.Event.Edit do
     >
       <.dialog_header>
         <.dialog_title>
-          <%= gettext("Delete event?") %>
+          {gettext("Delete event?")}
         </.dialog_title>
         <.dialog_description>
-          <%= gettext("This will permanently delete the event") %>
+          {gettext("This will permanently delete the event")}
         </.dialog_description>
 
         <.form :let={f} for={@delete_form} phx-change="validate_delete" phx-submit="save_delete">
           <div class="bg-bg-background mt-2 space-y-4">
             <label for={f[:confirm].id} class="text-sm">
-              <span><%= gettext("Type the full name of the event") %></span>:
+              <span>{gettext("Type the full name of the event")}</span>:
               <span class="bg-accent text-accent-foreground rounded-xs px-1 py-0.5">
-                <%= @event.name %>
+                {@event.name}
               </span>
             </label>
             <.input field={f[:confirm]} />
             <.button variant="destructive" type="submit" disabled={f[:confirm].value != @event.name}>
-              <%= gettext("Delete event") %>
+              {gettext("Delete event")}
             </.button>
           </div>
         </.form>

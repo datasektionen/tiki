@@ -20,7 +20,7 @@ defmodule TikiWeb.AdminLive.Team.Index do
       rows={@streams.teams}
       row_click={fn {_id, team} -> JS.navigate(~p"/admin/teams/#{team}") end}
     >
-      <:col :let={{_id, team}} label="Name"><%= team.name %></:col>
+      <:col :let={{_id, team}} label="Name">{team.name}</:col>
       <:action :let={{_id, team}}>
         <div class="sr-only">
           <.link navigate={~p"/admin/teams/#{team}"}>Show</.link>

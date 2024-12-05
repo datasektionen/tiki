@@ -19,9 +19,9 @@ defmodule TikiWeb.EventLive.Index do
         navigate={~p"/events/#{event}"}
         class="shadow-xs flex flex-col gap-1 rounded-lg border px-4 py-4 hover:bg-accent/50"
       >
-        <div class="text-lg font-bold"><%= event.name %></div>
+        <div class="text-lg font-bold">{event.name}</div>
         <div class="text-muted-foreground text-sm">
-          <%= Calendar.strftime(event.event_date, "%y-%m-%d %H:%M") %>
+          {Calendar.strftime(event.event_date, "%y-%m-%d %H:%M")}
         </div>
       </.link>
     </div>

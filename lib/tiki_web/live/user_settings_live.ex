@@ -28,7 +28,7 @@ defmodule TikiWeb.UserSettingsLive do
           />
           <div class="mt-4">
             <.button type="submit">
-              <%= gettext("Save") %>
+              {gettext("Save")}
             </.button>
           </div>
         </.simple_form>

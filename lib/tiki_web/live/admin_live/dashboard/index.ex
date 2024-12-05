@@ -58,9 +58,9 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
     ~H"""
     <div :if={!@current_team}>
       <.header>
-        <%= @page_title %>
+        {@page_title}
         <:subtitle>
-          <%= gettext("No team selected") %>
+          {gettext("No team selected")}
         </:subtitle>
       </.header>
 
@@ -68,20 +68,20 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
         <.card class="col-span-6 sm:col-span-2">
           <.card_header>
             <.card_title>
-              <%= gettext("Welcome") %>
+              {gettext("Welcome")}
             </.card_title>
           </.card_header>
           <.card_content>
-            <%= "#{gettext("Hi")}, #{@current_user.first_name}! #{gettext("Welcome back to Tiki!")}" %>
+            {"#{gettext("Hi")}, #{@current_user.first_name}! #{gettext("Welcome back to Tiki!")}"}
           </.card_content>
         </.card>
         <.card class="col-span-6 sm:col-span-4">
           <.card_header>
             <.card_title>
-              <%= gettext("No team selected") %>
+              {gettext("No team selected")}
             </.card_title>
             <.card_description>
-              <%= gettext("Please select a team to get started.") %>
+              {gettext("Please select a team to get started.")}
             </.card_description>
           </.card_header>
           <.card_content>
@@ -97,7 +97,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
                 <.select_trigger builder={select} />
                 <.select_content builder={select} class="w-full">
                   <.select_group>
-                    <.select_label><%= gettext("Teams") %></.select_label>
+                    <.select_label>{gettext("Teams")}</.select_label>
 
                     <.select_item
                       :for={team <- @teams}
@@ -105,7 +105,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
                       value={team.id}
                       label={team.name}
                     >
-                      <%= team.name %>
+                      {team.name}
                     </.select_item>
                   </.select_group>
                 </.select_content>
@@ -122,56 +122,56 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
           <.card>
             <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
               <.card_title class="text-sm font-medium">
-                <%= gettext("Total events") %>
+                {gettext("Total events")}
               </.card_title>
               <.icon name="hero-calendar" class="text-muted-foreground h-4 w-4" />
             </.card_header>
             <.card_content>
               <div class="text-2xl font-bold">N/A</div>
               <p class="text-muted-foreground text-xs">
-                +N/A <%= gettext("from last month") %>
+                +N/A {gettext("from last month")}
               </p>
             </.card_content>
           </.card>
           <.card>
             <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
               <.card_title class="text-sm font-medium">
-                <%= gettext("Tickets sold") %>
+                {gettext("Tickets sold")}
               </.card_title>
               <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
             </.card_header>
             <.card_content>
               <div class="text-2xl font-bold">N/A</div>
               <p class="text-muted-foreground text-xs">
-                +N/A <%= gettext("from last month") %>
+                +N/A {gettext("from last month")}
               </p>
             </.card_content>
           </.card>
           <.card>
             <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
               <.card_title class="text-sm font-medium">
-                <%= gettext("Tickets sold per event") %>
+                {gettext("Tickets sold per event")}
               </.card_title>
               <.icon name="hero-banknotes" class="text-muted-foreground h-4 w-4" />
             </.card_header>
             <.card_content>
               <div class="text-2xl font-bold">N/A</div>
               <p class="text-muted-foreground text-xs">
-                +N/A <%= gettext("from last month") %>
+                +N/A {gettext("from last month")}
               </p>
             </.card_content>
           </.card>
           <.card>
             <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
               <.card_title class="text-sm font-medium">
-                <%= gettext("Total sales") %>
+                {gettext("Total sales")}
               </.card_title>
               <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
             </.card_header>
             <.card_content>
               <div class="text-2xl font-bold">N/A</div>
               <p class="text-muted-foreground text-xs">
-                +N/A <%= gettext("from last month") %>
+                +N/A {gettext("from last month")}
               </p>
             </.card_content>
           </.card>
@@ -182,15 +182,15 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
               <div class="flex flex-row items-center justify-between">
                 <div>
                   <.card_title>
-                    <%= gettext("Events") %>
+                    {gettext("Events")}
                   </.card_title>
                   <.card_description class="pt-1">
-                    <%= gettext("All events for %{team}", team: @current_team.name) %>
+                    {gettext("All events for %{team}", team: @current_team.name)}
                   </.card_description>
                 </div>
 
                 <.button navigate={~p"/admin/events/new"} variant="outline" size="icon">
-                  <span class="sr-only"><%= gettext("New event") %></span>
+                  <span class="sr-only">{gettext("New event")}</span>
                   <.icon name="hero-plus-mini" class="h-4 w-4" />
                 </.button>
               </div>
@@ -201,10 +201,10 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
                 rows={@streams.events}
                 row_click={fn {_id, event} -> JS.navigate(~p"/admin/events/#{event}") end}
               >
-                <:col :let={{_id, event}} label={gettext("Name")}><%= event.name %></:col>
-                <:col :let={{_id, event}} label={gettext("Location")}><%= event.location %></:col>
+                <:col :let={{_id, event}} label={gettext("Name")}>{event.name}</:col>
+                <:col :let={{_id, event}} label={gettext("Location")}>{event.location}</:col>
                 <:col :let={{_id, event}} label={gettext("Date")}>
-                  <%= Calendar.strftime(event.event_date, "%Y-%m-%d") %>
+                  {Calendar.strftime(event.event_date, "%Y-%m-%d")}
                 </:col>
               </.table>
             </.card_content>
@@ -212,7 +212,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
           <.card class="xl:col-span-3">
             <.card_header>
               <.card_title>
-                <%= gettext("Recent orders") %>
+                {gettext("Recent orders")}
               </.card_title>
             </.card_header>
             <.card_content>
@@ -226,13 +226,13 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
                 }
               >
                 <:col :let={{_id, ticket}} label={gettext("Name")}>
-                  <%= ticket.order.user.full_name %>
+                  {ticket.order.user.full_name}
                 </:col>
                 <:col :let={{_id, ticket}} label={gettext("Event")}>
-                  <%= ticket.order.event.name %>
+                  {ticket.order.event.name}
                 </:col>
                 <:col :let={{_id, ticket}} label={gettext("Date")}>
-                  <%= Calendar.strftime(ticket.inserted_at, "%Y-%m-%d") %>
+                  {Calendar.strftime(ticket.inserted_at, "%Y-%m-%d")}
                 </:col>
               </.table>
             </.card_content>

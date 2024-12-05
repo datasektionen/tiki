@@ -14,14 +14,14 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     ~H"""
     <div>
       <.header>
-        <%= @event.name %>
+        {@event.name}
         <:subtitle>
           <div>Köp biljetter till eventet här.</div>
         </:subtitle>
       </.header>
 
       <div :if={@error != nil} class="mt-3 text-red-700">
-        <%= @error %>
+        {@error}
       </div>
 
       <div class="flex flex-col gap-3 pt-4">
@@ -35,14 +35,14 @@ defmodule TikiWeb.PurchaseLive.Tickets do
           <div :for={ticket_type <- ticket_types} class="bg-accent overflow-hidden rounded-xl">
             <div :if={ticket_type.promo_code != nil}>
               <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
-                <%= ticket_type.promo_code %>
+                {ticket_type.promo_code}
               </div>
             </div>
 
             <div class="flex flex-row justify-between px-4 py-4">
               <div class="flex flex-col">
-                <h3 class="pb-1 text-xl font-bold"><%= ticket_type.name %></h3>
-                <div class="text-muted-foreground"><%= ticket_type.price %> kr</div>
+                <h3 class="pb-1 text-xl font-bold">{ticket_type.name}</h3>
+                <div class="text-muted-foreground">{ticket_type.price} kr</div>
               </div>
 
               <div class="flex flex-row items-center gap-2">
@@ -55,7 +55,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
                 </button>
 
                 <div class="flex h-10 w-8 items-center justify-center rounded-lg bg-slate-200 dark:bg-zinc-900">
-                  <%= @counts[ticket_type.id] %>
+                  {@counts[ticket_type.id]}
                 </div>
 
                 <button

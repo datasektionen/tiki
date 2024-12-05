@@ -83,7 +83,7 @@ defmodule TikiWeb.Component.Dialog do
               @class
             ])
           }>
-            <%= render_slot(@inner_block) %>
+            {render_slot(@inner_block)}
 
             <.close_button id={@id} safe={@safe} />
           </div>
@@ -146,7 +146,7 @@ defmodule TikiWeb.Component.Dialog do
   def dialog_header(assigns) do
     ~H"""
     <div class={classes(["flex flex-col space-y-1.5 text-center sm:text-left", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -157,7 +157,7 @@ defmodule TikiWeb.Component.Dialog do
   def dialog_title(assigns) do
     ~H"""
     <h3 class={classes(["text-lg font-semibold leading-none tracking-tight", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </h3>
     """
   end
@@ -168,7 +168,7 @@ defmodule TikiWeb.Component.Dialog do
   def dialog_description(assigns) do
     ~H"""
     <p class={classes(["text-sm text-muted-foreground", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </p>
     """
   end
@@ -179,7 +179,7 @@ defmodule TikiWeb.Component.Dialog do
   def dialog_footer(assigns) do
     ~H"""
     <div class={classes(["flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end

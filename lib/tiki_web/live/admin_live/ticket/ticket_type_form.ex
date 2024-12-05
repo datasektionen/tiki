@@ -8,7 +8,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
     ~H"""
     <div>
       <.header>
-        <%= title(@action) %>
+        {title(@action)}
         <:subtitle>Use this form to manage ticket type records in your database.</:subtitle>
       </.header>
 
@@ -52,7 +52,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
         <:actions>
           <div>
             <.button phx-disable-with={gettext("Saving...")}>
-              <%= gettext("Save ticket type") %>
+              {gettext("Save ticket type")}
             </.button>
             <.button
               :if={@action == :edit_ticket_type}
@@ -63,7 +63,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
               phx-disable-with={gettext("Deleting...")}
               data-confirm={gettext("Are you sure?")}
             >
-              <%= gettext("Delete ticket type") %>
+              {gettext("Delete ticket type")}
             </.button>
           </div>
         </:actions>

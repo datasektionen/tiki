@@ -12,7 +12,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
       <.input field={@client_form[:name]} type="text" label={gettext("Name")} />
       <.input field={@client_form[:description]} type="text" label={gettext("Description")} />
 
-      <.label><%= gettext("Questions") %></.label>
+      <.label>{gettext("Questions")}</.label>
       <.inputs_for :let={f_nested} field={@client_form[:questions]}>
         <div class="rounded-md border px-4 py-6">
           <input type="hidden" name="form[questions_sort][]" value={f_nested.index} />
@@ -42,7 +42,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
               class="col-span-6"
             />
             <div :if={select?(f_nested[:type])} class="col-span-6">
-              <.label><%= gettext("Options") %></.label>
+              <.label>{gettext("Options")}</.label>
               <div :for={option <- f_nested[:options].value || []} class="flex flex-row items-center">
                 <.input
                   class="w-full"
@@ -67,7 +67,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
                 type="button"
                 class="text-muted-foreground mt-3 flex flex-row items-center gap-2 text-sm"
               >
-                <.icon name="hero-plus-circle" class="h-5 w-5" /><%= gettext("New option") %>
+                <.icon name="hero-plus-circle" class="h-5 w-5" />{gettext("New option")}
               </button>
             </div>
 
@@ -99,12 +99,12 @@ defmodule TikiWeb.AdminLive.Forms.Form do
         value="new"
         phx-click={JS.dispatch("change")}
       >
-        <.icon name="hero-plus-circle" class="h-5 w-5" /> <%= gettext("New question") %>
+        <.icon name="hero-plus-circle" class="h-5 w-5" /> {gettext("New question")}
       </button>
 
       <:actions>
         <.button phx-disable-with={gettext("Saving...")}>
-          <%= gettext("Save form") %>
+          {gettext("Save form")}
         </.button>
       </:actions>
     </.simple_form>

@@ -12,31 +12,31 @@ defmodule TikiWeb.OrderLive.Show do
     <div class="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
       <div class="flex sm:items-baseline sm:space-x-4">
         <h1 class="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
-          <%= gettext("Thank you for your order!") %>
+          {gettext("Thank you for your order!")}
         </h1>
         <!-- TODO: Receipt link -->
         <.link
           href="#"
           class="text-secondary-foreground hidden text-sm font-medium hover:text-secondary-foreground/80 sm:block"
         >
-          <%= gettext("View receipt") %> <span aria-hidden="true"> &rarr;</span>
+          {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
         </.link>
       </div>
       <p class="text-muted-foreground text-sm">
         <!-- TODO: Proper time  -->
         Order placed
         <time datetime={@order.updated_at}>
-          <%= Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short) %>
+          {Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short)}
         </time>
       </p>
       <!-- TODO: Receipt link -->
       <.link href="#" class="text-sm font-medium sm:hidden">
-        <%= gettext("View receipt") %> <span aria-hidden="true"> &rarr;</span>
+        {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
       </.link>
     </div>
 
     <div class="mt-6">
-      <h2 class="sr-only"><%= gettext("Tickets") %></h2>
+      <h2 class="sr-only">{gettext("Tickets")}</h2>
 
       <div class="space-y-4 md:space-y-8">
         <.card :for={ticket <- @order.tickets}>
@@ -48,14 +48,14 @@ defmodule TikiWeb.OrderLive.Show do
               <div class="ml-6">
                 <.link navigate={~p"/tickets/#{ticket}"}>
                   <h3 class="text-foreground text-base font-medium">
-                    <%= ticket.ticket_type.name %>
+                    {ticket.ticket_type.name}
                   </h3>
                 </.link>
                 <p class="text-foreground mt-2 text-sm font-medium">
-                  <%= ticket.ticket_type.price %> SEK
+                  {ticket.ticket_type.price} SEK
                 </p>
                 <p class="text-muted-foreground mt-3 text-sm">
-                  <%= ticket.ticket_type.description %>
+                  {ticket.ticket_type.description}
                 </p>
               </div>
             </div>
@@ -63,21 +63,21 @@ defmodule TikiWeb.OrderLive.Show do
               <dl class="grid grid-cols-2 gap-x-6 text-sm">
                 <div>
                   <dt class="text-foreground font-medium">
-                    <%= gettext("Name") %>
+                    {gettext("Name")}
                   </dt>
                   <dd class="text-muted-foreground mt-3">
                     <span class="block">
-                      <%= find_in_response(ticket.form_response, "namn") %>
+                      {find_in_response(ticket.form_response, "namn")}
                     </span>
                   </dd>
                 </div>
                 <div>
                   <dt class="text-foreground font-medium">
-                    <%= gettext("Contact information") %>
+                    {gettext("Contact information")}
                   </dt>
                   <dd class="text-muted-foreground mt-3 space-y-3">
                     <p>
-                      <%= find_in_response(ticket.form_response, "email") %>
+                      {find_in_response(ticket.form_response, "email")}
                     </p>
                   </dd>
                 </div>
@@ -90,12 +90,12 @@ defmodule TikiWeb.OrderLive.Show do
             class="border-border flex flex-row items-center justify-between border-t px-4 py-6 sm:px-6 lg:gap-x-8 lg:p-8"
           >
             <p class="text-sm font-medium">
-              <%= gettext("You need to fill in attendance information for this ticket") %>
+              {gettext("You need to fill in attendance information for this ticket")}
             </p>
 
             <.link navigate={~p"/tickets/#{ticket.id}/form"}>
               <.button variant="secondary">
-                <%= gettext("Fill in") %>
+                {gettext("Fill in")}
               </.button>
             </.link>
           </div>
@@ -103,27 +103,27 @@ defmodule TikiWeb.OrderLive.Show do
 
         <.card>
           <h2 class="sr-only">
-            <%= gettext("Billing summary") %>
+            {gettext("Billing summary")}
           </h2>
 
           <div class="px-4 py-6 sm:rounded-lg sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
             <dl class="grid grid-cols-2 gap-6 text-sm sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
               <div>
                 <dt class="text-foreground font-medium">
-                  <%= gettext("Order information") %>
+                  {gettext("Order information")}
                 </dt>
                 <dd class="text-muted-foreground mt-3">
                   <span class="block">
-                    <%= @order.user.full_name %>
+                    {@order.user.full_name}
                   </span>
                   <span class="block">
-                    <%= @order.user.email %>
+                    {@order.user.email}
                   </span>
                 </dd>
               </div>
               <div>
                 <dt class="text-foreground font-medium">
-                  <%= gettext("Payment information") %>
+                  {gettext("Payment information")}
                 </dt>
 
                 <div class="mt-4">
@@ -132,7 +132,7 @@ defmodule TikiWeb.OrderLive.Show do
                       <.skeleton class="h-10 w-full" />
                     </:loading>
                     <:failed :let={_failure}>
-                      <%= gettext("There was an error loading the payment method") %>
+                      {gettext("There was an error loading the payment method")}
                     </:failed>
                     <.payment_method payment_method={payment_method} />
                   </.async_result>
@@ -143,24 +143,24 @@ defmodule TikiWeb.OrderLive.Show do
             <dl class="divide-border mt-8 divide-y text-sm lg:col-span-5 lg:mt-0">
               <div class="flex items-center justify-between pb-4">
                 <dt class="text-muted-foreground">
-                  <%= gettext("Subtotal") %>
+                  {gettext("Subtotal")}
                 </dt>
                 <dd class="text-foreground font-medium">
-                  <%= @order.price %> SEK
+                  {@order.price} SEK
                 </dd>
               </div>
               <div class="flex items-center justify-between py-4">
                 <dt class="text-muted-foreground">
-                  <%= gettext("VAT") %>
+                  {gettext("VAT")}
                 </dt>
                 <dd class="text-foreground font-medium">
                   0 SEK
                 </dd>
               </div>
               <div class="flex items-center justify-between pt-4">
-                <dt class="text-foreground font-medium"><%= gettext("Order total") %></dt>
+                <dt class="text-foreground font-medium">{gettext("Order total")}</dt>
                 <dd class="text-accent-foreground font-medium">
-                  <%= @order.price %> SEK
+                  {@order.price} SEK
                 </dd>
               </div>
             </dl>
@@ -213,16 +213,16 @@ defmodule TikiWeb.OrderLive.Show do
     <dd class="mt-4 flex flex-wrap">
       <.payment_method_logo name={"paymentlogo-#{@payment_method.card.brand}"} class="h-5" />
       <p class="sr-only">
-        <%= @payment_method.card.brand %>
+        {@payment_method.card.brand}
       </p>
       <div class="ml-4">
         <p class="text-foreground">
-          <span aria-hidden="true">••••</span> <span><%= @payment_method.card.last4 %></span>
+          <span aria-hidden="true">••••</span> <span>{@payment_method.card.last4}</span>
         </p>
         <p class="text-muted-foreground">
-          <%= gettext("Expires") %>
+          {gettext("Expires")}
           <span>
-            <%= @payment_method.card.exp_month %>/<%= rem(@payment_method.card.exp_year, 100) %>
+            {@payment_method.card.exp_month}/{rem(@payment_method.card.exp_year, 100)}
           </span>
         </p>
       </div>
@@ -240,7 +240,7 @@ defmodule TikiWeb.OrderLive.Show do
       <p class="sr-only">Swish</p>
       <div class="ml-4">
         <p class="text-foreground">
-          <span>+<%= @payment_method["payerAlias"] %></span>
+          <span>+{@payment_method["payerAlias"]}</span>
         </p>
       </div>
     </dd>

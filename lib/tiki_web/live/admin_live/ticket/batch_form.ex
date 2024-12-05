@@ -8,9 +8,9 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
     ~H"""
     <div>
       <.header>
-        <%= title(@action) %>
+        {title(@action)}
         <:subtitle>
-          <%= gettext("Manage a ticket batch for this event.") %>
+          {gettext("Manage a ticket batch for this event.")}
         </:subtitle>
       </.header>
 
@@ -34,7 +34,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
         <:actions>
           <div>
             <.button phx-disable-with={gettext("Saving...")}>
-              <%= gettext("Save batch") %>
+              {gettext("Save batch")}
             </.button>
             <.button
               :if={@action == :edit_batch}
@@ -45,7 +45,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
               phx-disable-with={gettext("Deleting...")}
               data-confirm={gettext("Are you sure?")}
             >
-              <%= gettext("Delete batch") %>
+              {gettext("Delete batch")}
             </.button>
           </div>
         </:actions>

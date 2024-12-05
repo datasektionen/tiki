@@ -8,8 +8,8 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
-        <:subtitle><%= gettext("Use this form to manage events") %></:subtitle>
+        {@title}
+        <:subtitle>{gettext("Use this form to manage events")}</:subtitle>
       </.header>
 
       <.simple_form
@@ -35,13 +35,13 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
         <:actions>
           <div class="flex flex-row gap-2">
-            <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save event") %></.button>
+            <.button phx-disable-with={gettext("Saving...")}>{gettext("Save event")}</.button>
             <.button
               :if={@id != "new"}
               variant="destructive"
               navigate={~p"/admin/events/#{@event}/delete"}
             >
-              <%= gettext("Delete event") %>
+              {gettext("Delete event")}
             </.button>
           </div>
         </:actions>

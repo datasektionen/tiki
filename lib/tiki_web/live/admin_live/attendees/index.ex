@@ -46,7 +46,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">
       <.card_title class="sm:col-span-6">
-        <%= gettext("Sold tickets") %>
+        {gettext("Sold tickets")}
       </.card_title>
 
       <div class="flex flex-row items-center gap-2 sm:col-span-6">
@@ -63,7 +63,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
         </div>
 
         <.button navigate={~p"/admin/events/{@event}/attendees/new"} class="ml-auto">
-          <%= gettext("New attendee") %>
+          {gettext("New attendee")}
         </.button>
       </div>
 
@@ -90,23 +90,23 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
               :if={@ticket.order.user.full_name}
               class="text-foreground text-sm font-semibold leading-6"
             >
-              <%= @ticket.order.user.full_name %>
+              {@ticket.order.user.full_name}
             </p>
           </.link>
           <.badge variant="outline">
             <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
-            <span class="text-xs"><%= @ticket.ticket_type.name %></span>
+            <span class="text-xs">{@ticket.ticket_type.name}</span>
           </.badge>
         </div>
         <div class="text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5">
-          <p class="truncate"><%= @ticket.order.user.email %></p>
+          <p class="truncate">{@ticket.order.user.email}</p>
           <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
             <circle cx="1" cy="1" r="1" />
           </svg>
           <p class="whitespace-nowrap">
-            <%= gettext("Purchased") %>
+            {gettext("Purchased")}
             <time datetime="2023-03-17T00:00Z">
-              <%= Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M") %>
+              {Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M")}
             </time>
           </p>
         </div>

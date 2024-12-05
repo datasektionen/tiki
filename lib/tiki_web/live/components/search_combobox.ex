@@ -86,7 +86,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
     <div>
       <div phx-hook="SearchCombobox" id={"#{@id}-combobox"}>
         <label for="combobox" class="text-foreground block text-sm font-medium leading-6">
-          <%= @label %>
+          {@label}
         </label>
         <div class="relative mt-2">
           <input
@@ -143,7 +143,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
                 "block truncate",
                 @chosen == id && "font-semibold"
               ]}>
-                <%= value %>
+                {value}
               </span>
 
               <span
