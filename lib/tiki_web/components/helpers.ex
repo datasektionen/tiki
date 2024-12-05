@@ -15,7 +15,7 @@ defmodule TikiWeb.ComponentHelpers do
       :name,
       assigns[:name] || if(assigns[:multiple], do: field.name <> "[]", else: field.name)
     )
-    |> assign(:value, assigns[:value] || field.value)
+    |> assign(:value, assigns[:value] || field.value || assigns[:default])
     |> prepare_assign()
   end
 

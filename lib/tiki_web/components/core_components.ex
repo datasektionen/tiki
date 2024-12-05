@@ -191,15 +191,18 @@ defmodule TikiWeb.CoreComponents do
       @actions != [] && "flex items-center justify-between gap-6",
       @class
     ]}>
-      <div class="flex flex-col gap-2">
-        <h1 class="text-2xl font-semibold leading-none tracking-tight">
-          <%= render_slot(@inner_block) %>
-        </h1>
+      <div class="flex w-full flex-col gap-2">
+        <div class="flex flex-row items-center justify-between">
+          <h1 class="text-2xl font-semibold leading-none tracking-tight">
+            <%= render_slot(@inner_block) %>
+          </h1>
+          <div class="flex-none"><%= render_slot(@actions) %></div>
+        </div>
+
         <p :if={@subtitle != []} class="text-muted-foreground text-sm">
           <%= render_slot(@subtitle) %>
         </p>
       </div>
-      <div class="flex-none"><%= render_slot(@actions) %></div>
     </header>
     """
   end

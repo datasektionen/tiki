@@ -1,5 +1,5 @@
 defmodule Tiki.Support.SwishMock do
-  @behaviour Tiki.Swish
+  @behaviour Swish
 
   @payment_request %{
     "amount" => 50.0,

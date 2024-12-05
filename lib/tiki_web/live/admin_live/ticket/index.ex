@@ -12,19 +12,15 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   def render(assigns) do
     ~H"""
     <div class="my-8">
-      <div class="mb-4 flex flex-row items-center justify-between">
-        <div>
-          <h2 class="mb-2 text-lg font-bold">
-            <%= gettext("Tickets") %>
-          </h2>
-          <div class="text-muted-foreground text-sm">
-            <%= gettext(
-              "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
-            ) %>
-          </div>
-        </div>
+      <.header>
+        <%= gettext("Tickets") %>
+        <:subtitle>
+          <%= gettext(
+            "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
+          ) %>
+        </:subtitle>
 
-        <div class="flex flex-row justify-end gap-2">
+        <:actions>
           <.link patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
             <.button variant="secondary">
               <%= gettext("New batch") %>
@@ -36,11 +32,29 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
               <%= gettext("New ticket type") %>
             </.button>
           </.link>
-        </div>
-      </div>
+        </:actions>
+      </.header>
 
       <div id="batch-root" class="my-8 flex flex-col gap-4" data-batch="none">
         <.ticket_batch :for={batch <- @batches} batch={batch} />
+
+        <div :if={@batches == []} class="p-4 text-center">
+          <.icon name="hero-rectangle-stack" class="text-muted-foreground size-12" />
+          <h3 class="text-foreground mt-2 text-sm font-semibold">
+            <%= gettext("No ticket batches") %>
+          </h3>
+          <p class="text-muted-foreground mt-1 text-sm">
+            <%= gettext("Create a new batch to get started.") %>
+          </p>
+          <div class="mt-6">
+            <.link :if={@batches == []} patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
+              <.button>
+                <.icon name="hero-plus" class="size-4 mr-2" />
+                <%= gettext("Create batch") %>
+              </.button>
+            </.link>
+          </div>
+        </div>
       </div>
 
       <.sheet :if={@live_action in [:new_batch, :edit_batch]} class="">
@@ -126,10 +140,16 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     |> assign(:ticket_type, ticket_type)
   end
 
-  def apply_action(socket, :new_ticket_type, _params) do
+  def apply_action(socket, :new_ticket_type, params) do
+    ticket_type =
+      case params do
+        %{"batch_id" => batch_id} -> %TicketType{ticket_batch_id: batch_id}
+        _ -> %TicketType{}
+      end
+
     socket
     |> assign(:page_title, gettext("New Ticket type"))
-    |> assign(:ticket_type, %TicketType{})
+    |> assign(:ticket_type, ticket_type)
   end
 
   attr :batch, :map
@@ -137,7 +157,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   defp ticket_batch(assigns) do
     ~H"""
     <div
-      class="border-border bg-muted/40 w-full overflow-hidden rounded-md pb-4"
+      class="border-border bg-muted/40 w-full overflow-hidden rounded-md text-sm"
       data-batch={@batch.batch.id}
     >
       <.link
@@ -198,20 +218,17 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
         </div>
       </div>
 
-      <div
-        :if={@batch.batch.ticket_types == [] && @batch.children == []}
-        id={"batch-zone-#{@batch.batch.id}-no-children"}
-        data-batch={@batch.batch.id}
-        class="flex flex-col gap-1 px-4"
+      <.link
+        class="flex flex-col gap-1 rounded-md p-4 hover:bg-accent"
+        patch={
+          ~p"/admin/events/#{@batch.batch.event_id}/tickets/types/new?batch_id=#{@batch.batch.id}"
+        }
       >
-        <div class="ml-2 border-l">
-          <div class="-ml-[1px] border-foreground flex flex-col border-l pl-2">
-            <div class="text-muted-foreground inline-flex items-center gap-2 rounded-md p-2">
-              <%= gettext("No tickets") %>
-            </div>
-          </div>
+        <div class="text-foreground inline-flex items-center gap-2 rounded-md text-sm">
+          <.icon name="hero-plus-circle" class="size-4 ml-[1px]" />
+          <%= gettext("Add ticket") %>
         </div>
-      </div>
+      </.link>
     </div>
     """
   end

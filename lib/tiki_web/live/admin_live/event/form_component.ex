@@ -26,6 +26,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
           type="select"
           label={gettext("Default signup form")}
           options={options_for_forms(@forms)}
+          placeholder={gettext("Select a form")}
         />
         <.input field={@form[:event_date]} type="datetime-local" label={gettext("Event date")} />
 
@@ -50,15 +51,28 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   end
 
   @impl true
-  def update(%{event: event} = assigns, socket) do
-    changeset = Events.change_event(event)
-    forms = Tiki.Forms.list_forms_for_event(event.id)
-
+  def update(%{event: event, action: action} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:forms, forms)
-     |> assign_form(changeset)}
+     |> apply_action(action, event)}
+  end
+
+  defp apply_action(socket, :new, event) do
+    changeset = Events.change_event(event)
+
+    socket
+    |> assign(:forms, [])
+    |> assign_form(changeset)
+  end
+
+  defp apply_action(socket, :edit, event) do
+    changeset = Events.change_event(event)
+    forms = Tiki.Forms.list_forms_for_event(event.id)
+
+    socket
+    |> assign(:forms, forms)
+    |> assign_form(changeset)
   end
 
   @impl true

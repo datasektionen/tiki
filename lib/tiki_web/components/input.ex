@@ -35,6 +35,7 @@ defmodule TikiWeb.Component.Input do
   attr :name, :any
   attr :label, :string, default: nil
   attr :value, :any
+  attr :default, :any
 
   attr :type, :string,
     default: "text",

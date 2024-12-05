@@ -29,7 +29,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
           type="select"
           label={gettext("Signup form")}
           options={options_for_forms(@forms)}
-          value={@event.default_form_id}
+          default={@event.default_form_id}
         />
         <.input field={@form[:purchasable]} type="checkbox" label={gettext("Purchasable")} />
         <.input field={@form[:price]} type="number" label={gettext("Price")} />
