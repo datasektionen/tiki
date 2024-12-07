@@ -13,7 +13,7 @@ defmodule TikiWeb.EventLive.Show do
     ~H"""
     <div class="flex flex-col gap-4">
       <h1 class="text-2xl font-bold leading-9">{@event.name}</h1>
-      <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+      <div class="flex flex-col items-start gap-4 lg:grid lg:grid-cols-3">
         <div class="col-span-2 flex flex-col gap-4">
           <div :if={@event.image_url != nil} class="">
             <img class="aspect-video w-full rounded-xl object-cover" src={@event.image_url} />
@@ -48,7 +48,7 @@ defmodule TikiWeb.EventLive.Show do
           </div>
         </div>
 
-        <div class="top-4 col-span-1 lg:sticky" id="tickets">
+        <div class="w-full lg:sticky lg:top-4" id="tickets">
           <.live_component
             module={TicketsComponent}
             id="tickets-component"
@@ -69,7 +69,7 @@ defmodule TikiWeb.EventLive.Show do
       patch={~p"/events/#{@event}"}
     />
 
-    <div class="bg-background shadow-xs fixed right-0 bottom-0 left-0 z-30 border px-6 py-3 lg:hidden">
+    <div class="bg-background border-border fixed right-0 bottom-0 left-0 z-30 border-t px-6 py-3 lg:hidden">
       <a href="#tickets" class="w-full">
         <.button class="w-full">
           {gettext("Tickets")}

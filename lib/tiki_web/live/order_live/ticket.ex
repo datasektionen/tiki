@@ -41,11 +41,11 @@ defmodule TikiWeb.OrderLive.Ticket do
           </div>
         </div>
 
-        <h2 class="text-base/7 text-foreground mt-8 font-semibold sm:text-sm/6">
+        <h2 class="text-foreground text-base/7 mt-8 font-semibold">
           {gettext("Ticket information")}
         </h2>
         <hr role="presentation" class="border-border mt-4 w-full border-t" />
-        <dl class="grid grid-cols-1 text-base/6 sm:grid-cols-[min(50%,theme(spacing.80))_auto] sm:text-sm/6">
+        <dl class="grid grid-cols-1 text-sm/6 sm:grid-cols-[min(50%,theme(spacing.80))_auto] sm:text-sm/6">
           <%= for qr <- @ticket.form_response.question_responses do %>
             <dt class="border-border text-muted-foreground col-start-1 border-t pt-3 first:border-none sm:py-3">
               {qr.question.name}

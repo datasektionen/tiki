@@ -9,7 +9,7 @@ defmodule TikiWeb.OrderLive.Show do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="space-y-2 px-4 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
+    <div class="space-y-2 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
       <div class="flex sm:items-baseline sm:space-x-4">
         <h1 class="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
           {gettext("Thank you for your order!")}
@@ -24,7 +24,10 @@ defmodule TikiWeb.OrderLive.Show do
       </div>
       <p class="text-muted-foreground text-sm">
         <!-- TODO: Proper time  -->
-        Order placed
+        {gettext("Order placed")}
+        
+
+
         <time datetime={@order.updated_at}>
           {Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short)}
         </time>
@@ -48,7 +51,7 @@ defmodule TikiWeb.OrderLive.Show do
               <div class="ml-6">
                 <.link navigate={~p"/tickets/#{ticket}"}>
                   <h3 class="text-foreground text-base font-medium">
-                    {ticket.ticket_type.name}
+                    {ticket.ticket_type.name} &rarr;
                   </h3>
                 </.link>
                 <p class="text-foreground mt-2 text-sm font-medium">
@@ -60,14 +63,14 @@ defmodule TikiWeb.OrderLive.Show do
               </div>
             </div>
             <div :if={ticket.form_response} class="mt-6 lg:col-span-5 lg:mt-0">
-              <dl class="grid grid-cols-2 gap-x-6 text-sm">
+              <dl class="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
                 <div>
                   <dt class="text-foreground font-medium">
                     {gettext("Name")}
                   </dt>
                   <dd class="text-muted-foreground mt-3">
                     <span class="block">
-                      {find_in_response(ticket.form_response, "namn")}
+                      {find_in_response(ticket.form_response, ["namn", "name"])}
                     </span>
                   </dd>
                 </div>
@@ -199,9 +202,12 @@ defmodule TikiWeb.OrderLive.Show do
      end)}
   end
 
-  defp find_in_response(response, question) do
+  defp find_in_response(response, question) when is_binary(question),
+    do: find_in_response(response, [question])
+
+  defp find_in_response(response, questions) when is_list(questions) do
     response.question_responses
-    |> Enum.find(%{}, fn qr -> String.downcase(qr.question.name) == question end)
+    |> Enum.find(%{}, fn qr -> String.downcase(qr.question.name) in questions end)
     |> Map.get(:answer, "")
   end
 
