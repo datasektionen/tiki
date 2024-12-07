@@ -52,7 +52,6 @@ defmodule Tiki.MixProject do
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
-      {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
@@ -71,7 +70,11 @@ defmodule Tiki.MixProject do
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:phx_gen_oidcc, "~> 0.1.0", only: :dev, runtime: false},
       {:salad_ui,
-       git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev, :test]}
+       git: "https://github.com/adriansalamon/salad_ui",
+       branch: "main",
+       only: :dev,
+       runtime: false},
+      {:tails, "~> 0.1"}
     ]
   end
 
