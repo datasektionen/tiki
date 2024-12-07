@@ -70,9 +70,8 @@ defmodule TikiWeb.Router do
       live "/users/confirm", UserConfirmationInstructionsLive, :new
 
       live "/events", EventLive.Index, :index
-      live "/events/:id", EventLive.Show, :index
-      live "/events/:event_id/purchase", PurchaseLive.Tickets, :tickets
-      live "/events/:event_id/purchase/:order_id", PurchaseLive.Tickets, :purchase
+      live "/events/:event_id", EventLive.Show, :index
+      live "/events/:event_id/purchase/:order_id", EventLive.Show, :purchase
 
       live "/orders/:id", OrderLive.Show, :show
       live "/tickets/:id", OrderLive.Ticket, :show

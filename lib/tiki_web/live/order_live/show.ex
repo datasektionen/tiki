@@ -107,7 +107,7 @@ defmodule TikiWeb.OrderLive.Show do
           </h2>
 
           <div class="px-4 py-6 sm:rounded-lg sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8">
-            <dl class="grid grid-cols-2 gap-6 text-sm sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
+            <dl class="grid grid-cols-1 gap-6 text-sm sm:grid-cols-2 md:grid-cols-2 md:gap-x-8 lg:col-span-7">
               <div>
                 <dt class="text-foreground font-medium">
                   {gettext("Order information")}

@@ -165,7 +165,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             <.button id="submit" phx-click={JS.show(to: "#spinner")} class="space-x-2">
               <.spinner class="size-4 hidden" id="spinner" />
               <span id="button-text">
-                Betala {@order.price} kr
+                {gettext("Pay")} {@order.price} kr
               </span>
             </.button>
             <div id="payment-message" class="hidden"></div>
@@ -235,7 +235,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
 
   def handle_event("cancel", _params, socket) do
     Orders.maybe_cancel_order(socket.assigns.order.id)
-    {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}/purchase")}
+    {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
   end
 
   defp init_checkout(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)

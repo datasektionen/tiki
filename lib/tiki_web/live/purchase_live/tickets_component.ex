@@ -1,37 +1,29 @@
-defmodule TikiWeb.PurchaseLive.Tickets do
-  use TikiWeb, :live_view
+defmodule TikiWeb.PurchaseLive.TicketsComponent do
+  use TikiWeb, :live_component
 
   alias Phoenix.LiveView.AsyncResult
   import TikiWeb.Component.Skeleton
 
-  alias Tiki.Events
   alias Tiki.Tickets
   alias Tiki.Orders
-  alias Tiki.Presence
 
-  @impl Phoenix.LiveView
+  @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-    <div>
-      <.header>
-        {@event.name}
-        <:subtitle>
-          <div>Köp biljetter till eventet här.</div>
-        </:subtitle>
-      </.header>
-
+    <div class="flex flex-col gap-4">
+      <h2 class="text-xl font-semibold">{gettext("Tickets")}</h2>
       <div :if={@error != nil} class="mt-3 text-red-700">
         {@error}
       </div>
 
-      <div class="flex flex-col gap-3 pt-4">
+      <div class="flex flex-col gap-3">
         <.async_result :let={ticket_types} assign={@ticket_types}>
           <:loading>
             <.skeleton class="h-20 w-full" />
             <.skeleton class="h-20 w-full" />
             <.skeleton class="h-20 w-full" />
           </:loading>
-          <:failed :let={_failure}>there was an erorr loading ticket types</:failed>
+          <:failed :let={_failure}>{gettext("There was an error loading ticket types")}</:failed>
           <div :for={ticket_type <- ticket_types} class="bg-accent overflow-hidden rounded-xl">
             <div :if={ticket_type.promo_code != nil}>
               <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
@@ -41,8 +33,8 @@ defmodule TikiWeb.PurchaseLive.Tickets do
 
             <div class="flex flex-row justify-between px-4 py-4">
               <div class="flex flex-col">
-                <h3 class="pb-1 text-xl font-bold">{ticket_type.name}</h3>
-                <div class="text-muted-foreground">{ticket_type.price} kr</div>
+                <h3 class="text-md pb-1 font-semibold">{ticket_type.name}</h3>
+                <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
               </div>
 
               <div class="flex flex-row items-center gap-2">
@@ -50,6 +42,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
                   :if={@counts[ticket_type.id] > 0}
                   class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
                   phx-click={JS.push("dec", value: %{id: ticket_type.id})}
+                  phx-target={@myself}
                 >
                   <.icon name="hero-minus-mini" />
                 </button>
@@ -70,6 +63,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
                   :if={@counts[ticket_type.id] < ticket_type.available}
                   class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
                   phx-click={JS.push("inc", value: %{id: ticket_type.id})}
+                  phx-target={@myself}
                 >
                   <.icon name="hero-plus-mini" />
                 </button>
@@ -86,13 +80,14 @@ defmodule TikiWeb.PurchaseLive.Tickets do
         </.async_result>
       </div>
 
-      <div class="flex flex-row justify-between pt-4">
+      <div class="flex flex-row justify-between">
         <.form
           for={%{}}
           as={:promo_form}
           phx-change="update_promo"
           phx-submit="activate_promo"
           class="flex w-full flex-row justify-between"
+          phx-target={@myself}
         >
           <input
             type="text"
@@ -103,70 +98,32 @@ defmodule TikiWeb.PurchaseLive.Tickets do
           />
           <.button :if={@promo_code != ""}>Aktivera</.button>
         </.form>
-        <.button :if={@promo_code == ""} phx-click="request-tickets">
+        <.button :if={@promo_code == ""} phx-click="request-tickets" phx-target={@myself}>
           <span>Fortsätt</span>
         </.button>
       </div>
-      <.live_component
-        :if={@live_action == :purchase}
-        module={TikiWeb.PurchaseLive.PurchaseComponent}
-        id={@event.id}
-        event={@event}
-        order={@order}
-        patch={~p"/events/#{@event}"}
-      />
     </div>
     """
   end
 
-  @impl Phoenix.LiveView
-  def mount(%{"event_id" => event_id}, _session, socket) do
-    event = Events.get_event!(event_id)
+  @impl Phoenix.LiveComponent
+  def update(%{action: {:tickets_updated, ticket_types}}, socket) do
+    {:ok, assign_ticket_types(socket, ticket_types)}
+  end
 
-    if connected?(socket) do
-      Orders.subscribe(event.id)
-      Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
-    end
-
+  def update(%{event: event} = assigns, socket) do
     {:ok,
-     assign(socket,
-       event: event,
-       promo_code: "",
-       promo_codes: [],
-       error: nil,
-       ticket_types: AsyncResult.loading()
-     )
+     socket
+     |> assign(assigns)
+     |> assign(promo_code: "", promo_codes: [], error: nil, ticket_types: AsyncResult.loading())
      |> start_async(:ticket_types, fn -> get_available_ticket_types(event.id) end)}
-  end
-
-  @impl Phoenix.LiveView
-  def handle_params(params, _uri, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :tickets, _params), do: socket
-
-  defp apply_action(socket, :purchase, %{"order_id" => order_id}) do
-    order = Orders.get_order!(order_id)
-
-    if connected?(socket) do
-      Orders.subscribe_to_order(order_id)
-    end
-
-    case order.status do
-      :paid ->
-        push_navigate(socket, to: ~p"/orders/#{order.id}")
-
-      _ ->
-        assign(socket, order: order)
-    end
   end
 
   defp get_available_ticket_types(event_id) do
     Tickets.get_available_ticket_types(event_id)
   end
 
-  @impl Phoenix.LiveView
+  @impl Phoenix.LiveComponent
   def handle_async(:ticket_types, {:ok, ticket_types}, socket) do
     {:noreply, assign_ticket_types(socket, ticket_types)}
   end
@@ -199,7 +156,7 @@ defmodule TikiWeb.PurchaseLive.Tickets do
     assign(socket, ticket_types: AsyncResult.ok(tts, ticket_types), counts: counts)
   end
 
-  @impl Phoenix.LiveView
+  @impl Phoenix.LiveComponent
   def handle_event("inc", %{"id" => id}, socket) do
     counts = Map.update(socket.assigns.counts, id, 0, &(&1 + 1))
     {:noreply, assign(socket, counts: counts)}
@@ -242,33 +199,5 @@ defmodule TikiWeb.PurchaseLive.Tickets do
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}
     end
-  end
-
-  @impl true
-  def handle_info({:tickets_updated, ticket_types}, socket) do
-    {:noreply, assign_ticket_types(socket, ticket_types)}
-  end
-
-  def handle_info({:cancelled, order}, socket) do
-    {:noreply, assign(socket, order: order)}
-  end
-
-  def handle_info({:paid, order}, socket) do
-    if order.status == :paid do
-      {:noreply,
-       put_flash(socket, :info, gettext("Order paid!"))
-       |> push_navigate(to: ~p"/orders/#{order.id}")}
-    else
-      {:noreply, assign(socket, order: order)}
-    end
-  end
-
-  @impl Phoenix.LiveView
-  def handle_info(
-        %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
-        %{assigns: %{online_count: count}} = socket
-      ) do
-    online_count = count + map_size(joins) - map_size(leaves)
-    {:noreply, assign(socket, :online_count, online_count)}
   end
 end
