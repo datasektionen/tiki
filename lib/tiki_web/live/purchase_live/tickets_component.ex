@@ -185,15 +185,9 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
       Enum.filter(socket.assigns.counts, fn {_, count} -> count > 0 end)
       |> Enum.into(%{})
 
-    user_id =
-      case socket.assigns.current_user do
-        nil -> nil
-        user -> user.id
-      end
-
     %{event: %{id: event_id}} = socket.assigns
 
-    with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase, user_id) do
+    with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase) do
       {:noreply, push_patch(socket, to: ~p"/events/#{event_id}/purchase/#{order}")}
     else
       {:error, reason} ->
