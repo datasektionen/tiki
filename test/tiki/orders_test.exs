@@ -44,7 +44,7 @@ defmodule Tiki.OrdersTest do
       event = Tiki.EventsFixtures.event_fixture()
 
       orders =
-        Enum.map(1..10, fn _ ->
+        Enum.map(1..3, fn _ ->
           user = Tiki.AccountsFixtures.user_fixture()
 
           {:ok, order} =

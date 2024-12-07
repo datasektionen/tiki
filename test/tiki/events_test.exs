@@ -22,12 +22,12 @@ defmodule Tiki.EventsTest do
     end
 
     test "get_event!/1 returns the event with given id" do
-      event = event_fixture()
+      event = event_fixture() |> Tiki.Repo.preload([:team])
       assert Events.get_event!(event.id) == event
     end
 
     test "get_event!/1 can preload tickt types" do
-      event = event_fixture() |> Tiki.Repo.preload(ticket_batches: [:ticket_types])
+      event = event_fixture() |> Tiki.Repo.preload(ticket_batches: [:ticket_types], team: [])
       assert Events.get_event!(event.id, preload_ticket_types: true) == event
     end
 
@@ -83,7 +83,7 @@ defmodule Tiki.EventsTest do
     end
 
     test "update_event/2 with invalid data returns error changeset" do
-      event = event_fixture()
+      event = event_fixture() |> Tiki.Repo.preload([:team])
       assert {:error, %Ecto.Changeset{}} = Events.update_event(event, @invalid_attrs)
       assert event == Events.get_event!(event.id)
     end

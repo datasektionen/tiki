@@ -131,14 +131,6 @@ defmodule TikiWeb.EventLive.Show do
   end
 
   @impl true
-  def handle_info(
-        %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
-        %{assigns: %{online_count: count}} = socket
-      ) do
-    online_count = count + map_size(joins) - map_size(leaves)
-    {:noreply, assign(socket, :online_count, online_count)}
-  end
-
   def handle_info({:tickets_updated, _} = msg, socket) do
     send_update(TicketsComponent, id: "tickets-component", action: msg)
     {:noreply, socket}

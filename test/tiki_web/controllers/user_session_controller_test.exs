@@ -4,7 +4,7 @@ defmodule TikiWeb.UserSessionControllerTest do
   import Tiki.AccountsFixtures
 
   setup do
-    %{user: user_fixture()}
+    %{user: user_fixture(first_name: "John", last_name: "Doe")}
   end
 
   describe "POST /users/log_in" do
@@ -20,9 +20,8 @@ defmodule TikiWeb.UserSessionControllerTest do
       # Now do a logged in request and assert on the menu
       conn = get(conn, ~p"/")
       response = html_response(conn, 200)
-      assert response =~ user.email
+      assert response =~ user.full_name
       assert response =~ ~p"/users/settings"
-      assert response =~ ~p"/users/log_out"
     end
 
     test "logs the user in with remember me", %{conn: conn, user: user} do

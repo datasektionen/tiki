@@ -11,7 +11,8 @@ defmodule Tiki.TeamsFixtures do
     {:ok, team} =
       attrs
       |> Enum.into(%{
-        name: "some name"
+        name: "some name",
+        contact_email: "turetek@kth.se"
       })
       |> Tiki.Teams.create_team()
 

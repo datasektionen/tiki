@@ -66,8 +66,6 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-config :salad_ui, :error_translator_function, {TikiWeb.CoreComponents, :translate_error}
-
 # SaladUI use tails to properly merge Tailwind CSS classes
 config :tails,
   color_classes: [
