@@ -76,7 +76,7 @@ defmodule Tiki.Tickets do
       {:ok, batch} ->
         Tiki.Orders.broadcast(
           ticket_batch.event_id,
-          {:tickets_updated, get_availible_ticket_types(ticket_batch.event_id)}
+          {:tickets_updated, get_available_ticket_types(ticket_batch.event_id)}
         )
 
         {:ok, batch}
@@ -212,11 +212,11 @@ defmodule Tiki.Tickets do
   end
 
   @doc """
-  Returns the availible ticket types for an event. Returns a list of ticket types,
+  Returns the available ticket types for an event. Returns a list of ticket types,
   with the number of available tickets, purchased tickets and pending tickets.
 
   ## Examples
-      iex> get_availible_ticket_types(123)
+      iex> get_available_ticket_types(123)
       [
         %TicketType{
           available: 10,
@@ -232,15 +232,15 @@ defmodule Tiki.Tickets do
         }
       ]
   """
-  def get_availible_ticket_types(event_id) do
+  def get_available_ticket_types(event_id) do
     result =
       Multi.new()
-      |> get_availible_ticket_types_multi(event_id)
+      |> get_available_ticket_types_multi(event_id)
       |> Repo.transaction()
 
     case result do
-      {:ok, %{ticket_types_availible: ticket_types}} ->
-        put_avalable_ticket_meta(ticket_types)
+      {:ok, %{ticket_types_available: ticket_types}} ->
+        put_available_ticket_meta(ticket_types)
 
       other ->
         other
@@ -252,7 +252,7 @@ defmodule Tiki.Tickets do
 
   ## Examples
 
-      iex> put_avalable_ticket_meta([%{tichet_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...])
+      iex> put_available_ticket_meta([%{tichet_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...])
       [
         %TicketType{
           available: 10,
@@ -263,7 +263,7 @@ defmodule Tiki.Tickets do
         ...
       ]
   """
-  def put_avalable_ticket_meta(ticket_types) do
+  def put_available_ticket_meta(ticket_types) do
     Enum.map(ticket_types, fn tt ->
       tt.ticket_type
       |> Map.put(:available, tt.available)
@@ -273,16 +273,16 @@ defmodule Tiki.Tickets do
   end
 
   @doc """
-  An Ecto Multi that returns the avalible ticket types for an event.
-  The final result can be found from the `ticket_types_availible` key.
+  An Ecto Multi that returns the available ticket types for an event.
+  The final result can be found from the `ticket_types_available` key.
   It will look like this:
 
   ```
-  # :ticket_types_availible
+  # :ticket_types_available
   %{ticket_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...]
   """
 
-  def get_availible_ticket_types_multi(multi, event_id) do
+  def get_available_ticket_types_multi(multi, event_id) do
     # Subquery for counting tickets based on status
     sub =
       from tt in TicketType,
@@ -322,7 +322,7 @@ defmodule Tiki.Tickets do
       {:ok, available}
     end)
     |> Multi.all(:ticket_types, query)
-    |> Multi.run(:ticket_types_availible, fn _repo,
+    |> Multi.run(:ticket_types_available, fn _repo,
                                              %{available: available, ticket_types: ticket_types} ->
       ticket_types =
         Enum.map(ticket_types, fn tt ->

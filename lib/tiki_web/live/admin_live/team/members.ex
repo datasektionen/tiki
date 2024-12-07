@@ -30,21 +30,21 @@ defmodule TikiWeb.AdminLive.Team.Members do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= gettext("Team members") %>
+      {gettext("Team members")}
       <:actions>
         <.link navigate={~p"/admin/team/members/new"}>
-          <.button><%= gettext("Add member") %></.button>
+          <.button>{gettext("Add member")}</.button>
         </.link>
       </:actions>
     </.header>
     <.table id="members" rows={@streams.members}>
-      <:col :let={{_id, membership}} label={gettext("Name")}><%= membership.user.full_name %></:col>
-      <:col :let={{_id, membership}} label={gettext("Email")}><%= membership.user.email %></:col>
-      <:col :let={{_id, membership}} label={gettext("Role")}><%= membership.role %></:col>
+      <:col :let={{_id, membership}} label={gettext("Name")}>{membership.user.full_name}</:col>
+      <:col :let={{_id, membership}} label={gettext("Email")}>{membership.user.email}</:col>
+      <:col :let={{_id, membership}} label={gettext("Role")}>{membership.role}</:col>
 
       <:action :let={{_id, membership}}>
         <.link navigate={~p"/admin/team/members/#{membership}/edit"}>
-          <%= gettext("Edit") %>
+          {gettext("Edit")}
         </.link>
       </:action>
       <:action :let={{id, membership}}>
@@ -52,7 +52,7 @@ defmodule TikiWeb.AdminLive.Team.Members do
           phx-click={JS.push("delete", value: %{id: membership.id}) |> hide("##{id}")}
           data-confirm={gettext("Are you sure?")}
         >
-          <%= gettext("Delete") %>
+          {gettext("Delete")}
         </.link>
       </:action>
     </.table>

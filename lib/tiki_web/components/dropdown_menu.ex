@@ -44,7 +44,7 @@ defmodule TikiWeb.Component.DropdownMenu do
   def dropdown_menu(assigns) do
     ~H"""
     <div class={classes(["relative group inline-block", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -62,7 +62,7 @@ defmodule TikiWeb.Component.DropdownMenu do
       phx-click={toggle()}
       phx-click-away={hide()}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -88,7 +88,7 @@ defmodule TikiWeb.Component.DropdownMenu do
       {@rest}
     >
       <div class="">
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </div>
     """

@@ -1,5 +1,5 @@
 defmodule Tiki.Accounts.User do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "users" do
@@ -48,7 +48,7 @@ defmodule Tiki.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :role, :kth_id])
+    |> cast(attrs, [:email, :password, :role, :kth_id, :first_name, :last_name])
     |> validate_email(opts)
     |> validate_password(opts)
   end

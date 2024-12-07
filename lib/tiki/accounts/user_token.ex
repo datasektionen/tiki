@@ -1,5 +1,5 @@
 defmodule Tiki.Accounts.UserToken do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Query
   alias Tiki.Accounts.UserToken
 

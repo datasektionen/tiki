@@ -1,5 +1,5 @@
 defmodule Tiki.Checkouts.SwishCheckout do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "swish_checkouts" do

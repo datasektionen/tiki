@@ -1,5 +1,5 @@
 defmodule Tiki.Forms.Response do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "form_responses" do
@@ -14,7 +14,7 @@ defmodule Tiki.Forms.Response do
   @doc false
   def changeset(response, attrs) do
     response
-    |> cast(attrs, [:form_id, :ticket_id, :question_id])
-    |> validate_required([])
+    |> cast(attrs, [:form_id, :ticket_id])
+    |> validate_required([:form_id, :ticket_id])
   end
 end

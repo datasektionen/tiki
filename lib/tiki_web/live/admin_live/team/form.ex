@@ -8,15 +8,19 @@ defmodule TikiWeb.AdminLive.Team.Form do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= @page_title %>
+      {@page_title}
       <:subtitle>Use this form to manage team records in your database.</:subtitle>
     </.header>
 
     <.simple_form for={@form} id="team-form" phx-change="validate" phx-submit="save">
       <.input field={@form[:name]} type="text" label={gettext("Name")} />
+      <.input field={@form[:contact_email]} type="text" label={gettext("Contact email")} />
+      <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+      <.input field={@form[:logo_url]} type="text" label={gettext("Logo URL")} />
+
       <:actions>
         <.button phx-disable-with={gettext("Saving...")}>
-          <%= gettext("Save team") %>
+          {gettext("Save team")}
         </.button>
       </:actions>
     </.simple_form>

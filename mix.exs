@@ -40,19 +40,18 @@ defmodule Tiki.MixProject do
   defp deps do
     [
       {:bcrypt_elixir, "~> 3.0"},
-      {:phoenix, github: "phoenixframework/phoenix", override: true},
+      {:phoenix, "~> 1.7.16"},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.0.0-rc.7"},
+      {:phoenix_live_view, "~> 1.0.0"},
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
-      {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
@@ -71,7 +70,11 @@ defmodule Tiki.MixProject do
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:phx_gen_oidcc, "~> 0.1.0", only: :dev, runtime: false},
       {:salad_ui,
-       git: "https://github.com/adriansalamon/salad_ui", branch: "main", only: [:dev, :test]}
+       git: "https://github.com/adriansalamon/salad_ui",
+       branch: "main",
+       only: :dev,
+       runtime: false},
+      {:tails, "~> 0.1"}
     ]
   end
 

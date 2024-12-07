@@ -7,16 +7,18 @@ defmodule TikiWeb.UserRegistrationLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
-      <.header class="text-center">
-        Register for an account
-        <:subtitle>
-          Already registered?
-          <.link navigate={~p"/users/log_in"} class="text-brand font-semibold hover:underline">
-            Sign in
+      <div class="mb-6 text-center">
+        <h1 class="text-foreground mb-2 text-2xl font-semibold">
+          {gettext("Register for an account")}
+        </h1>
+        <div class="text-muted-foreground text-sm">
+          {gettext("Already registered?")}
+          <.link navigate={~p"/users/log_in"} class="text-foreground font-semibold hover:underline">
+            {gettext("Sign in")}
           </.link>
-          to your account now.
-        </:subtitle>
-      </.header>
+          {gettext("to your account now.")}
+        </div>
+      </div>
 
       <.simple_form
         for={@form}

@@ -7,9 +7,14 @@ defmodule Tiki.OrdersFixtures do
   @doc """
   Generate a order.
   """
-  def order_fixture(attrs \\ %{}) do
+  def order_fixture(attrs \\ %{}, opts \\ []) do
     user = Tiki.AccountsFixtures.user_fixture()
-    event = Tiki.EventsFixtures.event_fixture()
+
+    event =
+      case Keyword.get(opts, :event) do
+        nil -> Tiki.EventsFixtures.event_fixture()
+        event -> event
+      end
 
     {:ok, order} =
       attrs

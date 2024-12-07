@@ -9,14 +9,14 @@ defmodule TikiWeb.OrderLive.TicketForm do
     ~H"""
     <div>
       <.back navigate={~p"/orders/#{@ticket.order_id}"}>
-        <%= gettext("Back to order") %>
+        {gettext("Back to order")}
       </.back>
     </div>
     <div class="mt-4 space-y-8">
       <div>
-        <h2 class="font-semibold"><%= gettext("Fill in ticket information") %></h2>
+        <h2 class="font-semibold">{gettext("Fill in ticket information")}</h2>
         <p class="text-muted-foreground text-sm">
-          <%= gettext("We need some information from you to help us organize the event.") %>
+          {gettext("We need some information from you to help us organize the event.")}
         </p>
       </div>
       <.form for={@response_form} phx-submit="save" phx-change="validate" class="w-full">
@@ -24,13 +24,13 @@ defmodule TikiWeb.OrderLive.TicketForm do
           <div :for={question <- @form.questions} class={styling_for_question(question)}>
             <.form_input question={question} field={@response_form[String.to_atom("#{question.id}")]} />
             <div :if={question.description} class="text-muted-foreground mt-2 text-sm">
-              <%= question.description %>
+              {question.description}
             </div>
           </div>
         </div>
         <div class="mt-4 flex flex-row justify-end">
           <.button phx-disable-with={gettext("Saving...")}>
-            <%= gettext("Save") %>
+            {gettext("Save")}
           </.button>
         </div>
       </.form>

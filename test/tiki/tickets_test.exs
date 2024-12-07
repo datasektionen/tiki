@@ -53,6 +53,9 @@ defmodule Tiki.TicketsTest do
                Tickets.update_ticket_batch(ticket_batch, @invalid_attrs)
 
       assert ticket_batch == Tickets.get_ticket_batch!(ticket_batch.id)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Tickets.update_ticket_batch(ticket_batch, %{:parent_batch_id => ticket_batch.id})
     end
 
     test "delete_ticket_batch/1 deletes the ticket_batch" do
@@ -93,6 +96,7 @@ defmodule Tiki.TicketsTest do
 
     test "create_ticket_type/1 with valid data creates a ticket_types" do
       batch = ticket_batch_fixture()
+      form = Tiki.FormsFixtures.form_fixture()
 
       valid_attrs = %{
         description: "some description",
@@ -101,7 +105,8 @@ defmodule Tiki.TicketsTest do
         price: 42,
         purchasable: true,
         release_time: ~U[2023-03-25 18:01:00Z],
-        ticket_batch_id: batch.id
+        ticket_batch_id: batch.id,
+        form_id: form.id
       }
 
       assert {:ok, %TicketType{} = ticket_types} = Tickets.create_ticket_type(valid_attrs)

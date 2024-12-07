@@ -8,8 +8,8 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
-        <:subtitle><%= gettext("Use this form to manage events") %></:subtitle>
+        {@title}
+        <:subtitle>{gettext("Use this form to manage events")}</:subtitle>
       </.header>
 
       <.simple_form
@@ -21,18 +21,27 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
       >
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+        <.input
+          field={@form[:default_form_id]}
+          type="select"
+          label={gettext("Default signup form")}
+          options={options_for_forms(@forms)}
+          placeholder={gettext("Select a form")}
+        />
         <.input field={@form[:event_date]} type="datetime-local" label={gettext("Event date")} />
+
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
         <.input field={@form[:image_url]} type="text" label={gettext("Image url")} />
+
         <:actions>
           <div class="flex flex-row gap-2">
-            <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save event") %></.button>
+            <.button phx-disable-with={gettext("Saving...")}>{gettext("Save event")}</.button>
             <.button
               :if={@id != "new"}
               variant="destructive"
               navigate={~p"/admin/events/#{@event}/delete"}
             >
-              <%= gettext("Delete event") %>
+              {gettext("Delete event")}
             </.button>
           </div>
         </:actions>
@@ -42,13 +51,28 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   end
 
   @impl true
-  def update(%{event: event} = assigns, socket) do
-    changeset = Events.change_event(event)
-
+  def update(%{event: event, action: action} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign_form(changeset)}
+     |> apply_action(action, event)}
+  end
+
+  defp apply_action(socket, :new, event) do
+    changeset = Events.change_event(event)
+
+    socket
+    |> assign(:forms, [])
+    |> assign_form(changeset)
+  end
+
+  defp apply_action(socket, :edit, event) do
+    changeset = Events.change_event(event)
+    forms = Tiki.Forms.list_forms_for_event(event.id)
+
+    socket
+    |> assign(:forms, forms)
+    |> assign_form(changeset)
   end
 
   @impl true
@@ -98,6 +122,10 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
+  end
+
+  defp options_for_forms(forms) do
+    Enum.map(forms, fn form -> {form.name, form.id} end)
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})

@@ -86,7 +86,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
     <div>
       <div phx-hook="SearchCombobox" id={"#{@id}-combobox"}>
         <label for="combobox" class="text-foreground block text-sm font-medium leading-6">
-          <%= @label %>
+          {@label}
         </label>
         <div class="relative mt-2">
           <input
@@ -125,7 +125,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
 
           <div
             :if={@results != []}
-            class="bg-background absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden sm:text-sm"
+            class="bg-background ring-border absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md py-1 text-base shadow-lg ring-1 ring-opacity-5 focus:outline-hidden sm:text-sm"
             id={"#{@id}-options"}
             role="listbox"
           >
@@ -143,7 +143,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
                 "block truncate",
                 @chosen == id && "font-semibold"
               ]}>
-                <%= value %>
+                {value}
               </span>
 
               <span

@@ -7,7 +7,7 @@ defmodule TikiWeb.AdminLive.Team.Show do
   def render(assigns) do
     ~H"""
     <.header>
-      Team <%= @team.id %>
+      Team {@team.id}
       <:subtitle>This is a team record from your database.</:subtitle>
       <:actions>
         <.link navigate={~p"/admin/teams/#{@team}/edit?return_to=show"}>
@@ -17,7 +17,7 @@ defmodule TikiWeb.AdminLive.Team.Show do
     </.header>
 
     <.list>
-      <:item title="Name"><%= @team.name %></:item>
+      <:item title="Name">{@team.name}</:item>
     </.list>
 
     <.back navigate={~p"/admin/teams"}>Back to teams</.back>

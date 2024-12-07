@@ -3,7 +3,7 @@
     <div class="flex lg:flex-1">
       <.link navigate={~p"/"} class="-m-1.5 p-1.5">
         <span class="sr-only">Tiki</span>
-        <div class="[mask:url('/images/logo.svg')] [--webkit-mask:url('/images/logo.svg')] size-8 bg-primary" />
+        <div class="[mask-image:url('/images/logo.svg')] [mask-repeat:no-repeat] size-8 bg-primary" />
       </.link>
     </div>
     <div class="flex lg:hidden">
@@ -14,7 +14,7 @@
             class="text-foreground -m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
           >
             <span class="sr-only">
-              <%= gettext("Open main menu") %>
+              {gettext("Open main menu")}
             </span>
             <svg
               class="size-6"
@@ -37,7 +37,7 @@
           <div class="flex items-center justify-between">
             <a href="#" class="-m-1.5 p-1.5">
               <span class="sr-only">Tiki</span>
-              <div class="[mask:url('/images/logo.svg')] [--webkit-mask:url('/images/logo.svg')] size-8 bg-primary" />
+              <div class="[mask:url('/images/logo.svg')] [--webkit-mask:url('/images/logo.svg')] min-w-8 size-8 bg-primary" />
             </a>
           </div>
           <div class="mt-6 flow-root">
@@ -47,19 +47,19 @@
                   navigate={~p"/events"}
                   class="text-base/7 text-foreground -mx-3 block rounded-lg px-3 py-2 font-semibold hover:bg-accent"
                 >
-                  <%= gettext("Events") %>
+                  {gettext("Events")}
                 </.link>
                 <.link
                   navigate={~p"/about"}
                   class="text-base/7 text-foreground -mx-3 block rounded-lg px-3 py-2 font-semibold hover:bg-accent"
                 >
-                  <%= gettext("About") %>
+                  {gettext("About")}
                 </.link>
                 <.link
                   navigate={~p"/admin"}
                   class="text-base/7 text-foreground -mx-3 block rounded-lg px-3 py-2 font-semibold hover:bg-accent"
                 >
-                  <%= gettext("Admin") %>
+                  {gettext("Admin")}
                 </.link>
               </div>
               <div class="py-6">
@@ -68,7 +68,7 @@
                   navigate={~p"/users/log_in"}
                   class="text-base/7 text-foreground -mx-3 block rounded-lg px-3 py-2.5 font-semibold hover:bg-accent"
                 >
-                  <%= gettext("Log in") %> <span aria-hidden="true">&rarr;</span>
+                  {gettext("Log in")} <span aria-hidden="true">&rarr;</span>
                 </.link>
                 <.link
                   :if={@current_user}
@@ -76,7 +76,7 @@
                   class="text-base/7 text-foreground -mx-3 block rounded-lg px-3 py-2.5 font-semibold hover:bg-accent"
                 >
                   <.icon name="hero-user-circle" class="mr-2 inline-block h-5 w-5" />
-                  <%= @current_user.full_name %>
+                  {@current_user.full_name}
                 </.link>
               </div>
             </div>
@@ -86,13 +86,13 @@
     </div>
     <div class="hidden lg:flex lg:gap-x-12">
       <.link navigate={~p"/events"} class="text-sm/6 text-foreground font-semibold">
-        <%= gettext("Events") %>
+        {gettext("Events")}
       </.link>
       <.link navigate={~p"/about"} class="text-sm/6 text-foreground font-semibold">
-        <%= gettext("About") %>
+        {gettext("About")}
       </.link>
       <.link navigate={~p"/admin"} class="text-sm/6 text-foreground font-semibold">
-        <%= gettext("Admin") %>
+        {gettext("Admin")}
       </.link>
     </div>
     <div class="hidden lg:flex lg:flex-1 lg:justify-end">
@@ -101,7 +101,7 @@
         navigate={~p"/users/log_in"}
         class="text-sm/6 text-foreground font-semibold"
       >
-        <%= gettext("Log in") %> <span aria-hidden="true">&rarr;</span>
+        {gettext("Log in")} <span aria-hidden="true">&rarr;</span>
       </.link>
       <.link
         :if={@current_user}
@@ -109,7 +109,7 @@
         class="text-sm/6 text-foreground flex flex-row items-center font-semibold"
       >
         <.icon name="hero-user-circle" class="mr-2 inline-block h-5 w-5" />
-        <%= @current_user.full_name %>
+        {@current_user.full_name}
       </.link>
     </div>
   </nav>

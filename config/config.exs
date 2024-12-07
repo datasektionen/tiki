@@ -8,7 +8,14 @@
 import Config
 
 config :tiki,
-  ecto_repos: [Tiki.Repo]
+  ecto_repos: [Tiki.Repo],
+  stripe_module: Stripe,
+  swish_module: Swish
+
+config :tiki, Tiki.Repo,
+  migration_timestamps: [
+    type: :naive_datetime_usec
+  ]
 
 # Configures the endpoint
 config :tiki, TikiWeb.Endpoint,
@@ -58,8 +65,6 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
-
-config :salad_ui, :error_translator_function, {TikiWeb.CoreComponents, :translate_error}
 
 # SaladUI use tails to properly merge Tailwind CSS classes
 config :tails,

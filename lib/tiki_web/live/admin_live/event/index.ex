@@ -62,7 +62,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">
       <.card_title class="sm:col-span-6">
-        <%= gettext("All events") %>
+        {gettext("All events")}
       </.card_title>
 
       <div class="flex flex-row items-center gap-2 sm:col-span-6">
@@ -79,7 +79,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
         </div>
 
         <.button navigate={~p"/admin/events/new"} class="ml-auto">
-          <%= gettext("New event") %>
+          {gettext("New event")}
         </.button>
       </div>
 
@@ -89,10 +89,10 @@ defmodule TikiWeb.AdminLive.Event.Index do
           rows={@streams.events}
           row_click={fn {_id, event} -> JS.navigate(~p"/admin/events/#{event}") end}
         >
-          <:col :let={{_id, event}} label={gettext("Name")}><%= event.name %></:col>
-          <:col :let={{_id, event}} label={gettext("Location")}><%= event.location %></:col>
+          <:col :let={{_id, event}} label={gettext("Name")}>{event.name}</:col>
+          <:col :let={{_id, event}} label={gettext("Location")}>{event.location}</:col>
           <:col :let={{_id, event}} label={gettext("Date")}>
-            <%= Calendar.strftime(event.event_date, "%Y-%m-%d") %>
+            {Calendar.strftime(event.event_date, "%Y-%m-%d")}
           </:col>
         </.table>
       </.card>

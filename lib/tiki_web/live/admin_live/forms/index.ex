@@ -7,23 +7,23 @@ defmodule TikiWeb.AdminLive.Forms.Index do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= gettext("Forms") %>
+      {gettext("Forms")}
       <:subtitle>
-        <%= gettext("Manage forms for your event.") %>
+        {gettext("Manage forms for your event.")}
       </:subtitle>
       <:actions>
         <.link navigate={~p"/admin/events/#{@event}/forms/new"}>
-          <.button><%= gettext("New form") %></.button>
+          <.button>{gettext("New form")}</.button>
         </.link>
       </:actions>
     </.header>
 
     <.table id="forms" rows={@streams.forms}>
-      <:col :let={{_id, form}} label={gettext("Name")}><%= form.name %></:col>
+      <:col :let={{_id, form}} label={gettext("Name")}>{form.name}</:col>
 
       <:action :let={{_id, form}}>
         <.link navigate={~p"/admin/events/#{@event}/forms/#{form}/edit"}>
-          <%= gettext("Edit") %>
+          {gettext("Edit")}
         </.link>
       </:action>
       <:action :let={{id, form}}>
@@ -31,7 +31,7 @@ defmodule TikiWeb.AdminLive.Forms.Index do
           phx-click={JS.push("delete", value: %{id: form.id}) |> hide("##{id}")}
           data-confirm={gettext("Are you sure?")}
         >
-          <%= gettext("Delete") %>
+          {gettext("Delete")}
         </.link>
       </:action>
     </.table>

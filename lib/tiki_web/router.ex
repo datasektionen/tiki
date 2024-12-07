@@ -70,9 +70,8 @@ defmodule TikiWeb.Router do
       live "/users/confirm", UserConfirmationInstructionsLive, :new
 
       live "/events", EventLive.Index, :index
-      live "/events/:id", EventLive.Show, :index
-      live "/events/:event_id/purchase", PurchaseLive.Tickets, :tickets
-      live "/events/:event_id/purchase/:order_id", PurchaseLive.Tickets, :purchase
+      live "/events/:event_id", EventLive.Show, :index
+      live "/events/:event_id/purchase/:order_id", EventLive.Show, :purchase
 
       live "/orders/:id", OrderLive.Show, :show
       live "/tickets/:id", OrderLive.Ticket, :show
@@ -144,12 +143,12 @@ defmodule TikiWeb.Router do
           live "/tickets", Ticket.Index, :index
 
           # Ticket type settings
-          live "/tickets/types/new", Ticket.TicketTypeForm, :new
-          live "/tickets/types/:ticket_type_id/edit", Ticket.TicketTypeForm, :edit
+          live "/tickets/types/new", Ticket.Index, :new_ticket_type
+          live "/tickets/types/:ticket_type_id/edit", Ticket.Index, :edit_ticket_type
 
           # Ticket batch settings
-          live "/tickets/batches/new", Ticket.BatchForm, :new
-          live "/tickets/batches/:batch_id/edit", Ticket.BatchForm, :edit
+          live "/tickets/batches/new", Ticket.Index, :new_batch
+          live "/tickets/batches/:batch_id/edit", Ticket.Index, :edit_batch
 
           # TODO: Check-in
           # live "/check-in", Ticket.Checkin, :index

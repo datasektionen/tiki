@@ -1,77 +1,107 @@
 defmodule TikiWeb.EventLive.Show do
   use TikiWeb, :live_view
 
-  alias TikiWeb.EventLive.PurchaseComponent
   alias Tiki.Events
   alias Tiki.Presence
+  alias Tiki.Orders
+  alias TikiWeb.PurchaseLive.TicketsComponent
+  import TikiWeb.Component.Card
+  import TikiWeb.Component.Avatar
 
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="mb-2 flex flex-col gap-2">
-      <div :if={@event.image_url != nil} class="pb-4">
-        <img class="aspect-video w-full rounded-xl object-cover" src={@event.image_url} />
-      </div>
-
-      <div class="flex flex-row items-center justify-between">
-        <div>
-          <div class="text-muted-foreground">
-            <%= Calendar.strftime(@event.event_date, "%d %B", month_names: &month_name/1) %>
+    <div class="flex flex-col gap-4">
+      <h1 class="text-2xl font-bold leading-9">{@event.name}</h1>
+      <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+        <div class="col-span-2 flex flex-col gap-4">
+          <div :if={@event.image_url != nil} class="">
+            <img class="aspect-video w-full rounded-xl object-cover" src={@event.image_url} />
           </div>
-          <h1 class="text-3xl font-bold"><%= @event.name %></h1>
+
+          <div class="text-muted-foreground flex flex-col gap-1">
+            <div class="inline-flex items-center gap-2">
+              <.icon name="hero-calendar" />
+              {time_to_string(@event.event_date)}
+            </div>
+            <div class="inline-flex items-center gap-2">
+              <.icon name="hero-map-pin" />
+              {@event.location}
+            </div>
+          </div>
+          <p class="whitespace-pre-wrap">{@event.description}</p>
+
+          <div class="flex flex-col gap-4">
+            <.card_title>{gettext("Organized by")}</.card_title>
+            <div class="flex flex-row items-center gap-2">
+              <.avatar>
+                <.avatar_image src={@event.team.logo_url} />
+                <.avatar_fallback>
+                  {@event.team.name}
+                </.avatar_fallback>
+              </.avatar>
+
+              <.link href={"mailto:#{@event.team.contact_email}"} class="hover:underline">
+                {@event.team.name}
+              </.link>
+            </div>
+          </div>
         </div>
 
-        <.link patch={~p"/events/#{@event}/purchase"}>
-          <.button>Köp biljetter</.button>
-        </.link>
+        <div class="top-4 col-span-1 lg:sticky" id="tickets">
+          <.live_component
+            module={TicketsComponent}
+            id="tickets-component"
+            current_user={@current_user}
+            event={@event}
+            order={@order}
+          />
+        </div>
       </div>
-
-      <div class="text-muted-foreground my-4 flex flex-col gap-1">
-        <div class="inline-flex items-center gap-2">
-          <.icon name="hero-calendar" />
-          <%= Calendar.strftime(@event.event_date, "%Y-%m-%d vid %H:%M") %>
-        </div>
-        <div class="inline-flex items-center gap-2">
-          <.icon name="hero-map-pin" />
-          <%= @event.location %>
-        </div>
-      </div>
-      <p class="-mt-8 whitespace-pre-wrap">
-        <%= @event.description %>
-      </p>
     </div>
 
-    <div :if={@live_action == :purchase}>
-      <.live_component
-        module={TikiWeb.EventLive.PurchaseComponent}
-        id={@event.id}
-        title={@page_title}
-        action={@live_action}
-        event={@event}
-        patch={~p"/events/#{@event}"}
-        current_user={@current_user}
-      />
-    </div>
+    <.live_component
+      :if={@live_action == :purchase}
+      module={TikiWeb.PurchaseLive.PurchaseComponent}
+      id={@event.id}
+      event={@event}
+      order={@order}
+      patch={~p"/events/#{@event}"}
+    />
 
-    <div class="bg-background shadow-xs fixed right-4 bottom-4 rounded-full border px-4 py-2">
-      <%= max(@online_count, 0) %> online
+    <div class="bg-background shadow-xs fixed right-0 bottom-0 left-0 z-30 border px-6 py-3 lg:hidden">
+      <a href="#tickets" class="w-full">
+        <.button class="w-full">
+          {gettext("Tickets")}
+        </.button>
+      </a>
     </div>
+    <%!-- <div class="bg-background shadow-xs fixed right-4 bottom-4 rounded-full border px-4 py-2">
+      {max(@online_count, 0)} online
+    </div> --%>
     """
   end
 
   @impl true
-  def mount(%{"id" => event_id}, _session, socket) do
-    ticket_types = Events.get_ticket_types(event_id)
+  def mount(%{"event_id" => event_id}, _session, socket) do
+    ticket_types = Events.get_event_ticket_types(event_id)
     event = Events.get_event!(event_id)
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
 
     if connected?(socket) do
       TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+      Orders.subscribe(event.id)
       Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
     end
 
-    {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
+    {:ok,
+     assign(socket,
+       ticket_types: ticket_types,
+       event: event,
+       online_count: initial_count,
+       order: nil
+     )}
   end
 
   @impl true
@@ -79,9 +109,20 @@ defmodule TikiWeb.EventLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  def apply_action(socket, :purchase, _params) do
-    socket
-    |> assign(:page_title, "Köp biljett")
+  def apply_action(socket, :purchase, %{"order_id" => order_id}) do
+    order = Orders.get_order!(order_id)
+
+    if connected?(socket) do
+      Orders.subscribe_to_order(order_id)
+    end
+
+    case order.status do
+      :paid ->
+        push_navigate(socket, to: ~p"/orders/#{order.id}")
+
+      _ ->
+        assign(socket, order: order)
+    end
   end
 
   def apply_action(socket, :index, _params) do
@@ -90,29 +131,30 @@ defmodule TikiWeb.EventLive.Show do
   end
 
   @impl true
+  def handle_info({:tickets_updated, _} = msg, socket) do
+    send_update(TicketsComponent, id: "tickets-component", action: msg)
+    {:noreply, socket}
+  end
+
+  def handle_info({:cancelled, order}, socket) do
+    {:noreply, assign(socket, order: order)}
+  end
+
+  def handle_info({:paid, order}, socket) do
+    if order.status == :paid do
+      {:noreply,
+       put_flash(socket, :info, gettext("Order paid!"))
+       |> push_navigate(to: ~p"/orders/#{order.id}")}
+    else
+      {:noreply, assign(socket, order: order)}
+    end
+  end
+
   def handle_info(
         %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
         %{assigns: %{online_count: count}} = socket
       ) do
     online_count = count + map_size(joins) - map_size(leaves)
     {:noreply, assign(socket, :online_count, online_count)}
-  end
-
-  @impl true
-  def handle_info({:timeout, %{id: id} = meta}, socket) do
-    send_update(PurchaseComponent, id: id, action: {:timeout, meta})
-    {:noreply, socket}
-  end
-
-  @impl true
-  def handle_info({:tickets_updated, _ticket_types} = msg, socket) do
-    send_update(PurchaseComponent, id: socket.assigns.event.id, action: msg)
-    {:noreply, socket}
-  end
-
-  defp month_name(month) do
-    {"januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september",
-     "oktober", "november", "december"}
-    |> elem(month - 1)
   end
 end

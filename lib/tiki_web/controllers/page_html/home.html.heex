@@ -45,22 +45,22 @@
       <div class="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
         <div class="relative w-full lg:max-w-xl lg:shrink-0 xl:max-w-2xl">
           <h1 class="text-pretty text-foreground text-5xl font-semibold tracking-tight sm:text-7xl">
-            <%= gettext("The last event platform you'll need") %>
+            {gettext("The last event platform you'll need")}
           </h1>
           <p class="text-pretty text-muted-foreground mt-8 text-lg font-medium sm:text-xl/8 sm:max-w-md lg:max-w-none">
-            <%= gettext(
+            {gettext(
               "Welcome to Tiki - Datasektionen's latest and greatest event platform. We are transforming the way events are run."
-            ) %>
+            )}
           </p>
           <div class="mt-10 flex items-center gap-x-6">
             <.link navigate={~p"/events"}>
               <.button>
-                <%= gettext("Browse events") %>
+                {gettext("Browse events")}
               </.button>
             </.link>
 
             <.link navigate={~p"/about"} class="text-sm/6 font-semibold">
-              <%= gettext("Read more") %> <span aria-hidden="true">→</span>
+              {gettext("Read more")} <span aria-hidden="true">→</span>
             </.link>
           </div>
         </div>
@@ -121,3 +121,4 @@
     </div>
   </div>
 </div>
+<.footer />

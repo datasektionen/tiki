@@ -189,7 +189,7 @@ defmodule Tiki.Forms do
           |> Ecto.Changeset.validate_change(field, fn field, value ->
             case value in q.options do
               true -> []
-              false -> [{field, "value must be an availible option"}]
+              false -> [{field, "value must be an available option"}]
             end
           end)
 
@@ -198,7 +198,7 @@ defmodule Tiki.Forms do
           |> Ecto.Changeset.validate_change(field, fn field, values ->
             case Enum.all?(values, &Enum.member?(q.options, &1)) do
               true -> []
-              false -> [{field, "all values must be availible options"}]
+              false -> [{field, "all values must be available options"}]
             end
           end)
 
@@ -228,7 +228,7 @@ defmodule Tiki.Forms do
         Multi.new()
         |> Multi.one(:form, from(f in Form, where: f.id == ^form_id))
         |> Multi.insert(:response, fn %{form: form} ->
-          %Response{form_id: form.id, ticket_id: ticket_id}
+          Response.changeset(%Response{}, %{form_id: form.id, ticket_id: ticket_id})
         end)
         |> Multi.merge(fn %{response: response} ->
           Enum.reduce(data, Multi.new(), fn {key, val}, acc ->

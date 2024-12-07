@@ -32,7 +32,7 @@ defmodule Tiki.PurchaseMonitor do
 
   def handle_info({:timeout, order_id}, %{orders: orders} = state) do
     if Map.get(orders, order_id) do
-      Orders.maybe_cancel_reservation(order_id)
+      Orders.maybe_cancel_order(order_id)
     end
 
     {:noreply, %{state | orders: Map.delete(orders, order_id)}}

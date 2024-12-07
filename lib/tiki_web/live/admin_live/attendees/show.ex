@@ -18,10 +18,12 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
        payment_method =
          cond do
            order.stripe_checkout ->
-             Stripe.PaymentMethod.retrieve(order.stripe_checkout.payment_method_id)
+             Tiki.Checkouts.retrieve_stripe_payment_method(
+               order.stripe_checkout.payment_method_id
+             )
 
            order.swish_checkout ->
-             Tiki.Swish.get_payment_request(order.swish_checkout.swish_id)
+             Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
          end
 
        case payment_method do
@@ -63,14 +65,14 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
 
         <:actions>
           <.link navigate={~p"/tickets/#{@ticket}"}>
-            <.button variant="link"><%= gettext("View ticket") %></.button>
+            <.button variant="link">{gettext("View ticket")}</.button>
           </.link>
         </:actions>
 
         <div class="flex flex-row items-center px-4 py-5 sm:gap-4 sm:px-6">
           <.icon name="hero-exclamation-triangle" class="text-destructive" />
           <dt class="text-foreground text-sm">
-            <%= gettext("Attendeee has not filled in the required ticket information") %>
+            {gettext("Attendeee has not filled in the required ticket information")}
           </dt>
         </div>
       </.information_card>
@@ -81,7 +83,7 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
       >
         <:actions>
           <.link navigate={~p"/tickets/#{@ticket}"}>
-            <.button variant="link"><%= gettext("View ticket") %></.button>
+            <.button variant="link">{gettext("View ticket")}</.button>
           </.link>
         </:actions>
         <:item
@@ -104,13 +106,13 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
         <:item name={gettext("Price")} value={"#{@order.price} SEK"} />
 
         <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt class="text-muted-foreground text-sm font-medium"><%= gettext("Tickets") %></dt>
+          <dt class="text-muted-foreground text-sm font-medium">{gettext("Tickets")}</dt>
           <dd class="text-foreground text-wrap mt-1 flex flex-row items-center gap-2 break-all text-sm sm:col-span-2 sm:mt-0">
             <span :for={tt <- @order.tickets} class="text-foreground">
               <.link navigate={~p"/admin/events/#{@event.id}/attendees/#{tt.id}"}>
                 <.badge variant="outline">
                   <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
-                  <%= tt.ticket_type.name %>
+                  {tt.ticket_type.name}
                 </.badge>
               </.link>
             </span>
@@ -138,21 +140,21 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
     <.card>
       <.card_header class="flex flex-row">
         <div class="space-y-1.5">
-          <.card_title><%= @name %></.card_title>
-          <.card_description><%= @description %></.card_description>
+          <.card_title>{@name}</.card_title>
+          <.card_description>{@description}</.card_description>
         </div>
 
-        <div class="ml-auto flex-none"><%= render_slot(@actions) %></div>
+        <div class="ml-auto flex-none">{render_slot(@actions)}</div>
       </.card_header>
 
       <div class="divide-accent border-accent divide-y border-t">
         <dl class="divide-accent divide-y">
           <div :for={item <- @item} class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-muted-foreground text-sm font-medium"><%= item.name %></dt>
-            <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0"><%= item.value %></dd>
+            <dt class="text-muted-foreground text-sm font-medium">{item.name}</dt>
+            <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">{item.value}</dd>
           </div>
         </dl>
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </.card>
     """
@@ -162,37 +164,37 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
        when not is_nil(stripe_checkout) do
     ~H"""
     <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-      <dt class="text-muted-foreground text-sm font-medium"><%= gettext("Payment method") %></dt>
+      <dt class="text-muted-foreground text-sm font-medium">{gettext("Payment method")}</dt>
       <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
         Stripe
       </dd>
     </div>
     <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
       <dt class="text-muted-foreground text-sm font-medium">
-        <%= gettext("Stripe payment reference") %>
+        {gettext("Stripe payment reference")}
       </dt>
 
       <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
-        <%= @order.stripe_checkout.payment_intent_id %>
+        {@order.stripe_checkout.payment_intent_id}
       </dd>
     </div>
     <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-      <dt class="text-muted-foreground text-sm font-medium"><%= gettext("Card details") %></dt>
+      <dt class="text-muted-foreground text-sm font-medium">{gettext("Card details")}</dt>
       <.async_result :let={payment_method} assign={@payment_method}>
         <:loading>
-          <span class="text-foreground text-sm"><%= gettext("Loading...") %></span>
+          <span class="text-foreground text-sm">{gettext("Loading...")}</span>
         </:loading>
         <:failed :let={_failure}>
-          <%= gettext("There was an error loading the payment method") %>
+          {gettext("There was an error loading the payment method")}
         </:failed>
 
         <dd class="text-foreground mt-1 flex flex-row items-center gap-x-2 text-sm sm:col-span-2 sm:mt-0">
           <.payment_method_logo name={"paymentlogo-#{payment_method.card.brand}"} class="h-5" />
           <p class="sr-only">
-            <%= payment_method.card.brand %>
+            {payment_method.card.brand}
           </p>
           <p class="text-foreground">
-            <span aria-hidden="true">••••</span> <span><%= payment_method.card.last4 %></span>
+            <span aria-hidden="true">••••</span> <span>{payment_method.card.last4}</span>
           </p>
         </dd>
       </.async_result>
@@ -204,34 +206,34 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
        when not is_nil(swish_checkout) do
     ~H"""
     <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-      <dt class="text-muted-foreground text-sm font-medium"><%= gettext("Payment method") %></dt>
+      <dt class="text-muted-foreground text-sm font-medium">{gettext("Payment method")}</dt>
       <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
         Swish
       </dd>
     </div>
     <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
       <dt class="text-muted-foreground text-sm font-medium">
-        <%= gettext("Swish payment reference") %>
+        {gettext("Swish payment reference")}
       </dt>
       <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
-        <%= @order.swish_checkout.swish_id %>
+        {@order.swish_checkout.swish_id}
       </dd>
     </div>
     <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-      <dt class="text-muted-foreground text-sm font-medium"><%= gettext("Swish numner") %></dt>
+      <dt class="text-muted-foreground text-sm font-medium">{gettext("Swish number")}</dt>
       <.async_result :let={payment_method} assign={@payment_method}>
         <:loading>
-          <span class="text-foreground text-sm"><%= gettext("Loading...") %></span>
+          <span class="text-foreground text-sm">{gettext("Loading...")}</span>
         </:loading>
         <:failed :let={_failure}>
-          <%= gettext("There was an error loading the payment method") %>
+          {gettext("There was an error loading the payment method")}
         </:failed>
 
         <dd class="text-foreground mt-1 flex flex-row items-center gap-x-2 text-sm sm:col-span-2 sm:mt-0">
           <.payment_method_logo name="paymentlogo-swish" class="h-5" />
 
           <p class="text-foreground">
-            <span>+<%= payment_method["payerAlias"] %></span>
+            <span>+{payment_method["payerAlias"]}</span>
           </p>
         </dd>
       </.async_result>

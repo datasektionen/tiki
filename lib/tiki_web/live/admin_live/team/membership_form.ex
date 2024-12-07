@@ -9,8 +9,8 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= @page_title %>
-      <:subtitle><%= gettext("Use this form to manage memberships in your database") %>.</:subtitle>
+      {@page_title}
+      <:subtitle>{gettext("Use this form to manage memberships in your database")}.</:subtitle>
     </.header>
 
     <.simple_form for={@form} id="team-form" phx-change="validate" phx-submit="save">
@@ -30,12 +30,12 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
       />
       <.input field={@form[:role]} type="select" label={gettext("Role")} options={[:admin, :member]} />
       <:actions>
-        <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save") %></.button>
+        <.button phx-disable-with={gettext("Saving...")}>{gettext("Save")}</.button>
       </:actions>
     </.simple_form>
 
     <.back navigate={return_path(@return_to)}>
-      <%= gettext("Back") %>
+      {gettext("Back")}
     </.back>
     """
   end
