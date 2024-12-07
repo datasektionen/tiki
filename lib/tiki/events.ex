@@ -49,7 +49,11 @@ defmodule Tiki.Events do
 
   """
   def get_event!(id, opts \\ []) do
-    base_query = from e in Event, where: e.id == ^id
+    base_query =
+      from e in Event,
+        where: e.id == ^id,
+        join: t in assoc(e, :team),
+        preload: [team: t]
 
     base_query
     |> preload_ticket_types(Keyword.get(opts, :preload_ticket_types, false))

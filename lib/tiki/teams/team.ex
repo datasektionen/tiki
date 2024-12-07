@@ -4,6 +4,9 @@ defmodule Tiki.Teams.Team do
 
   schema "teams" do
     field :name, :string
+    field :logo_url, :string
+    field :description, :string
+    field :contact_email, :string
 
     has_many :members, Tiki.Teams.Membership
 
@@ -13,7 +16,7 @@ defmodule Tiki.Teams.Team do
   @doc false
   def changeset(team, attrs) do
     team
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
+    |> cast(attrs, [:name, :logo_url, :description, :contact_email])
+    |> validate_required([:name, :contact_email])
   end
 end
