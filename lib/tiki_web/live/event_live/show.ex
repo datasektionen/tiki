@@ -84,7 +84,6 @@ defmodule TikiWeb.EventLive.Show do
 
   @impl true
   def mount(%{"event_id" => event_id}, _session, socket) do
-    ticket_types = Events.get_event_ticket_types(event_id)
     event = Events.get_event!(event_id)
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
@@ -97,7 +96,6 @@ defmodule TikiWeb.EventLive.Show do
 
     {:ok,
      assign(socket,
-       ticket_types: ticket_types,
        event: event,
        online_count: initial_count,
        order: nil

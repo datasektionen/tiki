@@ -1,9 +1,6 @@
 defmodule TikiWeb.PurchaseLive.TicketsComponent do
   use TikiWeb, :live_component
 
-  alias Phoenix.LiveView.AsyncResult
-  import TikiWeb.Component.Skeleton
-
   alias Tiki.Tickets
   alias Tiki.Orders
 
@@ -17,67 +14,59 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
       </div>
 
       <div class="flex flex-col gap-3">
-        <.async_result :let={ticket_types} assign={@ticket_types}>
-          <:loading>
-            <.skeleton class="h-20 w-full" />
-            <.skeleton class="h-20 w-full" />
-            <.skeleton class="h-20 w-full" />
-          </:loading>
-          <:failed :let={_failure}>{gettext("There was an error loading ticket types")}</:failed>
-          <div :for={ticket_type <- ticket_types} class="bg-accent overflow-hidden rounded-xl">
-            <div :if={ticket_type.promo_code != nil}>
-              <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
-                {ticket_type.promo_code}
-              </div>
-            </div>
-
-            <div class="flex flex-row justify-between px-4 py-4">
-              <div class="flex flex-col">
-                <h3 class="text-md pb-1 font-semibold">{ticket_type.name}</h3>
-                <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
-              </div>
-
-              <div class="flex flex-row items-center gap-2">
-                <button
-                  :if={@counts[ticket_type.id] > 0}
-                  class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
-                  phx-click={JS.push("dec", value: %{id: ticket_type.id})}
-                  phx-target={@myself}
-                >
-                  <.icon name="hero-minus-mini" />
-                </button>
-
-                <div class="flex h-10 w-8 items-center justify-center rounded-lg bg-slate-200 dark:bg-zinc-900">
-                  {@counts[ticket_type.id]}
-                </div>
-
-                <button
-                  :if={@counts[ticket_type.id] >= ticket_type.available}
-                  class="bg-accent flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md"
-                  disabled
-                >
-                  <.icon name="hero-plus-mini" />
-                </button>
-
-                <button
-                  :if={@counts[ticket_type.id] < ticket_type.available}
-                  class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
-                  phx-click={JS.push("inc", value: %{id: ticket_type.id})}
-                  phx-target={@myself}
-                >
-                  <.icon name="hero-plus-mini" />
-                </button>
-              </div>
-            </div>
-
-            <div
-              :if={ticket_type.available <= 0}
-              class="text-muted-foreground bg-accent py-1 text-center text-sm"
-            >
-              Biljetterna är slutsålda
+        <div :for={ticket_type <- @ticket_types} class="bg-accent overflow-hidden rounded-xl">
+          <div :if={ticket_type.promo_code != nil}>
+            <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
+              {ticket_type.promo_code}
             </div>
           </div>
-        </.async_result>
+
+          <div class="flex flex-row justify-between px-4 py-4">
+            <div class="flex flex-col">
+              <h3 class="text-md pb-1 font-semibold">{ticket_type.name}</h3>
+              <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
+            </div>
+
+            <div class="flex flex-row items-center gap-2">
+              <button
+                :if={@counts[ticket_type.id] > 0}
+                class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
+                phx-click={JS.push("dec", value: %{id: ticket_type.id})}
+                phx-target={@myself}
+              >
+                <.icon name="hero-minus-mini" />
+              </button>
+
+              <div class="flex h-10 w-8 items-center justify-center rounded-lg bg-slate-200 dark:bg-zinc-900">
+                {@counts[ticket_type.id]}
+              </div>
+
+              <button
+                :if={@counts[ticket_type.id] >= ticket_type.available}
+                class="bg-accent flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md"
+                disabled
+              >
+                <.icon name="hero-plus-mini" />
+              </button>
+
+              <button
+                :if={@counts[ticket_type.id] < ticket_type.available}
+                class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
+                phx-click={JS.push("inc", value: %{id: ticket_type.id})}
+                phx-target={@myself}
+              >
+                <.icon name="hero-plus-mini" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            :if={ticket_type.available <= 0}
+            class="text-muted-foreground bg-accent py-1 text-center text-sm"
+          >
+            Biljetterna är slutsålda
+          </div>
+        </div>
       </div>
 
       <div class="flex flex-row justify-between">
@@ -115,22 +104,15 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(promo_code: "", promo_codes: [], error: nil, ticket_types: AsyncResult.loading())
-     |> start_async(:ticket_types, fn -> get_available_ticket_types(event.id) end)}
-  end
-
-  defp get_available_ticket_types(event_id) do
-    Tickets.get_available_ticket_types(event_id)
-  end
-
-  @impl Phoenix.LiveComponent
-  def handle_async(:ticket_types, {:ok, ticket_types}, socket) do
-    {:noreply, assign_ticket_types(socket, ticket_types)}
+     |> assign(
+       promo_code: "",
+       promo_codes: [],
+       error: nil
+     )
+     |> assign_ticket_types(get_available_ticket_types(event.id))}
   end
 
   defp assign_ticket_types(socket, ticket_types) do
-    %{ticket_types: tts} = socket.assigns
-
     counts =
       for tt <- ticket_types, into: %{} do
         value = get_in(socket.assigns, [:counts, tt.id]) || 0
@@ -153,7 +135,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         end
       end)
 
-    assign(socket, ticket_types: AsyncResult.ok(tts, ticket_types), counts: counts)
+    assign(socket, ticket_types: ticket_types, counts: counts)
   end
 
   @impl Phoenix.LiveComponent
@@ -173,11 +155,10 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
   def handle_event("activate_promo", %{"code" => code}, socket) do
     %{event: %{id: event_id}, promo_codes: codes} = socket.assigns
-    codes = [code | codes]
 
     {:noreply,
-     assign(socket, promo_code: "", promo_codes: codes)
-     |> start_async(:ticket_types, fn -> get_available_ticket_types(event_id) end)}
+     assign(socket, promo_code: "", promo_codes: [code | codes])
+     |> assign_ticket_types(get_available_ticket_types(event_id))}
   end
 
   def handle_event("request-tickets", _params, socket) do
@@ -193,5 +174,9 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}
     end
+  end
+
+  defp get_available_ticket_types(event_id) do
+    Tickets.get_cached_available_ticket_types(event_id)
   end
 end

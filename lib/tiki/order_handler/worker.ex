@@ -20,31 +20,45 @@ defmodule Tiki.OrderHandler.Worker do
     GenServer.start_link(__MODULE__, event_id, name: via_tuple(event_id))
   end
 
-  def ensure_started(event_id) do
-    case Registry.lookup(Tiki.OrderHandler.Registry, event_id) do
-      [] -> OrderHandler.DynamicSupervisor.start_worker(event_id)
-      [{_pid, _}] -> {:ok, :already_started}
+  def reserve_tickets(event_id, ticket_types) do
+    case ensure_started(event_id) do
+      {:ok, _pid} -> GenServer.call(via_tuple(event_id), {:reserve_tickets, ticket_types})
+      {:error, reason} -> {:error, reason}
     end
   end
 
-  def reserve_tickets(event_id, ticket_types) do
-    GenServer.call(via_tuple(event_id), {:reserve_tickets, ticket_types})
+  def get_ticket_types(event_id) do
+    case ensure_started(event_id) do
+      {:ok, _pid} -> GenServer.call(via_tuple(event_id), :get_ticket_types)
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   @impl GenServer
   def init(event_id) do
     Logger.debug("Order handler starting for event #{event_id}")
 
-    {:ok, %{event_id: event_id}, @timeout}
+    Orders.subscribe(event_id)
+    ticket_types = Tickets.get_available_ticket_types(event_id)
+    {:ok, %{event_id: event_id, ticket_types: ticket_types}, @timeout}
   end
 
   @impl GenServer
   def handle_info(:timeout, %{event_id: event_id} = state) do
     Logger.debug("Order handler idle for #{@timeout}ms for event #{event_id}, stopping")
+
     {:stop, :normal, state}
   end
 
+  def handle_info({:tickets_updated, ticket_types}, state) do
+    {:noreply, %{state | ticket_types: ticket_types}, @timeout}
+  end
+
   @impl GenServer
+  def handle_call(:get_ticket_types, _from, %{ticket_types: ticket_types} = state) do
+    {:reply, ticket_types, state, @timeout}
+  end
+
   def handle_call({:reserve_tickets, ticket_types}, _from, %{event_id: event_id} = state) do
     result =
       Multi.new()
@@ -127,6 +141,13 @@ defmodule Tiki.OrderHandler.Worker do
 
       {:error, status, message, _} when status in [:positive_tickets, :check_availability] ->
         {:reply, {:error, message}, state, @timeout}
+    end
+  end
+
+  defp ensure_started(event_id) do
+    case Registry.lookup(Tiki.OrderHandler.Registry, event_id) do
+      [] -> OrderHandler.DynamicSupervisor.start_worker(event_id)
+      [{_pid, _}] -> {:ok, :already_started}
     end
   end
 
