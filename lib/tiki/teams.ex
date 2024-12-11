@@ -285,7 +285,7 @@ defmodule Tiki.Teams do
   end
 
   @doc """
-  Retrurns the current memebrships of a team.
+  Returns the current memebrships of a team.
 
   ## Examples
 

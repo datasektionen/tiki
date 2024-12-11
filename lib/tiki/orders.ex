@@ -4,13 +4,14 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
-  alias Tiki.Tickets.TicketType
   alias Ecto.Multi
   alias Phoenix.PubSub
   alias Tiki.Orders.Order
   alias Tiki.Orders.Ticket
   alias Tiki.Tickets
   alias Tiki.Repo
+
+  alias Tiki.OrderHandler
 
   @doc """
   Returns the list of order.
@@ -194,95 +195,21 @@ defmodule Tiki.Orders do
       iex> reserve_tickets(232, %{12 => 0}, 456)
       {:error, "order must contain at least one ticket"}
   """
-  def reserve_tickets(event_id, ticket_types, _user_id \\ nil) do
-    result =
-      Multi.new()
-      |> Multi.run(:positive_tickets, fn _repo, _ ->
-        case Map.values(ticket_types) |> Enum.sum() do
-          0 -> {:error, "order must contain at least one ticket"}
-          _ -> {:ok, :ok}
-        end
-      end)
-      |> Multi.run(:prices, fn repo, _ ->
-        tt_ids = Enum.map(ticket_types, fn {tt, _} -> tt end)
+  def reserve_tickets(event_id, ticket_types) do
+    with {:ok, order, ticket_types} <- OrderHandler.Worker.reserve_tickets(event_id, ticket_types) do
+      # Monitor the order, automatically cancels it if it's not paid in time
+      Tiki.PurchaseMonitor.monitor(order)
 
-        prices =
-          repo.all(from tt in TicketType, where: tt.id in ^tt_ids, select: {tt.id, tt.price})
-          |> Enum.into(%{})
-
-        total = Enum.reduce(prices, 0, fn {tt, price}, acc -> price * ticket_types[tt] + acc end)
-
-        {:ok, Map.put(prices, :total, total)}
-      end)
-      |> Multi.insert(
-        :order,
-        fn %{prices: %{total: total_price}} ->
-          change_order(%Order{}, %{event_id: event_id, status: :pending, price: total_price})
-        end,
-        returning: [:id]
+      broadcast(
+        order.event_id,
+        {:tickets_updated, Tickets.put_available_ticket_meta(ticket_types)}
       )
-      |> Multi.insert_all(
-        :tickets,
-        Ticket,
-        fn %{order: order, prices: prices} ->
-          Enum.flat_map(ticket_types, fn {tt, count} ->
-            for _ <- 1..count do
-              %{ticket_type_id: tt, order_id: order.id, price: prices[tt]}
-            end
-          end)
-        end,
-        returning: true
-      )
-      |> Tickets.get_available_ticket_types_multi(event_id)
-      |> Multi.run(:check_availability, fn _repo, %{ticket_types_available: available} ->
-        valid_for_event? =
-          Map.keys(ticket_types)
-          |> Enum.all?(fn tt -> Enum.any?(available, &(&1.ticket_type.id == tt)) end)
 
-        chosen =
-          Enum.filter(available, fn tt -> Map.has_key?(ticket_types, tt.ticket_type.id) end)
+      broadcast_order(order.id, :created, order)
 
-        with true <- valid_for_event?,
-             true <- Enum.all?(chosen, &(&1.available >= 0)) do
-          {:ok, :ok}
-        else
-          _ -> {:error, "not enough tickets available"}
-        end
-      end)
-      |> Multi.run(:preloaded_order, fn _repo,
-                                        %{
-                                          order: order,
-                                          tickets: {_, tickets},
-                                          ticket_types_available: available
-                                        } ->
-        ticket_types =
-          Enum.map(available, & &1.ticket_type)
-          |> Enum.reduce(%{}, &Map.put(&2, &1.id, &1))
-
-        tickets = Enum.map(tickets, &Map.put(&1, :ticket_type, ticket_types[&1.ticket_type_id]))
-        {:ok, Map.put(order, :tickets, tickets)}
-      end)
-      |> Repo.transaction()
-
-    case result do
-      {:ok, %{preloaded_order: order, ticket_types_available: ticket_types}} ->
-        # Monitor the order, automatically cancels it if it's not paid in time
-        Tiki.PurchaseMonitor.monitor(order)
-
-        broadcast(
-          order.event_id,
-          {:tickets_updated, Tickets.put_available_ticket_meta(ticket_types)}
-        )
-
-        broadcast_order(order.id, :created, order)
-
-        {:ok, order}
-
-      {:error, :check_availability, message, _} ->
-        {:error, message}
-
-      {:error, :positive_tickets, message, _} ->
-        {:error, message}
+      {:ok, order}
+    else
+      {:error, reason} -> {:error, reason}
     end
   end
 

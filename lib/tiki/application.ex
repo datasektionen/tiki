@@ -7,6 +7,10 @@ defmodule Tiki.Application do
 
   @impl true
   def start(_type, _args) do
+    oidc_config =
+      Application.get_env(:tiki, Oidcc.ProviderConfiguration, [])
+      |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})
+
     children = [
       # Start the Telemetry supervisor
       TikiWeb.Telemetry,
@@ -17,19 +21,15 @@ defmodule Tiki.Application do
       Tiki.Presence,
       # Start Finch
       {Finch, name: Tiki.Finch},
-      Tiki.PurchaseMonitor,
-      {Oidcc.ProviderConfiguration.Worker,
-       Application.get_env(:tiki, Oidcc.ProviderConfiguration, [])
-       |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})},
       # Start the Endpoint (http/https)
-      TikiWeb.Endpoint
-
-      # Start a worker by calling: Tiki.Worker.start_link(arg)
-      # {Tiki.Worker, arg}
+      TikiWeb.Endpoint,
+      # Start the OIDC provider configuration worker (fetches the OIDC connect configuration)
+      {Oidcc.ProviderConfiguration.Worker, oidc_config},
+      # Start processes required for order handling
+      Tiki.OrderHandler.Supervisor,
+      Tiki.PurchaseMonitor
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Tiki.Supervisor]
     Supervisor.start_link(children, opts)
   end

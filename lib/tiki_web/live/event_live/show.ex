@@ -69,13 +69,6 @@ defmodule TikiWeb.EventLive.Show do
       patch={~p"/events/#{@event}"}
     />
 
-    <div class="bg-background border-border fixed right-0 bottom-0 left-0 z-30 border-t px-6 py-3 lg:hidden">
-      <a href="#tickets" class="w-full">
-        <.button class="w-full">
-          {gettext("Tickets")}
-        </.button>
-      </a>
-    </div>
     <%!-- <div class="bg-background shadow-xs fixed right-4 bottom-4 rounded-full border px-4 py-2">
       {max(@online_count, 0)} online
     </div> --%>
@@ -84,7 +77,6 @@ defmodule TikiWeb.EventLive.Show do
 
   @impl true
   def mount(%{"event_id" => event_id}, _session, socket) do
-    ticket_types = Events.get_event_ticket_types(event_id)
     event = Events.get_event!(event_id)
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
@@ -97,7 +89,6 @@ defmodule TikiWeb.EventLive.Show do
 
     {:ok,
      assign(socket,
-       ticket_types: ticket_types,
        event: event,
        online_count: initial_count,
        order: nil

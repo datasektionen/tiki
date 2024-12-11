@@ -247,6 +247,10 @@ defmodule Tiki.Tickets do
     end
   end
 
+  def get_cached_available_ticket_types(event_id) do
+    Tiki.OrderHandler.Worker.get_ticket_types(event_id)
+  end
+
   @doc """
   Puts the available, purchased and pending meta data for each ticket type on the ticket types.
 
