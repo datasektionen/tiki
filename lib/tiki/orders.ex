@@ -342,6 +342,18 @@ defmodule Tiki.Orders do
     |> Repo.all()
   end
 
+  @doc """
+  Lists all orders for a user.
+  """
+  def list_orders_for_user(user_id) do
+    order_query()
+    |> where([o], o.user_id == ^user_id)
+    |> join(:inner, [o], e in assoc(o, :event))
+    |> preload([o, ..., e], event: e)
+    |> order_by([o], desc: o.inserted_at)
+    |> Repo.all()
+  end
+
   def broadcast_order(order_id, :created, order) do
     PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:created, order})
   end

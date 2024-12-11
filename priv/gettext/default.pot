@@ -116,6 +116,7 @@ msgstr ""
 msgid "Tickets"
 msgstr ""
 
+#: lib/tiki_web/components/layouts/nav.html.heex:117
 #: lib/tiki_web/components/sidebar.ex:322
 #, elixir-autogen, elixir-format
 msgid "Log out"
@@ -357,7 +358,7 @@ msgid "You need to be an admin to access this page."
 msgstr ""
 
 #: lib/tiki_web/components/layouts/nav.html.heex:62
-#: lib/tiki_web/components/layouts/nav.html.heex:95
+#: lib/tiki_web/components/layouts/nav.html.heex:78
 #: lib/tiki_web/components/sidebar.ex:166
 #, elixir-autogen, elixir-format
 msgid "Admin"
@@ -374,7 +375,7 @@ msgid "Current visitors"
 msgstr ""
 
 #: lib/tiki_web/components/layouts/nav.html.heex:50
-#: lib/tiki_web/components/layouts/nav.html.heex:89
+#: lib/tiki_web/components/layouts/nav.html.heex:72
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:185
 #, elixir-autogen, elixir-format
 msgid "Events"
@@ -723,7 +724,7 @@ msgid "Total"
 msgstr ""
 
 #: lib/tiki_web/components/layouts/nav.html.heex:56
-#: lib/tiki_web/components/layouts/nav.html.heex:92
+#: lib/tiki_web/components/layouts/nav.html.heex:75
 #, elixir-autogen, elixir-format
 msgid "About"
 msgstr ""
@@ -753,8 +754,7 @@ msgstr ""
 msgid "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
 msgstr ""
 
-#: lib/tiki_web/components/layouts/nav.html.heex:71
-#: lib/tiki_web/components/layouts/nav.html.heex:104
+#: lib/tiki_web/components/layouts/nav.html.heex:87
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr ""
@@ -1231,4 +1231,30 @@ msgstr ""
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:102
 #, elixir-autogen, elixir-format
 msgid "Buy"
+msgstr ""
+
+#: lib/tiki_web/components/layouts/nav.html.heex:109
+#, elixir-autogen, elixir-format
+msgid "Account"
+msgstr ""
+
+#: lib/tiki_web/live/account_live/tickets.ex:18
+#, elixir-autogen, elixir-format
+msgid "No tickets ordered yet"
+msgstr ""
+
+#: lib/tiki_web/live/account_live/tickets.ex:25
+#, elixir-autogen, elixir-format
+msgid "Start browsing events"
+msgstr ""
+
+#: lib/tiki_web/live/account_live/tickets.ex:20
+#, elixir-autogen, elixir-format
+msgid "The time is ripe to go to some fun and exciting events!"
+msgstr ""
+
+#: lib/tiki_web/components/layouts/nav.html.heex:101
+#: lib/tiki_web/live/account_live/tickets.ex:11
+#, elixir-autogen, elixir-format
+msgid "Your tickets"
 msgstr ""

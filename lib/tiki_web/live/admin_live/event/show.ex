@@ -79,7 +79,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
         </.button>
       </:actions>
     </.header>
-    <div class="flex flex-col gap-8 py-8">
+    <div class="flex flex-col gap-8">
       <div class="grid gap-8 lg:grid-cols-3">
         <.card>
           <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
