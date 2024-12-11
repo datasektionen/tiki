@@ -69,13 +69,6 @@ defmodule TikiWeb.EventLive.Show do
       patch={~p"/events/#{@event}"}
     />
 
-    <div class="bg-background border-border fixed right-0 bottom-0 left-0 z-30 border-t px-6 py-3 lg:hidden">
-      <a href="#tickets" class="w-full">
-        <.button class="w-full">
-          {gettext("Tickets")}
-        </.button>
-      </a>
-    </div>
     <%!-- <div class="bg-background shadow-xs fixed right-4 bottom-4 rounded-full border px-4 py-2">
       {max(@online_count, 0)} online
     </div> --%>

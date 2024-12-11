@@ -87,9 +87,22 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
           />
           <.button :if={@promo_code != ""}>Aktivera</.button>
         </.form>
-        <.button :if={@promo_code == ""} phx-click="request-tickets" phx-target={@myself}>
-          <span>Fortsätt</span>
-        </.button>
+
+        <div class="bg-background border-border fixed right-0 bottom-0 left-0 z-30 border-t px-6 py-3 lg:relative lg:border-none lg:p-0">
+          <%= if Enum.map(@counts, &elem(&1, 1)) |> Enum.sum() == 0 do %>
+            <.link href="#tickets" class={["w-full", @promo_code != "" && "hidden"]}>
+              <.button class="w-full">{gettext("Tickets")}</.button>
+            </.link>
+          <% else %>
+            <.button
+              phx-click="request-tickets"
+              phx-target={@myself}
+              class={"#{@promo_code != "" && "lg:hidden"} w-full"}
+            >
+              {gettext("Buy")}
+            </.button>
+          <% end %>
+        </div>
       </div>
     </div>
     """
@@ -116,7 +129,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     counts =
       for tt <- ticket_types, into: %{} do
         value = get_in(socket.assigns, [:counts, tt.id]) || 0
-        {tt.id, min(value, tt.available)}
+        {tt.id, min(value, tt.available) |> max(0)}
       end
 
     ticket_types =
