@@ -180,18 +180,19 @@ defmodule Swish do
   defp base_request() do
     config = Application.get_env(:tiki, Tiki.Swish)
 
+    [{pk_type, pk_der, :not_encrypted} | _] = :public_key.pem_decode(config[:key])
+
+    certs =
+      :public_key.pem_decode(config[:cert])
+      |> Enum.map(fn {_type, der, :not_encrypted} -> der end)
+
     Req.new(
       headers: [
         {"Content-Type", "application/json"}
       ],
       connect_options: [
         transport_opts: [
-          cacertfile: config[:cacert],
-          certfile: config[:cert],
-          keyfile: config[:key],
-          # TODO - this is probably not the right way to do this
-          # note: see https://github.com/erlang/otp/issues/8057
-          verify: :verify_none
+          certs_keys: [%{key: {pk_type, pk_der}, cert: certs}]
         ]
       ]
     )

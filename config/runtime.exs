@@ -38,7 +38,6 @@ if config_env() == :prod do
 
   # Swish
   swish_api_url = System.get_env("SWISH_API_URL") || raise "SWISH_API_URL is not set"
-  swish_ca_cert = System.get_env("SWISH_CA_CERT") || raise "SWISH_CA_CERT is not set"
   swish_cert = System.get_env("SWISH_CERT") || raise "SWISH_CERT is not set"
   swish_key = System.get_env("SWISH_KEY") || raise "SWISH_KEY is not set"
 
@@ -50,7 +49,6 @@ if config_env() == :prod do
 
   config :tiki, Swish,
     api_url: swish_api_url,
-    ca_cert: swish_ca_cert,
     cert: swish_cert,
     key: swish_key,
     merchant_number: swish_merchant_number,

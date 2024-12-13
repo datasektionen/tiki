@@ -30,10 +30,11 @@ job "tiki" {
       }
 
       template {
+
         data        = <<ENV
+{{ with nomadVar "nomad/jobs/tiki" }}
 DATABASE_URL=postgres://tiki:{{ .database_password }}@postgres.dsekt.internal:5432/tiki
-SWISH_API_URL={{ .swish_api_url }}
-SWISH_CA_CERT={{ .swish_ca_cert }}
+SWISH_API_URL=https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api
 SWISH_CERT={{ .swish_cert }}
 SWISH_KEY={{ .swish_key }}
 SWISH_MERCHANT_NUMBER={{ .swish_merchant_number }}
@@ -53,7 +54,8 @@ AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
 IMAGE_FRONTEND_URL=https://imgproxy.tiki.betasektionen.se
-                ENV
+{{ end }}
+                      ENV
         destination = "local/.env"
         env         = true
       }
@@ -82,16 +84,18 @@ IMAGE_FRONTEND_URL=https://imgproxy.tiki.betasektionen.se
 
       template {
         data        = <<ENV
+{{ with nomadVar "nomad/jobs/tiki" }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
 AWS_ACCESS_KEY_ID={{ .aws_access_key_id }}
 AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
-IMGPROXY_MAX_SRC_RESOLUTION = 30
-IMGPROXY_USE_S3 = true
-IMGPROXY_TTL = 31536000
-AWS_REGION = "eu-north-1"
-IMGPROXY_BASE_URL = "s3://tiki"
-ENV
+IMGPROXY_MAX_SRC_RESOLUTION=30
+IMGPROXY_USE_S3=true
+IMGPROXY_TTL=31536000
+AWS_REGION="eu-north-1"
+IMGPROXY_BASE_URL="s3://tiki"
+{{ end }}
+                      ENV
         destination = "local/.env"
         env         = true
       }
