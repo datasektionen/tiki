@@ -100,6 +100,14 @@ config :tiki, Oidcc,
   client_id: System.get_env("OIDC_CLIENT_ID"),
   client_secret: System.get_env("OIDC_CLIENT_SECRET")
 
+config :tiki, Oidcc.ProviderConfiguration,
+  issuer: "https://sso.datasektionen.se/op",
+  provider_configuration_opts: %{
+    quirks: %{
+      allow_unsafe_http: true
+    }
+  }
+
 # S3 config
 config :tiki, Tiki.S3,
   bucket: System.get_env("S3_BUCKET_NAME"),
@@ -114,11 +122,3 @@ config :imgproxy,
   key: System.get_env("IMGPROXY_KEY"),
   salt: System.get_env("IMGPROXY_SALT"),
   prefix: System.get_env("IMAGE_FRONTEND_URL")
-
-config :tiki, Oidcc.ProviderConfiguration,
-  issuer: "https://sso.datasektionen.se/op",
-  provider_configuration_opts: %{
-    quirks: %{
-      allow_unsafe_http: true
-    }
-  }
