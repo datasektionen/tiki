@@ -25,7 +25,7 @@ job "tiki" {
       driver = "docker"
 
       config {
-        image = var.image.tag
+        image = var.image_tag
         ports = ["tiki-http"]
       }
 
