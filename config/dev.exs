@@ -100,6 +100,21 @@ config :tiki, Oidcc,
   client_id: System.get_env("OIDC_CLIENT_ID"),
   client_secret: System.get_env("OIDC_CLIENT_SECRET")
 
+# S3 config
+config :tiki, Tiki.S3,
+  bucket: System.get_env("S3_BUCKET_NAME"),
+  region: System.get_env("AWS_REGION"),
+  endpoint_url: System.get_env("AWS_ENDPOINT_URL_S3"),
+  endpoint_frontend_url: System.get_env("AWS_FRONTEND_ENDPOINT_URL_S3"),
+  access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+  secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
+
+# Imgproxy config
+config :imgproxy,
+  key: System.get_env("IMGPROXY_KEY"),
+  salt: System.get_env("IMGPROXY_SALT"),
+  prefix: System.get_env("IMAGE_FRONTEND_URL")
+
 config :tiki, Oidcc.ProviderConfiguration,
   issuer: "https://sso.datasektionen.se/op",
   provider_configuration_opts: %{

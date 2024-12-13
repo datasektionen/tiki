@@ -2,6 +2,8 @@
 
 # Only used in development as an entrypoint for the Docker container
 
+echo "Starting Tiki..."
+
 set -e
 
 # Ensure the dependencies are installed

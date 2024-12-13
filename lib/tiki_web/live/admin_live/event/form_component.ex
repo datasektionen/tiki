@@ -31,7 +31,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         <.input field={@form[:event_date]} type="datetime-local" label={gettext("Event date")} />
 
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
-        <.input field={@form[:image_url]} type="text" label={gettext("Image url")} />
+        <.image_upload upload={@uploads.photo} label={gettext("Event cover image")} />
 
         <:actions>
           <div class="flex flex-row gap-2">
@@ -52,10 +52,19 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
   @impl true
   def update(%{event: event, action: action} = assigns, socket) do
+    dbg(Tiki.S3.presign_url("test"))
+
     {:ok,
      socket
      |> assign(assigns)
-     |> apply_action(action, event)}
+     |> apply_action(action, event)
+     |> allow_upload(
+       :photo,
+       accept: ~w[.png .jpeg .jpg],
+       max_entries: 1,
+       auto_upload: true,
+       external: &presign_upload/2
+     )}
   end
 
   defp apply_action(socket, :new, event) do
@@ -86,7 +95,10 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   end
 
   def handle_event("save", %{"event" => event_params}, socket) do
-    event_params = Map.put(event_params, "team_id", socket.assigns.current_team.id)
+    event_params =
+      Map.put(event_params, "team_id", socket.assigns.current_team.id)
+      |> put_image_url(socket)
+
     save_event(socket, socket.assigns.action, event_params)
   end
 
@@ -120,6 +132,15 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
     end
   end
 
+  defp put_image_url(params, socket) do
+    {completed, []} = uploaded_entries(socket, :photo)
+
+    case completed do
+      [] -> params
+      [image | _] -> Map.put(params, "image_url", "uploads/#{image.client_name}")
+    end
+  end
+
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
@@ -129,4 +150,17 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp presign_upload(entry, socket) do
+    form = Tiki.S3.presign_form(entry)
+
+    meta = %{
+      uploader: "S3",
+      key: "uploads/#{entry.client_name}",
+      url: form.url,
+      fields: Map.new(form.fields)
+    }
+
+    {:ok, meta, socket}
+  end
 end
