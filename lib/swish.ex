@@ -5,7 +5,6 @@ defmodule Swish do
 
   @behaviour Swish
 
-  @api_url Application.compile_env(:tiki, Tiki.Swish)[:api_url]
   @prod_api_url "https://mpc.getswish.net/qrg-swish/api"
   @alphabet ~c"ABCDEF0123456789"
   @full_alphabet ~c"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
@@ -67,7 +66,7 @@ defmodule Swish do
 
     res =
       Req.put(base_request(),
-        url: @api_url <> "/v2/paymentrequests/#{id}",
+        url: api_url() <> "/v2/paymentrequests/#{id}",
         json: payment_request
       )
 
@@ -92,7 +91,7 @@ defmodule Swish do
 
   @callback get_payment_request(id()) :: {:ok, map()} | {:error, String.t()}
   def get_payment_request(id) do
-    res = Req.get(base_request(), url: @api_url <> "/v1/paymentrequests/#{id}")
+    res = Req.get(base_request(), url: api_url() <> "/v1/paymentrequests/#{id}")
 
     case res do
       {:ok, %Req.Response{status: 200, body: body}} -> {:ok, body}
@@ -119,7 +118,7 @@ defmodule Swish do
 
     res =
       Req.patch(base_request(),
-        url: @api_url <> "/v1/paymentrequests/#{id}",
+        url: api_url() <> "/v1/paymentrequests/#{id}",
         headers: [{"Content-Type", "application/json-patch+json"}],
         json: operations
       )
@@ -196,5 +195,9 @@ defmodule Swish do
         ]
       ]
     )
+  end
+
+  def api_url do
+    Application.get_env(:tiki, Tiki.Swish)[:api_url]
   end
 end
