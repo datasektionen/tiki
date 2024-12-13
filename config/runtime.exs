@@ -49,8 +49,8 @@ if config_env() == :prod do
 
   config :tiki, Swish,
     api_url: swish_api_url,
-    cert: swish_cert,
-    key: swish_key,
+    cert: swish_cert |> Base.decode64!(),
+    key: swish_key |> Base.decode64!(),
     merchant_number: swish_merchant_number,
     callback_url: swish_callback_url
 

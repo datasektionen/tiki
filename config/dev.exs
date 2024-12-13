@@ -12,8 +12,8 @@ config :tiki, Tiki.Repo,
 
 config :tiki, Tiki.Swish,
   api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
-  cert: System.get_env("SWISH_CERT"),
-  key: System.get_env("SWISH_PRIVATE_KEY"),
+  cert: System.get_env("SWISH_CERT") |> Base.decode64!(),
+  key: System.get_env("SWISH_PRIVATE_KEY") |> Base.decode64!(),
   merchant_number: System.get_env("SWISH_MERCHANT_NUMBER"),
   callback_url: System.get_env("SWISH_CALLBACK_URL")
 
