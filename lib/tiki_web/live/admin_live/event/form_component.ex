@@ -52,8 +52,6 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
   @impl true
   def update(%{event: event, action: action} = assigns, socket) do
-    dbg(Tiki.S3.presign_url("test"))
-
     {:ok,
      socket
      |> assign(assigns)

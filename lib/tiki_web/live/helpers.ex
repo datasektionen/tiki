@@ -14,7 +14,10 @@ defmodule TikiWeb.LiveHelpers do
     |> String.capitalize()
   end
 
-  def image_url(path, opts \\ []) do
+  def image_url(path, opts \\ [])
+  def image_url(nil, _opts), do: nil
+
+  def image_url(path, opts) do
     path = if path |> String.starts_with?("/"), do: path, else: "/" <> path
 
     width = Keyword.get(opts, :width, nil)
