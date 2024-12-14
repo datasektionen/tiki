@@ -10,7 +10,7 @@ config :tiki, Tiki.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-config :tiki, Tiki.Swish,
+config :tiki, Swish,
   api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
   cert: System.get_env("SWISH_CERT") |> Base.decode64!(),
   key: System.get_env("SWISH_PRIVATE_KEY") |> Base.decode64!(),

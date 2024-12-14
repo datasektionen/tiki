@@ -58,9 +58,9 @@ defmodule Swish do
     payment_request =
       %{
         "amount" => amount,
-        "payeeAlias" => Application.get_env(:tiki, Tiki.Swish)[:merchant_number],
+        "payeeAlias" => Application.get_env(:tiki, Swish)[:merchant_number],
         "currency" => "SEK",
-        "callbackUrl" => Application.get_env(:tiki, Tiki.Swish)[:callback_url],
+        "callbackUrl" => Application.get_env(:tiki, Swish)[:callback_url],
         "callbackIdentifier" => callback_identifier
       }
 
@@ -178,7 +178,7 @@ defmodule Swish do
   end
 
   defp base_request() do
-    config = Application.get_env(:tiki, Tiki.Swish)
+    config = Application.get_env(:tiki, Swish)
 
     [{pk_type, pk_der, :not_encrypted} | _] = :public_key.pem_decode(config[:key])
 
@@ -199,6 +199,6 @@ defmodule Swish do
   end
 
   def api_url do
-    Application.get_env(:tiki, Tiki.Swish)[:api_url]
+    Application.get_env(:tiki, Swish)[:api_url]
   end
 end
