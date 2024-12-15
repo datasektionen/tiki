@@ -10,6 +10,9 @@ defmodule Tiki.Events.Event do
     field :location, :string
     field :image_url, :string
 
+    # maximum number of tickets that can be purchased in one order
+    field :max_order_size, :integer
+
     has_many :forms, Tiki.Forms.Form
     belongs_to :default_form, Tiki.Forms.Form
 
@@ -30,7 +33,8 @@ defmodule Tiki.Events.Event do
       :location,
       :image_url,
       :team_id,
-      :default_form_id
+      :default_form_id,
+      :max_order_size
     ])
     |> validate_required([:name, :description, :event_date, :team_id])
     |> foreign_key_constraint(:team_id)

@@ -10,6 +10,7 @@ defmodule Tiki.OrderHandler.Worker do
   alias Tiki.Repo
   alias Tiki.Tickets
   alias Tiki.Orders
+  alias Tiki.Events
   alias Tiki.OrderHandler
 
   @timeout :timer.hours(1)
@@ -34,6 +35,12 @@ defmodule Tiki.OrderHandler.Worker do
     end
   end
 
+  def invalidate_cache(event_id) do
+    if started?(event_id) do
+      GenServer.cast(via_tuple(event_id), :invalidate_cache)
+    end
+  end
+
   @impl GenServer
   def init(event_id) do
     Logger.debug("Order handler starting for event #{event_id}")
@@ -55,6 +62,16 @@ defmodule Tiki.OrderHandler.Worker do
   end
 
   @impl GenServer
+  def handle_cast(:invalidate_cache, state) do
+    {:noreply, %{state | ticket_types: nil}, @timeout}
+  end
+
+  @impl GenServer
+  def handle_call(:get_ticket_types, _from, %{ticket_types: nil} = state) do
+    ticket_types = Tickets.get_available_ticket_types(state.event_id)
+    {:reply, ticket_types, %{state | ticket_types: ticket_types}, @timeout}
+  end
+
   def handle_call(:get_ticket_types, _from, %{ticket_types: ticket_types} = state) do
     {:reply, ticket_types, state, @timeout}
   end
@@ -62,30 +79,59 @@ defmodule Tiki.OrderHandler.Worker do
   def handle_call({:reserve_tickets, ticket_types}, _from, %{event_id: event_id} = state) do
     result =
       Multi.new()
+      |> Multi.run(:requested_types, fn repo, _ ->
+        tt_ids = Enum.map(ticket_types, fn {tt, _} -> tt end)
+
+        tts =
+          repo.all(
+            from tt in Tickets.TicketType,
+              where: tt.id in ^tt_ids,
+              select: {tt.id, tt}
+          )
+          |> Enum.into(%{})
+
+        {:ok, tts}
+      end)
       |> Multi.run(:positive_tickets, fn _repo, _ ->
         case Map.values(ticket_types) |> Enum.sum() do
           0 -> {:error, "order must contain at least one ticket"}
           _ -> {:ok, :ok}
         end
       end)
-      |> Multi.run(:prices, fn repo, _ ->
-        tt_ids = Enum.map(ticket_types, fn {tt, _} -> tt end)
+      |> Multi.run(:event, fn repo, _ ->
+        {:ok, repo.one(from e in Events.Event, where: e.id == ^event_id)}
+      end)
+      |> Multi.run(:all_purchasable, fn _repo, %{requested_types: tts} ->
+        case Enum.all?(tts, fn {_, tt} -> tt.purchasable end) do
+          true -> {:ok, :ok}
+          false -> {:error, "not all ticket types are purchasable"}
+        end
+      end)
+      |> Multi.run(:ticket_limits, fn _repo, %{requested_types: tts, event: event} ->
+        total_requested = Map.values(ticket_types) |> Enum.sum()
 
-        prices =
-          repo.all(
-            from tt in Tickets.TicketType,
-              where: tt.id in ^tt_ids,
-              select: {tt.id, tt.price}
-          )
-          |> Enum.into(%{})
+        each_under_limit =
+          Enum.all?(ticket_types, fn {tt_id, count} ->
+            tts[tt_id] && tts[tt_id].purchase_limit >= count
+          end)
 
-        total = Enum.reduce(prices, 0, fn {tt, price}, acc -> price * ticket_types[tt] + acc end)
+        if total_requested <= event.max_order_size && each_under_limit do
+          {:ok, :ok}
+        else
+          {:error, "too many tickets requested"}
+        end
+      end)
+      |> Multi.run(:total_price, fn _repo, %{requested_types: tts} ->
+        total =
+          Enum.reduce(tts, 0, fn {tt_id, %{price: price}}, acc ->
+            price * ticket_types[tt_id] + acc
+          end)
 
-        {:ok, Map.put(prices, :total, total)}
+        {:ok, total}
       end)
       |> Multi.insert(
         :order,
-        fn %{prices: %{total: total_price}} ->
+        fn %{total_price: total_price} ->
           Orders.change_order(%Orders.Order{}, %{
             event_id: event_id,
             status: :pending,
@@ -97,10 +143,10 @@ defmodule Tiki.OrderHandler.Worker do
       |> Multi.insert_all(
         :tickets,
         Orders.Ticket,
-        fn %{order: order, prices: prices} ->
+        fn %{order: order, requested_types: tts} ->
           Enum.flat_map(ticket_types, fn {tt, count} ->
             for _ <- 1..count do
-              %{ticket_type_id: tt, order_id: order.id, price: prices[tt]}
+              %{ticket_type_id: tt, order_id: order.id, price: tts[tt].price}
             end
           end)
         end,
@@ -139,15 +185,24 @@ defmodule Tiki.OrderHandler.Worker do
       {:ok, %{preloaded_order: order, ticket_types_available: ticket_types}} ->
         {:reply, {:ok, order, ticket_types}, state, @timeout}
 
-      {:error, status, message, _} when status in [:positive_tickets, :check_availability] ->
+      {:error, status, message, _}
+      when status in [:positive_tickets, :ticket_limits, :check_availability, :all_purchasable] ->
         {:reply, {:error, message}, state, @timeout}
     end
   end
 
   defp ensure_started(event_id) do
+    if started?(event_id) do
+      {:ok, :already_started}
+    else
+      OrderHandler.DynamicSupervisor.start_worker(event_id)
+    end
+  end
+
+  defp started?(event_id) do
     case Registry.lookup(Tiki.OrderHandler.Registry, event_id) do
-      [] -> OrderHandler.DynamicSupervisor.start_worker(event_id)
-      [{_pid, _}] -> {:ok, :already_started}
+      [{_pid, _}] -> true
+      [] -> false
     end
   end
 
