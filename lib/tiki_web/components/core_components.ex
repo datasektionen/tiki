@@ -348,6 +348,45 @@ defmodule TikiWeb.CoreComponents do
     """
   end
 
+  attr :label, :string, required: true
+  attr :upload, :any, required: true
+
+  def image_upload(assigns) do
+    ~H"""
+    <.label for={@upload.ref}>{@label}</.label>
+    <div class="border-border mt-2 flex justify-center rounded-lg border border-dashed p-6">
+      <div :if={@upload.entries == []} class="text-center" phx-drop-target={@upload.ref}>
+        <.icon name="hero-photo-solid" class="size-12 text-muted-foreground/20" />
+        <div class="text-sm/6 mt-4 flex text-gray-600">
+          <.label for={@upload.ref}>
+            <span>{gettext("Upload a file")}</span>
+          </.label>
+          <p class="pl-1">
+            {gettext("or drag and drop")}
+          </p>
+        </div>
+        <p class="text-xs/5 text-muted-foreground">
+          {gettext("Accepts")} {@upload.accept} {gettext("up to")}
+          {div(@upload.max_file_size, 1_000_000)} MB
+        </p>
+      </div>
+      <.live_file_input upload={@upload} class="sr-only" />
+      <div :for={entry <- @upload.entries} class="flex w-full flex-row gap-2">
+        <.live_img_preview entry={entry} class="max-h-16 rounded-md" />
+        <div>
+          <span class="text-foreground text-sm font-semibold">{entry.client_name}</span>
+          <div class="text-muted-foreground text-sm">
+            {entry.progress}%
+            <.link :if={entry.done?} href={Tiki.S3.presign_url(entry.client_name)}>
+              {gettext("uploaded")}
+            </.link>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do

@@ -9,6 +9,8 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
 
     steps:
       - name: Git checkout
@@ -20,10 +22,12 @@ jobs:
           latest=ghcr.io/${{ github.repository }}:latest
           current=ghcr.io/${{ github.repository }}:$(git rev-parse --short ${{ github.sha }})
           EOF
+
       - name: Download Nomad
         run: |
           curl -LO https://releases.hashicorp.com/nomad/${{ env.NOMAD_VERSION }}/nomad_${{ env.NOMAD_VERSION }}_linux_amd64.zip
           unzip -d /usr/local/bin nomad_${{ env.NOMAD_VERSION }}_linux_amd64.zip nomad
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

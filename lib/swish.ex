@@ -5,7 +5,6 @@ defmodule Swish do
 
   @behaviour Swish
 
-  @api_url Application.compile_env(:tiki, Tiki.Swish)[:api_url]
   @prod_api_url "https://mpc.getswish.net/qrg-swish/api"
   @alphabet ~c"ABCDEF0123456789"
   @full_alphabet ~c"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
@@ -59,15 +58,15 @@ defmodule Swish do
     payment_request =
       %{
         "amount" => amount,
-        "payeeAlias" => Application.get_env(:tiki, Tiki.Swish)[:merchant_number],
+        "payeeAlias" => Application.get_env(:tiki, Swish)[:merchant_number],
         "currency" => "SEK",
-        "callbackUrl" => Application.get_env(:tiki, Tiki.Swish)[:callback_url],
+        "callbackUrl" => Application.get_env(:tiki, Swish)[:callback_url],
         "callbackIdentifier" => callback_identifier
       }
 
     res =
       Req.put(base_request(),
-        url: @api_url <> "/v2/paymentrequests/#{id}",
+        url: api_url() <> "/v2/paymentrequests/#{id}",
         json: payment_request
       )
 
@@ -92,7 +91,7 @@ defmodule Swish do
 
   @callback get_payment_request(id()) :: {:ok, map()} | {:error, String.t()}
   def get_payment_request(id) do
-    res = Req.get(base_request(), url: @api_url <> "/v1/paymentrequests/#{id}")
+    res = Req.get(base_request(), url: api_url() <> "/v1/paymentrequests/#{id}")
 
     case res do
       {:ok, %Req.Response{status: 200, body: body}} -> {:ok, body}
@@ -119,7 +118,7 @@ defmodule Swish do
 
     res =
       Req.patch(base_request(),
-        url: @api_url <> "/v1/paymentrequests/#{id}",
+        url: api_url() <> "/v1/paymentrequests/#{id}",
         headers: [{"Content-Type", "application/json-patch+json"}],
         json: operations
       )
@@ -179,7 +178,13 @@ defmodule Swish do
   end
 
   defp base_request() do
-    config = Application.get_env(:tiki, Tiki.Swish)
+    config = Application.get_env(:tiki, Swish)
+
+    [{pk_type, pk_der, :not_encrypted} | _] = :public_key.pem_decode(config[:key])
+
+    certs =
+      :public_key.pem_decode(config[:cert])
+      |> Enum.map(fn {_type, der, :not_encrypted} -> der end)
 
     Req.new(
       headers: [
@@ -187,14 +192,13 @@ defmodule Swish do
       ],
       connect_options: [
         transport_opts: [
-          cacertfile: config[:cacert],
-          certfile: config[:cert],
-          keyfile: config[:key],
-          # TODO - this is probably not the right way to do this
-          # note: see https://github.com/erlang/otp/issues/8057
-          verify: :verify_none
+          certs_keys: [%{key: {pk_type, pk_der}, cert: certs}]
         ]
       ]
     )
+  end
+
+  def api_url do
+    Application.get_env(:tiki, Swish)[:api_url]
   end
 end

@@ -16,7 +16,10 @@ defmodule TikiWeb.EventLive.Show do
       <div class="flex flex-col items-start gap-4 lg:grid lg:grid-cols-3">
         <div class="col-span-2 flex flex-col gap-4">
           <div :if={@event.image_url != nil} class="">
-            <img class="aspect-video w-full rounded-xl object-cover" src={@event.image_url} />
+            <img
+              class="aspect-video w-full rounded-xl object-cover"
+              src={image_url(@event.image_url)}
+            />
           </div>
 
           <div class="text-muted-foreground flex flex-col gap-1">
@@ -35,7 +38,7 @@ defmodule TikiWeb.EventLive.Show do
             <.card_title>{gettext("Organized by")}</.card_title>
             <div class="flex flex-row items-center gap-2">
               <.avatar>
-                <.avatar_image src={@event.team.logo_url} />
+                <.avatar_image src={image_url(@event.team.logo_url, width: 64, height: 64)} />
                 <.avatar_fallback>
                   {@event.team.name}
                 </.avatar_fallback>
