@@ -9,6 +9,8 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
 
     steps:
       - name: Git checkout
