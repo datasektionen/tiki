@@ -17,7 +17,7 @@ defmodule TikiWeb.OidccController do
       client_id: &__MODULE__.client_id/0,
       client_secret: &__MODULE__.client_secret/0,
       redirect_uri: &__MODULE__.callback_uri/0,
-      scopes: ["openid", "profile", "email", "pls_tiki"]
+      scopes: ["openid", "profile", "email"]
     ]
     when action in [:authorize]
   )
@@ -38,7 +38,7 @@ defmodule TikiWeb.OidccController do
   end
 
   def callback(
-        %Plug.Conn{private: %{Oidcc.Plug.AuthorizationCallback => {:ok, {token, userinfo}}}} =
+        %Plug.Conn{private: %{Oidcc.Plug.AuthorizationCallback => {:ok, {_token, userinfo}}}} =
           conn,
         _params
       ) do
@@ -49,7 +49,7 @@ defmodule TikiWeb.OidccController do
       end)
 
     case Accounts.upsert_user_with_userinfo(userinfo) do
-      {:ok, _user} -> UserAuth.log_in_user(conn, token)
+      {:ok, user} -> UserAuth.log_in_user(conn, user)
       {:error, changeset} -> conn |> put_status(400) |> render(:error, reason: changeset)
     end
   end
