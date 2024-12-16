@@ -152,7 +152,7 @@ defmodule Tiki.Tickets do
         preload: [ticket_batch: tb]
 
     case Repo.one(query) do
-      nil -> raise Ecto.NoResultsError, query: query
+      nil -> raise Ecto.NoResultsError.exception(queryable: query)
       ticket_type -> ticket_type
     end
   end
