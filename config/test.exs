@@ -20,7 +20,7 @@ config :tiki, Tiki.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
-config :tiki, Tiki.Swish,
+config :tiki, Swish,
   api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
   cacert: "swish_certs/Swish_TLS_RootCA.pem",
   cert: "swish_certs/myCertificate.pem",

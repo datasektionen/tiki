@@ -60,6 +60,8 @@ defmodule Tiki.MixProject do
       {:bandit, "~> 1.0"},
       {:stripity_stripe, "~> 3.0"},
       {:req, "~> 0.5"},
+      {:req_s3, "~> 0.2.3"},
+      {:imgproxy, "~> 3.0"},
       {:oidcc_plug, "~> 0.1.0"},
       {:oidcc, "~> 3.2.0"},
       {:let_me, "~> 1.2"},

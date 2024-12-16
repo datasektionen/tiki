@@ -16,7 +16,7 @@ defmodule TikiWeb.AdminLive.Team.Form do
       <.input field={@form[:name]} type="text" label={gettext("Name")} />
       <.input field={@form[:contact_email]} type="text" label={gettext("Contact email")} />
       <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
-      <.input field={@form[:logo_url]} type="text" label={gettext("Logo URL")} />
+      <.image_upload upload={@uploads.logo} label={gettext("Team logo")} />
 
       <:actions>
         <.button phx-disable-with={gettext("Saving...")}>
@@ -34,6 +34,13 @@ defmodule TikiWeb.AdminLive.Team.Form do
     {:ok,
      socket
      |> assign(:return_to, return_to(params["return_to"]))
+     |> allow_upload(
+       :logo,
+       accept: ~w[.png .jpeg .jpg],
+       max_entries: 1,
+       auto_upload: true,
+       external: &presign_upload/2
+     )
      |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -65,6 +72,7 @@ defmodule TikiWeb.AdminLive.Team.Form do
   end
 
   def handle_event("save", %{"team" => team_params}, socket) do
+    team_params = put_image_url(team_params, socket)
     save_team(socket, socket.assigns.live_action, team_params)
   end
 
@@ -92,6 +100,28 @@ defmodule TikiWeb.AdminLive.Team.Form do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
+  end
+
+  defp put_image_url(params, socket) do
+    {completed, []} = uploaded_entries(socket, :logo)
+
+    case completed do
+      [] -> params
+      [image | _] -> Map.put(params, "logo_url", "uploads/#{image.client_name}")
+    end
+  end
+
+  defp presign_upload(entry, socket) do
+    form = Tiki.S3.presign_form(entry)
+
+    meta = %{
+      uploader: "S3",
+      key: "uploads/#{entry.client_name}",
+      url: form.url,
+      fields: Map.new(form.fields)
+    }
+
+    {:ok, meta, socket}
   end
 
   defp return_path("index", _team), do: ~p"/admin/teams"

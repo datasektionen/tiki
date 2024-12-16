@@ -10,7 +10,7 @@ defmodule TikiWeb.EventLive.Index do
         <div class="w-full space-y-3">
           <div class="relative overflow-hidden rounded-lg">
             <img
-              src={event.image_url}
+              src={image_url(event.image_url, width: 600)}
               class="aspect-[16/9] h-full w-full rounded-md object-cover"
               alt={event.name}
               loading="lazy"
