@@ -88,16 +88,18 @@ defmodule TikiWeb.Router do
     end
 
     scope "/admin" do
-      pipe_through [:require_admin_user]
+      pipe_through [:require_manager]
 
       post "/set_team", UserSessionController, :set_team
       get "/set_team/:team_id", UserSessionController, :set_team
+      get "/clear_team", UserSessionController, :clear_team
     end
 
     scope "/admin", AdminLive do
-      live_session :require_admin_user,
+      live_session :require_manager,
         on_mount: [
-          {TikiWeb.UserAuth, :ensure_admin},
+          {TikiWeb.UserAuth, :ensure_authenticated},
+          {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
           TikiWeb.Nav
         ],
         layout: {TikiWeb.Layouts, :admin} do
@@ -107,15 +109,15 @@ defmodule TikiWeb.Router do
 
         live "/teams", Team.Index, :index
         live "/teams/new", Team.Form, :new
-        live "/teams/:id", Team.Show, :show
         live "/teams/:id/edit", Team.Form, :edit
       end
 
       live_session :active_group,
         on_mount: [
-          {TikiWeb.UserAuth, :ensure_admin},
-          {TikiWeb.UserAuth, :ensure_team},
-          TikiWeb.Nav
+          {TikiWeb.UserAuth, :ensure_authenticated},
+          {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
+          TikiWeb.Nav,
+          {TikiWeb.UserAuth, :ensure_team}
         ],
         layout: {TikiWeb.Layouts, :admin} do
         # General event stuff

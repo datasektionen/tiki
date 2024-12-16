@@ -7,15 +7,24 @@ defmodule TikiWeb.AdminLive.Event.Status do
   alias Tiki.Presence
 
   def mount(%{"id" => event_id}, _session, socket) do
-    ticket_types = Tickets.get_cached_available_ticket_types(event_id)
     event = Events.get_event!(event_id)
 
-    Orders.subscribe(event_id)
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      ticket_types = Tickets.get_cached_available_ticket_types(event_id)
 
-    initial_count = Presence.list("presence:event:#{event_id}") |> map_size
-    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+      Orders.subscribe(event_id)
 
-    {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
+      initial_count = Presence.list("presence:event:#{event_id}") |> map_size
+      TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+
+      {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   def handle_params(_params, _url, socket) do

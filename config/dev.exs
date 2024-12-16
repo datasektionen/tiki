@@ -70,7 +70,9 @@ config :tiki, TikiWeb.Endpoint,
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :tiki, dev_routes: true
+config :tiki,
+  dev_routes: true,
+  pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se")
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

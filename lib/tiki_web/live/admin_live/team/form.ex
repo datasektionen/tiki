@@ -50,19 +50,33 @@ defmodule TikiWeb.AdminLive.Team.Form do
   defp apply_action(socket, :edit, %{"id" => id}) do
     team = Teams.get_team!(id)
 
-    socket
-    |> assign(:page_title, "Edit Team")
-    |> assign(:team, team)
-    |> assign(:form, to_form(Teams.change_team(team)))
+    with :ok <- Tiki.Policy.authorize(:team_update, socket.assigns.current_user, team) do
+      socket
+      |> assign(:page_title, "Edit Team")
+      |> assign(:team, team)
+      |> assign(:form, to_form(Teams.change_team(team)))
+    else
+      {:error, :unauthorized} ->
+        socket
+        |> put_flash(:error, gettext("You are not authorized to do that."))
+        |> redirect(to: ~p"/admin")
+    end
   end
 
   defp apply_action(socket, :new, _params) do
-    team = %Team{}
+    with :ok <- Tiki.Policy.authorize(:team_create, socket.assigns.current_user) do
+      team = %Team{}
 
-    socket
-    |> assign(:page_title, "New Team")
-    |> assign(:team, team)
-    |> assign(:form, to_form(Teams.change_team(team)))
+      socket
+      |> assign(:page_title, "New Team")
+      |> assign(:team, team)
+      |> assign(:form, to_form(Teams.change_team(team)))
+    else
+      {:error, :unauthorized} ->
+        socket
+        |> put_flash(:error, gettext("You are not authorized to do that."))
+        |> redirect(to: ~p"/admin")
+    end
   end
 
   @impl true
@@ -125,5 +139,4 @@ defmodule TikiWeb.AdminLive.Team.Form do
   end
 
   defp return_path("index", _team), do: ~p"/admin/teams"
-  defp return_path("show", team), do: ~p"/admin/teams/#{team}"
 end

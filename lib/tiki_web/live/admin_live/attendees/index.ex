@@ -9,16 +9,25 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   def mount(%{"id" => event_id}, _sesison, socket) do
     event = Events.get_event!(event_id)
-    tickets = Orders.list_tickets_for_event(event_id)
-    num_tickets = Enum.count(tickets)
 
-    if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      tickets = Orders.list_tickets_for_event(event_id)
+      num_tickets = Enum.count(tickets)
 
-    {:ok,
-     socket
-     |> assign(event: event)
-     |> assign(num_tickets: num_tickets)
-     |> stream(:tickets, tickets)}
+      if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+
+      {:ok,
+       socket
+       |> assign(event: event)
+       |> assign(num_tickets: num_tickets)
+       |> stream(:tickets, tickets)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   def handle_params(_params, _url, socket) do

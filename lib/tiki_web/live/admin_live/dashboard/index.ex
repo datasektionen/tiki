@@ -4,6 +4,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
   alias Tiki.Teams
   alias Tiki.Events
   alias Tiki.Orders
+  alias Tiki.Policy
 
   import TikiWeb.Component.Card
   import TikiWeb.Component.Select
@@ -33,19 +34,27 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
   end
 
   defp assign_data(socket, team) do
-    events = Events.list_team_events(team.id)
+    with :ok <- Policy.authorize(:event_manage, socket.assigns.current_user, team) do
+      events = Events.list_team_events(team.id)
 
-    recent_tickets =
-      Orders.list_team_orders(team.id, limit: 10, status: [:paid])
-      |> Enum.flat_map(fn order ->
-        Enum.map(order.tickets, fn ticket ->
-          Map.put(ticket, :order, order)
+      recent_tickets =
+        Orders.list_team_orders(team.id, limit: 10, status: [:paid])
+        |> Enum.flat_map(fn order ->
+          Enum.map(order.tickets, fn ticket ->
+            Map.put(ticket, :order, order)
+          end)
         end)
-      end)
 
-    socket
-    |> stream(:events, events)
-    |> stream(:recent_tickets, recent_tickets)
+      socket
+      |> stream(:events, events)
+      |> stream(:recent_tickets, recent_tickets)
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin/clear_team")}
+    end
   end
 
   @impl Phoenix.LiveView

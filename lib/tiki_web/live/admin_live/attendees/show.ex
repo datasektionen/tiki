@@ -9,28 +9,21 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
 
   def mount(%{"id" => event_id, "ticket_id" => ticket_id}, _session, socket) do
     event = Events.get_event!(event_id)
-    ticket = Orders.get_ticket!(ticket_id)
-    order = Orders.get_order!(ticket.order_id)
 
-    {:ok,
-     assign(socket, event: event, ticket: ticket, order: order)
-     |> assign_async(:payment_method, fn ->
-       payment_method =
-         cond do
-           order.stripe_checkout ->
-             Tiki.Checkouts.retrieve_stripe_payment_method(
-               order.stripe_checkout.payment_method_id
-             )
-
-           order.swish_checkout ->
-             Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
-         end
-
-       case payment_method do
-         {:ok, payment_method} -> {:ok, %{payment_method: payment_method}}
-         {:error, error} -> {:error, error}
-       end
-     end)}
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event),
+         ticket <- Orders.get_ticket!(ticket_id),
+         order <- Orders.get_order!(ticket.order_id),
+         true <- order.event_id == event.id do
+      {:ok,
+       assign(socket, event: event, ticket: ticket, order: order)
+       |> assign_async(:payment_method, fn -> get_payment_method(order) end)}
+    else
+      _ ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   def handle_params(_params, _uri, socket) do
@@ -239,5 +232,21 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
       </.async_result>
     </div>
     """
+  end
+
+  defp get_payment_method(order) do
+    payment_method =
+      cond do
+        order.stripe_checkout ->
+          Tiki.Checkouts.retrieve_stripe_payment_method(order.stripe_checkout.payment_method_id)
+
+        order.swish_checkout ->
+          Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
+      end
+
+    case payment_method do
+      {:ok, payment_method} -> {:ok, %{payment_method: payment_method}}
+      {:error, error} -> {:error, error}
+    end
   end
 end

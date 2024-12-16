@@ -42,13 +42,23 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
 
   @impl true
   def mount(params, _session, socket) do
-    users = Tiki.Accounts.list_users()
+    %{current_user: user, current_team: team} = socket.assigns
 
-    {:ok,
-     socket
-     |> assign(:users, users)
-     |> assign(:return_to, return_to(params["return_to"]))
-     |> apply_action(socket.assigns.live_action, params)}
+    with :ok <- Tiki.Policy.authorize(:team_update, user, team) do
+      users = Tiki.Accounts.list_users()
+
+      {:ok,
+       socket
+       |> assign(:users, users)
+       |> assign(:return_to, return_to(params["return_to"]))
+       |> apply_action(socket.assigns.live_action, params)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin/team/members")}
+    end
   end
 
   defp return_to("show"), do: "show"

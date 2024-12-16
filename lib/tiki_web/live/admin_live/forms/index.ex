@@ -41,17 +41,26 @@ defmodule TikiWeb.AdminLive.Forms.Index do
   @impl Phoenix.LiveView
   def mount(%{"id" => event_id}, _session, socket) do
     event = Tiki.Events.get_event!(event_id)
-    forms = Forms.list_forms_for_event(event_id)
 
-    {:ok,
-     assign(socket, event: event)
-     |> stream(:forms, forms)
-     |> assign_breadcrumbs([
-       {"Dashboard", ~p"/admin"},
-       {"Events", ~p"/admin/events"},
-       {event.name, ~p"/admin/events/#{event}"},
-       {"Forms", ~p"/admin/events/#{event}/forms"}
-     ])}
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      forms = Forms.list_forms_for_event(event_id)
+
+      {:ok,
+       assign(socket, event: event)
+       |> stream(:forms, forms)
+       |> assign_breadcrumbs([
+         {"Dashboard", ~p"/admin"},
+         {"Events", ~p"/admin/events"},
+         {event.name, ~p"/admin/events/#{event}"},
+         {"Forms", ~p"/admin/events/#{event}/forms"}
+       ])}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl Phoenix.LiveView

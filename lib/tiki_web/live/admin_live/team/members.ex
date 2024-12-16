@@ -3,9 +3,20 @@ defmodule TikiWeb.AdminLive.Team.Members do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    members = Tiki.Teams.get_members_for_team(socket.assigns.current_team.id)
+    %{current_user: user, current_team: team} = socket.assigns
 
-    {:ok, stream(socket, :members, members)}
+    with :ok <- Tiki.Policy.authorize(:team_read, user, team) do
+      members = Tiki.Teams.get_members_for_team(socket.assigns.current_team.id)
+      allowed_update? = Tiki.Policy.authorize?(:team_update, user, team)
+
+      {:ok, assign(socket, allowed_update?: allowed_update?) |> stream(:members, members)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl Phoenix.LiveView
@@ -19,11 +30,18 @@ defmodule TikiWeb.AdminLive.Team.Members do
 
   @impl Phoenix.LiveView
   def handle_event("delete", %{"id" => id}, socket) do
-    membership = Tiki.Teams.get_membership!(id)
+    %{current_user: user, current_team: team} = socket.assigns
 
-    {:ok, _} = Tiki.Teams.delete_membership(membership)
+    with :ok <- Tiki.Policy.authorize(:team_update, user, team) |> dbg() do
+      membership = Tiki.Teams.get_membership!(id)
 
-    {:noreply, stream_delete(socket, :members, membership)}
+      {:ok, _} = Tiki.Teams.delete_membership(membership)
+
+      {:noreply, stream_delete(socket, :members, membership)}
+    else
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, gettext("You are not authorized to do that."))}
+    end
   end
 
   @impl Phoenix.LiveView
@@ -42,12 +60,12 @@ defmodule TikiWeb.AdminLive.Team.Members do
       <:col :let={{_id, membership}} label={gettext("Email")}>{membership.user.email}</:col>
       <:col :let={{_id, membership}} label={gettext("Role")}>{membership.role}</:col>
 
-      <:action :let={{_id, membership}}>
+      <:action :let={{_id, membership}} :if={@allowed_update?}>
         <.link navigate={~p"/admin/team/members/#{membership}/edit"}>
           {gettext("Edit")}
         </.link>
       </:action>
-      <:action :let={{id, membership}}>
+      <:action :let={{id, membership}} :if={@allowed_update?}>
         <.link
           phx-click={JS.push("delete", value: %{id: membership.id}) |> hide("##{id}")}
           data-confirm={gettext("Are you sure?")}

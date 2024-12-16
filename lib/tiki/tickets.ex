@@ -144,7 +144,18 @@ defmodule Tiki.Tickets do
       ** (Ecto.NoResultsError)
 
   """
-  def get_ticket_type!(id), do: Repo.get!(TicketType, id)
+  def get_ticket_type!(id) do
+    query =
+      from tt in TicketType,
+        join: tb in assoc(tt, :ticket_batch),
+        where: tt.id == ^id,
+        preload: [ticket_batch: tb]
+
+    case Repo.one(query) do
+      nil -> raise Ecto.NoResultsError, query: query
+      ticket_type -> ticket_type
+    end
+  end
 
   @doc """
   Creates a ticket_types.

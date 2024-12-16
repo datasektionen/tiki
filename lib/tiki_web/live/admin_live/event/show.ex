@@ -9,12 +9,22 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
   @impl Phoenix.LiveView
   def mount(%{"id" => event_id}, _session, socket) do
-    initial_count = Presence.list("presence:event:#{event_id}") |> map_size
-    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+    event = Events.get_event!(event_id, preload_ticket_types: true)
 
-    if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      initial_count = Presence.list("presence:event:#{event_id}") |> map_size
+      TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
-    {:ok, assign(socket, online_count: initial_count)}
+      if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+
+      {:ok, assign(socket, event: event, online_count: initial_count)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl Phoenix.LiveView
@@ -34,12 +44,10 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => event_id} = params, _, socket) do
-    event = Events.get_event!(event_id, preload_ticket_types: true)
-    recent_tickets = Orders.list_tickets_for_event(event.id, limit: 10)
+    recent_tickets = Orders.list_tickets_for_event(event_id, limit: 10)
 
     {:noreply,
      socket
-     |> assign(:event, event)
      |> apply_action(socket.assigns.live_action, params)
      |> stream(:recent_tickets, recent_tickets)}
   end

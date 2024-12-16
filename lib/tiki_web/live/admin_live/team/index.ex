@@ -15,16 +15,9 @@ defmodule TikiWeb.AdminLive.Team.Index do
       </:actions>
     </.header>
 
-    <.table
-      id="teams"
-      rows={@streams.teams}
-      row_click={fn {_id, team} -> JS.navigate(~p"/admin/teams/#{team}") end}
-    >
+    <.table id="teams" rows={@streams.teams}>
       <:col :let={{_id, team}} label="Name">{team.name}</:col>
       <:action :let={{_id, team}}>
-        <div class="sr-only">
-          <.link navigate={~p"/admin/teams/#{team}"}>Show</.link>
-        </div>
         <.link navigate={~p"/admin/teams/#{team}/edit"}>Edit</.link>
       </:action>
       <:action :let={{id, team}}>
@@ -41,10 +34,18 @@ defmodule TikiWeb.AdminLive.Team.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> assign(:page_title, "Listing Teams")
-     |> stream(:teams, Teams.list_teams())}
+    with :ok <- Tiki.Policy.authorize(:team_admin, socket.assigns.current_user) do
+      {:ok,
+       socket
+       |> assign(:page_title, "Listing Teams")
+       |> stream(:teams, Teams.list_teams())}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl true
