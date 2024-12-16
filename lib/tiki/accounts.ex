@@ -305,13 +305,15 @@ defmodule Tiki.Accounts do
   @doc """
   Gets the user with the given signed token.
   """
-  def get_user_by_session_token(token) do
-    {:ok, query} = UserToken.verify_session_token_query(token)
+  def get_user_by_subject(subject) do
+    query =
+      from u in User,
+        left_join: m in assoc(u, :memberships),
+        left_join: t in assoc(m, :team),
+        where: u.kth_id == ^subject,
+        preload: [memberships: {m, team: t}]
 
-    case Repo.one(query) do
-      %UserToken{user: user} -> user
-      nil -> nil
-    end
+    Repo.one(query)
   end
 
   @doc """

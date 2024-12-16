@@ -3,17 +3,11 @@ defmodule TikiWeb.UserAuth do
 
   import Plug.Conn
   import Phoenix.Controller
+  require Logger
 
   alias Tiki.Accounts
   alias Tiki.Teams
   use Gettext, backend: TikiWeb.Gettext
-
-  # Make the remember me cookie valid for 60 days.
-  # If you want bump or reduce this value, also change
-  # the token expiry itself in UserToken.
-  @max_age 60 * 60 * 24 * 60
-  @remember_me_cookie "_tiki_web_user_remember_me"
-  @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax"]
 
   @doc """
   Logs the user in.
@@ -27,23 +21,13 @@ defmodule TikiWeb.UserAuth do
   disconnected on log out. The line can be safely removed
   if you are not using LiveView.
   """
-  def log_in_user(conn, user, params \\ %{}) do
-    token = Accounts.generate_user_session_token(user)
+  def log_in_user(conn, token, _params \\ %{}) do
     user_return_to = get_session(conn, :user_return_to)
 
     conn
     |> renew_session()
     |> put_token_in_session(token)
-    |> maybe_write_remember_me_cookie(token, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
-  end
-
-  defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
-    put_resp_cookie(conn, @remember_me_cookie, token, @remember_me_options)
-  end
-
-  defp maybe_write_remember_me_cookie(conn, _token, _params) do
-    conn
   end
 
   # This function renews the session ID and erases the whole
@@ -82,7 +66,6 @@ defmodule TikiWeb.UserAuth do
 
     conn
     |> renew_session()
-    |> delete_resp_cookie(@remember_me_cookie)
     |> redirect(to: ~p"/")
   end
 
@@ -93,7 +76,8 @@ defmodule TikiWeb.UserAuth do
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
 
-    user = user_token && Accounts.get_user_by_session_token(user_token)
+    claims = user_token && validate_token(user_token)
+    user = claims && Accounts.get_user_by_subject(claims["sub"])
 
     team =
       case get_session(conn, :current_team_id) do
@@ -122,13 +106,29 @@ defmodule TikiWeb.UserAuth do
     if token = get_session(conn, :user_token) do
       {token, conn}
     else
-      conn = fetch_cookies(conn, signed: [@remember_me_cookie])
+      {nil, conn}
+    end
+  end
 
-      if token = conn.cookies[@remember_me_cookie] do
-        {token, put_token_in_session(conn, token)}
-      else
-        {nil, conn}
-      end
+  @doc """
+  Validates a JWT token.
+  """
+  def validate_token(access_token) do
+    provider = Tiki.OpenIdConfigurationProvider
+    client_id = TikiWeb.OidccController.client_id()
+    client_secret = TikiWeb.OidccController.client_secret()
+
+    with {:ok, client_context} <-
+           Oidcc.ClientContext.from_configuration_worker(provider, client_id, client_secret),
+         {:ok, claims} <- Oidcc.Token.validate_id_token(access_token, client_context, :any) do
+      claims
+    else
+      {:error, :token_expired} ->
+        nil
+
+      {:error, reason} ->
+        Logger.error("Error validating token: #{inspect(reason)}")
+        nil
     end
   end
 
@@ -246,7 +246,8 @@ defmodule TikiWeb.UserAuth do
   defp mount_current_user(session, socket) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
-        user = Accounts.get_user_by_session_token(user_token)
+        claims = user_token && validate_token(user_token)
+        user = claims && Accounts.get_user_by_subject(claims["sub"])
 
         if user do
           locale = Map.get(user, :locale, "en")
@@ -312,8 +313,8 @@ defmodule TikiWeb.UserAuth do
 
   defp put_token_in_session(conn, token) do
     conn
-    |> put_session(:user_token, token)
-    |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
+    |> put_session(:user_token, token.id.token)
+    |> put_session(:live_socket_id, "users_sessions:#{token.access.token}")
   end
 
   defp maybe_store_return_to(%{method: "GET"} = conn) do
