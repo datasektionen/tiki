@@ -103,23 +103,28 @@ defmodule TikiWeb.Router do
           TikiWeb.Nav
         ],
         layout: {TikiWeb.Layouts, :admin} do
-        live "/", Dashboard.Index, :index
-
+        live "/select-team", Dashboard.Team, :index
         live "/user-settings", User.Settings, :index
 
         live "/teams", Team.Index, :index
         live "/teams/new", Team.Form, :new
+        live "/teams/:id", Team.Show, :show
+        live "/teams/:team_id/members/new", Team.MembershipForm, :new
+        live "/teams/:team_id/members/:id/edit", Team.MembershipForm, :edit
+
         live "/teams/:id/edit", Team.Form, :edit
       end
 
       live_session :active_group,
         on_mount: [
           {TikiWeb.UserAuth, :ensure_authenticated},
+          {TikiWeb.UserAuth, :ensure_team},
           {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
-          TikiWeb.Nav,
-          {TikiWeb.UserAuth, :ensure_team}
+          TikiWeb.Nav
         ],
         layout: {TikiWeb.Layouts, :admin} do
+        live "/", Dashboard.Index, :index
+
         # General event stuff
         live "/events", Event.Index, :index
         live "/events/new", Event.Edit, :new
@@ -128,6 +133,7 @@ defmodule TikiWeb.Router do
         live "/team/members", Team.Members, :index
         live "/team/members/new", Team.MembershipForm, :new
         live "/team/members/:id/edit", Team.MembershipForm, :edit
+        live "/team/edit", Team.Form, :manager_edit
 
         scope "/events/:id" do
           # Event dashboard

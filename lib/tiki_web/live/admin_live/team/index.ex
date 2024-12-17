@@ -7,16 +7,20 @@ defmodule TikiWeb.AdminLive.Team.Index do
   def render(assigns) do
     ~H"""
     <.header>
-      Listing Teams
+      {gettext("All teams")}
       <:actions>
         <.link navigate={~p"/admin/teams/new"}>
-          <.button>New Team</.button>
+          <.button>{gettext("New Team")}</.button>
         </.link>
       </:actions>
     </.header>
 
-    <.table id="teams" rows={@streams.teams}>
-      <:col :let={{_id, team}} label="Name">{team.name}</:col>
+    <.table
+      id="teams"
+      rows={@streams.teams}
+      row_click={fn {_id, team} -> JS.navigate(~p"/admin/teams/#{team}") end}
+    >
+      <:col :let={{_id, team}} label={gettext("Name")}>{team.name}</:col>
       <:action :let={{_id, team}}>
         <.link navigate={~p"/admin/teams/#{team}/edit"}>Edit</.link>
       </:action>
@@ -37,8 +41,11 @@ defmodule TikiWeb.AdminLive.Team.Index do
     with :ok <- Tiki.Policy.authorize(:team_admin, socket.assigns.current_user) do
       {:ok,
        socket
-       |> assign(:page_title, "Listing Teams")
-       |> stream(:teams, Teams.list_teams())}
+       |> assign(:page_title, gettext("All teams"))
+       |> stream(:teams, Teams.list_teams())
+       |> assign_breadcrumbs([
+         {"Teams", ~p"/admin/teams"}
+       ])}
     else
       {:error, :unauthorized} ->
         {:ok,

@@ -242,7 +242,7 @@ defmodule TikiWeb.UserAuth do
           :error,
           gettext("You must select a team to access this page.")
         )
-        |> Phoenix.LiveView.redirect(to: ~p"/admin/teams")
+        |> Phoenix.LiveView.redirect(to: ~p"/admin/select-team")
 
       {:halt, socket}
     end

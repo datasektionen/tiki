@@ -32,7 +32,7 @@ defmodule TikiWeb.AdminLive.Team.Members do
   def handle_event("delete", %{"id" => id}, socket) do
     %{current_user: user, current_team: team} = socket.assigns
 
-    with :ok <- Tiki.Policy.authorize(:team_update, user, team) |> dbg() do
+    with :ok <- Tiki.Policy.authorize(:team_update, user, team) do
       membership = Tiki.Teams.get_membership!(id)
 
       {:ok, _} = Tiki.Teams.delete_membership(membership)

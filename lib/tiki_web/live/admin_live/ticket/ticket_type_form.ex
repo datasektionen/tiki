@@ -9,7 +9,11 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
     <div>
       <.header>
         {title(@action)}
-        <:subtitle>Use this form to manage ticket type records in your database.</:subtitle>
+        <:subtitle>
+          {gettext(
+            "Manage ticket types for your event. Each ticket type needs to be assigned to a batch before they can be created."
+          )}
+        </:subtitle>
       </.header>
 
       <.simple_form

@@ -10,7 +10,9 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
       <.header>
         {title(@action)}
         <:subtitle>
-          {gettext("Manage a ticket batch for this event.")}
+          {gettext(
+            "Manage a ticket batch for this event. Ticket batches are not visible to the public, but can be used to group ticket types together, and set group limits. Ticket batches can be arbitrarily nested."
+          )}
         </:subtitle>
       </.header>
 
@@ -26,7 +28,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
         <.input
           field={@form[:parent_batch_id]}
           type="select"
-          label="Parent batch"
+          label={gettext("Parent batch")}
           options={options_for_parent_batch(@event.ticket_batches, @batch)}
           prompt={gettext("None")}
         />
