@@ -40,7 +40,8 @@ defmodule Tiki.TicketsFixtures do
         purchasable: true,
         release_time: ~U[2023-03-25 18:01:00Z],
         ticket_batch_id: batch.id,
-        form_id: form.id
+        form_id: form.id,
+        purchase_limit: nil
       })
       |> Tiki.Tickets.create_ticket_type()
 

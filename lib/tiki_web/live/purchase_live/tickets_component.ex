@@ -8,12 +8,21 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
   def render(assigns) do
     ~H"""
     <div class="flex flex-col gap-4">
-      <h2 class="text-xl font-semibold">{gettext("Tickets")}</h2>
+      <h2 class="text-xl/6 font-semibold">{gettext("Tickets")}</h2>
       <div :if={@error != nil} class="mt-3 text-red-700">
         {@error}
       </div>
 
       <div class="flex flex-col gap-3">
+        <div :if={@ticket_types == []} class="text-center text-lg">
+          <h3 class="text-foreground text-sm font-semibold">
+            {gettext("No tickets available")}
+          </h3>
+          <p class="text-muted-foreground mt-1 text-sm">
+            {gettext("Please contact the event organizer if you have any questions.")}
+          </p>
+        </div>
+
         <div :for={ticket_type <- @ticket_types} class="bg-accent overflow-hidden rounded-xl">
           <div :if={ticket_type.promo_code != nil}>
             <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
@@ -42,7 +51,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
               </div>
 
               <button
-                :if={@counts[ticket_type.id] >= ticket_type.available}
+                :if={compare_available(@counts, ticket_type, @event) in [:gt, :eq]}
                 class="bg-accent flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md"
                 disabled
               >
@@ -50,7 +59,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
               </button>
 
               <button
-                :if={@counts[ticket_type.id] < ticket_type.available}
+                :if={compare_available(@counts, ticket_type, @event) == :lt}
                 class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
                 phx-click={JS.push("inc", value: %{id: ticket_type.id})}
                 phx-target={@myself}
@@ -186,6 +195,26 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     else
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}
+    end
+  end
+
+  defp compare_available(counts, ticket_type, event) do
+    total = Enum.reduce(counts, 0, fn {_, count}, acc -> acc + count end)
+
+    cond do
+      total >= event.max_order_size ->
+        :gt
+
+      counts[ticket_type.id] > ticket_type.available &&
+          counts[ticket_type.id] > ticket_type.purchase_limit ->
+        :gt
+
+      counts[ticket_type.id] < ticket_type.available &&
+          counts[ticket_type.id] < ticket_type.purchase_limit ->
+        :lt
+
+      true ->
+        :eq
     end
   end
 

@@ -25,13 +25,31 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
         <.input field={@form[:end_time]} type="datetime-local" label={gettext("End time")} />
 
         <.input
+          :if={@event.default_form_id != nil}
           field={@form[:form_id]}
           type="select"
           label={gettext("Signup form")}
           options={options_for_forms(@forms)}
           default={@event.default_form_id}
         />
+
+        <.input
+          :if={@event.default_form_id == nil}
+          field={@form[:form_id]}
+          type="select"
+          label={gettext("Signup form")}
+          options={options_for_forms(@forms)}
+          prompt={gettext("Select a form")}
+        />
+
         <.input field={@form[:purchasable]} type="checkbox" label={gettext("Purchasable")} />
+        <.input
+          field={@form[:purchase_limit]}
+          type="text"
+          label={gettext("Max number of tickets per order")}
+          description={gettext("Leave blank for unlimited")}
+        />
+
         <.input field={@form[:price]} type="number" label={gettext("Price")} />
         <.input field={@form[:release_time]} type="datetime-local" label={gettext("Release time")} />
 

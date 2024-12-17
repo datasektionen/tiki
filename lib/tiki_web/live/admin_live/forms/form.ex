@@ -175,7 +175,6 @@ defmodule TikiWeb.AdminLive.Forms.Form do
          |> push_navigate(to: return_path(form))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        dbg(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end

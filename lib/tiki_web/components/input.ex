@@ -50,6 +50,7 @@ defmodule TikiWeb.Component.Input do
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :description, :string, default: nil, doc: "the help description for the input"
 
   attr :rest, :global,
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
@@ -80,6 +81,7 @@ defmodule TikiWeb.Component.Input do
           {@rest}
         /> {@label}
       </label>
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -99,6 +101,7 @@ defmodule TikiWeb.Component.Input do
         <option :if={@prompt} value="">{@prompt}</option>
         {Phoenix.HTML.Form.options_for_select(@options, @value)}
       </select>
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -119,6 +122,7 @@ defmodule TikiWeb.Component.Input do
         ]}
         {@rest}
       >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -141,6 +145,8 @@ defmodule TikiWeb.Component.Input do
         ]}
         {@rest}
       />
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
+
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
