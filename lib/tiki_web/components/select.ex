@@ -64,7 +64,7 @@ defmodule TikiWeb.Component.Select do
     ~H"""
     <div
       id={@id}
-      class={classes(["relative group", @class])}
+      class={classes(["group relative", @class])}
       data-state="closed"
       {@rest}
       x-hide-select={hide_select(@id)}
@@ -87,7 +87,7 @@ defmodule TikiWeb.Component.Select do
       type="button"
       class={
         classes([
-          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+          "border-input bg-background ring-offset-background flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm [&>span]:line-clamp-1 placeholder:text-muted-foreground focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @class
         ])
       }
@@ -163,7 +163,7 @@ defmodule TikiWeb.Component.Select do
 
   def select_label(assigns) do
     ~H"""
-    <div class={classes(["py-1.5 pl-8 pr-2 text-sm font-semibold", @class])} {@rest}>
+    <div class={classes(["py-1.5 pr-2 pl-8 text-sm font-semibold", @class])} {@rest}>
       {render_slot(@inner_block)}
     </div>
     """
@@ -188,7 +188,7 @@ defmodule TikiWeb.Component.Select do
       class={
         classes([
           "group/item",
-          "relative flex w-full cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden data-disabled:pointer-events-none data-disabled:opacity-50",
+          "rounded-xs relative flex w-full cursor-default select-none items-center py-1.5 pr-2 pl-8 text-sm outline-hidden data-disabled:pointer-events-none data-disabled:opacity-50",
           @class
         ])
       }
@@ -232,7 +232,7 @@ defmodule TikiWeb.Component.Select do
 
   def select_separator(assigns) do
     ~H"""
-    <div class={classes(["-mx-1 my-1 h-px bg-muted"])}></div>
+    <div class={classes(["bg-muted -mx-1 my-1 h-px"])}></div>
     """
   end
 

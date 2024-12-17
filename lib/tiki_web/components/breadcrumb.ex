@@ -34,7 +34,7 @@ defmodule TikiWeb.Component.Breadcrumb do
       arial-label="breadcrumb"
       class={
         classes([
-          "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
+          "text-muted-foreground flex flex-wrap items-center gap-1.5 break-words text-sm sm:gap-2.5",
           @class
         ])
       }
@@ -58,7 +58,7 @@ defmodule TikiWeb.Component.Breadcrumb do
     <ol
       class={
         classes([
-          "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
+          "text-muted-foreground flex flex-wrap items-center gap-1.5 break-words text-sm sm:gap-2.5",
           @class
         ])
       }
@@ -79,15 +79,7 @@ defmodule TikiWeb.Component.Breadcrumb do
 
   def breadcrumb_item(assigns) do
     ~H"""
-    <li
-      class={
-        classes([
-          "inline-flex items-center gap-1.5",
-          @class
-        ])
-      }
-      {@rest}
-    >
+    <li class={classes(["inline-flex items-center gap-1.5", @class])} {@rest}>
       {render_slot(@inner_block)}
     </li>
     """
@@ -132,12 +124,7 @@ defmodule TikiWeb.Component.Breadcrumb do
       aria-disabled="true"
       aria-current="page"
       role="link"
-      class={
-        classes([
-          "font-normal text-foreground",
-          @class
-        ])
-      }
+      class={classes(["text-foreground font-normal", @class])}
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -153,17 +140,7 @@ defmodule TikiWeb.Component.Breadcrumb do
 
   def breadcrumb_separator(assigns) do
     ~H"""
-    <li
-      role="presentation"
-      aria-hidden="true"
-      class={
-        classes([
-          "[&>svg]:size-3.5",
-          @class
-        ])
-      }
-      {@rest}
-    >
+    <li role="presentation" aria-hidden="true" class={classes(["[&>svg]:size-3.5", @class])} {@rest}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -186,15 +163,7 @@ defmodule TikiWeb.Component.Breadcrumb do
 
   def breadcrumb_ellipsis(assigns) do
     ~H"""
-    <div
-      class={
-        classes([
-          "flex h-9 w-9 items-center justify-center",
-          @class
-        ])
-      }
-      {@rest}
-    >
+    <div class={classes(["flex h-9 w-9 items-center justify-center", @class])} {@rest}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

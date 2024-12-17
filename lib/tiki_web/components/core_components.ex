@@ -45,9 +45,9 @@ defmodule TikiWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
-        "fixed top-2 right-2 mr-2 w-80 sm:w-96 z-50 rounded-lg p-3 ring-1",
-        @kind == :info && "bg-emerald-50 text-emerald-800 ring-emerald-500 fill-cyan-900",
-        @kind == :error && "bg-rose-50 text-rose-900 shadow-md ring-rose-500 fill-rose-900"
+        "fixed top-2 right-2 z-50 mr-2 w-80 rounded-lg p-3 ring-1 sm:w-96",
+        @kind == :info && "bg-emerald-50 fill-cyan-900 text-emerald-800 ring-emerald-500",
+        @kind == :error && "bg-rose-50 fill-rose-900 text-rose-900 shadow-md ring-rose-500"
       ]}
       {@rest}
     >
@@ -186,11 +186,7 @@ defmodule TikiWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[
-      "pb-4",
-      @actions != [] && "flex items-center justify-between gap-6",
-      @class
-    ]}>
+    <header class={["pb-4", @actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div class="flex w-full flex-col gap-2">
         <div class="flex flex-row items-center justify-between">
           <h1 class="text-2xl font-semibold leading-none tracking-tight">

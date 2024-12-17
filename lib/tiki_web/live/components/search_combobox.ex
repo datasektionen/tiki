@@ -139,10 +139,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
               data-id={id}
               data-value={value}
             >
-              <span class={[
-                "block truncate",
-                @chosen == id && "font-semibold"
-              ]}>
+              <span class={["block truncate", @chosen == id && "font-semibold"]}>
                 {value}
               </span>
 

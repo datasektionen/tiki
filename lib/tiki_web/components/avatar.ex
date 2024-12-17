@@ -40,7 +40,7 @@ defmodule TikiWeb.Component.Avatar do
     ~H"""
     <span
       class={
-        classes(["flex h-full w-full items-center justify-center rounded-full bg-muted", @class])
+        classes(["bg-muted flex h-full w-full items-center justify-center rounded-full", @class])
       }
       {@rest}
     >

@@ -45,12 +45,12 @@ defmodule TikiWeb.OrderLive.Ticket do
           {gettext("Ticket information")}
         </h2>
         <hr role="presentation" class="border-border mt-4 w-full border-t" />
-        <dl class="grid grid-cols-1 text-sm/6 sm:grid-cols-[min(50%,theme(spacing.80))_auto] sm:text-sm/6">
+        <dl class="text-sm/6 grid grid-cols-1 sm:grid-cols-[min(50%,theme(spacing.80))_auto] sm:text-sm/6">
           <%= for qr <- @ticket.form_response.question_responses do %>
             <dt class="border-border text-muted-foreground col-start-1 border-t pt-3 first:border-none sm:py-3">
               {qr.question.name}
             </dt>
-            <dd class="pb-3 pt-1 text-foreground sm:border-t sm:py-3 sm:border-border sm:[&amp;:nth-child(2)]:border-none">
+            <dd class="text-foreground pt-1 pb-3 sm:border-border sm:border-t sm:py-3 sm:[&amp;:nth-child(2)]:border-none">
               {qr}
             </dd>
           <% end %>

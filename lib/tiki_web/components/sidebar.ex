@@ -363,7 +363,7 @@ defmodule TikiWeb.Component.Sidebar do
             <div class="ml-2 border-l">
               <%= for item <- @item do %>
                 <div class={[
-                  "border-l flex flex-col pl-2 -ml-[1px]",
+                  "-ml-[1px] flex flex-col border-l pl-2",
                   item.active && "border-foreground"
                 ]}>
                   <.sidebar_item text={item.text} to={item.to} active={item.active || nil} />

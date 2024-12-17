@@ -67,12 +67,7 @@ defmodule TikiWeb.Component.Sheet do
   defp sheet_overlay(assigns) do
     ~H"""
     <div
-      class={
-        classes([
-          "sheet-overlay fixed hidden inset-0 z-50 bg-black/80",
-          @class
-        ])
-      }
+      class={classes(["sheet-overlay bg-black/80 fixed inset-0 z-50 hidden", @class])}
       aria-hidden="true"
     >
     </div>
@@ -128,7 +123,7 @@ defmodule TikiWeb.Component.Sheet do
         }
       >
         <div class={classes(["relative h-full"])}>
-          <div class={classes(["p-6 overflow-y-auto h-full", @class])}>
+          <div class={classes(["h-full overflow-y-auto p-6", @class])}>
             {render_slot(@inner_block)}
           </div>
 
@@ -176,7 +171,7 @@ defmodule TikiWeb.Component.Sheet do
 
   def sheet_title(assigns) do
     ~H"""
-    <h3 class={classes(["text-lg font-semibold text-foreground", @class])}>
+    <h3 class={classes(["text-foreground text-lg font-semibold", @class])}>
       {render_slot(@inner_block)}
     </h3>
     """
@@ -187,7 +182,7 @@ defmodule TikiWeb.Component.Sheet do
 
   def sheet_description(assigns) do
     ~H"""
-    <p class={classes(["text-sm text-muted-foreground", @class])}>
+    <p class={classes(["text-muted-foreground text-sm", @class])}>
       {render_slot(@inner_block)}
     </p>
     """

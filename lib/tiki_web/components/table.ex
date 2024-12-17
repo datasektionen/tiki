@@ -38,7 +38,7 @@ defmodule TikiWeb.Component.Table do
       end
 
     ~H"""
-    <table class={classes(["w-full caption-bottom text-sm", @class])} {@rest}>
+    <table class={classes(["caption-bottom w-full text-sm", @class])} {@rest}>
       <.table_header>
         <.table_row>
           <.table_head :for={col <- @col}>
@@ -94,7 +94,7 @@ defmodule TikiWeb.Component.Table do
     <tr
       class={
         classes([
-          "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+          "border-b transition-colors data-[state=selected]:bg-muted hover:bg-muted/50",
           @class
         ])
       }
@@ -114,7 +114,7 @@ defmodule TikiWeb.Component.Table do
     <th
       class={
         classes([
-          "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+          "text-muted-foreground h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0",
           @class
         ])
       }
@@ -158,15 +158,7 @@ defmodule TikiWeb.Component.Table do
 
   def table_footer(assigns) do
     ~H"""
-    <div
-      class={
-        classes([
-          "border-t bg-muted/50 font-medium last:[&>tr]:border-b-0",
-          @class
-        ])
-      }
-      {@rest}
-    >
+    <div class={classes(["bg-muted/50 border-t font-medium last:[&>tr]:border-b-0", @class])} {@rest}>
       {render_slot(@inner_block)}
     </div>
     """
@@ -178,7 +170,7 @@ defmodule TikiWeb.Component.Table do
 
   def table_caption(assigns) do
     ~H"""
-    <caption class={classes(["mt-4 text-sm text-muted-foreground", @class])} {@rest}>
+    <caption class={classes(["text-muted-foreground mt-4 text-sm", @class])} {@rest}>
       {render_slot(@inner_block)}
     </caption>
     """

@@ -59,7 +59,7 @@ defmodule TikiWeb.Component.Dialog do
     >
       <div
         id={"#{@id}-bg"}
-        class="fixed inset-0 bg-black/80 transition-opacity group-data-[state=open]/dialog:animate-in group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=open]/dialog:fade-in-0"
+        class="bg-black/80 fixed inset-0 transition-opacity group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0"
         aria-hidden="true"
       />
       <div class="fixed inset-0 overflow-y-auto" role="dialog" aria-modal="true" tabindex="0">
@@ -73,9 +73,7 @@ defmodule TikiWeb.Component.Dialog do
           >
             <div class={
               classes([
-                "z-50 grid w-full max-w-xl gap-4 border bg-background p-6 shadow-lg duration-200 group-data-[state=open]/dialog:animate-in group-data-[state=closed]/dialog:animate-out
-              group-data-[state=closed]/dialog:fade-out-0 group-data-[state=open]/dialog:fade-in-0 group-data-[state=closed]/dialog:zoom-out-95
-              group-data-[state=open]/dialog:zoom-in-95 sm:rounded-lg",
+                "bg-background z-50 grid w-full max-w-xl gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:rounded-lg",
                 @class
               ])
             }>
@@ -94,7 +92,7 @@ defmodule TikiWeb.Component.Dialog do
     ~H"""
     <button
       type="button"
-      class="absolute right-4 top-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none group-data-[state=open]/dialog:bg-accent group-data-[state=open]/dialog:text-muted-foreground"
+      class="rounded-xs ring-offset-background absolute top-4 right-4 opacity-70 transition-opacity group-data-[state=open]/dialog:bg-accent group-data-[state=open]/dialog:text-muted-foreground hover:opacity-100 focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
       phx-click={JS.exec("data-cancel", to: "##{@id}")}
       data-confirm={gettext("Are you sure?")}
     >
@@ -118,7 +116,7 @@ defmodule TikiWeb.Component.Dialog do
     ~H"""
     <button
       type="button"
-      class="absolute right-4 top-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none group-data-[state=open]/dialog:bg-accent group-data-[state=open]/dialog:text-muted-foreground"
+      class="rounded-xs ring-offset-background absolute top-4 right-4 opacity-70 transition-opacity group-data-[state=open]/dialog:bg-accent group-data-[state=open]/dialog:text-muted-foreground hover:opacity-100 focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
       phx-click={JS.exec("data-cancel", to: "##{@id}")}
     >
       <svg
@@ -164,7 +162,7 @@ defmodule TikiWeb.Component.Dialog do
 
   def dialog_description(assigns) do
     ~H"""
-    <p class={classes(["text-sm text-muted-foreground", @class])}>
+    <p class={classes(["text-muted-foreground text-sm", @class])}>
       {render_slot(@inner_block)}
     </p>
     """
