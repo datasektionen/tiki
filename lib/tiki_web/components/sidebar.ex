@@ -283,7 +283,7 @@ defmodule TikiWeb.Component.Sidebar do
         <.dropdown_menu_trigger>
           <button class="flex w-full flex-row items-center gap-2 rounded-md p-2 hover:bg-accent">
             <img
-              src="https://zfinger.datasektionen.se/user/asalamon/image/100"
+              src={"https://zfinger.datasektionen.se/user/#{@current_user.kth_id}/image/100"}
               class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
             />
             <div class="grid flex-1 text-left text-sm leading-tight">

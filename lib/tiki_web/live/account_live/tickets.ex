@@ -42,7 +42,7 @@ defmodule TikiWeb.AccountLive.Tickets do
           class="flex flex-row items-center gap-3"
         >
           <img
-            src={order.event.image_url}
+            src={image_url(order.event.image_url, width: 200, height: 200)}
             alt={order.event.name}
             class="h-16 w-16 rounded-lg object-cover"
           />
