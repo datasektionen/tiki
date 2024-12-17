@@ -187,7 +187,7 @@ defmodule TikiWeb.CoreComponents do
   def header(assigns) do
     ~H"""
     <header class={[
-      "pb-4 border-b",
+      "pb-4",
       @actions != [] && "flex items-center justify-between gap-6",
       @class
     ]}>

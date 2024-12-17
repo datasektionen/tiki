@@ -13,7 +13,7 @@ defmodule TikiWeb.UserRegistrationLive do
         </h1>
         <div class="text-muted-foreground text-sm">
           {gettext("Already registered?")}
-          <.link navigate={~p"/users/log_in"} class="text-foreground font-semibold hover:underline">
+          <.link navigate={~p"/account/log_in"} class="text-foreground font-semibold hover:underline">
             {gettext("Sign in")}
           </.link>
           {gettext("to your account now.")}
@@ -26,7 +26,7 @@ defmodule TikiWeb.UserRegistrationLive do
         phx-submit="save"
         phx-change="validate"
         phx-trigger-action={@trigger_submit}
-        action={~p"/users/log_in?_action=registered"}
+        action={~p"/account/log_in?_action=registered"}
         method="post"
       >
         <.error :if={@check_errors}>

@@ -141,6 +141,16 @@ defmodule Tiki.OrdersTest do
       assert Orders.list_tickets_for_event(event.id, limit: 3) == Enum.take(tickets, 3)
     end
 
+    test "list_orders_for_user/1 returns all orders for a user" do
+      user = Tiki.AccountsFixtures.user_fixture()
+
+      order =
+        order_fixture(%{user_id: user.id})
+        |> Tiki.Repo.preload([:event | @standard_preloads])
+
+      assert Orders.list_orders_for_user(user.id) == [order]
+    end
+
     test "get_order!/1 returns the order with given id" do
       order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order

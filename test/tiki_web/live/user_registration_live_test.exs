@@ -48,7 +48,7 @@ defmodule TikiWeb.UserRegistrationLiveTest do
       assert redirected_to(conn) == ~p"/"
 
       # Now do a logged in request and assert on the menu
-      conn = get(conn, "/users/settings")
+      conn = get(conn, "/account")
       response = html_response(conn, 200)
       assert response =~ email
       assert response =~ "Settings"
@@ -78,7 +78,7 @@ defmodule TikiWeb.UserRegistrationLiveTest do
         lv
         |> element(~s|main a:fl-contains("Sign in")|)
         |> render_click()
-        |> follow_redirect(conn, ~p"/users/log_in")
+        |> follow_redirect(conn, ~p"/account/log_in")
 
       assert login_html =~ "Log in"
     end

@@ -21,7 +21,7 @@ defmodule TikiWeb.UserForgotPasswordLive do
       </.simple_form>
       <p class="mt-4 text-center text-sm">
         <.link href={~p"/users/register"}>Register</.link>
-        | <.link href={~p"/users/log_in"}>Log in</.link>
+        | <.link href={~p"/account/log_in"}>Log in</.link>
       </p>
     </div>
     """
