@@ -6,12 +6,18 @@ defmodule Tiki.Tickets.TicketType do
   schema "ticket_types" do
     field :name, :string
     field :description, :string
-    field :expire_time, :utc_datetime
     field :price, :integer
-    field :purchasable, :boolean, default: true
-    field :release_time, :utc_datetime
     field :promo_code, :string
 
+    # TODO: implement release time and expire time
+    field :release_time, :utc_datetime
+    field :expire_time, :utc_datetime
+
+    # ticket limits in orders
+    field :purchase_limit, :integer
+    field :purchasable, :boolean, default: true
+
+    # For events with different time slots for different ticket types, eg. spex showings on multiple days
     field :start_time, :utc_datetime
     field :end_time, :utc_datetime
 
@@ -37,7 +43,8 @@ defmodule Tiki.Tickets.TicketType do
       :promo_code,
       :start_time,
       :end_time,
-      :form_id
+      :form_id,
+      :purchase_limit
     ])
     |> validate_required([:name, :description, :purchasable, :price, :ticket_batch_id, :form_id])
     |> validate_number(:price, greater_than_or_equal_to: 0)

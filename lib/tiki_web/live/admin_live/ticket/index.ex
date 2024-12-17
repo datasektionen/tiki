@@ -39,7 +39,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
         <.ticket_batch :for={batch <- @batches} batch={batch} />
 
         <div :if={@batches == []} class="p-4 text-center">
-          <.icon name="hero-rectangle-stack" class="text-muted-foreground size-12" />
+          <.icon name="hero-rectangle-stack-solid" class="text-muted-foreground/20 size-12" />
           <h3 class="text-foreground mt-2 text-sm font-semibold">
             {gettext("No ticket batches")}
           </h3>

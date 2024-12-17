@@ -28,6 +28,8 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
           options={options_for_forms(@forms)}
           placeholder={gettext("Select a form")}
         />
+        <.input field={@form[:max_order_size]} type="number" label={gettext("Max tickets per order")} />
+
         <.input field={@form[:event_date]} type="datetime-local" label={gettext("Event date")} />
 
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
