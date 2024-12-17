@@ -10,8 +10,8 @@ job "tiki" {
 
     task "tiki" {
       service {
-        name = "tiki"
-        port = "tikihttp"
+        name     = "tiki"
+        port     = "tikihttp"
         provider = "nomad"
         tags = [
           "traefik.enable=true",
@@ -66,8 +66,8 @@ EOF
     task "imgproxy" {
 
       service {
-        name = "imgproxy"
-        port = "imgproxyhttp"
+        name     = "imgproxy"
+        port     = "imgproxyhttp"
         provider = "nomad"
         tags = [
           "traefik.enable=true",
