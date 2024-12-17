@@ -1,12 +1,12 @@
 <header class="absolute inset-x-0 top-0 z-50">
-  <nav class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
-    <div class="flex lg:flex-1">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between p-6 md:px-8" aria-label="Global">
+    <div class="hidden md:flex md:flex-1">
       <.link navigate={~p"/"} class="-m-1.5 p-1.5">
         <span class="sr-only">Tiki</span>
-        <div class="[mask-image:url('/images/logo.svg')] [mask-repeat:no-repeat] size-8 bg-primary" />
+        <div class="[mask-image:url('/images/logo.svg')] [mask-repeat:no-repeat] size-6 bg-primary" />
       </.link>
     </div>
-    <div class="flex lg:hidden">
+    <div class="flex md:hidden">
       <.sheet>
         <.sheet_trigger target="sidebar-sheet">
           <button
@@ -33,7 +33,7 @@
             </svg>
           </button>
         </.sheet_trigger>
-        <.sheet_content id="sidebar-sheet" side="right" class="w-full sm:w-72">
+        <.sheet_content id="sidebar-sheet" side="left" class="w-full sm:w-72">
           <div class="flex items-center justify-between">
             <a href="#" class="-m-1.5 p-1.5">
               <span class="sr-only">Tiki</span>
@@ -62,29 +62,12 @@
                   {gettext("Admin")}
                 </.link>
               </div>
-              <div class="py-6">
-                <.link
-                  :if={!@current_user}
-                  navigate={~p"/users/log_in"}
-                  class="text-base/7 text-foreground -mx-3 block rounded-lg px-3 py-2.5 font-semibold hover:bg-accent"
-                >
-                  {gettext("Log in")} <span aria-hidden="true">&rarr;</span>
-                </.link>
-                <.link
-                  :if={@current_user}
-                  navigate={~p"/users/settings"}
-                  class="text-base/7 text-foreground -mx-3 block rounded-lg px-3 py-2.5 font-semibold hover:bg-accent"
-                >
-                  <.icon name="hero-user-circle" class="mr-2 inline-block h-5 w-5" />
-                  {@current_user.full_name}
-                </.link>
-              </div>
             </div>
           </div>
         </.sheet_content>
       </.sheet>
     </div>
-    <div class="hidden lg:flex lg:gap-x-12">
+    <div class="hidden md:flex md:gap-x-12">
       <.link navigate={~p"/events"} class="text-sm/6 text-foreground font-semibold">
         {gettext("Events")}
       </.link>
@@ -95,22 +78,48 @@
         {gettext("Admin")}
       </.link>
     </div>
-    <div class="hidden lg:flex lg:flex-1 lg:justify-end">
+    <div class="flex flex-1 justify-end">
       <.link
         :if={!@current_user}
-        navigate={~p"/users/log_in"}
+        navigate={~p"/account/log_in"}
         class="text-sm/6 text-foreground font-semibold"
       >
         {gettext("Log in")} <span aria-hidden="true">&rarr;</span>
       </.link>
-      <.link
-        :if={@current_user}
-        navigate={~p"/users/settings"}
-        class="text-sm/6 text-foreground flex flex-row items-center font-semibold"
-      >
-        <.icon name="hero-user-circle" class="mr-2 inline-block h-5 w-5" />
-        {@current_user.full_name}
-      </.link>
+
+      <.dropdown_menu :if={@current_user}>
+        <.dropdown_menu_trigger>
+          <button class="text-sm/6 text-foreground flex flex-row items-center font-semibold">
+            <.icon name="hero-user-circle" class="mr-2 inline-block h-5 w-5" />
+            {@current_user.full_name}
+          </button>
+        </.dropdown_menu_trigger>
+        <.dropdown_menu_content side="bottom" align="end">
+          <.menu class="w-[17rem] top-0 left-full z-40">
+            <.link navigate={~p"/account/tickets"}>
+              <.menu_item class="font-semibold hover:cursor-pointer">
+                <span>{gettext("Your tickets")}</span>
+              </.menu_item>
+            </.link>
+
+            <.menu_separator />
+            <.link navigate={~p"/account"}>
+              <.menu_item class="hover:cursor-pointer">
+                <.icon name="hero-user" class="mr-2 h-4 w-4" />
+                <span>{gettext("Account")}</span>
+              </.menu_item>
+            </.link>
+            <.menu_separator />
+
+            <.link href={~p"/account/log_out"} method="delete">
+              <.menu_item class="hover:cursor-pointer">
+                <.icon name="hero-arrow-left-end-on-rectangle" class="mr-2 h-4 w-4" />
+                <span>{gettext("Log out")}</span>
+              </.menu_item>
+            </.link>
+          </.menu>
+        </.dropdown_menu_content>
+      </.dropdown_menu>
     </div>
   </nav>
 </header>

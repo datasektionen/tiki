@@ -141,6 +141,16 @@ defmodule Tiki.OrdersTest do
       assert Orders.list_tickets_for_event(event.id, limit: 3) == Enum.take(tickets, 3)
     end
 
+    test "list_orders_for_user/1 returns all orders for a user" do
+      user = Tiki.AccountsFixtures.user_fixture()
+
+      order =
+        order_fixture(%{user_id: user.id})
+        |> Tiki.Repo.preload([:event | @standard_preloads])
+
+      assert Orders.list_orders_for_user(user.id) == [order]
+    end
+
     test "get_order!/1 returns the order with given id" do
       order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order
@@ -211,6 +221,7 @@ defmodule Tiki.OrdersTest do
 
     test "reserve_tickets/3" do
       ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
+
       to_purchase = Map.put(%{}, ticket_type.id, 2)
       cost = ticket_type.price * 2
 
@@ -244,6 +255,46 @@ defmodule Tiki.OrdersTest do
       assert msg =~ "order must contain at least one ticket"
     end
 
+    test "reserve_tickets/3 fails if reserving too many tickets of a single type" do
+      ticket_type =
+        ticket_type_fixture(purchase_limit: 2) |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 3)
+
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert msg =~ "too many tickets requested"
+    end
+
+    test "reserve_tickets/3 fails if reserving too many tickets for an event" do
+      event = Tiki.EventsFixtures.event_fixture(max_order_size: 2)
+      batch = ticket_batch_fixture(%{event_id: event.id})
+
+      ticket_type =
+        ticket_type_fixture(purchase_limit: 10, ticket_batch_id: batch.id)
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 3)
+
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert msg =~ "too many tickets requested"
+    end
+
+    test "reserve_tickets/3 fails if reserving tickets that are not purchasable" do
+      ticket_type =
+        ticket_type_fixture(purchasable: false) |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 3)
+
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert msg =~ "not all ticket types are purchasable"
+    end
+
     test "reserve_tickets/3 fails if reserving too many tickets" do
       ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
       to_purchase = Map.put(%{}, ticket_type.id, 43)
@@ -251,7 +302,7 @@ defmodule Tiki.OrdersTest do
       assert {:error, msg} =
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert msg =~ "not enough tickets"
+      assert msg =~ "not enough tickets available"
     end
 
     test "reserve_tickets/3 fails if reserving tickets to wrong event" do

@@ -317,7 +317,7 @@ defmodule TikiWeb.Component.Sidebar do
               </.link>
               <.menu_separator />
 
-              <.link href={~p"/users/log_out"} method="delete">
+              <.link href={~p"/account/log_out"} method="delete">
                 <.menu_item class="hover:cursor-pointer">
                   <.icon name="hero-arrow-left-end-on-rectangle" class="mr-2 h-4 w-4" />
                   <span>{gettext("Log out")}</span>

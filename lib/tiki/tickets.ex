@@ -173,6 +173,7 @@ defmodule Tiki.Tickets do
     %TicketType{}
     |> TicketType.changeset(attrs)
     |> Repo.insert(returning: [:id])
+    |> broadcast_updated()
   end
 
   @doc """
@@ -191,6 +192,7 @@ defmodule Tiki.Tickets do
     ticket_types
     |> TicketType.changeset(attrs)
     |> Repo.update()
+    |> broadcast_updated()
   end
 
   @doc """
@@ -207,7 +209,26 @@ defmodule Tiki.Tickets do
   """
   def delete_ticket_type(%TicketType{} = ticket_types) do
     Repo.delete(ticket_types)
+    |> broadcast_updated()
   end
+
+  defp broadcast_updated({:ok, %TicketType{} = ticket_type}) do
+    event_id_query =
+      from tb in TicketBatch,
+        where: tb.id == ^ticket_type.ticket_batch_id,
+        select: tb.event_id
+
+    event_id = Repo.one(event_id_query)
+
+    Tiki.Orders.broadcast(
+      event_id,
+      {:tickets_updated, get_available_ticket_types(event_id)}
+    )
+
+    {:ok, ticket_type}
+  end
+
+  defp broadcast_updated({:error, _} = error), do: error
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking ticket_types changes.

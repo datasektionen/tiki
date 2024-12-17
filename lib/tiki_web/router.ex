@@ -48,12 +48,12 @@ defmodule TikiWeb.Router do
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{TikiWeb.UserAuth, :redirect_if_user_is_authenticated}] do
       live "/users/register", UserRegistrationLive, :new
-      live "/users/log_in", UserLoginLive, :new
+      live "/account/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
     end
 
-    post "/users/log_in", UserSessionController, :create
+    post "/account/log_in", UserSessionController, :create
   end
 
   scope "/", TikiWeb do
@@ -62,7 +62,7 @@ defmodule TikiWeb.Router do
     get "/", PageController, :home
     get "/about", PageController, :about
 
-    delete "/users/log_out", UserSessionController, :delete
+    delete "/account/log_out", UserSessionController, :delete
 
     live_session :current_user, on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
@@ -83,8 +83,9 @@ defmodule TikiWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{TikiWeb.UserAuth, :ensure_authenticated}] do
-      live "/users/settings", UserSettingsLive, :edit
-      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+      live "/account", UserSettingsLive, :edit
+      live "/account/tickets", AccountLive.Tickets, :index
+      live "/account/confirm_email/:token", UserSettingsLive, :confirm_email
     end
 
     scope "/admin" do
