@@ -64,7 +64,7 @@ defmodule TikiWeb.AccountLive.Tickets do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    orders = Orders.list_orders_for_user(socket.assigns.current_user.id)
+    orders = Orders.list_orders_for_user(socket.assigns.current_user.id, status: [:paid])
 
     {:ok, assign(socket, orders: orders)}
   end

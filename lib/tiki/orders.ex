@@ -343,11 +343,21 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  Lists all orders for a user.
+  Lists all orders for a user. Options:
+
+    * `:status` - The status of the orders to return.
+
+  ## Examples
+
+      iex> list_orders_for_user(user_id, status: [:paid])
+      [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
   """
-  def list_orders_for_user(user_id) do
+  def list_orders_for_user(user_id, opts \\ []) do
+    statuses = Keyword.get(opts, :status, Ecto.Enum.dump_values(Order, :status))
+
     order_query()
     |> where([o], o.user_id == ^user_id)
+    |> where([o], o.status in ^statuses)
     |> join(:inner, [o], e in assoc(o, :event))
     |> preload([o, ..., e], event: e)
     |> order_by([o], desc: o.inserted_at)
