@@ -115,10 +115,18 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   def mount(%{"id" => event_id} = params, _session, socket) do
     event = Tiki.Events.get_event!(event_id)
 
-    {:ok,
-     socket
-     |> assign(:event, event)
-     |> apply_action(socket.assigns.live_action, params)}
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      {:ok,
+       socket
+       |> assign(:event, event)
+       |> apply_action(socket.assigns.live_action, params)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   defp apply_action(socket, :edit, %{"form_id" => form_id}) do
@@ -126,14 +134,20 @@ defmodule TikiWeb.AdminLive.Forms.Form do
     changeset = Forms.change_form(form)
     %{event: event} = socket.assigns
 
-    assign(socket, form: form, client_form: to_form(changeset))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {event.name, ~p"/admin/events/#{event}"},
-      {"Forms", ~p"/admin/events/#{event}/forms"},
-      {form.name, ~p"/admin/events/#{event}/forms/#{form.id}/edit"}
-    ])
+    if event.id == form.event_id do
+      assign(socket, form: form, client_form: to_form(changeset))
+      |> assign_breadcrumbs([
+        {"Dashboard", ~p"/admin"},
+        {"Events", ~p"/admin/events"},
+        {event.name, ~p"/admin/events/#{event}"},
+        {"Forms", ~p"/admin/events/#{event}/forms"},
+        {form.name, ~p"/admin/events/#{event}/forms/#{form.id}/edit"}
+      ])
+    else
+      socket
+      |> put_flash(:error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin")
+    end
   end
 
   defp apply_action(socket, :new, _) do

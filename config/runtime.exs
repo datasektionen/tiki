@@ -30,6 +30,9 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  config :tiki,
+    pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se")
+
   config :tiki, Tiki.Repo,
     # ssl: true,
     url: database_url,

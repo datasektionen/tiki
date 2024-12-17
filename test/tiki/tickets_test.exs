@@ -90,7 +90,7 @@ defmodule Tiki.TicketsTest do
     end
 
     test "get_ticket_type!/1 returns the ticket_types with given id" do
-      ticket_types = ticket_type_fixture()
+      ticket_types = ticket_type_fixture() |> Repo.preload(:ticket_batch)
       assert Tickets.get_ticket_type!(ticket_types.id) == ticket_types
     end
 
@@ -154,7 +154,7 @@ defmodule Tiki.TicketsTest do
     end
 
     test "update_ticket_type/2 with invalid data returns error changeset" do
-      ticket_types = ticket_type_fixture()
+      ticket_types = ticket_type_fixture() |> Repo.preload(:ticket_batch)
 
       assert {:error, %Ecto.Changeset{}} =
                Tickets.update_ticket_type(ticket_types, @invalid_attrs)

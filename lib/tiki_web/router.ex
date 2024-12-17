@@ -89,36 +89,43 @@ defmodule TikiWeb.Router do
     end
 
     scope "/admin" do
-      pipe_through [:require_admin_user]
+      pipe_through [:require_manager]
 
       post "/set_team", UserSessionController, :set_team
       get "/set_team/:team_id", UserSessionController, :set_team
+      get "/clear_team", UserSessionController, :clear_team
     end
 
     scope "/admin", AdminLive do
-      live_session :require_admin_user,
+      live_session :require_manager,
         on_mount: [
-          {TikiWeb.UserAuth, :ensure_admin},
+          {TikiWeb.UserAuth, :ensure_authenticated},
+          {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
           TikiWeb.Nav
         ],
         layout: {TikiWeb.Layouts, :admin} do
-        live "/", Dashboard.Index, :index
-
+        live "/select-team", Dashboard.Team, :index
         live "/user-settings", User.Settings, :index
 
         live "/teams", Team.Index, :index
         live "/teams/new", Team.Form, :new
         live "/teams/:id", Team.Show, :show
+        live "/teams/:team_id/members/new", Team.MembershipForm, :new
+        live "/teams/:team_id/members/:id/edit", Team.MembershipForm, :edit
+
         live "/teams/:id/edit", Team.Form, :edit
       end
 
       live_session :active_group,
         on_mount: [
-          {TikiWeb.UserAuth, :ensure_admin},
+          {TikiWeb.UserAuth, :ensure_authenticated},
           {TikiWeb.UserAuth, :ensure_team},
+          {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
           TikiWeb.Nav
         ],
         layout: {TikiWeb.Layouts, :admin} do
+        live "/", Dashboard.Index, :index
+
         # General event stuff
         live "/events", Event.Index, :index
         live "/events/new", Event.Edit, :new
@@ -127,6 +134,7 @@ defmodule TikiWeb.Router do
         live "/team/members", Team.Members, :index
         live "/team/members/new", Team.MembershipForm, :new
         live "/team/members/:id/edit", Team.MembershipForm, :edit
+        live "/team/edit", Team.Form, :manager_edit
 
         scope "/events/:id" do
           # Event dashboard

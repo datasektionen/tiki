@@ -149,6 +149,8 @@ defmodule TikiWeb.UserAuth do
     * `:redirect_if_user_is_authenticated` - Authenticates the user from the session.
       Redirects to signed_in_path if there's a logged user.
 
+    * `{:authorize, action}` - Authorizes the current user for the given action via let_me.
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -215,6 +217,19 @@ defmodule TikiWeb.UserAuth do
     end
   end
 
+  def on_mount({:authorize, action}, _params, _session, socket) do
+    with %Accounts.User{} = user <- socket.assigns.current_user,
+         :ok <- Tiki.Policy.authorize(action, user) do
+      {:cont, socket}
+    else
+      _ ->
+        {:halt,
+         socket
+         |> Phoenix.LiveView.put_flash(:error, gettext("You are not authorized to do that."))
+         |> Phoenix.LiveView.redirect(to: ~p"/")}
+    end
+  end
+
   def on_mount(:ensure_team, _params, session, socket) do
     socket = mount_current_user(session, socket)
 
@@ -227,7 +242,7 @@ defmodule TikiWeb.UserAuth do
           :error,
           gettext("You must select a team to access this page.")
         )
-        |> Phoenix.LiveView.redirect(to: ~p"/admin/teams")
+        |> Phoenix.LiveView.redirect(to: ~p"/admin/select-team")
 
       {:halt, socket}
     end
@@ -296,10 +311,10 @@ defmodule TikiWeb.UserAuth do
     end
   end
 
-  def require_admin_user(conn, opts) do
+  def require_manager(conn, opts) do
     conn = require_authenticated_user(conn, opts)
 
-    if Tiki.Policy.authorize?(:tiki_admin, conn.assigns.current_user) do
+    if Tiki.Policy.authorize?(:tiki_manage, conn.assigns.current_user) do
       conn
     else
       conn

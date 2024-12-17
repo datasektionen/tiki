@@ -27,7 +27,8 @@ defmodule Tiki.Application do
       {Oidcc.ProviderConfiguration.Worker, oidc_config},
       # Start processes required for order handling
       Tiki.OrderHandler.Supervisor,
-      Tiki.PurchaseMonitor
+      Tiki.PurchaseMonitor,
+      Tiki.Pls
     ]
 
     opts = [strategy: :one_for_one, name: Tiki.Supervisor]

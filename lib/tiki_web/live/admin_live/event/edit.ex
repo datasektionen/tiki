@@ -15,15 +15,22 @@ defmodule TikiWeb.AdminLive.Event.Edit do
   defp apply_action(socket, :edit, %{"id" => id}) do
     event = Events.get_event!(id)
 
-    socket
-    |> assign(:page_title, gettext("Edit event"))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {event.name, ~p"/admin/events/#{id}"},
-      {"Edit event", ~p"/admin/events/#{id}/edit"}
-    ])
-    |> assign(:event, event)
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      socket
+      |> assign(:page_title, gettext("Edit event"))
+      |> assign_breadcrumbs([
+        {"Dashboard", ~p"/admin"},
+        {"Events", ~p"/admin/events"},
+        {event.name, ~p"/admin/events/#{id}"},
+        {"Edit event", ~p"/admin/events/#{id}/edit"}
+      ])
+      |> assign(:event, event)
+    else
+      {:error, :unauthorized} ->
+        socket
+        |> put_flash(:error, gettext("You are not authorized to do that."))
+        |> redirect(to: ~p"/admin")
+    end
   end
 
   defp apply_action(socket, :delete, map) do
@@ -34,14 +41,23 @@ defmodule TikiWeb.AdminLive.Event.Edit do
   end
 
   defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, gettext("New event"))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {"New event", ~p"/admin/events/new"}
-    ])
-    |> assign(:event, %Event{})
+    %{current_team: team, current_user: user} = socket.assigns
+
+    with :ok <- Tiki.Policy.authorize(:event_create, user, team) do
+      socket
+      |> assign(:page_title, gettext("New event"))
+      |> assign_breadcrumbs([
+        {"Dashboard", ~p"/admin"},
+        {"Events", ~p"/admin/events"},
+        {"New event", ~p"/admin/events/new"}
+      ])
+      |> assign(:event, %Event{})
+    else
+      {:error, :unauthorized} ->
+        socket
+        |> put_flash(:error, gettext("You are not authorized to do that."))
+        |> redirect(to: ~p"/admin")
+    end
   end
 
   def handle_event("validate_delete", params, socket) do

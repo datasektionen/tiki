@@ -45,4 +45,10 @@ defmodule TikiWeb.UserSessionController do
     |> put_session(:current_team_id, team_id)
     |> redirect(to: ~p"/admin")
   end
+
+  def clear_team(conn, _params) do
+    conn
+    |> put_session(:current_team_id, nil)
+    |> redirect(to: ~p"/admin")
+  end
 end

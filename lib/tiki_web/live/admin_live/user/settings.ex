@@ -4,6 +4,8 @@ defmodule TikiWeb.AdminLive.User.Settings do
   alias Tiki.Accounts
   import TikiWeb.Component.Card
 
+  # TODO: harmonize with "normal" user settings, and maybe remove this
+
   def mount(_params, _session, socket) do
     changeset = Accounts.change_user_data(socket.assigns.current_user, %{})
 
@@ -52,7 +54,7 @@ defmodule TikiWeb.AdminLive.User.Settings do
         <.input field={@form[:last_name]} label={gettext("Last name")} />
         <.input
           field={@form[:locale]}
-          label={gettext("Prefered language")}
+          label={gettext("Preferred language")}
           type="select"
           options={[{"English", "en"}, {"Svenska", "sv"}]}
         />

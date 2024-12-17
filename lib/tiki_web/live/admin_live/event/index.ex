@@ -7,14 +7,18 @@ defmodule TikiWeb.AdminLive.Event.Index do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    events =
-      if socket.assigns.current_team do
-        Tiki.Events.list_team_events(socket.assigns.current_team.id)
-      else
-        []
-      end
+    %{current_user: user, current_team: team} = socket.assigns
 
-    {:ok, stream(socket, :events, events)}
+    with :ok <- Tiki.Policy.authorize(:event_manage, user, team) do
+      events = Tiki.Events.list_team_events(socket.assigns.current_team.id)
+      {:ok, stream(socket, :events, events)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl Phoenix.LiveView

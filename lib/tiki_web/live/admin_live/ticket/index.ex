@@ -97,13 +97,23 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   end
 
   @impl Phoenix.LiveView
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def mount(%{"id" => event_id}, _session, socket) do
+    event = Events.get_event!(event_id, preload_ticket_types: true)
+
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      {:ok, assign(socket, event: event)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"id" => event_id} = params, _session, socket) do
-    socket = assign_graph(socket, event_id)
+  def handle_params(params, _session, socket) do
+    socket = assign_graph(socket, socket.assigns.event)
 
     {:noreply,
      socket
@@ -121,9 +131,15 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   def apply_action(socket, :edit_batch, %{"batch_id" => batch_id}) do
     batch = Tickets.get_ticket_batch!(batch_id)
 
-    socket
-    |> assign(:page_title, gettext("Edit Ticket Batch"))
-    |> assign(:batch, batch)
+    if socket.assigns.event.id == batch.event_id do
+      socket
+      |> assign(:page_title, gettext("Edit Ticket Batch"))
+      |> assign(:batch, batch)
+    else
+      socket
+      |> put_flash(:error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/tickets")
+    end
   end
 
   def apply_action(socket, :new_batch, _params) do
@@ -135,9 +151,15 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   def apply_action(socket, :edit_ticket_type, %{"ticket_type_id" => tt_id}) do
     ticket_type = Tickets.get_ticket_type!(tt_id)
 
-    socket
-    |> assign(:page_title, gettext("Edit Ticket type"))
-    |> assign(:ticket_type, ticket_type)
+    if socket.assigns.event.id == ticket_type.ticket_batch.event_id do
+      socket
+      |> assign(:page_title, gettext("Edit Ticket type"))
+      |> assign(:ticket_type, ticket_type)
+    else
+      socket
+      |> put_flash(:error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/tickets")
+    end
   end
 
   def apply_action(socket, :new_ticket_type, params) do
@@ -233,8 +255,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     """
   end
 
-  defp assign_graph(socket, event_id) do
-    event = Events.get_event!(event_id, preload_ticket_types: true)
+  defp assign_graph(socket, event) do
     batches = get_batch_graph(event.ticket_batches)
 
     assign(socket, event: event, batches: batches)

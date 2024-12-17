@@ -264,6 +264,23 @@ defmodule Tiki.Teams do
   end
 
   @doc """
+  Returns all the team meberships for a given user
+
+  ## Examples
+
+      iex> get_memberships_for_user(123)
+      [%Membership{}, ...]
+
+  """
+  def get_memberships_for_user(user_id) do
+    query =
+      from m in Membership,
+        where: m.user_id == ^user_id
+
+    Repo.all(query)
+  end
+
+  @doc """
   Preloads all the teams that a user is member of, given a user or
   a list of users.
 
