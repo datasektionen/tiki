@@ -298,7 +298,7 @@ defmodule TikiWeb.Component.Sidebar do
             <.menu_label>
               <div class="inline-flex gap-2">
                 <img
-                  src="https://zfinger.datasektionen.se/user/asalamon/image/100"
+                  src={"https://zfinger.datasektionen.se/user/#{@current_user.kth_id}/image/100"}
                   class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
                 />
                 <div class="grid flex-1 text-left text-sm leading-tight">

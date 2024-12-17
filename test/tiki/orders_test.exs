@@ -245,6 +245,37 @@ defmodule Tiki.OrdersTest do
       assert_receive {:tickets_updated, _}
     end
 
+    test "reserve_tickets/3 works with events with release and expire times" do
+      ticket_type =
+        ticket_type_fixture(
+          release_time: DateTime.utc_now() |> DateTime.add(-60, :second),
+          expire_time: DateTime.utc_now() |> DateTime.add(60, :second)
+        )
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+      cost = ticket_type.price * 2
+
+      Orders.subscribe(ticket_type.ticket_batch.event.id)
+
+      result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{status: :pending, price: ^cost, id: id}} = result
+
+      Orders.subscribe_to_order(id)
+
+      {:ok, order} = result
+
+      assert to_purchase ==
+               Enum.group_by(order.tickets, & &1.ticket_type.id)
+               |> Enum.into(%{}, fn {tt, tickets} -> {tt, length(tickets)} end)
+
+      assert Enum.all?(order.tickets, fn %{order_id: order_id} -> order_id == order.id end)
+      assert cost == Enum.map(order.tickets, & &1.price) |> Enum.sum()
+
+      assert_receive {:tickets_updated, _}
+    end
+
     test "reserve_tickets/3 fails if reserving no tickets" do
       ticket_type = ticket_type_fixture() |> Tiki.Repo.preload(ticket_batch: [event: []])
       to_purchase = Map.put(%{}, ticket_type.id, 0)
@@ -314,6 +345,32 @@ defmodule Tiki.OrdersTest do
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
       assert msg =~ "not enough tickets"
+    end
+
+    test "reserve_tickets/3 fails if reserving tickets that are not released yet" do
+      ticket_type =
+        ticket_type_fixture(release_time: DateTime.utc_now() |> DateTime.add(60, :second))
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 1)
+
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert msg =~ "not all ticket types are purchasable"
+    end
+
+    test "reserve_tickets/3 fails if reserving tickets that have expired" do
+      ticket_type =
+        ticket_type_fixture(expire_time: DateTime.utc_now() |> DateTime.add(-60, :second))
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 1)
+
+      assert {:error, msg} =
+               Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert msg =~ "not all ticket types are purchasable"
     end
 
     test "maybe_cancel_order/1 cancels a pending order" do

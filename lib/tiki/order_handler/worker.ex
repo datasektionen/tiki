@@ -102,7 +102,7 @@ defmodule Tiki.OrderHandler.Worker do
         {:ok, repo.one(from e in Events.Event, where: e.id == ^event_id)}
       end)
       |> Multi.run(:all_purchasable, fn _repo, %{requested_types: tts} ->
-        case Enum.all?(tts, fn {_, tt} -> tt.purchasable end) do
+        case Enum.all?(tts, &purchaseable?/1) do
           true -> {:ok, :ok}
           false -> {:error, "not all ticket types are purchasable"}
         end
@@ -188,6 +188,17 @@ defmodule Tiki.OrderHandler.Worker do
       {:error, status, message, _}
       when status in [:positive_tickets, :ticket_limits, :check_availability, :all_purchasable] ->
         {:reply, {:error, message}, state, @timeout}
+    end
+  end
+
+  defp purchaseable?({_, tt}) do
+    now = DateTime.utc_now()
+
+    cond do
+      !tt.purchasable -> false
+      tt.expire_time && DateTime.compare(now, tt.expire_time) == :gt -> false
+      tt.release_time && DateTime.compare(now, tt.release_time) == :lt -> false
+      true -> true
     end
   end
 

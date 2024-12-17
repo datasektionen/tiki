@@ -280,7 +280,7 @@ defmodule TikiWeb.Component.Input do
   def form_input(%{question: %{type: :multi_select}} = assigns) do
     ~H"""
     <div class={@class}>
-      <label class="block text-sm font-semibold leading-6 text-zinc-800">
+      <label class="text-muted-foreground block text-sm font-semibold leading-6">
         {@question.name}
       </label>
       <div class="mt-2 flex flex-col gap-1">

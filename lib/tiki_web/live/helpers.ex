@@ -9,8 +9,13 @@ defmodule TikiWeb.LiveHelpers do
     assign(socket, breadcrumbs: crumbs)
   end
 
-  def time_to_string(time) do
-    Tiki.Cldr.DateTime.to_string!(time, format: :yMMMEd)
+  def time_to_string(time, opts \\ []) do
+    format = Keyword.get(opts, :format, :yMMMEd)
+    timezone = Keyword.get(opts, :timezone, "Europe/Stockholm")
+
+    {:ok, time} = DateTime.shift_zone(time, timezone)
+
+    Tiki.Cldr.DateTime.to_string!(time, format: format)
     |> String.capitalize()
   end
 

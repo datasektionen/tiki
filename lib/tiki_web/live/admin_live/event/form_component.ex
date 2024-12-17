@@ -30,7 +30,12 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         />
         <.input field={@form[:max_order_size]} type="number" label={gettext("Max tickets per order")} />
 
-        <.input field={@form[:event_date]} type="datetime-local" label={gettext("Event date")} />
+        <.input
+          field={@form[:event_date]}
+          type="datetime-local"
+          label={gettext("Event date")}
+          description={gettext("In UTC")}
+        />
 
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
         <.image_upload upload={@uploads.photo} label={gettext("Event cover image")} />

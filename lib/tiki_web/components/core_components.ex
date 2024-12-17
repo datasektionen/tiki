@@ -357,7 +357,7 @@ defmodule TikiWeb.CoreComponents do
     <div class="border-border mt-2 flex justify-center rounded-lg border border-dashed p-6">
       <div :if={@upload.entries == []} class="text-center" phx-drop-target={@upload.ref}>
         <.icon name="hero-photo-solid" class="size-12 text-muted-foreground/20" />
-        <div class="text-sm/6 mt-4 flex text-gray-600">
+        <div class="text-sm/6 text-muted-foreground mt-4 flex">
           <.label for={@upload.ref}>
             <span>{gettext("Upload a file")}</span>
           </.label>

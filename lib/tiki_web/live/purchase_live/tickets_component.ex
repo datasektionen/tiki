@@ -36,7 +36,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
               <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
             </div>
 
-            <div class="flex flex-row items-center gap-2">
+            <div :if={purchasable(ticket_type)} class="flex flex-row items-center gap-2">
               <button
                 :if={@counts[ticket_type.id] > 0}
                 class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
@@ -69,12 +69,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
             </div>
           </div>
 
-          <div
-            :if={ticket_type.available <= 0}
-            class="text-muted-foreground bg-accent py-1 text-center text-sm"
-          >
-            Biljetterna är slutsålda
-          </div>
+          <.not_available_label ticket_type={ticket_type} />
         </div>
       </div>
 
@@ -117,8 +112,46 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     """
   end
 
+  attr :ticket_type, :any, required: true
+
+  defp not_available_label(%{ticket_type: tt} = assigns) do
+    now = DateTime.utc_now()
+
+    assigns =
+      cond do
+        !tt.purchasable ->
+          assign(assigns, label: gettext("Ticket not available"))
+
+        tt.expire_time && DateTime.compare(now, tt.expire_time) == :gt ->
+          assign(assigns, label: gettext("Ticket not available"))
+
+        tt.release_time && DateTime.compare(now, tt.release_time) == :lt ->
+          assign(assigns,
+            label:
+              "#{gettext("Ticket releases at")} #{time_to_string(tt.release_time, format: :short)}"
+          )
+
+        tt.available == 0 ->
+          assign(assigns, label: gettext("Sold out"))
+
+        true ->
+          assign(assigns, label: nil)
+      end
+
+    ~H"""
+    <div
+      :if={@label}
+      class="text-muted-foreground bg-muted-foreground/5 py-1 text-center text-sm dark:bg-background/50"
+    >
+      {@label}
+    </div>
+    """
+  end
+
   @impl Phoenix.LiveComponent
   def update(%{action: {:tickets_updated, ticket_types}}, socket) do
+    # TODO: make sure that this is automatically updated when a ticket type is released, eg. via Oban
+
     {:ok, assign_ticket_types(socket, ticket_types)}
   end
 
@@ -146,7 +179,6 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
       |> Enum.filter(fn tt ->
         tt.promo_code == nil || tt.promo_code in socket.assigns.promo_codes
       end)
-      |> Enum.filter(fn tt -> tt.purchasable end)
       |> Enum.sort(fn tt_a, tt_b ->
         dawn_of_time = DateTime.from_unix!(0)
 
@@ -195,6 +227,17 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     else
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}
+    end
+  end
+
+  defp purchasable(ticket_type) do
+    now = DateTime.utc_now()
+
+    cond do
+      !ticket_type.purchasable -> false
+      ticket_type.expire_time && DateTime.compare(now, ticket_type.expire_time) == :gt -> false
+      ticket_type.release_time && DateTime.compare(now, ticket_type.release_time) == :lt -> false
+      true -> true
     end
   end
 

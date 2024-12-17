@@ -56,6 +56,7 @@ defmodule Tiki.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:ex_cldr_dates_times, "~> 2.0"},
+      {:tz, "~> 0.28"},
       {:jason, "~> 1.2"},
       {:bandit, "~> 1.0"},
       {:stripity_stripe, "~> 3.0"},

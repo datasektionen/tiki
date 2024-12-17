@@ -25,8 +25,18 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
       >
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
-        <.input field={@form[:start_time]} type="datetime-local" label={gettext("Start time")} />
-        <.input field={@form[:end_time]} type="datetime-local" label={gettext("End time")} />
+        <.input
+          field={@form[:start_time]}
+          type="datetime-local"
+          label={gettext("Start time")}
+          description={gettext("In UTC")}
+        />
+        <.input
+          field={@form[:end_time]}
+          type="datetime-local"
+          label={gettext("End time")}
+          description={gettext("In UTC")}
+        />
 
         <.input
           :if={@event.default_form_id != nil}
@@ -55,12 +65,18 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
         />
 
         <.input field={@form[:price]} type="number" label={gettext("Price")} />
-        <.input field={@form[:release_time]} type="datetime-local" label={gettext("Release time")} />
+        <.input
+          field={@form[:release_time]}
+          type="datetime-local"
+          label={gettext("Release time")}
+          description={gettext("In UTC. Leave blank to make immediately available")}
+        />
 
         <.input
           field={@form[:expire_time]}
           type="datetime-local"
           label={gettext("Purchase deadline")}
+          description={gettext("In UTC. Leave blank for none")}
         />
 
         <.input
