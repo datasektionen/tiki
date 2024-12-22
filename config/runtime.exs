@@ -140,4 +140,13 @@ if config_env() == :prod do
     key: imgproxy_key,
     salt: imgproxy_salt,
     prefix: image_frontend_url
+
+  # Mail config
+  spam_api_key = System.get_env("SPAM_API_KEY") || raise "SPAM_API_KEY is missing"
+
+  config :tiki, Tiki.Mailer,
+    adapter: Tiki.Mail.SpamAdapter,
+    api_key: spam_api_key
+
+  config :swoosh, :api_client, Swoosh.ApiClient.Req
 end

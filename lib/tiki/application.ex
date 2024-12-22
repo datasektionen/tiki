@@ -11,11 +11,15 @@ defmodule Tiki.Application do
       Application.get_env(:tiki, Oidcc.ProviderConfiguration, [])
       |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})
 
+    oban_config = Application.fetch_env!(:tiki, Oban)
+
     children = [
       # Start the Telemetry supervisor
       TikiWeb.Telemetry,
       # Start the Ecto repository
       Tiki.Repo,
+      # Start Oban
+      {Oban, oban_config},
       # Start the PubSub system
       {Phoenix.PubSub, name: Tiki.PubSub},
       Tiki.Presence,

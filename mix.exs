@@ -77,7 +77,9 @@ defmodule Tiki.MixProject do
        branch: "main",
        only: :dev,
        runtime: false},
-      {:tails, "~> 0.1"}
+      {:tails, "~> 0.1"},
+      {:mjml, "~> 4.0"},
+      {:oban, "~> 2.18"}
     ]
   end
 

@@ -97,6 +97,11 @@ config :tails,
     "chart-5"
   ]
 
+config :tiki, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10],
+  repo: Tiki.Repo
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
