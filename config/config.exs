@@ -99,7 +99,7 @@ config :tails,
 
 config :tiki, Oban,
   engine: Oban.Engines.Basic,
-  queues: [default: 10],
+  queues: [default: 10, mail: 10],
   repo: Tiki.Repo
 
 # Import environment specific config. This must remain at the bottom
