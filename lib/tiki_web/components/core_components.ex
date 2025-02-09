@@ -45,15 +45,15 @@ defmodule TikiWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
-        "fixed top-2 right-2 z-50 mr-2 w-80 rounded-lg p-3 ring-1 sm:w-96",
-        @kind == :info && "bg-emerald-50 fill-cyan-900 text-emerald-800 ring-emerald-500",
-        @kind == :error && "bg-rose-50 fill-rose-900 text-rose-900 shadow-md ring-rose-500"
+        "fixed top-2 right-2 z-100 mr-2 w-80 rounded-lg p-3 sm:w-96 shadow-md",
+        @kind == :info && "text-primary animate-flash-success",
+        @kind == :error && "text-primary animate-flash-error"
       ]}
       {@rest}
     >
       <div class="flex flex-row items-start gap-2 leading-none tracking-tight">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="h-4 w-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="h-4 w-4" />
+        <.icon :if={@kind == :info} name="hero-check-circle-mini" class="h-4 w-4 text-success" />
+        <.icon :if={@kind == :error} name="hero-exclamation-triangle-mini" class="h-4 w-4 text-error" />
 
         <div class="flex flex-col">
           <div :if={@title} class="mb-1 font-medium leading-none tracking-tight">{@title}</div>
@@ -61,7 +61,7 @@ defmodule TikiWeb.CoreComponents do
             {msg}
           </div>
         </div>
-        <button type="button" class="ml-auto" aria-label={gettext("close")}>
+        <button type="button" class="ml-auto cursor-pointer" aria-label={gettext("close")}>
           <.icon name="hero-x-mark-solid" class="h-5 w-5 opacity-40 group-hover:opacity-70" />
         </button>
       </div>
