@@ -45,7 +45,7 @@ defmodule TikiWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class={[
-        "fixed top-2 right-2 z-100 mr-2 w-80 rounded-lg p-3 sm:w-96 shadow-md",
+        "z-100 fixed top-2 right-2 mr-2 w-80 rounded-lg p-3 shadow-md sm:w-96",
         @kind == :info && "text-primary animate-flash-success",
         @kind == :error && "text-primary animate-flash-error"
       ]}
