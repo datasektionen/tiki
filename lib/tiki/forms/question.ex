@@ -6,7 +6,10 @@ defmodule Tiki.Forms.Question do
     field :description, :string
     field :name, :string
     field :required, :boolean, default: false
-    field :type, Ecto.Enum, values: [:text, :text_area, :select, :multi_select, :email, :attendee_name]
+
+    field :type, Ecto.Enum,
+      values: [:text, :text_area, :select, :multi_select, :email, :attendee_name]
+
     field :options, {:array, :string}
 
     belongs_to :form, Tiki.Forms.Form
