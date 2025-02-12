@@ -262,12 +262,13 @@ defmodule TikiWeb.Component.Input do
   @doc """
   A generic form component that works with Changesets generated from Haj.Form.
 
-  Question types are: :select, :multi_select, :text_area, :text
+  Question types are: :select, :multi_select, :text_area, :text, :email, :attendee_name
   """
 
   attr :question, :any, required: true
   attr :field, :any, required: true
   attr :class, :string, default: ""
+  attr :default, :any
 
   def form_input(%{question: %{type: :select}} = assigns) do
     ~H"""
@@ -308,10 +309,18 @@ defmodule TikiWeb.Component.Input do
     """
   end
 
+  def form_input(%{question: %{type: :email}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="email" label={@question.name} default={@default} />
+    </div>
+    """
+  end
+
   def form_input(assigns) do
     ~H"""
     <div class={@class}>
-      <.input field={@field} type="text" label={@question.name} />
+      <.input field={@field} type="text" label={@question.name} default={@default} />
     </div>
     """
   end
