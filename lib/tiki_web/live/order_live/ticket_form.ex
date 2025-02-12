@@ -97,7 +97,7 @@ defmodule TikiWeb.OrderLive.TicketForm do
          |> push_navigate(to: ~p"/orders/#{socket.assigns.ticket.order_id}")}
 
       {:error, changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply, assign_form(socket, changeset) |> put_flash(:error, "Could not submit form")}
     end
   end
 

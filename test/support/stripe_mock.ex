@@ -30,7 +30,7 @@ defmodule Tiki.Support.StripeMock do
     end
 
     def retrieve(id) do
-      {:ok, %PaymentMethod{id: id}}
+      {:ok, %PaymentMethod{id: id, card: %Stripe.Card{brand: "Visa", last4: "1234"}}}
     end
   end
 end
