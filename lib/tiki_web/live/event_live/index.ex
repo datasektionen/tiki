@@ -47,6 +47,7 @@ defmodule TikiWeb.EventLive.Index do
   def mount(_params, _session, socket) do
     events =
       Events.list_events()
+      |> Enum.filter(&(&1.is_hidden == false))
       |> Enum.sort_by(& &1.event_date, {:asc, NaiveDateTime})
 
     {:ok, assign(socket, events: events)}
