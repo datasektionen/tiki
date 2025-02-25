@@ -47,7 +47,10 @@ defmodule TikiWeb.AdminLive.Team.Show do
      assign(socket, team: team)
      |> assign(:page_title, team.name)
      |> stream(:members, members)
-     |> assign_breadcrumbs([{"Teams", ~p"/admin/teams"}, {team.name, ~p"/admin/teams/#{team.id}"}])}
+     |> assign_breadcrumbs([
+       {"Teams", ~p"/admin/teams"},
+       {team.name, ~p"/admin/teams/#{team.id}"}
+     ])}
   end
 
   @impl Phoenix.LiveView
