@@ -158,6 +158,7 @@ defmodule TikiWeb.Component.Sidebar do
       />
       <:item text={gettext("Edit team")} to={~p"/admin/team/edit"} active={@active_tab == :team_edit} />
       <:item text={gettext("Payments")} to="" />
+      <:item text={gettext("Food preferences")} to={~p"/admin/food"} />
     </.sidebar_group>
     """
   end

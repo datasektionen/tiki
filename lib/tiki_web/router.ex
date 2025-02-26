@@ -136,6 +136,9 @@ defmodule TikiWeb.Router do
         live "/team/members/:id/edit", Team.MembershipForm, :edit
         live "/team/edit", Team.Form, :manager_edit
 
+        # Food preferences
+        live "food", Food.Index, :index
+
         scope "/events/:id" do
           # Event dashboard
           live "/", Event.Show, :show

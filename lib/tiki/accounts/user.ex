@@ -18,7 +18,10 @@ defmodule Tiki.Accounts.User do
     # TODO: Change to :user
     field :role, Ecto.Enum, values: [:user, :admin], default: :admin
 
+    many_to_many :foods, Tiki.Foods.Food, join_through: "food_preferences", on_replace: :delete
     has_many :memberships, Tiki.Teams.Membership
+
+    field :food_preference_other, :string
 
     timestamps()
   end
@@ -48,7 +51,15 @@ defmodule Tiki.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :password, :role, :kth_id, :first_name, :last_name])
+    |> cast(attrs, [
+      :email,
+      :password,
+      :role,
+      :kth_id,
+      :first_name,
+      :last_name,
+      :food_preference_other
+    ])
     |> validate_email(opts)
     |> validate_password(opts)
   end
