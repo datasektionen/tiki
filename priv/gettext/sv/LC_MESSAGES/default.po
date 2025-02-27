@@ -150,6 +150,7 @@ msgstr "Plats"
 #: lib/tiki_web/live/admin_live/event/index.ex:96
 #: lib/tiki_web/live/admin_live/event/show.ex:145
 #: lib/tiki_web/live/admin_live/forms/form.ex:12
+#: lib/tiki_web/live/admin_live/forms/form.ex:158
 #: lib/tiki_web/live/admin_live/forms/index.ex:22
 #: lib/tiki_web/live/admin_live/team/form.ex:16
 #: lib/tiki_web/live/admin_live/team/index.ex:23
@@ -187,7 +188,7 @@ msgstr "Föredraget språk"
 
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/user/settings.ex:63
-#: lib/tiki_web/live/order_live/ticket_form.ex:33
+#: lib/tiki_web/live/order_live/ticket_form.ex:43
 #: lib/tiki_web/live/user_settings_live.ex:31
 #, elixir-autogen, elixir-format
 msgid "Save"
@@ -212,7 +213,7 @@ msgstr "Hem"
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:23
 #: lib/tiki_web/live/admin_live/forms/form.ex:13
-#: lib/tiki_web/live/admin_live/forms/form.ex:41
+#: lib/tiki_web/live/admin_live/forms/form.ex:43
 #: lib/tiki_web/live/admin_live/team/form.ex:18
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:27
 #, elixir-autogen, elixir-format
@@ -284,12 +285,12 @@ msgid "Event updated successfully"
 msgstr "Evenemang uppdaterades"
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:45
-#: lib/tiki_web/live/admin_live/forms/form.ex:106
+#: lib/tiki_web/live/admin_live/forms/form.ex:108
 #: lib/tiki_web/live/admin_live/team/form.ex:22
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/ticket/batch_form.ex:38
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:92
-#: lib/tiki_web/live/order_live/ticket_form.ex:32
+#: lib/tiki_web/live/order_live/ticket_form.ex:42
 #, elixir-autogen, elixir-format
 msgid "Saving..."
 msgstr "Sparar..."
@@ -442,6 +443,8 @@ msgid "from last month"
 msgstr "från förra månaden"
 
 #: lib/tiki_web/live/admin_live/attendees/show.ex:98
+#: lib/tiki_web/live/admin_live/forms/form.ex:36
+#: lib/tiki_web/live/admin_live/forms/form.ex:159
 #: lib/tiki_web/live/admin_live/team/members.ex:60
 #: lib/tiki_web/live/admin_live/team/show.ex:21
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:116
@@ -552,7 +555,7 @@ msgstr "Ny batch"
 msgid "New Ticket type"
 msgstr "Ny biljettyp"
 
-#: lib/tiki_web/components/dialog.ex:99
+#: lib/tiki_web/components/dialog.ex:97
 #: lib/tiki_web/live/admin_live/forms/index.ex:32
 #: lib/tiki_web/live/admin_live/team/index.ex:30
 #: lib/tiki_web/live/admin_live/team/members.ex:71
@@ -790,12 +793,12 @@ msgstr "Din epost"
 msgid "Your name"
 msgstr "Ditt namn"
 
-#: lib/tiki_web/live/admin_live/forms/form.ex:188
+#: lib/tiki_web/live/admin_live/forms/form.ex:196
 #, elixir-autogen, elixir-format
 msgid "Form created successfully"
 msgstr "Formulär skapades"
 
-#: lib/tiki_web/live/admin_live/forms/form.ex:201
+#: lib/tiki_web/live/admin_live/forms/form.ex:209
 #, elixir-autogen, elixir-format
 msgid "Form updated successfully"
 msgstr "Formulär uppdaterades"
@@ -826,17 +829,17 @@ msgstr "Flerval"
 msgid "New form"
 msgstr "Nytt formulär"
 
-#: lib/tiki_web/live/admin_live/forms/form.ex:70
+#: lib/tiki_web/live/admin_live/forms/form.ex:72
 #, elixir-autogen, elixir-format
 msgid "New option"
 msgstr "Nytt alternativ"
 
-#: lib/tiki_web/live/admin_live/forms/form.ex:102
+#: lib/tiki_web/live/admin_live/forms/form.ex:104
 #, elixir-autogen, elixir-format
 msgid "New question"
 msgstr "Ny fråga"
 
-#: lib/tiki_web/live/admin_live/forms/form.ex:45
+#: lib/tiki_web/live/admin_live/forms/form.ex:47
 #, elixir-autogen, elixir-format
 msgid "Options"
 msgstr "Alternativ"
@@ -856,12 +859,12 @@ msgstr "Frågetyp"
 msgid "Questions"
 msgstr "Frågor"
 
-#: lib/tiki_web/live/admin_live/forms/form.ex:78
+#: lib/tiki_web/live/admin_live/forms/form.ex:80
 #, elixir-autogen, elixir-format
 msgid "Required"
 msgstr "Obligatorisk"
 
-#: lib/tiki_web/live/admin_live/forms/form.ex:107
+#: lib/tiki_web/live/admin_live/forms/form.ex:109
 #, elixir-autogen, elixir-format
 msgid "Save form"
 msgstr "Spara formulär"
@@ -974,8 +977,8 @@ msgstr "Ordersumma"
 msgid "Payment information"
 msgstr "Betalningsinformation"
 
-#: lib/tiki_web/live/order_live/ticket_form.ex:82
-#: lib/tiki_web/live/order_live/ticket_form.ex:96
+#: lib/tiki_web/live/order_live/ticket_form.ex:92
+#: lib/tiki_web/live/order_live/ticket_form.ex:106
 #, elixir-autogen, elixir-format
 msgid "Saved response"
 msgstr "Sparat svar"
@@ -1209,7 +1212,7 @@ msgstr "Utvecklat av Adrian Salamon."
 msgid "Buy"
 msgstr "Köp"
 
-#: lib/tiki_web/components/core_components.ex:369
+#: lib/tiki_web/components/core_components.ex:365
 #, elixir-autogen, elixir-format
 msgid "Accepts"
 msgstr "Tillåter"
@@ -1267,7 +1270,7 @@ msgstr "Logga"
 msgid "Team updated successfully"
 msgstr "Team uppdaterades"
 
-#: lib/tiki_web/components/core_components.ex:362
+#: lib/tiki_web/components/core_components.ex:358
 #, elixir-autogen, elixir-format
 msgid "Upload a file"
 msgstr "Ladda upp en fil"
@@ -1280,8 +1283,8 @@ msgstr "Ladda upp en fil"
 #: lib/tiki_web/live/admin_live/event/index.ex:19
 #: lib/tiki_web/live/admin_live/event/show.ex:25
 #: lib/tiki_web/live/admin_live/event/status.ex:25
-#: lib/tiki_web/live/admin_live/forms/form.ex:127
-#: lib/tiki_web/live/admin_live/forms/form.ex:148
+#: lib/tiki_web/live/admin_live/forms/form.ex:129
+#: lib/tiki_web/live/admin_live/forms/form.ex:150
 #: lib/tiki_web/live/admin_live/forms/index.ex:61
 #: lib/tiki_web/live/admin_live/team/form.ex:62
 #: lib/tiki_web/live/admin_live/team/form.ex:80
@@ -1301,17 +1304,17 @@ msgstr "Ladda upp en fil"
 msgid "You are not authorized to do that."
 msgstr "Du är inte behörig."
 
-#: lib/tiki_web/components/core_components.ex:365
+#: lib/tiki_web/components/core_components.ex:361
 #, elixir-autogen, elixir-format
 msgid "or drag and drop"
 msgstr "eller dra en fil hit"
 
-#: lib/tiki_web/components/core_components.ex:369
+#: lib/tiki_web/components/core_components.ex:365
 #, elixir-autogen, elixir-format
 msgid "up to"
 msgstr "upp till"
 
-#: lib/tiki_web/components/core_components.ex:381
+#: lib/tiki_web/components/core_components.ex:377
 #, elixir-autogen, elixir-format
 msgid "uploaded"
 msgstr "uppladdad"
@@ -1419,3 +1422,8 @@ msgstr "Biljett släpps vid"
 #, elixir-autogen, elixir-format
 msgid "In UTC. Leave blank to make immediately available"
 msgstr "I UTC. Lämna tomt för att göra tillgänglig direkt"
+
+#: lib/tiki_web/live/admin_live/forms/form.ex:37
+#, elixir-autogen, elixir-format
+msgid "Attendee Name"
+msgstr "Besökares namn"
