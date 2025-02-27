@@ -97,15 +97,7 @@ defmodule TikiWeb.Component.Breadcrumb do
 
   def breadcrumb_link(assigns) do
     ~H"""
-    <.link
-      class={
-        classes([
-          "transition-colors hover:text-foreground",
-          @class
-        ])
-      }
-      {@rest}
-    >
+    <.link class={classes(["transition-colors hover:text-foreground", @class])} {@rest}>
       {render_slot(@inner_block)}
     </.link>
     """
