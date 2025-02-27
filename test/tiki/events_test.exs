@@ -15,6 +15,13 @@ defmodule Tiki.EventsTest do
       assert Events.list_events() == [event]
     end
 
+    test "list_public_events/0 returns all public events" do
+      public_event = event_fixture(%{is_hidden: false})
+      private_event = event_fixture(%{is_hidden: true})
+
+      assert Events.list_public_events() == [public_event]
+    end
+
     test "list_team_events/1 returns all events for a team" do
       team = Tiki.TeamsFixtures.team_fixture()
       event = event_fixture(%{team_id: team.id})

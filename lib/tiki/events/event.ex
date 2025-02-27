@@ -9,6 +9,7 @@ defmodule Tiki.Events.Event do
     field :name, :string
     field :location, :string
     field :image_url, :string
+    field :is_hidden, :boolean
 
     # maximum number of tickets that can be purchased in one order
     field :max_order_size, :integer
@@ -32,6 +33,7 @@ defmodule Tiki.Events.Event do
       :event_date,
       :location,
       :image_url,
+      :is_hidden,
       :team_id,
       :default_form_id,
       :max_order_size
