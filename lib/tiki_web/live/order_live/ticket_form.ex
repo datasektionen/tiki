@@ -22,7 +22,17 @@ defmodule TikiWeb.OrderLive.TicketForm do
       <.form for={@response_form} phx-submit="save" phx-change="validate" class="w-full">
         <div class="border-border mt-4 grid grid-cols-1 gap-6 border-b pb-8 sm:grid-cols-6">
           <div :for={question <- @form.questions} class={styling_for_question(question)}>
-            <.form_input question={question} field={@response_form[String.to_atom("#{question.id}")]} />
+            <.form_input
+              question={question}
+              field={@response_form[String.to_atom("#{question.id}")]}
+              default={
+                case question.type do
+                  :email -> @ticket.order.user.email
+                  :attendee_name -> @ticket.order.user.full_name
+                  _ -> nil
+                end
+              }
+            />
             <div :if={question.description} class="text-muted-foreground mt-2 text-sm">
               {question.description}
             </div>
@@ -97,7 +107,7 @@ defmodule TikiWeb.OrderLive.TicketForm do
          |> push_navigate(to: ~p"/orders/#{socket.assigns.ticket.order_id}")}
 
       {:error, changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply, assign_form(socket, changeset) |> put_flash(:error, "Could not submit form")}
     end
   end
 
@@ -122,4 +132,6 @@ defmodule TikiWeb.OrderLive.TicketForm do
   defp styling_for_question(%{type: :select}), do: "sm:col-span-3"
   defp styling_for_question(%{type: :text_area}), do: "sm:col-span-6"
   defp styling_for_question(%{type: :text}), do: "sm:col-span-3"
+  defp styling_for_question(%{type: :email}), do: "sm:col-span-3"
+  defp styling_for_question(%{type: :attendee_name}), do: "sm:col-span-3"
 end
