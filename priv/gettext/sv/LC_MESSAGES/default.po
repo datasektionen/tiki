@@ -1423,7 +1423,7 @@ msgstr "I UTC. Lämna tomt för att göra tillgänglig direkt"
 #: lib/tiki_web/live/admin_live/event/form_component.ex:28
 #, elixir-autogen, elixir-format
 msgid "Hidden event"
-msgstr "Dold evenemang"
+msgstr "Dolt evenemang"
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:29
 #, elixir-autogen, elixir-format

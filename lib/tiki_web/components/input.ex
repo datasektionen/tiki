@@ -69,7 +69,7 @@ defmodule TikiWeb.Component.Input do
 
     ~H"""
     <div class={@rest[:class]}>
-      <label class="font-medium flex items-center gap-4 text-sm">
+      <label class="flex items-center gap-4 text-sm">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
