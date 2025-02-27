@@ -50,8 +50,6 @@ const init = (form) => {
           }
 
           setLoading(false);
-        } else {
-          callback(result.paymentIntent);
         }
       });
   });
