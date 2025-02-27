@@ -22,7 +22,12 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
 
-        <.input field={@form[:is_hidden]} type="checkbox" label={gettext("Hidden event")} />
+        <.input
+          field={@form[:is_hidden]}
+          type="checkbox"
+          label={gettext("Hidden event")}
+          description={gettext("The event will only be accessable using a direct link")}
+        />
 
         <.input
           field={@form[:default_form_id]}

@@ -136,7 +136,7 @@ msgid "Date"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:130
-#: lib/tiki_web/live/admin_live/event/form_component.ex:40
+#: lib/tiki_web/live/admin_live/event/form_component.ex:48
 #: lib/tiki_web/live/admin_live/event/index.ex:97
 #: lib/tiki_web/live/event_live/index.ex:36
 #, elixir-autogen, elixir-format
@@ -219,7 +219,7 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:36
+#: lib/tiki_web/live/admin_live/event/form_component.ex:44
 #, elixir-autogen, elixir-format
 msgid "Event date"
 msgstr ""
@@ -231,7 +231,7 @@ msgstr ""
 msgid "Edit event"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:45
+#: lib/tiki_web/live/admin_live/event/form_component.ex:54
 #, elixir-autogen, elixir-format
 msgid "Save event"
 msgstr ""
@@ -258,7 +258,7 @@ msgstr ""
 
 #: lib/tiki_web/live/admin_live/event/edit.ex:38
 #: lib/tiki_web/live/admin_live/event/edit.ex:118
-#: lib/tiki_web/live/admin_live/event/form_component.ex:51
+#: lib/tiki_web/live/admin_live/event/form_component.ex:60
 #, elixir-autogen, elixir-format
 msgid "Delete event"
 msgstr ""
@@ -273,17 +273,17 @@ msgstr ""
 msgid "Deleted event"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:132
+#: lib/tiki_web/live/admin_live/event/form_component.ex:141
 #, elixir-autogen, elixir-format
 msgid "Event created successfully"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:117
+#: lib/tiki_web/live/admin_live/event/form_component.ex:126
 #, elixir-autogen, elixir-format
 msgid "Event updated successfully"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:45
+#: lib/tiki_web/live/admin_live/event/form_component.ex:54
 #: lib/tiki_web/live/admin_live/forms/form.ex:106
 #: lib/tiki_web/live/admin_live/team/form.ex:22
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
@@ -552,7 +552,7 @@ msgstr ""
 msgid "New Ticket type"
 msgstr ""
 
-#: lib/tiki_web/components/dialog.ex:99
+#: lib/tiki_web/components/dialog.ex:97
 #: lib/tiki_web/live/admin_live/forms/index.ex:32
 #: lib/tiki_web/live/admin_live/team/index.ex:30
 #: lib/tiki_web/live/admin_live/team/members.ex:71
@@ -1097,7 +1097,7 @@ msgstr ""
 msgid "Create batch"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:27
+#: lib/tiki_web/live/admin_live/event/form_component.ex:35
 #, elixir-autogen, elixir-format
 msgid "Default signup form"
 msgstr ""
@@ -1132,7 +1132,7 @@ msgstr ""
 msgid "Register for an account"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:29
+#: lib/tiki_web/live/admin_live/event/form_component.ex:37
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:56
 #, elixir-autogen, elixir-format
 msgid "Select a form"
@@ -1209,7 +1209,7 @@ msgstr ""
 msgid "Buy"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:369
+#: lib/tiki_web/components/core_components.ex:365
 #, elixir-autogen, elixir-format
 msgid "Accepts"
 msgstr ""
@@ -1221,7 +1221,7 @@ msgstr ""
 msgid "Edit team"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:41
+#: lib/tiki_web/live/admin_live/event/form_component.ex:50
 #, elixir-autogen, elixir-format
 msgid "Event cover image"
 msgstr ""
@@ -1267,7 +1267,7 @@ msgstr ""
 msgid "Team updated successfully"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:362
+#: lib/tiki_web/components/core_components.ex:358
 #, elixir-autogen, elixir-format
 msgid "Upload a file"
 msgstr ""
@@ -1292,7 +1292,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:61
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:82
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:95
-#: lib/tiki_web/live/admin_live/team/show.ex:65
+#: lib/tiki_web/live/admin_live/team/show.ex:68
 #: lib/tiki_web/live/admin_live/ticket/index.ex:109
 #: lib/tiki_web/live/admin_live/ticket/index.ex:140
 #: lib/tiki_web/live/admin_live/ticket/index.ex:160
@@ -1301,17 +1301,17 @@ msgstr ""
 msgid "You are not authorized to do that."
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:365
+#: lib/tiki_web/components/core_components.ex:361
 #, elixir-autogen, elixir-format
 msgid "or drag and drop"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:369
+#: lib/tiki_web/components/core_components.ex:365
 #, elixir-autogen, elixir-format
 msgid "up to"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:381
+#: lib/tiki_web/components/core_components.ex:377
 #, elixir-autogen, elixir-format
 msgid "uploaded"
 msgstr ""
@@ -1372,7 +1372,7 @@ msgstr ""
 msgid "Max number of tickets per order"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:31
+#: lib/tiki_web/live/admin_live/event/form_component.ex:39
 #, elixir-autogen, elixir-format
 msgid "Max tickets per order"
 msgstr ""
@@ -1387,7 +1387,7 @@ msgstr ""
 msgid "Please contact the event organizer if you have any questions."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:37
+#: lib/tiki_web/live/admin_live/event/form_component.ex:45
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:32
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:38
 #, elixir-autogen, elixir-format
@@ -1418,4 +1418,14 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:72
 #, elixir-autogen, elixir-format
 msgid "In UTC. Leave blank to make immediately available"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:28
+#, elixir-autogen, elixir-format
+msgid "Hidden event"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:29
+#, elixir-autogen, elixir-format
+msgid "The event will only be accessable using a direct link"
 msgstr ""
