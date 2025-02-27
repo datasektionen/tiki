@@ -187,4 +187,9 @@ defmodule TikiWeb.Router do
     pipe_through :api
     post "/callback", SwishController, :callback
   end
+
+  scope "/api", TikiWeb do
+    pipe_through :api
+    get "/qr/:code", QrController, :create
+  end
 end

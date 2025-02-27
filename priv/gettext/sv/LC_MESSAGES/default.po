@@ -552,7 +552,7 @@ msgstr "Ny batch"
 msgid "New Ticket type"
 msgstr "Ny biljettyp"
 
-#: lib/tiki_web/components/dialog.ex:99
+#: lib/tiki_web/components/dialog.ex:97
 #: lib/tiki_web/live/admin_live/forms/index.ex:32
 #: lib/tiki_web/live/admin_live/team/index.ex:30
 #: lib/tiki_web/live/admin_live/team/members.ex:71
@@ -697,6 +697,7 @@ msgstr "Köp biljetter till %{event}. Du har %{count} minuter på dig att slutf�
 msgid "must have the @ sign and no spaces"
 msgstr "Måste innehålla @-tecken och inga mellanslag"
 
+#: lib/tiki/orders/order_notifier.ex:139
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:72
 #, elixir-autogen, elixir-format
 msgid "Total"
@@ -1209,7 +1210,7 @@ msgstr "Utvecklat av Adrian Salamon."
 msgid "Buy"
 msgstr "Köp"
 
-#: lib/tiki_web/components/core_components.ex:369
+#: lib/tiki_web/components/core_components.ex:365
 #, elixir-autogen, elixir-format
 msgid "Accepts"
 msgstr "Tillåter"
@@ -1267,7 +1268,7 @@ msgstr "Logga"
 msgid "Team updated successfully"
 msgstr "Team uppdaterades"
 
-#: lib/tiki_web/components/core_components.ex:362
+#: lib/tiki_web/components/core_components.ex:358
 #, elixir-autogen, elixir-format
 msgid "Upload a file"
 msgstr "Ladda upp en fil"
@@ -1301,17 +1302,17 @@ msgstr "Ladda upp en fil"
 msgid "You are not authorized to do that."
 msgstr "Du är inte behörig."
 
-#: lib/tiki_web/components/core_components.ex:365
+#: lib/tiki_web/components/core_components.ex:361
 #, elixir-autogen, elixir-format
 msgid "or drag and drop"
 msgstr "eller dra en fil hit"
 
-#: lib/tiki_web/components/core_components.ex:369
+#: lib/tiki_web/components/core_components.ex:365
 #, elixir-autogen, elixir-format
 msgid "up to"
 msgstr "upp till"
 
-#: lib/tiki_web/components/core_components.ex:381
+#: lib/tiki_web/components/core_components.ex:377
 #, elixir-autogen, elixir-format
 msgid "uploaded"
 msgstr "uppladdad"

@@ -198,7 +198,7 @@ defmodule Tiki.Checkouts do
           {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
         )
 
-        Orders.broadcast_order(order.id, :paid, order)
+        Orders.confirm_order(order)
 
         :ok
 
@@ -267,7 +267,7 @@ defmodule Tiki.Checkouts do
           {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
         )
 
-        Orders.broadcast_order(order.id, :paid, order)
+        Orders.confirm_order(order)
 
         :ok
 
