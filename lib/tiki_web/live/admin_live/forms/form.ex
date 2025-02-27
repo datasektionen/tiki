@@ -32,7 +32,9 @@ defmodule TikiWeb.AdminLive.Forms.Form do
                 {gettext("Text"), :text},
                 {gettext("Long text"), :text_area},
                 {gettext("Select"), :select},
-                {gettext("Multiple select"), :multi_select}
+                {gettext("Multiple select"), :multi_select},
+                {gettext("Email"), :email},
+                {gettext("Attendee Name"), :attendee_name}
               ]}
             />
             <.input
@@ -151,7 +153,13 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   end
 
   defp apply_action(socket, :new, _) do
-    form = %Forms.Form{}
+    form = %Forms.Form{
+      questions: [
+        %Tiki.Forms.Question{name: gettext("Name"), required: true, type: :attendee_name},
+        %Tiki.Forms.Question{name: gettext("Email"), required: true, type: :email}
+      ]
+    }
+
     changeset = Forms.change_form(form)
     %{event: event} = socket.assigns
 

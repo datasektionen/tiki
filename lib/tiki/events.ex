@@ -22,6 +22,13 @@ defmodule Tiki.Events do
   end
 
   @doc """
+  Returns all publically visible events.
+  """
+  def list_public_events do
+    Repo.all(from e in Event, where: e.is_hidden != true)
+  end
+
+  @doc """
   Returns the list of events, filtered by team.
 
   ## Examples
