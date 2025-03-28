@@ -50,7 +50,7 @@ defmodule TikiWeb.OrderLive.Ticket do
             <dt class="border-border text-muted-foreground col-start-1 border-t pt-3 first:border-none sm:py-3">
               {qr.question.name}
             </dt>
-            <dd class="text-foreground pt-1 pb-3 sm:border-border sm:border-t sm:py-3 sm:[&amp;:nth-child(2)]:border-none">
+            <dd class="text-foreground pt-1 pb-3 sm:border-border sm:[&amp;:nth-child(2)]:border-none sm:border-t sm:py-3">
               {qr}
             </dd>
           <% end %>

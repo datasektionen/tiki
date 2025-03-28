@@ -700,6 +700,7 @@ msgstr ""
 msgid "must have the @ sign and no spaces"
 msgstr ""
 
+#: lib/tiki/orders/order_notifier.ex:139
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:72
 #, elixir-autogen, elixir-format
 msgid "Total"

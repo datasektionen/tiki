@@ -700,6 +700,7 @@ msgstr "Köp biljetter till %{event}. Du har %{count} minuter på dig att slutf�
 msgid "must have the @ sign and no spaces"
 msgstr "Måste innehålla @-tecken och inga mellanslag"
 
+#: lib/tiki/orders/order_notifier.ex:139
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:72
 #, elixir-autogen, elixir-format
 msgid "Total"

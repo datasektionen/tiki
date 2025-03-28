@@ -9,7 +9,15 @@ defmodule TikiWeb.LiveHelpers do
     assign(socket, breadcrumbs: crumbs)
   end
 
-  def time_to_string(time, opts \\ []) do
+  def time_to_string(time, opts \\ [])
+  def time_to_string(nil, _opts), do: ""
+
+  def time_to_string(%NaiveDateTime{} = time, opts) do
+    DateTime.from_naive!(time, "Etc/UTC")
+    |> time_to_string(opts)
+  end
+
+  def time_to_string(time, opts) do
     format = Keyword.get(opts, :format, :yMMMEd)
     timezone = Keyword.get(opts, :timezone, "Europe/Stockholm")
 

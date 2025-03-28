@@ -114,7 +114,7 @@ defmodule TikiWeb.Component.Table do
     <th
       class={
         classes([
-          "text-muted-foreground h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0",
+          "text-muted-foreground [&:has([role=checkbox])]:pr-0 h-12 px-4 text-left align-middle font-medium",
           @class
         ])
       }
@@ -143,7 +143,7 @@ defmodule TikiWeb.Component.Table do
 
   def table_cell(assigns) do
     ~H"""
-    <td class={classes(["p-4 align-middle [&:has([role=checkbox])]:pr-0", @class])} {@rest}>
+    <td class={classes(["[&:has([role=checkbox])]:pr-0 p-4 align-middle", @class])} {@rest}>
       {render_slot(@inner_block)}
     </td>
     """

@@ -25,8 +25,6 @@ defmodule TikiWeb.OrderLive.Show do
       <p class="text-muted-foreground text-sm">
         <!-- TODO: Proper time  -->
         {gettext("Order placed")}
-        
-
 
         <time datetime={@order.updated_at}>
           {Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short)}

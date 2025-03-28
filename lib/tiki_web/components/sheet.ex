@@ -116,7 +116,7 @@ defmodule TikiWeb.Component.Sheet do
         role="sheet"
         class={
           classes([
-            "sheet-content-wrap hidden fixed z-50 bg-background shadow-lg transition",
+            "sheet-content-wrap bg-background fixed z-50 hidden shadow-lg transition",
             @variant_class,
             @class
           ])

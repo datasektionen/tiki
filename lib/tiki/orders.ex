@@ -4,6 +4,7 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
+  alias Tiki.Orders.OrderNotifier
   alias Ecto.Multi
   alias Phoenix.PubSub
   alias Tiki.Orders.Order
@@ -362,6 +363,13 @@ defmodule Tiki.Orders do
     |> preload([o, ..., e], event: e)
     |> order_by([o], desc: o.inserted_at)
     |> Repo.all()
+  end
+
+  def confirm_order(order) do
+    # Send email confirmaiton
+    get_order!(order.id) |> OrderNotifier.deliver()
+
+    broadcast_order(order.id, :paid, order)
   end
 
   def broadcast_order(order_id, :created, order) do

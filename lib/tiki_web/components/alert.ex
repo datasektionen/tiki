@@ -25,7 +25,7 @@ defmodule TikiWeb.Component.Alert do
     <div
       class={
         classes([
-          "relative w-full rounded-lg border p-4 [&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:top-4 [&>span]:left-4 [&>span~*]:pl-7",
+          "[&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:top-4 [&>span]:left-4 [&>span~*]:pl-7 relative w-full rounded-lg border p-4",
           @variant_class,
           @class
         ])
@@ -61,7 +61,7 @@ defmodule TikiWeb.Component.Alert do
 
   def alert_description(assigns) do
     ~H"""
-    <div class={classes(["text-sm [&_p]:leading-relaxed", @class])} {@rest}>
+    <div class={classes(["[&_p]:leading-relaxed text-sm", @class])} {@rest}>
       {render_slot(@inner_block)}
     </div>
     """
