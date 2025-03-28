@@ -11,7 +11,7 @@ defmodule Tiki.Mail.SpamAdapter do
       # config/config.exs
       config :sample, Sample.Mailer,
         adapter: Tiki.Mail.SpamAdapter,
-        access_token: {:system, "SPAM_API_TOKEN"}
+        api_key: {:system, "SPAM_API_TOKEN"}
 
       # lib/sample/mailer.ex
       defmodule Sample.Mailer do

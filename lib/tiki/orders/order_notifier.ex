@@ -7,15 +7,12 @@ defmodule Tiki.Orders.OrderNotifier do
   use Gettext, backend: TikiWeb.Gettext
 
   def deliver(order) do
-    case render(%{order: order})
-         |> Phoenix.HTML.Safe.to_iodata()
-         |> to_string()
-         |> Mjml.to_html() do
+    case render(%{order: order}) |> Tiki.Mail.Mjml.to_html() do
       {:ok, html} ->
         email =
           new()
           |> to(order.user.email)
-          |> from({"Tiki", "noreply@tiki.se"})
+          |> from({"Tiki", "noreply-tiki@datasektionen.se"})
           |> subject("Order Confirmation")
           |> html_body(html)
           |> Tiki.Mailer.to_map()
