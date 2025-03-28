@@ -173,7 +173,7 @@ defmodule Tiki.Orders.OrderNotifier do
             </mj-column>
 
             <mj-column width="40%">
-              <mj-image src={"http://localhost:4000/api/qr/#{ticket.id}"}></mj-image>
+              <mj-image src={"#{TikiWeb.Endpoint.url()}/api/qr/#{ticket.id}"}></mj-image>
             </mj-column>
           </mj-section>
         <% end %>

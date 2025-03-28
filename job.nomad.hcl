@@ -43,6 +43,7 @@ SWISH_CALLBACK_URL=https://beta-tiki.datasektionen.se/swish/callback
 SECRET_KEY_BASE={{ .secret_key_base }}
 PHX_HOST=beta-tiki.datasektionen.se
 PORT={{ env "NOMAD_PORT_tikihttp" }}
+SPAM_API_KEY={{ .spam_api_key }}
 STRIPE_API_KEY={{ .stripe_api_key }}
 STRIPE_WEBHOOK_SECRET={{ .stripe_webhook_secret }}
 OIDC_ISSUER_URL=https://sso.datasektionen.se/op
