@@ -187,6 +187,31 @@ defmodule Tiki.Orders do
   end
 
   @doc """
+  Toggles check in on a ticket in a ticket. Returns the ticket. Sets the checked in time to the current time.
+  """
+  def toggle_check_in(ticket_id) do
+    transaction =
+      Repo.transaction(fn repo ->
+        ticket = repo.get!(Ticket, ticket_id)
+
+        case ticket.checked_in_at do
+          nil -> repo.update!(Ticket.changeset(ticket, %{checked_in_at: DateTime.utc_now()}))
+          _ -> repo.update!(Ticket.changeset(ticket, %{checked_in_at: nil}))
+        end
+        |> Repo.preload([[order: [:user]], :ticket_type])
+      end)
+
+    case transaction do
+      {:ok, ticket} ->
+        broadcast_ticket(ticket.order.event_id, ticket)
+        {:ok, ticket}
+
+      err ->
+        err
+    end
+  end
+
+  @doc """
   Reserves tickets for an event. Returns the order.
 
   ## Examples
@@ -388,8 +413,16 @@ defmodule Tiki.Orders do
     PubSub.broadcast(Tiki.PubSub, "event:#{event_id}", message)
   end
 
+  def broadcast_ticket(event_id, ticket) do
+    PubSub.broadcast(Tiki.PubSub, "event:#{event_id}:tickets", {:ticket_updated, ticket})
+  end
+
   def subscribe(event_id, :purchases) do
     PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:purchases")
+  end
+
+  def subscribe(event_id, :tickets) do
+    PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:tickets")
   end
 
   def subscribe_to_order(order_id) do

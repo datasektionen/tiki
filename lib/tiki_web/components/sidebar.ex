@@ -94,6 +94,12 @@ defmodule TikiWeb.Component.Sidebar do
         to={~p"/admin/events/#{@event}/status"}
         active={@active_tab == :live_status}
       />
+
+      <:item
+        text={gettext("Check-in")}
+        to={~p"/admin/events/#{@event}/check-in"}
+        active={@active_tab == :check_in}
+      />
     </.sidebar_group>
 
     <.sidebar_group>

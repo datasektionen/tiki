@@ -5,6 +5,7 @@ defmodule Tiki.Orders.Ticket do
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "tickets" do
     field :price, :integer
+    field :checked_in_at, :naive_datetime
 
     has_one :form_response, Tiki.Forms.Response
 
@@ -17,7 +18,7 @@ defmodule Tiki.Orders.Ticket do
   @doc false
   def changeset(ticket, attrs) do
     ticket
-    |> cast(attrs, [:ticket_type_id, :order_id, :price])
+    |> cast(attrs, [:ticket_type_id, :order_id, :price, :checked_in_at])
     |> validate_required([:ticket_type_id, :order_id, :price])
   end
 end

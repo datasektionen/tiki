@@ -24,10 +24,12 @@ import topbar from "../vendor/topbar";
 import { InitCheckout } from "./checkout";
 import Sortable from "sortablejs";
 import { SearchCombobox } from "./searchCombobox";
+import Scanner from "./scanner";
 
 let Hooks = {
   InitCheckout: InitCheckout,
   SearchCombobox: SearchCombobox,
+  Scanner: Scanner,
 };
 
 let Uploaders = {};

@@ -678,7 +678,7 @@ msgstr "Biljetttypen uppdaterades"
 #: lib/tiki_web/live/order_live/ticket.ex:34
 #, elixir-autogen, elixir-format
 msgid "Purchased"
-msgstr "Köpta"
+msgstr "Köpt"
 
 #: lib/tiki_web/components/sidebar.ex:130
 #, elixir-autogen, elixir-format
