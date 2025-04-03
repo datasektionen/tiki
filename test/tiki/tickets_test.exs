@@ -53,6 +53,9 @@ defmodule Tiki.TicketsTest do
                Tickets.update_ticket_batch(ticket_batch, @invalid_attrs)
 
       assert ticket_batch == Tickets.get_ticket_batch!(ticket_batch.id)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Tickets.update_ticket_batch(ticket_batch, %{:parent_batch_id => ticket_batch.id})
     end
 
     test "delete_ticket_batch/1 deletes the ticket_batch" do
@@ -87,12 +90,15 @@ defmodule Tiki.TicketsTest do
     end
 
     test "get_ticket_type!/1 returns the ticket_types with given id" do
-      ticket_types = ticket_type_fixture()
+      ticket_types = ticket_type_fixture() |> Repo.preload(:ticket_batch)
       assert Tickets.get_ticket_type!(ticket_types.id) == ticket_types
     end
 
     test "create_ticket_type/1 with valid data creates a ticket_types" do
       batch = ticket_batch_fixture()
+      form = Tiki.FormsFixtures.form_fixture()
+
+      Tiki.Orders.subscribe(batch.event_id)
 
       valid_attrs = %{
         description: "some description",
@@ -101,7 +107,8 @@ defmodule Tiki.TicketsTest do
         price: 42,
         purchasable: true,
         release_time: ~U[2023-03-25 18:01:00Z],
-        ticket_batch_id: batch.id
+        ticket_batch_id: batch.id,
+        form_id: form.id
       }
 
       assert {:ok, %TicketType{} = ticket_types} = Tickets.create_ticket_type(valid_attrs)
@@ -111,6 +118,8 @@ defmodule Tiki.TicketsTest do
       assert ticket_types.price == 42
       assert ticket_types.purchasable == true
       assert ticket_types.release_time == ~U[2023-03-25 18:01:00Z]
+
+      assert_received {:tickets_updated, _ticket_types}
     end
 
     test "create_ticket_type/1 with invalid data returns error changeset" do
@@ -118,7 +127,9 @@ defmodule Tiki.TicketsTest do
     end
 
     test "update_ticket_type/2 with valid data updates the ticket_types" do
-      ticket_types = ticket_type_fixture()
+      batch = ticket_batch_fixture()
+      ticket_types = ticket_type_fixture(%{ticket_batch_id: batch.id})
+      Tiki.Orders.subscribe(batch.event_id)
 
       update_attrs = %{
         description: "some updated description",
@@ -138,10 +149,12 @@ defmodule Tiki.TicketsTest do
       assert ticket_types.price == 43
       assert ticket_types.purchasable == false
       assert ticket_types.release_time == ~U[2023-03-26 18:01:00Z]
+
+      assert_received {:tickets_updated, _ticket_types}
     end
 
     test "update_ticket_type/2 with invalid data returns error changeset" do
-      ticket_types = ticket_type_fixture()
+      ticket_types = ticket_type_fixture() |> Repo.preload(:ticket_batch)
 
       assert {:error, %Ecto.Changeset{}} =
                Tickets.update_ticket_type(ticket_types, @invalid_attrs)
@@ -150,9 +163,13 @@ defmodule Tiki.TicketsTest do
     end
 
     test "delete_ticket_type/1 deletes the ticket_types" do
-      ticket_types = ticket_type_fixture()
+      batch = ticket_batch_fixture()
+      ticket_types = ticket_type_fixture(%{ticket_batch_id: batch.id})
+      Tiki.Orders.subscribe(batch.event_id)
+
       assert {:ok, %TicketType{}} = Tickets.delete_ticket_type(ticket_types)
       assert_raise Ecto.NoResultsError, fn -> Tickets.get_ticket_type!(ticket_types.id) end
+      assert_received {:tickets_updated, _ticket_types}
     end
 
     test "change_ticket_type/1 returns a ticket_types changeset" do

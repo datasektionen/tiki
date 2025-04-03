@@ -7,8 +7,17 @@
 # General application configuration
 import Config
 
+config :elixir, :time_zone_database, Tz.TimeZoneDatabase
+
 config :tiki,
-  ecto_repos: [Tiki.Repo]
+  ecto_repos: [Tiki.Repo],
+  stripe_module: Stripe,
+  swish_module: Swish
+
+config :tiki, Tiki.Repo,
+  migration_timestamps: [
+    type: :naive_datetime_usec
+  ]
 
 # Configures the endpoint
 config :tiki, TikiWeb.Endpoint,
@@ -59,8 +68,6 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-config :salad_ui, :error_translator_function, {TikiWeb.CoreComponents, :translate_error}
-
 # SaladUI use tails to properly merge Tailwind CSS classes
 config :tails,
   color_classes: [
@@ -89,6 +96,11 @@ config :tails,
     "chart-4",
     "chart-5"
   ]
+
+config :tiki, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10, mail: 10],
+  repo: Tiki.Repo
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

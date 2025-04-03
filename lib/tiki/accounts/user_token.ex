@@ -1,5 +1,5 @@
 defmodule Tiki.Accounts.UserToken do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Query
   alias Tiki.Accounts.UserToken
 
@@ -58,8 +58,10 @@ defmodule Tiki.Accounts.UserToken do
     query =
       from token in token_and_context_query(token, "session"),
         join: user in assoc(token, :user),
+        left_join: m in assoc(user, :memberships),
+        left_join: t in assoc(m, :team),
         where: token.inserted_at > ago(@session_validity_in_days, "day"),
-        select: user
+        preload: [user: {user, memberships: {m, team: t}}]
 
     {:ok, query}
   end

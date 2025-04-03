@@ -22,6 +22,13 @@ defmodule Tiki.Events do
   end
 
   @doc """
+  Returns all publically visible events.
+  """
+  def list_public_events do
+    Repo.all(from e in Event, where: e.is_hidden != true)
+  end
+
+  @doc """
   Returns the list of events, filtered by team.
 
   ## Examples
@@ -49,7 +56,11 @@ defmodule Tiki.Events do
 
   """
   def get_event!(id, opts \\ []) do
-    base_query = from e in Event, where: e.id == ^id
+    base_query =
+      from e in Event,
+        where: e.id == ^id,
+        join: t in assoc(e, :team),
+        preload: [team: t]
 
     base_query
     |> preload_ticket_types(Keyword.get(opts, :preload_ticket_types, false))
@@ -130,7 +141,16 @@ defmodule Tiki.Events do
     Event.changeset(event, attrs)
   end
 
-  def get_ticket_types(event_id) do
+  @doc """
+  Returns a list of all ticket types for an event.
+
+  ## Examples
+
+      iex> get_event_ticket_types(123)
+      [%TicketType{}, ...]
+
+  """
+  def get_event_ticket_types(event_id) do
     query =
       from e in Event,
         join: tb in assoc(e, :ticket_batches),

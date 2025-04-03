@@ -1,5 +1,5 @@
 defmodule Tiki.Events.Event do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
@@ -9,9 +9,13 @@ defmodule Tiki.Events.Event do
     field :name, :string
     field :location, :string
     field :image_url, :string
+    field :is_hidden, :boolean
+
+    # maximum number of tickets that can be purchased in one order
+    field :max_order_size, :integer
 
     has_many :forms, Tiki.Forms.Form
-    has_one :default_form, Tiki.Forms.Form
+    belongs_to :default_form, Tiki.Forms.Form
 
     has_many :ticket_batches, Tiki.Tickets.TicketBatch
 
@@ -23,7 +27,17 @@ defmodule Tiki.Events.Event do
   @doc false
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:name, :description, :event_date, :location, :image_url, :team_id])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :event_date,
+      :location,
+      :image_url,
+      :is_hidden,
+      :team_id,
+      :default_form_id,
+      :max_order_size
+    ])
     |> validate_required([:name, :description, :event_date, :team_id])
     |> foreign_key_constraint(:team_id)
   end

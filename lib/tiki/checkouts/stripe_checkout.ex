@@ -1,5 +1,5 @@
 defmodule Tiki.Checkouts.StripeCheckout do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "stripe_checkouts" do

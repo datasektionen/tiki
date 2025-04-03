@@ -93,19 +93,19 @@ defmodule TikiWeb.UserAuth do
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
 
-    user =
-      user_token &&
-        Accounts.get_user_by_session_token(user_token)
-        |> Teams.preload_teams()
+    user = user_token && Accounts.get_user_by_session_token(user_token)
 
-    conn =
-      if user do
-        put_session(conn, :locale, user.locale)
-      else
-        conn
+    team =
+      case get_session(conn, :current_team_id) do
+        nil -> nil
+        team_id -> Teams.get_team(team_id)
       end
 
+    conn = if user, do: put_session(conn, :locale, user.locale), else: conn
+
     assign(conn, :current_user, user)
+    |> assign(:current_team, team)
+    |> assign(:testthing, %{foo: "bar"})
   end
 
   @doc """
@@ -149,6 +149,8 @@ defmodule TikiWeb.UserAuth do
     * `:redirect_if_user_is_authenticated` - Authenticates the user from the session.
       Redirects to signed_in_path if there's a logged user.
 
+    * `{:authorize, action}` - Authorizes the current user for the given action via let_me.
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -180,7 +182,7 @@ defmodule TikiWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+        |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
 
       {:halt, socket}
     end
@@ -201,7 +203,7 @@ defmodule TikiWeb.UserAuth do
               :error,
               gettext("You need to be an admin to access this page.")
             )
-            |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+            |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
 
           {:halt, socket}
       end
@@ -209,15 +211,27 @@ defmodule TikiWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+        |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
 
       {:halt, socket}
     end
   end
 
+  def on_mount({:authorize, action}, _params, _session, socket) do
+    with %Accounts.User{} = user <- socket.assigns.current_user,
+         :ok <- Tiki.Policy.authorize(action, user) do
+      {:cont, socket}
+    else
+      _ ->
+        {:halt,
+         socket
+         |> Phoenix.LiveView.put_flash(:error, gettext("You are not authorized to do that."))
+         |> Phoenix.LiveView.redirect(to: ~p"/")}
+    end
+  end
+
   def on_mount(:ensure_team, _params, session, socket) do
-    socket =
-      mount_current_user(session, socket)
+    socket = mount_current_user(session, socket)
 
     if socket.assigns.current_team do
       {:cont, socket}
@@ -228,7 +242,7 @@ defmodule TikiWeb.UserAuth do
           :error,
           gettext("You must select a team to access this page.")
         )
-        |> Phoenix.LiveView.redirect(to: ~p"/admin/teams")
+        |> Phoenix.LiveView.redirect(to: ~p"/admin/select-team")
 
       {:halt, socket}
     end
@@ -247,9 +261,7 @@ defmodule TikiWeb.UserAuth do
   defp mount_current_user(session, socket) do
     Phoenix.Component.assign_new(socket, :current_user, fn ->
       if user_token = session["user_token"] do
-        user =
-          Accounts.get_user_by_session_token(user_token)
-          |> Teams.preload_teams()
+        user = Accounts.get_user_by_session_token(user_token)
 
         if user do
           locale = Map.get(user, :locale, "en")
@@ -262,7 +274,7 @@ defmodule TikiWeb.UserAuth do
     end)
     |> Phoenix.Component.assign_new(:current_team, fn ->
       with team_id when not is_nil(team_id) <- session["current_team_id"],
-           team <- Teams.get_team(team_id) do
+           %Tiki.Teams.Team{} = team <- Teams.get_team(team_id) do
         team
       end
     end)
@@ -294,21 +306,21 @@ defmodule TikiWeb.UserAuth do
       conn
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log_in")
+      |> redirect(to: ~p"/account/log_in")
       |> halt()
     end
   end
 
-  def require_admin_user(conn, opts) do
+  def require_manager(conn, opts) do
     conn = require_authenticated_user(conn, opts)
 
-    if Tiki.Policy.authorize?(:tiki_admin, conn.assigns.current_user) do
+    if Tiki.Policy.authorize?(:tiki_manage, conn.assigns.current_user) do
       conn
     else
       conn
       |> put_flash(:error, "You need to be an admin to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log_in")
+      |> redirect(to: ~p"/account/log_in")
       |> halt()
     end
   end

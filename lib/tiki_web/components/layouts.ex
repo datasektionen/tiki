@@ -3,6 +3,8 @@ defmodule TikiWeb.Layouts do
 
   import TikiWeb.Component.Sidebar
   import TikiWeb.Component.Sheet
+  import TikiWeb.Component.DropdownMenu
+  import TikiWeb.Component.Menu
 
   embed_templates "layouts/*"
 end

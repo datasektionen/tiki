@@ -24,7 +24,7 @@ defmodule TikiWeb.Component.Label do
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </label>
     """
   end

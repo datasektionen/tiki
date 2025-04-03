@@ -1,12 +1,15 @@
 defmodule Tiki.Forms.Question do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "form_questions" do
     field :description, :string
     field :name, :string
     field :required, :boolean, default: false
-    field :type, Ecto.Enum, values: [:text, :text_area, :select, :multi_select]
+
+    field :type, Ecto.Enum,
+      values: [:text, :text_area, :select, :multi_select, :email, :attendee_name]
+
     field :options, {:array, :string}
 
     belongs_to :form, Tiki.Forms.Form

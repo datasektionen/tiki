@@ -4,13 +4,15 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
-  alias Tiki.Tickets.TicketType
+  alias Tiki.Orders.OrderNotifier
   alias Ecto.Multi
   alias Phoenix.PubSub
   alias Tiki.Orders.Order
   alias Tiki.Orders.Ticket
   alias Tiki.Tickets
   alias Tiki.Repo
+
+  alias Tiki.OrderHandler
 
   @doc """
   Returns the list of order.
@@ -185,135 +187,36 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  Deletes a ticket.
-
-  ## Examples
-
-      iex> delete_ticket(ticket)
-      {:ok, %Ticket{}}
-
-      iex> delete_ticket(ticket)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_ticket(%Ticket{} = ticket) do
-    Repo.delete(ticket)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking ticket changes.
-
-  ## Examples
-
-      iex> change_ticket(ticket)
-      %Ecto.Changeset{data: %Ticket{}}
-
-  """
-  def change_ticket(%Ticket{} = ticket, attrs \\ %{}) do
-    Ticket.changeset(ticket, attrs)
-  end
-
-  @doc """
   Reserves tickets for an event. Returns the order.
 
   ## Examples
-      iex> reserve_tickets(123, [12, 1, ...], 456)
+      iex> reserve_tickets(123, %{12 => 2, 1 => 1, ...}, 456)
       {:ok, %Order{}}
 
-      iex> reserve_tickets(232, [], 456)
-      {:error, "Du måste välja minst en biljett"}
+      iex> reserve_tickets(232, %{12 => 0}, 456)
+      {:error, "order must contain at least one ticket"}
   """
-  def reserve_tickets(event_id, ticket_types, _user_id \\ nil) do
-    result =
-      Multi.new()
-      |> Multi.run(:positive_tickets, fn _repo, _ ->
-        case Map.values(ticket_types) |> Enum.sum() do
-          0 -> {:error, "order must contain at least one ticket"}
-          _ -> {:ok, :ok}
-        end
-      end)
-      |> Multi.run(:prices, fn repo, _ ->
-        tt_ids = Enum.map(ticket_types, fn {tt, _} -> tt end)
+  def reserve_tickets(event_id, ticket_types) do
+    with {:ok, order, ticket_types} <- OrderHandler.Worker.reserve_tickets(event_id, ticket_types) do
+      # Monitor the order, automatically cancels it if it's not paid in time
+      Tiki.PurchaseMonitor.monitor(order)
 
-        prices =
-          repo.all(from tt in TicketType, where: tt.id in ^tt_ids, select: {tt.id, tt.price})
-          |> Enum.into(%{})
-
-        total = Enum.reduce(prices, 0, fn {tt, price}, acc -> price * ticket_types[tt] + acc end)
-
-        {:ok, Map.put(prices, :total, total)}
-      end)
-      |> Multi.insert(
-        :order,
-        fn %{prices: %{total: total_price}} ->
-          change_order(%Order{}, %{event_id: event_id, status: :pending, price: total_price})
-        end,
-        returning: [:id]
+      broadcast(
+        order.event_id,
+        {:tickets_updated, Tickets.put_available_ticket_meta(ticket_types)}
       )
-      |> Multi.insert_all(
-        :tickets,
-        Ticket,
-        fn %{order: order, prices: prices} ->
-          Enum.flat_map(ticket_types, fn {tt, count} ->
-            for _ <- 1..count do
-              %{ticket_type_id: tt, order_id: order.id, price: prices[tt]}
-            end
-          end)
-        end,
-        returning: true
-      )
-      |> Tickets.get_availible_ticket_types_multi(event_id)
-      |> Multi.run(:check_availability, fn _repo, %{ticket_types_availible: available} ->
-        valid_for_event? =
-          Map.keys(ticket_types)
-          |> Enum.all?(fn tt -> Enum.any?(available, &(&1.ticket_type.id == tt)) end)
 
-        with true <- valid_for_event?,
-             true <- Enum.all?(available, &(&1.available >= 0)) do
-          {:ok, :ok}
-        else
-          _ -> {:error, "not enough tickets available"}
-        end
-      end)
-      |> Multi.run(:preloaded_order, fn _repo,
-                                        %{
-                                          order: order,
-                                          tickets: {_, tickets},
-                                          ticket_types_availible: available
-                                        } ->
-        ticket_types =
-          Enum.map(available, & &1.ticket_type)
-          |> Enum.reduce(%{}, &Map.put(&2, &1.id, &1))
+      broadcast_order(order.id, :created, order)
 
-        tickets = Enum.map(tickets, &Map.put(&1, :ticket_type, ticket_types[&1.ticket_type_id]))
-        {:ok, Map.put(order, :tickets, tickets)}
-      end)
-      |> Repo.transaction()
-
-    case result do
-      {:ok, %{preloaded_order: order, ticket_types_availible: ticket_types}} ->
-        # Monitor the order, automatically cancels it if it's not paid in time
-        Tiki.PurchaseMonitor.monitor(order)
-
-        broadcast(
-          order.event_id,
-          {:tickets_updated, Tickets.put_avalable_ticket_meta(ticket_types)}
-        )
-
-        broadcast_order(order.id, :created, order)
-
-        {:ok, order}
-
-      {:error, :check_availability, message, _} ->
-        {:error, message}
-
-      {:error, :positive_tickets, message, _} ->
-        {:error, message}
+      {:ok, order}
+    else
+      {:error, reason} -> {:error, reason}
     end
   end
 
   @doc """
-  Cancels an order if it exists. Returns the order.
+  Cancels a pending order if it exists. Does not modify paid or cancelled orders.
+  Returns the order.
 
   ## Examples
       iex> cancel_order(%Order{})
@@ -322,7 +225,7 @@ defmodule Tiki.Orders do
       iex> cancel_order(%Order{})
       {:error, reason}
   """
-  def maybe_cancel_reservation(order_id) do
+  def maybe_cancel_order(order_id) do
     multi =
       Multi.new()
       |> Multi.run(:order, fn repo, _changes ->
@@ -343,7 +246,7 @@ defmodule Tiki.Orders do
       {:ok, %{order_failed: order}} ->
         broadcast(
           order.event_id,
-          {:tickets_updated, Tickets.get_availible_ticket_types(order.event_id)}
+          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
         )
 
         broadcast_order(order.id, :cancelled, order)
@@ -351,27 +254,33 @@ defmodule Tiki.Orders do
         {:ok, order}
 
       {:error, :order, :not_found, _} ->
-        {:error, "Order not found, nothing to cancel"}
+        {:error, "order not found, nothing to cancel"}
 
       {:error, :order, :not_pending, _} ->
-        {:error, "Order is not pending"}
+        {:error, "order is not pending"}
 
       _ ->
-        {:error, "Could not cancel reservation"}
+        {:error, "could not cancel reservation"}
     end
   end
 
   @doc """
   Returns the orders for an event, ordered by most recent first.
 
+  Options:
+    * `:status` - The status of the orders to return.
+
   ## Examples
 
-      iex> list_orders_for_event(event_id)
+      iex> list_orders_for_event(event_id, status: [:paid])
       [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
   """
-  def list_orders_for_event(event_id) do
+  def list_orders_for_event(event_id, opts \\ []) do
+    statuses = Keyword.get(opts, :status, Ecto.Enum.dump_values(Order, :status))
+
     order_query()
     |> where([o], o.event_id == ^event_id)
+    |> where([o], o.status in ^statuses)
     |> order_by([o], desc: o.inserted_at)
     |> Repo.all()
   end
@@ -381,28 +290,28 @@ defmodule Tiki.Orders do
 
   Options:
     * `:limit` - The maximum number of tickets to return.
+    * `:status` - The status of the orders to return.
 
   ## Examples
 
-      iex> list_team_orders(event_id)
+      iex> list_team_orders(event_id, limit: 10, status: [:paid])
       [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
   """
   def list_team_orders(team_id, opts \\ []) do
-    query =
-      order_query()
-      |> join(:inner, [o], e in assoc(o, :event))
-      |> where([o], o.status == ^:paid)
-      |> where([..., e], e.team_id == ^team_id)
-      |> order_by([o], desc: o.inserted_at)
-      |> preload([..., e], event: e)
+    statuses = Keyword.get(opts, :status, Ecto.Enum.dump_values(Order, :status))
 
-    case Keyword.get(opts, :limit) do
-      nil -> query
-      limit -> query |> limit(^limit)
-    end
+    order_query()
+    |> join(:inner, [o], e in assoc(o, :event))
+    |> where([o, ..., e], e.team_id == ^team_id and o.status in ^statuses)
+    |> order_by([o], desc: o.inserted_at)
+    |> preload([..., e], event: e)
+    |> then(fn query ->
+      case Keyword.get(opts, :limit) do
+        nil -> query
+        limit -> limit(query, ^limit)
+      end
+    end)
     |> Repo.all()
-
-    Repo.all(query)
   end
 
   @doc """
@@ -417,20 +326,50 @@ defmodule Tiki.Orders do
       [%Ticket{ticket_type: %TicketType{}}, %Order{user: %User{}}], ...]
   """
   def list_tickets_for_event(event_id, opts \\ []) do
-    query =
-      from t in Ticket,
-        join: o in assoc(t, :order),
-        join: tt in assoc(t, :ticket_type),
-        join: u in assoc(o, :user),
-        order_by: [desc: o.inserted_at],
-        where: o.event_id == ^event_id,
-        preload: [ticket_type: tt, order: {o, user: u}]
-
-    case Keyword.get(opts, :limit) do
-      nil -> query
-      limit -> query |> limit(^limit)
-    end
+    from(t in Ticket,
+      join: o in assoc(t, :order),
+      join: tt in assoc(t, :ticket_type),
+      join: u in assoc(o, :user),
+      order_by: [desc: o.inserted_at],
+      where: o.event_id == ^event_id,
+      preload: [ticket_type: tt, order: {o, user: u}]
+    )
+    |> then(fn query ->
+      case Keyword.get(opts, :limit) do
+        nil -> query
+        limit -> query |> limit(^limit)
+      end
+    end)
     |> Repo.all()
+  end
+
+  @doc """
+  Lists all orders for a user. Options:
+
+    * `:status` - The status of the orders to return.
+
+  ## Examples
+
+      iex> list_orders_for_user(user_id, status: [:paid])
+      [%Order{tickets: [%Ticket{ticket_type: %TicketType{}}, ...], user: %User{}}, ...]
+  """
+  def list_orders_for_user(user_id, opts \\ []) do
+    statuses = Keyword.get(opts, :status, Ecto.Enum.dump_values(Order, :status))
+
+    order_query()
+    |> where([o], o.user_id == ^user_id)
+    |> where([o], o.status in ^statuses)
+    |> join(:inner, [o], e in assoc(o, :event))
+    |> preload([o, ..., e], event: e)
+    |> order_by([o], desc: o.inserted_at)
+    |> Repo.all()
+  end
+
+  def confirm_order(order) do
+    # Send email confirmaiton
+    get_order!(order.id) |> OrderNotifier.deliver()
+
+    broadcast_order(order.id, :paid, order)
   end
 
   def broadcast_order(order_id, :created, order) do

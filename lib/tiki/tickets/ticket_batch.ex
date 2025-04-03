@@ -1,5 +1,5 @@
 defmodule Tiki.Tickets.TicketBatch do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   alias Tiki.Tickets.TicketBatch
@@ -22,7 +22,9 @@ defmodule Tiki.Tickets.TicketBatch do
   def changeset(ticket_batch, attrs) do
     ticket_batch
     |> cast(attrs, [:name, :min_size, :max_size, :event_id, :parent_batch_id])
-    |> validate_required([:name, :event_id])
+    |> validate_number(:max_size, greater_than_or_equal_to: 0)
+    |> validate_number(:min_size, greater_than_or_equal_to: 0)
+    |> validate_required([:name, :event_id, :max_size])
     |> validate_not_equal(:id, :parent_batch_id)
   end
 
@@ -34,7 +36,6 @@ defmodule Tiki.Tickets.TicketBatch do
       {{:data, nil}, _} -> changeset
       {_, {:data, nil}} -> changeset
       {{_, a}, {_, b}} when a == b -> add_error(changeset, a, "#{a} must not be equal to #{b}")
-      _ -> changeset
     end
   end
 end

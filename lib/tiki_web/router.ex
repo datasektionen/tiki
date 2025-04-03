@@ -87,12 +87,12 @@ defmodule TikiWeb.Router do
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{TikiWeb.UserAuth, :redirect_if_user_is_authenticated}] do
       live "/users/register", UserRegistrationLive, :new
-      live "/users/log_in", UserLoginLive, :new
+      live "/account/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
       live "/users/reset_password/:token", UserResetPasswordLive, :edit
     end
 
-    post "/users/log_in", UserSessionController, :create
+    post "/account/log_in", UserSessionController, :create
   end
 
   scope "/", TikiWeb do
@@ -101,17 +101,15 @@ defmodule TikiWeb.Router do
     get "/", PageController, :home
     get "/about", PageController, :about
 
-    delete "/users/log_out", UserSessionController, :delete
+    delete "/account/log_out", UserSessionController, :delete
 
-    live_session :current_user,
-      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
+    live_session :current_user, on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
 
       live "/events", EventLive.Index, :index
-      live "/events/:id", EventLive.Show, :index
-      live "/events/:event_id/purchase", PurchaseLive.Tickets, :tickets
-      live "/events/:event_id/purchase/:order_id", PurchaseLive.Tickets, :purchase
+      live "/events/:event_id", EventLive.Show, :index
+      live "/events/:event_id/purchase/:order_id", EventLive.Show, :purchase
 
       live "/orders/:id", OrderLive.Show, :show
       live "/tickets/:id", OrderLive.Ticket, :show
@@ -124,41 +122,49 @@ defmodule TikiWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{TikiWeb.UserAuth, :ensure_authenticated}] do
-      live "/users/settings", UserSettingsLive, :edit
-      live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+      live "/account", UserSettingsLive, :edit
+      live "/account/tickets", AccountLive.Tickets, :index
+      live "/account/confirm_email/:token", UserSettingsLive, :confirm_email
     end
 
     scope "/admin" do
-      pipe_through [:require_admin_user]
+      pipe_through [:require_manager]
 
       post "/set_team", UserSessionController, :set_team
       get "/set_team/:team_id", UserSessionController, :set_team
+      get "/clear_team", UserSessionController, :clear_team
     end
 
     scope "/admin", AdminLive do
-      live_session :require_admin_user,
+      live_session :require_manager,
         on_mount: [
-          {TikiWeb.UserAuth, :ensure_admin},
+          {TikiWeb.UserAuth, :ensure_authenticated},
+          {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
           TikiWeb.Nav
         ],
         layout: {TikiWeb.Layouts, :admin} do
-        live "/", Dashboard.Index, :index
-
+        live "/select-team", Dashboard.Team, :index
         live "/user-settings", User.Settings, :index
 
         live "/teams", Team.Index, :index
         live "/teams/new", Team.Form, :new
         live "/teams/:id", Team.Show, :show
+        live "/teams/:team_id/members/new", Team.MembershipForm, :new
+        live "/teams/:team_id/members/:id/edit", Team.MembershipForm, :edit
+
         live "/teams/:id/edit", Team.Form, :edit
       end
 
       live_session :active_group,
         on_mount: [
-          {TikiWeb.UserAuth, :ensure_admin},
+          {TikiWeb.UserAuth, :ensure_authenticated},
           {TikiWeb.UserAuth, :ensure_team},
+          {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
           TikiWeb.Nav
         ],
         layout: {TikiWeb.Layouts, :admin} do
+        live "/", Dashboard.Index, :index
+
         # General event stuff
         live "/events", Event.Index, :index
         live "/events/new", Event.Edit, :new
@@ -167,6 +173,7 @@ defmodule TikiWeb.Router do
         live "/team/members", Team.Members, :index
         live "/team/members/new", Team.MembershipForm, :new
         live "/team/members/:id/edit", Team.MembershipForm, :edit
+        live "/team/edit", Team.Form, :manager_edit
 
         scope "/events/:id" do
           # Event dashboard
@@ -183,12 +190,12 @@ defmodule TikiWeb.Router do
           live "/tickets", Ticket.Index, :index
 
           # Ticket type settings
-          live "/tickets/types/new", Ticket.TicketTypeForm, :new
-          live "/tickets/types/:ticket_type_id/edit", Ticket.TicketTypeForm, :edit
+          live "/tickets/types/new", Ticket.Index, :new_ticket_type
+          live "/tickets/types/:ticket_type_id/edit", Ticket.Index, :edit_ticket_type
 
           # Ticket batch settings
-          live "/tickets/batches/new", Ticket.BatchForm, :new
-          live "/tickets/batches/:batch_id/edit", Ticket.BatchForm, :edit
+          live "/tickets/batches/new", Ticket.Index, :new_batch
+          live "/tickets/batches/:batch_id/edit", Ticket.Index, :edit_batch
 
           # TODO: Check-in
           # live "/check-in", Ticket.Checkin, :index
@@ -218,5 +225,10 @@ defmodule TikiWeb.Router do
   scope "/swish", TikiWeb do
     pipe_through :api
     post "/callback", SwishController, :callback
+  end
+
+  scope "/api", TikiWeb do
+    pipe_through :api
+    get "/qr/:code", QrController, :create
   end
 end

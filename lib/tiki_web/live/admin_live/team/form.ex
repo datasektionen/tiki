@@ -8,20 +8,24 @@ defmodule TikiWeb.AdminLive.Team.Form do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= @page_title %>
-      <:subtitle>Use this form to manage team records in your database.</:subtitle>
+      {@page_title}
+      <:subtitle>{gettext("Manage public information about your team.")}</:subtitle>
     </.header>
 
     <.simple_form for={@form} id="team-form" phx-change="validate" phx-submit="save">
       <.input field={@form[:name]} type="text" label={gettext("Name")} />
+      <.input field={@form[:contact_email]} type="text" label={gettext("Contact email")} />
+      <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+      <.image_upload upload={@uploads.logo} label={gettext("Team logo")} />
+
       <:actions>
         <.button phx-disable-with={gettext("Saving...")}>
-          <%= gettext("Save team") %>
+          {gettext("Save team")}
         </.button>
       </:actions>
     </.simple_form>
 
-    <.back navigate={return_path(@return_to, @team)}>Back</.back>
+    <.back navigate={@return_to}>Back</.back>
     """
   end
 
@@ -29,29 +33,74 @@ defmodule TikiWeb.AdminLive.Team.Form do
   def mount(params, _session, socket) do
     {:ok,
      socket
-     |> assign(:return_to, return_to(params["return_to"]))
+     |> allow_upload(
+       :logo,
+       accept: ~w[.png .jpeg .jpg],
+       max_entries: 1,
+       auto_upload: true,
+       external: &presign_upload/2
+     )
      |> apply_action(socket.assigns.live_action, params)}
   end
-
-  defp return_to("show"), do: "show"
-  defp return_to(_), do: "index"
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     team = Teams.get_team!(id)
 
-    socket
-    |> assign(:page_title, "Edit Team")
-    |> assign(:team, team)
-    |> assign(:form, to_form(Teams.change_team(team)))
+    with :ok <- Tiki.Policy.authorize(:team_update, socket.assigns.current_user, team) do
+      socket
+      |> assign(:page_title, gettext("Edit team"))
+      |> assign(:return_to, ~p"/admin/teams/")
+      |> assign(:team, team)
+      |> assign(:form, to_form(Teams.change_team(team)))
+      |> assign_breadcrumbs([
+        {"Teams", ~p"/admin/teams"},
+        {"Edit team", ~p"/admin/teams/#{team}/edit"}
+      ])
+    else
+      {:error, :unauthorized} ->
+        socket
+        |> put_flash(:error, gettext("You are not authorized to do that."))
+        |> redirect(to: ~p"/admin")
+    end
+  end
+
+  defp apply_action(socket, :manager_edit, _params) do
+    team = Teams.get_team!(socket.assigns.current_team.id)
+
+    with :ok <- Tiki.Policy.authorize(:team_update, socket.assigns.current_user, team) do
+      socket
+      |> assign(:page_title, gettext("Edit team"))
+      |> assign(:team, team)
+      |> assign(:return_to, ~p"/admin/")
+      |> assign(:form, to_form(Teams.change_team(team)))
+      |> assign_breadcrumbs([{"Dashboard", ~p"/admin"}, {"Edit team", ~p"/admin/team/edit"}])
+    else
+      {:error, :unauthorized} ->
+        socket
+        |> put_flash(:error, gettext("You are not authorized to do that."))
+        |> redirect(to: ~p"/admin")
+    end
   end
 
   defp apply_action(socket, :new, _params) do
-    team = %Team{}
+    with :ok <- Tiki.Policy.authorize(:team_create, socket.assigns.current_user) do
+      team = %Team{}
 
-    socket
-    |> assign(:page_title, "New Team")
-    |> assign(:team, team)
-    |> assign(:form, to_form(Teams.change_team(team)))
+      socket
+      |> assign(:page_title, gettext("New Team"))
+      |> assign(:team, team)
+      |> assign(:return_to, ~p"/admin/teams/")
+      |> assign(:form, to_form(Teams.change_team(team)))
+      |> assign_breadcrumbs([
+        {"Teams", ~p"/admin/teams"},
+        {"New team", ~p"/admin/teams/new"}
+      ])
+    else
+      {:error, :unauthorized} ->
+        socket
+        |> put_flash(:error, gettext("You are not authorized to do that."))
+        |> redirect(to: ~p"/admin")
+    end
   end
 
   @impl true
@@ -61,16 +110,17 @@ defmodule TikiWeb.AdminLive.Team.Form do
   end
 
   def handle_event("save", %{"team" => team_params}, socket) do
+    team_params = put_image_url(team_params, socket)
     save_team(socket, socket.assigns.live_action, team_params)
   end
 
-  defp save_team(socket, :edit, team_params) do
+  defp save_team(socket, action, team_params) when action in [:edit, :manager_edit] do
     case Teams.update_team(socket.assigns.team, team_params) do
-      {:ok, team} ->
+      {:ok, _team} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Team updated successfully")
-         |> push_navigate(to: return_path(socket.assigns.return_to, team))}
+         |> put_flash(:info, gettext("Team updated successfully"))
+         |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -79,17 +129,36 @@ defmodule TikiWeb.AdminLive.Team.Form do
 
   defp save_team(socket, :new, team_params) do
     case Teams.create_team(team_params, members: [socket.assigns.current_user.id]) do
-      {:ok, team} ->
+      {:ok, _team} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Team created successfully")
-         |> push_navigate(to: return_path(socket.assigns.return_to, team))}
+         |> put_flash(:info, gettext("Team created successfully"))
+         |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
 
-  defp return_path("index", _team), do: ~p"/admin/teams"
-  defp return_path("show", team), do: ~p"/admin/teams/#{team}"
+  defp put_image_url(params, socket) do
+    {completed, []} = uploaded_entries(socket, :logo)
+
+    case completed do
+      [] -> params
+      [image | _] -> Map.put(params, "logo_url", "uploads/#{image.client_name}")
+    end
+  end
+
+  defp presign_upload(entry, socket) do
+    form = Tiki.S3.presign_form(entry)
+
+    meta = %{
+      uploader: "S3",
+      key: "uploads/#{entry.client_name}",
+      url: form.url,
+      fields: Map.new(form.fields)
+    }
+
+    {:ok, meta, socket}
+  end
 end

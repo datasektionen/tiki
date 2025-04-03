@@ -12,7 +12,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
       <.input field={@client_form[:name]} type="text" label={gettext("Name")} />
       <.input field={@client_form[:description]} type="text" label={gettext("Description")} />
 
-      <.label><%= gettext("Questions") %></.label>
+      <.label>{gettext("Questions")}</.label>
       <.inputs_for :let={f_nested} field={@client_form[:questions]}>
         <div class="rounded-md border px-4 py-6">
           <input type="hidden" name="form[questions_sort][]" value={f_nested.index} />
@@ -32,7 +32,9 @@ defmodule TikiWeb.AdminLive.Forms.Form do
                 {gettext("Text"), :text},
                 {gettext("Long text"), :text_area},
                 {gettext("Select"), :select},
-                {gettext("Multiple select"), :multi_select}
+                {gettext("Multiple select"), :multi_select},
+                {gettext("Email"), :email},
+                {gettext("Attendee Name"), :attendee_name}
               ]}
             />
             <.input
@@ -42,7 +44,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
               class="col-span-6"
             />
             <div :if={select?(f_nested[:type])} class="col-span-6">
-              <.label><%= gettext("Options") %></.label>
+              <.label>{gettext("Options")}</.label>
               <div :for={option <- f_nested[:options].value || []} class="flex flex-row items-center">
                 <.input
                   class="w-full"
@@ -67,7 +69,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
                 type="button"
                 class="text-muted-foreground mt-3 flex flex-row items-center gap-2 text-sm"
               >
-                <.icon name="hero-plus-circle" class="h-5 w-5" /><%= gettext("New option") %>
+                <.icon name="hero-plus-circle" class="h-5 w-5" />{gettext("New option")}
               </button>
             </div>
 
@@ -99,12 +101,12 @@ defmodule TikiWeb.AdminLive.Forms.Form do
         value="new"
         phx-click={JS.dispatch("change")}
       >
-        <.icon name="hero-plus-circle" class="h-5 w-5" /> <%= gettext("New question") %>
+        <.icon name="hero-plus-circle" class="h-5 w-5" /> {gettext("New question")}
       </button>
 
       <:actions>
         <.button phx-disable-with={gettext("Saving...")}>
-          <%= gettext("Save form") %>
+          {gettext("Save form")}
         </.button>
       </:actions>
     </.simple_form>
@@ -115,10 +117,18 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   def mount(%{"id" => event_id} = params, _session, socket) do
     event = Tiki.Events.get_event!(event_id)
 
-    {:ok,
-     socket
-     |> assign(:event, event)
-     |> apply_action(socket.assigns.live_action, params)}
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      {:ok,
+       socket
+       |> assign(:event, event)
+       |> apply_action(socket.assigns.live_action, params)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   defp apply_action(socket, :edit, %{"form_id" => form_id}) do
@@ -126,18 +136,30 @@ defmodule TikiWeb.AdminLive.Forms.Form do
     changeset = Forms.change_form(form)
     %{event: event} = socket.assigns
 
-    assign(socket, form: form, client_form: to_form(changeset))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {event.name, ~p"/admin/events/#{event}"},
-      {"Forms", ~p"/admin/events/#{event}/forms"},
-      {form.name, ~p"/admin/events/#{event}/forms/#{form.id}/edit"}
-    ])
+    if event.id == form.event_id do
+      assign(socket, form: form, client_form: to_form(changeset))
+      |> assign_breadcrumbs([
+        {"Dashboard", ~p"/admin"},
+        {"Events", ~p"/admin/events"},
+        {event.name, ~p"/admin/events/#{event}"},
+        {"Forms", ~p"/admin/events/#{event}/forms"},
+        {form.name, ~p"/admin/events/#{event}/forms/#{form.id}/edit"}
+      ])
+    else
+      socket
+      |> put_flash(:error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin")
+    end
   end
 
   defp apply_action(socket, :new, _) do
-    form = %Forms.Form{}
+    form = %Forms.Form{
+      questions: [
+        %Tiki.Forms.Question{name: gettext("Name"), required: true, type: :attendee_name},
+        %Tiki.Forms.Question{name: gettext("Email"), required: true, type: :email}
+      ]
+    }
+
     changeset = Forms.change_form(form)
     %{event: event} = socket.assigns
 
@@ -175,7 +197,6 @@ defmodule TikiWeb.AdminLive.Forms.Form do
          |> push_navigate(to: return_path(form))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        dbg(changeset)
         {:noreply, assign_form(socket, changeset)}
     end
   end

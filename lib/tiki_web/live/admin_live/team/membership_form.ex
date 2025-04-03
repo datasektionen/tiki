@@ -9,8 +9,8 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= @page_title %>
-      <:subtitle><%= gettext("Use this form to manage memberships in your database") %>.</:subtitle>
+      {@page_title}
+      <:subtitle>{gettext("Add or edit memberships for your team.")}</:subtitle>
     </.header>
 
     <.simple_form for={@form} id="team-form" phx-change="validate" phx-submit="save">
@@ -30,25 +30,58 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
       />
       <.input field={@form[:role]} type="select" label={gettext("Role")} options={[:admin, :member]} />
       <:actions>
-        <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save") %></.button>
+        <.button phx-disable-with={gettext("Saving...")}>{gettext("Save")}</.button>
       </:actions>
     </.simple_form>
 
-    <.back navigate={return_path(@return_to)}>
-      <%= gettext("Back") %>
+    <.back navigate={return_path(@return_to, @team.id)}>
+      {gettext("Back")}
     </.back>
     """
   end
 
   @impl true
-  def mount(params, _session, socket) do
-    users = Tiki.Accounts.list_users()
+  def mount(%{"team_id" => id} = params, _session, socket) do
+    %{current_user: user} = socket.assigns
+    team = Tiki.Teams.get_team!(id)
 
-    {:ok,
-     socket
-     |> assign(:users, users)
-     |> assign(:return_to, return_to(params["return_to"]))
-     |> apply_action(socket.assigns.live_action, params)}
+    with :ok <- Tiki.Policy.authorize(:team_update, user, team) do
+      users = Tiki.Accounts.list_users()
+
+      {:ok,
+       socket
+       |> assign(:users, users)
+       |> assign(:team, team)
+       |> assign(:return_to, return_to(params["return_to"]))
+       |> apply_action(socket.assigns.live_action, params)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin/team/members")}
+    end
+  end
+
+  def mount(params, _session, socket) do
+    %{current_user: user, current_team: team} = socket.assigns
+
+    with :ok <- Tiki.Policy.authorize(:team_update, user, team) do
+      users = Tiki.Accounts.list_users()
+
+      {:ok,
+       socket
+       |> assign(:users, users)
+       |> assign(:team, team)
+       |> assign(:return_to, return_to(params["return_to"]))
+       |> apply_action(socket.assigns.live_action, params)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin/team/members")}
+    end
   end
 
   defp return_to("show"), do: "show"
@@ -57,15 +90,21 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
   defp apply_action(socket, :edit, %{"id" => id}) do
     membership = Teams.get_membership!(id)
 
-    socket
-    |> assign(:page_title, "Edit Membership")
-    |> assign(:membership, membership)
-    |> assign(:form, to_form(Teams.change_membership(membership)))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Team members", ~p"/admin/team/members"},
-      {"Edit member", ""}
-    ])
+    if membership.team_id != socket.assigns.team.id do
+      socket
+      |> put_flash(:error, gettext("You are not authorized to do that."))
+      |> redirect(to: return_path(socket.assigns.return_to, socket.assigns.team.id))
+    else
+      socket
+      |> assign(:page_title, "Edit Membership")
+      |> assign(:membership, membership)
+      |> assign(:form, to_form(Teams.change_membership(membership)))
+      |> assign_breadcrumbs([
+        {"Dashboard", ~p"/admin"},
+        {"Team members", ~p"/admin/team/members"},
+        {"Edit member", ""}
+      ])
+    end
   end
 
   defp apply_action(socket, :new, _params) do
@@ -90,18 +129,18 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
 
   @impl true
   def handle_event("save", %{"membership" => membership_params}, socket) do
-    membership_params = Map.put(membership_params, "team_id", socket.assigns.current_team.id)
+    membership_params = Map.put(membership_params, "team_id", socket.assigns.team.id)
 
     save_membership(socket, socket.assigns.live_action, membership_params)
   end
 
   defp save_membership(socket, :edit, membership_params) do
     case Teams.update_membership(socket.assigns.membership, membership_params) do
-      {:ok, _} ->
+      {:ok, membership} ->
         {:noreply,
          socket
          |> put_flash(:info, gettext("Membership updated successfully"))
-         |> push_navigate(to: return_path(socket.assigns.return_to))}
+         |> push_navigate(to: return_path(socket.assigns.return_to, membership.team_id))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -110,17 +149,17 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
 
   defp save_membership(socket, :new, membership_params) do
     case Teams.create_membership(membership_params) do
-      {:ok, _} ->
+      {:ok, membership} ->
         {:noreply,
          socket
          |> put_flash(:info, gettext("Membership created successfully"))
-         |> push_navigate(to: return_path(socket.assigns.return_to))}
+         |> push_navigate(to: return_path(socket.assigns.return_to, membership.team_id))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
 
-  defp return_path("index"), do: ~p"/admin/team/members"
-  defp return_path("show"), do: ~p"/admin/team/members"
+  defp return_path("index", _team_id), do: ~p"/admin/team/members"
+  defp return_path("show", team_id), do: ~p"/admin/teams/#{team_id}"
 end

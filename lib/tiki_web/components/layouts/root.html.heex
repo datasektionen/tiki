@@ -9,16 +9,16 @@
     <meta name="theme-color" content="hsl(240 10% 6%)" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)" />
     <link rel="manifest" href="/images/site.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <.live_title suffix=" · Tiki">
-      <%= assigns[:page_title] || "Tiki" %>
+      {assigns[:page_title] || "Tiki"}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
   <body class="bg-background h-full antialiased">
-    <%= @inner_content %>
+    {@inner_content}
   </body>
 </html>

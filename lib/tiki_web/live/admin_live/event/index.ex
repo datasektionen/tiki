@@ -7,14 +7,18 @@ defmodule TikiWeb.AdminLive.Event.Index do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    events =
-      if socket.assigns.current_team do
-        Tiki.Events.list_team_events(socket.assigns.current_team.id)
-      else
-        []
-      end
+    %{current_user: user, current_team: team} = socket.assigns
 
-    {:ok, stream(socket, :events, events)}
+    with :ok <- Tiki.Policy.authorize(:event_manage, user, team) do
+      events = Tiki.Events.list_team_events(socket.assigns.current_team.id)
+      {:ok, stream(socket, :events, events)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl Phoenix.LiveView
@@ -54,7 +58,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">
       <.card_title class="sm:col-span-6">
-        <%= gettext("All events") %>
+        {gettext("All events")}
       </.card_title>
 
       <div class="flex flex-row items-center gap-2 sm:col-span-6">
@@ -71,7 +75,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
         </div>
 
         <.button navigate={~p"/admin/events/new"} class="ml-auto">
-          <%= gettext("New event") %>
+          {gettext("New event")}
         </.button>
       </div>
 
@@ -81,10 +85,10 @@ defmodule TikiWeb.AdminLive.Event.Index do
           rows={@streams.events}
           row_click={fn {_id, event} -> JS.navigate(~p"/admin/events/#{event}") end}
         >
-          <:col :let={{_id, event}} label={gettext("Name")}><%= event.name %></:col>
-          <:col :let={{_id, event}} label={gettext("Location")}><%= event.location %></:col>
+          <:col :let={{_id, event}} label={gettext("Name")}>{event.name}</:col>
+          <:col :let={{_id, event}} label={gettext("Location")}>{event.location}</:col>
           <:col :let={{_id, event}} label={gettext("Date")}>
-            <%= Calendar.strftime(event.event_date, "%Y-%m-%d") %>
+            {Calendar.strftime(event.event_date, "%Y-%m-%d")}
           </:col>
         </.table>
       </.card>

@@ -69,12 +69,13 @@ defmodule Tiki.Teams do
     member_ids = Keyword.get(opts, :members, [])
     team = Team.changeset(%Team{}, attrs)
 
+    multi = Multi.insert(Multi.new(), :team, team)
+
     result =
-      Multi.new()
-      |> Multi.insert(:team, team)
-      |> Multi.insert_all(:memberships, Membership, fn %{team: team} ->
-        Enum.map(member_ids, fn user_id ->
-          %{team_id: team.id, user_id: user_id, role: :admin}
+      Enum.reduce(member_ids, multi, fn id, multi ->
+        Multi.insert(multi, "membership_#{id}", fn %{team: team} ->
+          Membership.changeset(%Membership{}, %{team_id: team.id, user_id: id, role: :admin})
+          |> Ecto.Changeset.foreign_key_constraint(:user_id)
         end)
       end)
       |> Repo.transaction()
@@ -83,11 +84,11 @@ defmodule Tiki.Teams do
       {:ok, %{team: team}} ->
         {:ok, team}
 
-      {:error, :memberships, message, _} ->
-        {:error, message}
+      {:error, :team, changeset, _} ->
+        {:error, changeset}
 
-      {:error, :team, message, _} ->
-        {:error, message}
+      {:error, membership_id, changeset, _} when is_binary(membership_id) ->
+        {:error, changeset}
     end
   end
 
@@ -263,6 +264,23 @@ defmodule Tiki.Teams do
   end
 
   @doc """
+  Returns all the team meberships for a given user
+
+  ## Examples
+
+      iex> get_memberships_for_user(123)
+      [%Membership{}, ...]
+
+  """
+  def get_memberships_for_user(user_id) do
+    query =
+      from m in Membership,
+        where: m.user_id == ^user_id
+
+    Repo.all(query)
+  end
+
+  @doc """
   Preloads all the teams that a user is member of, given a user or
   a list of users.
 
@@ -284,7 +302,7 @@ defmodule Tiki.Teams do
   end
 
   @doc """
-  Retrurns the current memebrships of a team.
+  Returns the current memebrships of a team.
 
   ## Examples
 

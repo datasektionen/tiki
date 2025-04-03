@@ -45,7 +45,7 @@ defmodule TikiWeb.Component.Sheet do
   def sheet(assigns) do
     ~H"""
     <div class={classes([@class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -57,7 +57,7 @@ defmodule TikiWeb.Component.Sheet do
   def sheet_trigger(assigns) do
     ~H"""
     <div class={classes([@class])} phx-click={JS.exec("phx-show-sheet", to: "#" <> @target)}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -67,12 +67,7 @@ defmodule TikiWeb.Component.Sheet do
   defp sheet_overlay(assigns) do
     ~H"""
     <div
-      class={
-        classes([
-          "sheet-overlay fixed hidden inset-0 z-50 bg-black/80",
-          @class
-        ])
-      }
+      class={classes(["sheet-overlay bg-black/80 fixed inset-0 z-50 hidden", @class])}
       aria-hidden="true"
     >
     </div>
@@ -81,6 +76,8 @@ defmodule TikiWeb.Component.Sheet do
 
   attr :id, :string, required: true, doc: "The id of the sheet"
   attr :class, :string, default: nil
+  attr :show, :boolean, default: false
+  attr :on_cancel, JS, default: %JS{}
 
   attr :side, :string,
     default: "right",
@@ -93,8 +90,8 @@ defmodule TikiWeb.Component.Sheet do
   def sheet_content(assigns) do
     variant_class =
       case assigns.side do
-        "left" -> "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm"
-        "right" -> "inset-y-0 right-0 h-full w-3/4  border-l sm:max-w-sm"
+        "left" -> "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-xl"
+        "right" -> "inset-y-0 right-0 h-full w-3/4  border-l sm:max-w-xl"
         "top" -> "inset-x-0 top-0 border-b"
         "bottom" -> "inset-x-0 bottom-0 border-t"
       end
@@ -105,36 +102,38 @@ defmodule TikiWeb.Component.Sheet do
     <div
       class="sheet-content relative z-50"
       id={@id}
+      phx-mounted={@show && show_sheet(@id, @side)}
+      phx-remove={hide_sheet(@id, @side)}
       phx-show-sheet={show_sheet(@id, @side)}
       phx-hide-sheet={hide_sheet(@id, @side)}
     >
       <.sheet_overlay />
       <.focus_wrap
         id={"sheet-" <> @id}
-        phx-window-keydown={JS.exec("phx-hide-sheet", to: "#" <> @id)}
+        phx-window-keydown={JS.exec(@on_cancel, "phx-hide-sheet", to: "#" <> @id)}
         phx-key="escape"
-        phx-click-away={JS.exec("phx-hide-sheet", to: "#" <> @id)}
+        phx-click-away={JS.exec(@on_cancel, "phx-hide-sheet", to: "#" <> @id)}
         role="sheet"
         class={
           classes([
-            "sheet-content-wrap hidden fixed z-50 bg-background shadow-lg transition",
+            "sheet-content-wrap bg-background fixed z-50 hidden shadow-lg transition",
             @variant_class,
             @class
           ])
         }
       >
         <div class={classes(["relative h-full"])}>
-          <div class={classes(["p-6 overflow-y-auto h-full", @class])}>
-            <%= render_slot(@inner_block) %>
+          <div class={classes(["h-full overflow-y-auto p-6", @class])}>
+            {render_slot(@inner_block)}
           </div>
 
           <%= if close_btn = render_slot(@custom_close_btn) do %>
-            <%= close_btn %>
+            {close_btn}
           <% else %>
             <button
               type="button"
               class="ring-offset-background rounded-xs absolute top-4 right-4 opacity-70 transition-opacity hover:opacity-100 focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
-              phx-click={hide_sheet(@id, @side)}
+              phx-click={JS.exec(@on_cancel, "phx-hide-sheet", to: "#" <> @id)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -162,7 +161,7 @@ defmodule TikiWeb.Component.Sheet do
   def sheet_header(assigns) do
     ~H"""
     <div class={classes(["flex flex-col space-y-2 text-center sm:text-left", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -172,8 +171,8 @@ defmodule TikiWeb.Component.Sheet do
 
   def sheet_title(assigns) do
     ~H"""
-    <h3 class={classes(["text-lg font-semibold text-foreground", @class])}>
-      <%= render_slot(@inner_block) %>
+    <h3 class={classes(["text-foreground text-lg font-semibold", @class])}>
+      {render_slot(@inner_block)}
     </h3>
     """
   end
@@ -183,8 +182,8 @@ defmodule TikiWeb.Component.Sheet do
 
   def sheet_description(assigns) do
     ~H"""
-    <p class={classes(["text-sm text-muted-foreground", @class])}>
-      <%= render_slot(@inner_block) %>
+    <p class={classes(["text-muted-foreground text-sm", @class])}>
+      {render_slot(@inner_block)}
     </p>
     """
   end
@@ -195,7 +194,7 @@ defmodule TikiWeb.Component.Sheet do
   def sheet_footer(assigns) do
     ~H"""
     <div class={classes(["flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", @class])}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -207,7 +206,7 @@ defmodule TikiWeb.Component.Sheet do
   def sheet_close(assigns) do
     ~H"""
     <div class={classes(["", @class])} phx-click={JS.exec("phx-hide-sheet", to: "#" <> @target)}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end

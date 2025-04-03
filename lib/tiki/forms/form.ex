@@ -1,5 +1,5 @@
 defmodule Tiki.Forms.Form do
-  use Ecto.Schema
+  use Tiki.Schema
   import Ecto.Changeset
 
   schema "forms" do

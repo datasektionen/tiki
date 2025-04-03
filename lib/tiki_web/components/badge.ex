@@ -27,14 +27,14 @@ defmodule TikiWeb.Component.Badge do
     <div
       class={
         classes([
-          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2",
           @variant_class,
           @class
         ])
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end

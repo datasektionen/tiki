@@ -9,16 +9,25 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   def mount(%{"id" => event_id}, _sesison, socket) do
     event = Events.get_event!(event_id)
-    tickets = Orders.list_tickets_for_event(event_id)
-    num_tickets = Enum.count(tickets)
 
-    if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      tickets = Orders.list_tickets_for_event(event_id)
+      num_tickets = Enum.count(tickets)
 
-    {:ok,
-     socket
-     |> assign(event: event)
-     |> assign(num_tickets: num_tickets)
-     |> stream(:tickets, tickets)}
+      if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+
+      {:ok,
+       socket
+       |> assign(event: event)
+       |> assign(num_tickets: num_tickets)
+       |> stream(:tickets, tickets)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   def handle_params(_params, _url, socket) do
@@ -46,7 +55,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">
       <.card_title class="sm:col-span-6">
-        <%= gettext("Sold tickets") %>
+        {gettext("Sold tickets")}
       </.card_title>
 
       <div class="flex flex-row items-center gap-2 sm:col-span-6">
@@ -62,8 +71,8 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
           <.simple_select id="sort" name="sort" options={[gettext("Sort by date")]} value="" />
         </div>
 
-        <.button navigate={~p"/admin/events/{@event}/attendees/new"} class="ml-auto">
-          <%= gettext("New attendee") %>
+        <.button navigate={~p"/admin/events/#{@event}/attendees/new"} class="ml-auto">
+          {gettext("New attendee")}
         </.button>
       </div>
 
@@ -90,23 +99,23 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
               :if={@ticket.order.user.full_name}
               class="text-foreground text-sm font-semibold leading-6"
             >
-              <%= @ticket.order.user.full_name %>
+              {@ticket.order.user.full_name}
             </p>
           </.link>
           <.badge variant="outline">
             <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
-            <span class="text-xs"><%= @ticket.ticket_type.name %></span>
+            <span class="text-xs">{@ticket.ticket_type.name}</span>
           </.badge>
         </div>
         <div class="text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5">
-          <p class="truncate"><%= @ticket.order.user.email %></p>
+          <p class="truncate">{@ticket.order.user.email}</p>
           <svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
             <circle cx="1" cy="1" r="1" />
           </svg>
           <p class="whitespace-nowrap">
-            <%= gettext("Purchased") %>
+            {gettext("Purchased")}
             <time datetime="2023-03-17T00:00Z">
-              <%= Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M") %>
+              {Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M")}
             </time>
           </p>
         </div>

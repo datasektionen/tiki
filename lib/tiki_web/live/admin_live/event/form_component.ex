@@ -8,8 +8,8 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
     ~H"""
     <div>
       <.header>
-        <%= @title %>
-        <:subtitle><%= gettext("Use this form to manage events") %></:subtitle>
+        {@title}
+        <:subtitle>{gettext("Use this form to manage events")}</:subtitle>
       </.header>
 
       <.simple_form
@@ -21,18 +21,43 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
       >
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
-        <.input field={@form[:event_date]} type="datetime-local" label={gettext("Event date")} />
+
+        <.input
+          field={@form[:is_hidden]}
+          type="checkbox"
+          label={gettext("Hidden event")}
+          description={gettext("The event will only be accessable using a direct link")}
+        />
+
+        <.input
+          field={@form[:default_form_id]}
+          type="select"
+          label={gettext("Default signup form")}
+          options={options_for_forms(@forms)}
+          placeholder={gettext("Select a form")}
+        />
+        <.input field={@form[:max_order_size]} type="number" label={gettext("Max tickets per order")} />
+
+        <.input
+          field={@form[:event_date]}
+          type="datetime-local"
+          label={gettext("Event date")}
+          description={gettext("In UTC")}
+        />
+
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
-        <.input field={@form[:image_url]} type="text" label={gettext("Image url")} />
+
+        <.image_upload upload={@uploads.photo} label={gettext("Event cover image")} />
+
         <:actions>
           <div class="flex flex-row gap-2">
-            <.button phx-disable-with={gettext("Saving...")}><%= gettext("Save event") %></.button>
+            <.button phx-disable-with={gettext("Saving...")}>{gettext("Save event")}</.button>
             <.button
               :if={@id != "new"}
               variant="destructive"
               navigate={~p"/admin/events/#{@event}/delete"}
             >
-              <%= gettext("Delete event") %>
+              {gettext("Delete event")}
             </.button>
           </div>
         </:actions>
@@ -42,13 +67,35 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   end
 
   @impl true
-  def update(%{event: event} = assigns, socket) do
-    changeset = Events.change_event(event)
-
+  def update(%{event: event, action: action} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign_form(changeset)}
+     |> apply_action(action, event)
+     |> allow_upload(
+       :photo,
+       accept: ~w[.png .jpeg .jpg],
+       max_entries: 1,
+       auto_upload: true,
+       external: &presign_upload/2
+     )}
+  end
+
+  defp apply_action(socket, :new, event) do
+    changeset = Events.change_event(event)
+
+    socket
+    |> assign(:forms, [])
+    |> assign_form(changeset)
+  end
+
+  defp apply_action(socket, :edit, event) do
+    changeset = Events.change_event(event)
+    forms = Tiki.Forms.list_forms_for_event(event.id)
+
+    socket
+    |> assign(:forms, forms)
+    |> assign_form(changeset)
   end
 
   @impl true
@@ -62,7 +109,10 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
   end
 
   def handle_event("save", %{"event" => event_params}, socket) do
-    event_params = Map.put(event_params, "team_id", socket.assigns.current_team.id)
+    event_params =
+      Map.put(event_params, "team_id", socket.assigns.current_team.id)
+      |> put_image_url(socket)
+
     save_event(socket, socket.assigns.action, event_params)
   end
 
@@ -96,9 +146,35 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
     end
   end
 
+  defp put_image_url(params, socket) do
+    {completed, []} = uploaded_entries(socket, :photo)
+
+    case completed do
+      [] -> params
+      [image | _] -> Map.put(params, "image_url", "uploads/#{image.client_name}")
+    end
+  end
+
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
 
+  defp options_for_forms(forms) do
+    Enum.map(forms, fn form -> {form.name, form.id} end)
+  end
+
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp presign_upload(entry, socket) do
+    form = Tiki.S3.presign_form(entry)
+
+    meta = %{
+      uploader: "S3",
+      key: "uploads/#{entry.client_name}",
+      url: form.url,
+      fields: Map.new(form.fields)
+    }
+
+    {:ok, meta, socket}
+  end
 end

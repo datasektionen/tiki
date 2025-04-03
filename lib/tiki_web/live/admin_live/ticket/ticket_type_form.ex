@@ -1,28 +1,82 @@
-defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
-  use TikiWeb, :live_view
+defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
+  use TikiWeb, :live_component
 
   alias Tiki.Tickets
-  alias Tiki.Tickets.TicketType
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
       <.header>
-        <%= @page_title %>
-        <:subtitle>Use this form to manage ticket type records in your database.</:subtitle>
+        {title(@action)}
+        <:subtitle>
+          {gettext(
+            "Manage ticket types for your event. Each ticket type needs to be assigned to a batch before they can be created."
+          )}
+        </:subtitle>
       </.header>
 
-      <.simple_form for={@form} id="ticket_type-form" phx-change="validate" phx-submit="save">
+      <.simple_form
+        for={@form}
+        id="ticket_type-form"
+        phx-change="validate"
+        phx-submit="save"
+        phx-target={@myself}
+      >
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+        <.input
+          field={@form[:start_time]}
+          type="datetime-local"
+          label={gettext("Start time")}
+          description={gettext("In UTC")}
+        />
+        <.input
+          field={@form[:end_time]}
+          type="datetime-local"
+          label={gettext("End time")}
+          description={gettext("In UTC")}
+        />
+
+        <.input
+          :if={@event.default_form_id != nil}
+          field={@form[:form_id]}
+          type="select"
+          label={gettext("Signup form")}
+          options={options_for_forms(@forms)}
+          default={@event.default_form_id}
+        />
+
+        <.input
+          :if={@event.default_form_id == nil}
+          field={@form[:form_id]}
+          type="select"
+          label={gettext("Signup form")}
+          options={options_for_forms(@forms)}
+          prompt={gettext("Select a form")}
+        />
+
         <.input field={@form[:purchasable]} type="checkbox" label={gettext("Purchasable")} />
+        <.input
+          field={@form[:purchase_limit]}
+          type="text"
+          label={gettext("Max number of tickets per order")}
+          description={gettext("Leave blank for unlimited")}
+        />
+
         <.input field={@form[:price]} type="number" label={gettext("Price")} />
-        <.input field={@form[:release_time]} type="datetime-local" label={gettext("Release time")} />
+        <.input
+          field={@form[:release_time]}
+          type="datetime-local"
+          label={gettext("Release time")}
+          description={gettext("In UTC. Leave blank to make immediately available")}
+        />
+
         <.input
           field={@form[:expire_time]}
           type="datetime-local"
           label={gettext("Purchase deadline")}
+          description={gettext("In UTC. Leave blank for none")}
         />
 
         <.input
@@ -36,17 +90,18 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
         <:actions>
           <div>
             <.button phx-disable-with={gettext("Saving...")}>
-              <%= gettext("Save ticket type") %>
+              {gettext("Save ticket type")}
             </.button>
             <.button
-              :if={@live_action == :edit}
+              :if={@action == :edit_ticket_type}
               type="button"
+              phx-target={@myself}
               phx-click="delete"
               variant="destructive"
               phx-disable-with={gettext("Deleting...")}
               data-confirm={gettext("Are you sure?")}
             >
-              <%= gettext("Delete ticket type") %>
+              {gettext("Delete ticket type")}
             </.button>
           </div>
         </:actions>
@@ -56,43 +111,14 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
   end
 
   @impl true
-  def mount(%{"id" => event_id} = params, _session, socket) do
-    event = Tiki.Events.get_event!(event_id, preload_ticket_types: true)
+  def update(assigns, socket) do
+    changeset = Tickets.change_ticket_type(assigns.ticket_type)
+    forms = Tiki.Forms.list_forms_for_event(assigns.event.id)
 
-    {:ok, assign(socket, event: event) |> apply_action(socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :edit, %{"ticket_type_id" => id}) do
-    ticket_type = Tickets.get_ticket_type!(id)
-
-    socket
-    |> assign(:page_title, gettext("Edit ticket type"))
-    |> assign(:ticket_type, ticket_type)
-    |> assign(:form, to_form(Tickets.change_ticket_type(ticket_type)))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-      {"Tickets", ~p"/admin/events/#{socket.assigns.event.id}/tickets"},
-      {"Edit ticket type",
-       ~p"/admin/events/#{socket.assigns.event.id}/tickets/types/#{ticket_type.id}/edit"}
-    ])
-  end
-
-  defp apply_action(socket, :new, _params) do
-    ticket_type = %TicketType{}
-
-    socket
-    |> assign(:page_title, gettext("Edit ticket type"))
-    |> assign(:ticket_type, ticket_type)
-    |> assign(:form, to_form(Tickets.change_ticket_type(ticket_type)))
-    |> assign_breadcrumbs([
-      {"Dashboard", ~p"/admin"},
-      {"Events", ~p"/admin/events"},
-      {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
-      {"Tickets", ~p"/admin/events/#{socket.assigns.event.id}/tickets"},
-      {"New ticket type", ~p"/admin/events/#{socket.assigns.event.id}/tickets/types/new"}
-    ])
+    {:ok,
+     assign(socket, assigns)
+     |> assign(:forms, forms)
+     |> assign(form: to_form(changeset))}
   end
 
   @impl true
@@ -106,7 +132,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
   end
 
   def handle_event("save", %{"ticket_type" => ticket_type_params}, socket) do
-    save_ticket_type(socket, socket.assigns.live_action, ticket_type_params)
+    save_ticket_type(socket, socket.assigns.action, ticket_type_params)
   end
 
   def handle_event("delete", _, socket) do
@@ -118,7 +144,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
      |> push_navigate(to: return_path(socket.assigns.event))}
   end
 
-  defp save_ticket_type(socket, :edit, ticket_type_params) do
+  defp save_ticket_type(socket, :edit_ticket_type, ticket_type_params) do
     case Tickets.update_ticket_type(socket.assigns.ticket_type, ticket_type_params) do
       {:ok, _ticket_type} ->
         {:noreply,
@@ -131,7 +157,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
     end
   end
 
-  defp save_ticket_type(socket, :new, ticket_type_params) do
+  defp save_ticket_type(socket, :new_ticket_type, ticket_type_params) do
     case Tickets.create_ticket_type(ticket_type_params) do
       {:ok, _ticket_type} ->
         {:noreply,
@@ -152,4 +178,11 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeForm do
 
   defp options_for_batch(batches),
     do: Enum.map(batches, fn batch -> {batch.name, batch.id} end)
+
+  defp options_for_forms(forms) do
+    Enum.map(forms, fn form -> {form.name, form.id} end)
+  end
+
+  defp title(:edit_ticket_type), do: gettext("Edit ticket type")
+  defp title(:new_ticket_type), do: gettext("New ticket type")
 end

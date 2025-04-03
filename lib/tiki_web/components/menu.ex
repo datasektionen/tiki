@@ -42,12 +42,12 @@ defmodule TikiWeb.Component.Menu do
     ~H"""
     <div
       class={[
-        "min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+        "min-w-[8rem] bg-popover text-popover-foreground overflow-hidden rounded-md border p-1 shadow-md",
         @class
       ]}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -63,14 +63,14 @@ defmodule TikiWeb.Component.Menu do
       class={
         classes([
           "hover:bg-accent",
-          "relative flex cursor-default select-none items-center rounded-xs px-2 py-1.5 text-sm outline-hidden transition-colors focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
+          "rounded-xs relative flex cursor-default select-none items-center px-2 py-1.5 text-sm outline-hidden transition-colors data-disabled:pointer-events-none data-disabled:opacity-50 focus:bg-accent focus:text-accent-foreground",
           @class
         ])
       }
       {%{"data-disabled" => @disabled}}
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -83,7 +83,7 @@ defmodule TikiWeb.Component.Menu do
   def menu_label(assigns) do
     ~H"""
     <div class={classes(["px-2 py-1.5 text-sm font-semibold", @inset && "pl-8", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -93,8 +93,8 @@ defmodule TikiWeb.Component.Menu do
 
   def menu_separator(assigns) do
     ~H"""
-    <div role="separator" class={classes(["-mx-1 my-1 h-px bg-muted", @class])}>
-      <%= render_slot(@inner_block) %>
+    <div role="separator" class={classes(["bg-muted -mx-1 my-1 h-px", @class])}>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -106,7 +106,7 @@ defmodule TikiWeb.Component.Menu do
   def menu_shortcut(assigns) do
     ~H"""
     <span class={classes(["ml-auto text-xs tracking-widest opacity-60", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </span>
     """
   end
@@ -117,7 +117,7 @@ defmodule TikiWeb.Component.Menu do
 
   def menu_group(assigns) do
     ~H"""
-    <div class={classes([@class])} role="group" {@rest}><%= render_slot(@inner_block) %></div>
+    <div class={classes([@class])} role="group" {@rest}>{render_slot(@inner_block)}</div>
     """
   end
 end

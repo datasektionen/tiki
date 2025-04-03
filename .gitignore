@@ -41,6 +41,7 @@ swish_certs/
 
 # Ignore .env file
 .env
+.env.hcl
 
 .elixir-tools/
 .lexical/

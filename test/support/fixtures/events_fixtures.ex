@@ -16,7 +16,8 @@ defmodule Tiki.EventsFixtures do
         description: "some description",
         event_date: ~U[2023-03-25 16:55:00Z],
         name: "some name",
-        team_id: team.id
+        team_id: team.id,
+        is_hidden: false
       })
       |> Tiki.Events.create_event()
 

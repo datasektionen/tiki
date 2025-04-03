@@ -9,12 +9,22 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
   @impl Phoenix.LiveView
   def mount(%{"id" => event_id}, _session, socket) do
-    initial_count = Presence.list("presence:event:#{event_id}") |> map_size
-    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+    event = Events.get_event!(event_id, preload_ticket_types: true)
 
-    if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      initial_count = Presence.list("presence:event:#{event_id}") |> map_size
+      TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
-    {:ok, assign(socket, online_count: initial_count)}
+      if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+
+      {:ok, assign(socket, event: event, online_count: initial_count)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   @impl Phoenix.LiveView
@@ -34,12 +44,10 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
   @impl Phoenix.LiveView
   def handle_params(%{"id" => event_id} = params, _, socket) do
-    event = Events.get_event!(event_id, preload_ticket_types: true)
-    recent_tickets = Orders.list_tickets_for_event(event.id, limit: 10)
+    recent_tickets = Orders.list_tickets_for_event(event_id, limit: 10)
 
     {:noreply,
      socket
-     |> assign(:event, event)
      |> apply_action(socket.assigns.live_action, params)
      |> stream(:recent_tickets, recent_tickets)}
   end
@@ -57,34 +65,34 @@ defmodule TikiWeb.AdminLive.Event.Show do
   def render(assigns) do
     ~H"""
     <.header>
-      <%= @event.name %>
+      {@event.name}
       <:subtitle>
         <span>
-          <%= Tiki.Cldr.DateTime.to_string!(@event.event_date, format: :yMMMEd) |> String.capitalize() %>
+          {Tiki.Cldr.DateTime.to_string!(@event.event_date, format: :yMMMEd) |> String.capitalize()}
         </span>·
         <span>
-          <%= @event.location %>
+          {@event.location}
         </span>
       </:subtitle>
       <:actions>
         <.button variant="link" navigate={~p"/events/#{@event}"}>
-          <%= gettext("View event page") %>
+          {gettext("View event page")}
         </.button>
         <.button
           variant="secondary"
           navigate={~p"/admin/events/#{@event}/edit"}
           class="hidden lg:inline-block"
         >
-          <%= gettext("Edit event") %>
+          {gettext("Edit event")}
         </.button>
       </:actions>
     </.header>
-    <div class="flex flex-col gap-8 py-8">
+    <div class="flex flex-col gap-8">
       <div class="grid gap-8 lg:grid-cols-3">
         <.card>
           <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
             <.card_title class="text-sm font-medium">
-              <%= gettext("Tickets sold") %>
+              {gettext("Tickets sold")}
             </.card_title>
             <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
           </.card_header>
@@ -95,7 +103,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
         <.card>
           <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
             <.card_title class="text-sm font-medium">
-              <%= gettext("Total sales") %>
+              {gettext("Total sales")}
             </.card_title>
             <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
           </.card_header>
@@ -106,13 +114,13 @@ defmodule TikiWeb.AdminLive.Event.Show do
         <.card>
           <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2">
             <.card_title class="text-sm font-medium">
-              <%= gettext("Current visitors") %>
+              {gettext("Current visitors")}
             </.card_title>
             <.icon name="hero-user-group" class="text-muted-foreground h-4 w-4" />
           </.card_header>
           <.card_content>
             <div class="text-2xl font-bold">
-              <%= @online_count %>
+              {@online_count}
             </div>
           </.card_content>
         </.card>
@@ -121,7 +129,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
         <.card class="xl:col-span-7">
           <.card_header>
             <.card_title>
-              <%= gettext("Recent orders") %>
+              {gettext("Recent orders")}
             </.card_title>
           </.card_header>
           <.card_content>
@@ -135,10 +143,10 @@ defmodule TikiWeb.AdminLive.Event.Show do
               }
             >
               <:col :let={{_id, ticket}} label={gettext("Name")}>
-                <%= ticket.order.user.full_name %>
+                {ticket.order.user.full_name}
               </:col>
               <:col :let={{_id, ticket}} label={gettext("Date")}>
-                <%= Calendar.strftime(ticket.inserted_at, "%Y-%m-%d") %>
+                {Calendar.strftime(ticket.inserted_at, "%Y-%m-%d")}
               </:col>
             </.table>
           </.card_content>

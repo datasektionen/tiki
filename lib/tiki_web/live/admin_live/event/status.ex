@@ -7,15 +7,24 @@ defmodule TikiWeb.AdminLive.Event.Status do
   alias Tiki.Presence
 
   def mount(%{"id" => event_id}, _session, socket) do
-    ticket_types = Tickets.get_availible_ticket_types(event_id)
     event = Events.get_event!(event_id)
 
-    Orders.subscribe(event_id)
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      ticket_types = Tickets.get_cached_available_ticket_types(event_id)
 
-    initial_count = Presence.list("presence:event:#{event_id}") |> map_size
-    TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+      Orders.subscribe(event_id)
 
-    {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
+      initial_count = Presence.list("presence:event:#{event_id}") |> map_size
+      TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+
+      {:ok, assign(socket, ticket_types: ticket_types, event: event, online_count: initial_count)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
   end
 
   def handle_params(_params, _url, socket) do
@@ -44,9 +53,9 @@ defmodule TikiWeb.AdminLive.Event.Status do
   def render(assigns) do
     ~H"""
     <div class="mb-4">
-      <h1 class="mb-1 text-xl font-bold">Livestatus för <%= @event.name %></h1>
+      <h1 class="mb-1 text-xl font-bold">Livestatus för {@event.name}</h1>
       <div class="text-muted-foreground text-sm">
-        Det är <%= @online_count %> personer online just nu på biljettsidan.
+        Det är {@online_count} personer online just nu på biljettsidan.
       </div>
     </div>
 
@@ -56,10 +65,10 @@ defmodule TikiWeb.AdminLive.Event.Status do
         :for={ticket_type <- @ticket_types}
         class="shadow-xs rounded-xl border p-4 hover:bg-accent/50"
       >
-        <div class="text-lg font-bold"><%= ticket_type.name %></div>
-        <div><span class="font-bold"><%= ticket_type.available %> </span>tillgängliga</div>
-        <div><span class="font-bold"><%= ticket_type.purchased %> </span>köpta</div>
-        <div><span class="font-bold"><%= ticket_type.pending %> </span>reserverade</div>
+        <div class="text-lg font-bold">{ticket_type.name}</div>
+        <div><span class="font-bold">{ticket_type.available} </span>tillgängliga</div>
+        <div><span class="font-bold">{ticket_type.purchased} </span>köpta</div>
+        <div><span class="font-bold">{ticket_type.pending} </span>reserverade</div>
       </div>
     </div>
     """

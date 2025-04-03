@@ -4,18 +4,20 @@ defmodule TikiWeb.UserLoginLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
-      <.header class="text-center">
-        Sign in to account
-        <:subtitle>
-          Don't have an account?
-          <.link navigate={~p"/users/register"} class="text-brand font-semibold hover:underline">
-            Sign up
+      <div class="mb-6 text-center">
+        <h1 class="text-foreground mb-2 text-2xl font-semibold">
+          {gettext("Sign in to your account")}
+        </h1>
+        <div class="text-muted-foreground text-sm">
+          {gettext("Don't have an account?")}
+          <.link navigate={~p"/users/register"} class="text-foreground font-semibold hover:underline">
+            {gettext("Sign up")}
           </.link>
-          for an account now.
-        </:subtitle>
-      </.header>
+          {gettext("for an account now.")}
+        </div>
+      </div>
 
-      <.simple_form for={@form} id="login_form" action={~p"/users/log_in"} phx-update="ignore">
+      <.simple_form for={@form} id="login_form" action={~p"/account/log_in"} phx-update="ignore">
         <.input field={@form[:email]} type="email" label="Email" required />
         <.input field={@form[:password]} type="password" label="Password" required />
 

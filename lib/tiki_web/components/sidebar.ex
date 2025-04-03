@@ -71,7 +71,7 @@ defmodule TikiWeb.Component.Sidebar do
 
   defp event_items(assigns) do
     ~H"""
-    <.sidebar_label><%= gettext("Event") %></.sidebar_label>
+    <.sidebar_label>{gettext("Event")}</.sidebar_label>
     <.sidebar_item
       icon="hero-calendar-days"
       text={gettext("Overview")}
@@ -81,7 +81,7 @@ defmodule TikiWeb.Component.Sidebar do
     <.sidebar_group>
       <:header>
         <.icon name="hero-user-group" class="h-4 w-4" />
-        <span><%= gettext("Registrations") %></span>
+        <span>{gettext("Registrations")}</span>
       </:header>
       <:item
         text={gettext("Attendees")}
@@ -99,7 +99,7 @@ defmodule TikiWeb.Component.Sidebar do
     <.sidebar_group>
       <:header>
         <.icon name="hero-ticket" class="h-4 w-4" />
-        <span><%= gettext("Tickets") %></span>
+        <span>{gettext("Tickets")}</span>
       </:header>
 
       <:item
@@ -127,7 +127,7 @@ defmodule TikiWeb.Component.Sidebar do
 
   defp all_event_items(assigns) do
     ~H"""
-    <.sidebar_label><%= gettext("Team") %></.sidebar_label>
+    <.sidebar_label>{gettext("Team")}</.sidebar_label>
     <.sidebar_item
       icon="hero-home"
       text={gettext("Dashboard")}
@@ -137,7 +137,7 @@ defmodule TikiWeb.Component.Sidebar do
     <.sidebar_group>
       <:header>
         <.icon name="hero-calendar-days" class="h-4 w-4" />
-        <span><%= gettext("Event") %></span>
+        <span>{gettext("Event")}</span>
       </:header>
       <:item text={gettext("All events")} to={~p"/admin/events"} active={@active_tab == :all_events} />
       <:item
@@ -149,13 +149,14 @@ defmodule TikiWeb.Component.Sidebar do
     <.sidebar_group>
       <:header>
         <.icon name="hero-cog-6-tooth" class="h-4 w-4" />
-        <span><%= gettext("Settings") %></span>
+        <span>{gettext("Settings")}</span>
       </:header>
       <:item
         text={gettext("Members")}
         to={~p"/admin/team/members"}
         active={@active_tab == :team_members}
       />
+      <:item text={gettext("Edit team")} to={~p"/admin/team/edit"} active={@active_tab == :team_edit} />
       <:item text={gettext("Payments")} to="" />
     </.sidebar_group>
     """
@@ -163,11 +164,11 @@ defmodule TikiWeb.Component.Sidebar do
 
   defp admin_items(assigns) do
     ~H"""
-    <.sidebar_label><%= gettext("Admin") %></.sidebar_label>
+    <.sidebar_label>{gettext("Admin")}</.sidebar_label>
     <.sidebar_group>
       <:header>
         <.icon name="hero-user-group" class="h-4 w-4" />
-        <span><%= gettext("Teams") %></span>
+        <span>{gettext("Teams")}</span>
       </:header>
       <:item text={gettext("All teams")} to={~p"/admin/teams"} active={@active_tab == :all_teams} />
       <:item text={gettext("New team")} to={~p"/admin/teams/new"} active={@active_tab == :new_team} />
@@ -188,7 +189,7 @@ defmodule TikiWeb.Component.Sidebar do
         <.sheet_content id="sidebar-sheet" side="left" class="w-72 p-0">
           <:custom_close_btn></:custom_close_btn>
           <div class="flex h-full flex-col">
-            <%= sidebar(Map.put(assigns, :mobile, true)) %>
+            {sidebar(Map.put(assigns, :mobile, true))}
           </div>
         </.sheet_content>
       </.sheet>
@@ -206,8 +207,7 @@ defmodule TikiWeb.Component.Sidebar do
       <.breadcrumb_list>
         <.breadcrumb_item class="text-sm">
           <.breadcrumb_page class="text-foreground">
-            <% {name, _} = List.last(assigns.breadcrumbs) %>
-            <%= name %>
+            <% {name, _} = List.last(assigns.breadcrumbs) %> {name}
           </.breadcrumb_page>
         </.breadcrumb_item>
       </.breadcrumb_list>
@@ -216,7 +216,7 @@ defmodule TikiWeb.Component.Sidebar do
       <.breadcrumb_list>
         <.breadcrumb_item :for={{{name, url}, index} <- Enum.with_index(@breadcrumbs)}>
           <.breadcrumb_link navigate={url} class={index == @len - 1 && "text-foreground"}>
-            <%= name %>
+            {name}
           </.breadcrumb_link>
           <.breadcrumb_separator :if={index != @len - 1} />
         </.breadcrumb_item>
@@ -234,11 +234,11 @@ defmodule TikiWeb.Component.Sidebar do
             <.tiki_logo class="fill-primary-foreground h-5 w-5" />
           </div>
           <div :if={@current_team} class="grid flex-1 text-left text-sm leading-tight">
-            <span class="truncate font-semibold"><%= @current_team.name %></span><span class="truncate text-xs">Team</span>
+            <span class="truncate font-semibold">{@current_team.name}</span><span class="truncate text-xs">Team</span>
           </div>
 
           <div :if={!@current_team} class="grid flex-1 text-left text-sm leading-tight">
-            <span class="truncate font-semibold"><%= gettext("No team") %></span><span class="truncate text-xs"><%= gettext("Create or join one") %></span>
+            <span class="truncate font-semibold">{gettext("No team")}</span><span class="truncate text-xs">{gettext("Create or join one")}</span>
           </div>
           <.icon name="hero-chevron-up-down" class="ml-auto h-5 w-5" />
         </button>
@@ -256,8 +256,8 @@ defmodule TikiWeb.Component.Sidebar do
                 value={membership.team.id}
               >
                 <.menu_item class="hover:cursor-pointer">
-                  <span><%= membership.team.name %></span>
-                  <.menu_shortcut>⌘<%= index %></.menu_shortcut>
+                  <span>{membership.team.name}</span>
+                  <.menu_shortcut>⌘{index}</.menu_shortcut>
                 </.menu_item>
               </button>
             </.form>
@@ -283,12 +283,12 @@ defmodule TikiWeb.Component.Sidebar do
         <.dropdown_menu_trigger>
           <button class="flex w-full flex-row items-center gap-2 rounded-md p-2 hover:bg-accent">
             <img
-              src="https://zfinger.datasektionen.se/user/asalamon/image/100"
+              src={"https://zfinger.datasektionen.se/user/#{@current_user.kth_id}/image/100"}
               class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
             />
             <div class="grid flex-1 text-left text-sm leading-tight">
-              <span class="truncate font-semibold"><%= @current_user.full_name %></span>
-              <span class="truncate text-xs"><%= @current_user.email %></span>
+              <span class="truncate font-semibold">{@current_user.full_name}</span>
+              <span class="truncate text-xs">{@current_user.email}</span>
             </div>
             <.icon name="hero-chevron-up-down" class="ml-auto h-5 w-5" />
           </button>
@@ -298,12 +298,12 @@ defmodule TikiWeb.Component.Sidebar do
             <.menu_label>
               <div class="inline-flex gap-2">
                 <img
-                  src="https://zfinger.datasektionen.se/user/asalamon/image/100"
+                  src={"https://zfinger.datasektionen.se/user/#{@current_user.kth_id}/image/100"}
                   class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
                 />
                 <div class="grid flex-1 text-left text-sm leading-tight">
-                  <span class="truncate font-semibold"><%= @current_user.full_name %></span>
-                  <span class="truncate text-xs font-normal"><%= @current_user.email %></span>
+                  <span class="truncate font-semibold">{@current_user.full_name}</span>
+                  <span class="truncate text-xs font-normal">{@current_user.email}</span>
                 </div>
               </div>
             </.menu_label>
@@ -312,15 +312,15 @@ defmodule TikiWeb.Component.Sidebar do
               <.link navigate={~p"/admin/user-settings"}>
                 <.menu_item class="hover:cursor-pointer">
                   <.icon name="hero-cog-6-tooth" class="mr-2 h-4 w-4" />
-                  <span><%= gettext("Settings") %></span>
+                  <span>{gettext("Settings")}</span>
                 </.menu_item>
               </.link>
               <.menu_separator />
 
-              <.link href={~p"/users/log_out"} method="delete">
+              <.link href={~p"/account/log_out"} method="delete">
                 <.menu_item class="hover:cursor-pointer">
                   <.icon name="hero-arrow-left-end-on-rectangle" class="mr-2 h-4 w-4" />
-                  <span><%= gettext("Log out") %></span>
+                  <span>{gettext("Log out")}</span>
                 </.menu_item>
               </.link>
             </.menu_group>
@@ -349,7 +349,7 @@ defmodule TikiWeb.Component.Sidebar do
       <details name={nil} class="group peer" open={Enum.any?(@item, & &1.active)}>
         <summary class="block cursor-pointer list-none">
           <div class="flex flex-row items-center gap-2 rounded-md p-2 text-sm hover:bg-accent">
-            <%= render_slot(@header) %>
+            {render_slot(@header)}
             <.icon
               name="hero-chevron-right-mini"
               class="mr-[2px] ml-auto h-4 w-4 transition-transform duration-300 group-open:rotate-90"
@@ -363,7 +363,7 @@ defmodule TikiWeb.Component.Sidebar do
             <div class="ml-2 border-l">
               <%= for item <- @item do %>
                 <div class={[
-                  "border-l flex flex-col pl-2 -ml-[1px]",
+                  "-ml-[1px] flex flex-col border-l pl-2",
                   item.active && "border-foreground"
                 ]}>
                   <.sidebar_item text={item.text} to={item.to} active={item.active || nil} />
@@ -392,7 +392,7 @@ defmodule TikiWeb.Component.Sidebar do
       ]}
     >
       <.icon :if={@icon} name={@icon} class="h-4 w-4" />
-      <div class="text-sm"><%= @text %></div>
+      <div class="text-sm">{@text}</div>
     </.link>
     """
   end
@@ -400,7 +400,7 @@ defmodule TikiWeb.Component.Sidebar do
   defp sidebar_label(assigns) do
     ~H"""
     <div class="text-secondary-foreground p-2 text-xs font-medium">
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end

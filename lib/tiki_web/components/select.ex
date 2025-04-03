@@ -64,7 +64,7 @@ defmodule TikiWeb.Component.Select do
     ~H"""
     <div
       id={@id}
-      class={classes(["relative group", @class])}
+      class={classes(["group relative", @class])}
       data-state="closed"
       {@rest}
       x-hide-select={hide_select(@id)}
@@ -72,7 +72,7 @@ defmodule TikiWeb.Component.Select do
       x-toggle-select={toggle_select(@id)}
       phx-click-away={JS.exec("x-hide-select")}
     >
-      <%= render_slot(@inner_block, @builder) %>
+      {render_slot(@inner_block, @builder)}
     </div>
     """
   end
@@ -87,7 +87,7 @@ defmodule TikiWeb.Component.Select do
       type="button"
       class={
         classes([
-          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+          "border-input bg-background ring-offset-background [&>span]:line-clamp-1 flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @class
         ])
       }
@@ -131,7 +131,7 @@ defmodule TikiWeb.Component.Select do
       class={
         classes([
           "select-content absolute hidden",
-          "z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md group-data-[state=open]:animate-in group-data-[state=closed]:animate-out group-data-[state=closed]:fade-out-0 group-data-[state=open]:fade-in-0 group-data-[state=closed]:zoom-out-95 group-data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "min-w-[8rem] bg-popover text-popover-foreground z-50 max-h-96 overflow-hidden rounded-md border shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 group-data-[state=closed]:animate-out group-data-[state=closed]:fade-out-0 group-data-[state=closed]:zoom-out-95 group-data-[state=open]:animate-in group-data-[state=open]:fade-in-0 group-data-[state=open]:zoom-in-95",
           @position_class,
           @class
         ])
@@ -139,7 +139,7 @@ defmodule TikiWeb.Component.Select do
       {@rest}
     >
       <div class="relative w-full p-1">
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
     </.focus_wrap>
     """
@@ -152,7 +152,7 @@ defmodule TikiWeb.Component.Select do
   def select_group(assigns) do
     ~H"""
     <div role="group" class={classes([@class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -163,8 +163,8 @@ defmodule TikiWeb.Component.Select do
 
   def select_label(assigns) do
     ~H"""
-    <div class={classes(["py-1.5 pl-8 pr-2 text-sm font-semibold", @class])} {@rest}>
-      <%= render_slot(@inner_block) %>
+    <div class={classes(["py-1.5 pr-2 pl-8 text-sm font-semibold", @class])} {@rest}>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -188,7 +188,7 @@ defmodule TikiWeb.Component.Select do
       class={
         classes([
           "group/item",
-          "relative flex w-full cursor-default select-none items-center rounded-xs py-1.5 pl-8 pr-2 text-sm outline-hidden data-disabled:pointer-events-none data-disabled:opacity-50",
+          "rounded-xs relative flex w-full cursor-default select-none items-center py-1.5 pr-2 pl-8 text-sm outline-hidden data-disabled:pointer-events-none data-disabled:opacity-50",
           @class
         ])
       }
@@ -225,14 +225,14 @@ defmodule TikiWeb.Component.Select do
           </svg>
         </span>
       </span>
-      <span class="z-0 peer-focus:text-accent-foreground"><%= @label %></span>
+      <span class="z-0 peer-focus:text-accent-foreground">{@label}</span>
     </label>
     """
   end
 
   def select_separator(assigns) do
     ~H"""
-    <div class={classes(["-mx-1 my-1 h-px bg-muted"])}></div>
+    <div class={classes(["bg-muted -mx-1 my-1 h-px"])}></div>
     """
   end
 

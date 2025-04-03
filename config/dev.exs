@@ -10,11 +10,10 @@ config :tiki, Tiki.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-config :tiki, Tiki.Swish,
+config :tiki, Swish,
   api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
-  cacert: "swish_certs/Swish_TLS_RootCA.pem",
-  cert: "swish_certs/myCertificate.pem",
-  key: "swish_certs/myPrivateKey.key",
+  cert: System.get_env("SWISH_CERT", "") |> Base.decode64!(),
+  key: System.get_env("SWISH_PRIVATE_KEY", "") |> Base.decode64!(),
   merchant_number: System.get_env("SWISH_MERCHANT_NUMBER"),
   callback_url: System.get_env("SWISH_CALLBACK_URL")
 
@@ -71,7 +70,9 @@ config :tiki, TikiWeb.Endpoint,
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :tiki, dev_routes: true
+config :tiki,
+  dev_routes: true,
+  pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se")
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -96,14 +97,29 @@ config :salad_ui, components_path: Path.join(File.cwd!(), "lib/tiki_web/componen
 
 config :tiki, Oidcc,
   # issuer: "http://localhost:7005/op",
-  issuer: "https://logout.datasektionen.se/op",
+  issuer: "https://sso.datasektionen.se/op",
   client_id: System.get_env("OIDC_CLIENT_ID"),
   client_secret: System.get_env("OIDC_CLIENT_SECRET")
 
 config :tiki, Oidcc.ProviderConfiguration,
-  issuer: "https://logout.datasektionen.se/op",
+  issuer: "https://sso.datasektionen.se/op",
   provider_configuration_opts: %{
     quirks: %{
       allow_unsafe_http: true
     }
   }
+
+# S3 config
+config :tiki, Tiki.S3,
+  bucket: System.get_env("S3_BUCKET_NAME"),
+  region: System.get_env("AWS_REGION"),
+  endpoint_url: System.get_env("AWS_ENDPOINT_URL_S3"),
+  endpoint_frontend_url: System.get_env("AWS_FRONTEND_ENDPOINT_URL_S3"),
+  access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+  secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
+
+# Imgproxy config
+config :imgproxy,
+  key: System.get_env("IMGPROXY_KEY"),
+  salt: System.get_env("IMGPROXY_SALT"),
+  prefix: System.get_env("IMAGE_FRONTEND_URL")

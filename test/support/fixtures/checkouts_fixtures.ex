@@ -25,4 +25,25 @@ defmodule Tiki.CheckoutsFixtures do
 
     stripe_checkout
   end
+
+  @doc """
+  Generate a swish_checkout.
+  """
+  def swish_checkout_fixture(attrs \\ %{}) do
+    user = Tiki.AccountsFixtures.user_fixture()
+    order = Tiki.OrdersFixtures.order_fixture(%{user_id: user.id, price: 100})
+
+    {:ok, swish_checkout} =
+      attrs
+      |> Enum.into(%{
+        user_id: user.id,
+        order_id: order.id,
+        swish_id: "some swish_id",
+        callback_identifier: "some callback_identifier",
+        token: "some token"
+      })
+      |> Tiki.Checkouts.create_swish_checkout()
+
+    swish_checkout
+  end
 end

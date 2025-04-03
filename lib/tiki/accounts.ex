@@ -102,7 +102,7 @@ defmodule Tiki.Accounts do
   def register_user(attrs) do
     %User{}
     |> User.registration_changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(returning: [:full_name])
   end
 
   @doc """
@@ -222,7 +222,7 @@ defmodule Tiki.Accounts do
 
   ## Examples
 
-      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm_email/#{&1})")
+      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/account/confirm_email/#{&1})")
       {:ok, %{to: ..., body: ...}}
 
   """
@@ -307,7 +307,11 @@ defmodule Tiki.Accounts do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query)
+
+    case Repo.one(query) do
+      %UserToken{user: user} -> user
+      nil -> nil
+    end
   end
 
   @doc """

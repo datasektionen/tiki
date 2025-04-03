@@ -3,6 +3,10 @@ import Config
 # Only in tests, remove the complexity from the password hashing algorithm
 config :bcrypt_elixir, :log_rounds, 1
 
+config :tiki,
+  stripe_module: Tiki.Support.StripeMock,
+  swish_module: Tiki.Support.SwishMock
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -16,7 +20,7 @@ config :tiki, Tiki.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
-config :tiki, Tiki.Swish,
+config :tiki, Swish,
   api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
   cacert: "swish_certs/Swish_TLS_RootCA.pem",
   cert: "swish_certs/myCertificate.pem",
@@ -57,3 +61,5 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :tiki, Oban, testing: :inline

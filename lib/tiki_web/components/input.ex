@@ -35,6 +35,7 @@ defmodule TikiWeb.Component.Input do
   attr :name, :any
   attr :label, :string, default: nil
   attr :value, :any
+  attr :default, :any
 
   attr :type, :string,
     default: "text",
@@ -49,6 +50,7 @@ defmodule TikiWeb.Component.Input do
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :description, :string, default: nil, doc: "the help description for the input"
 
   attr :rest, :global,
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
@@ -67,7 +69,7 @@ defmodule TikiWeb.Component.Input do
 
     ~H"""
     <div class={@rest[:class]}>
-      <label class="text-muted-foreground flex items-center gap-4 text-sm">
+      <label class="flex items-center gap-4 text-sm">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -77,10 +79,10 @@ defmodule TikiWeb.Component.Input do
           checked={@checked}
           class="border-primary text-primary bg-background size-4 rounded-sm shadow-sm checked:bg-primary focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
-        />
-        <%= @label %>
+        /> {@label}
       </label>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -88,7 +90,7 @@ defmodule TikiWeb.Component.Input do
   def input(%{type: "select"} = assigns) do
     ~H"""
     <div class={@rest[:class]}>
-      <.label for={@id}><%= @label %></.label>
+      <.label for={@id}>{@label}</.label>
       <select
         id={@id}
         name={@name}
@@ -96,10 +98,11 @@ defmodule TikiWeb.Component.Input do
         multiple={@multiple}
         {@rest}
       >
-        <option :if={@prompt} value=""><%= @prompt %></option>
-        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+        <option :if={@prompt} value="">{@prompt}</option>
+        {Phoenix.HTML.Form.options_for_select(@options, @value)}
       </select>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -107,19 +110,20 @@ defmodule TikiWeb.Component.Input do
   def input(%{type: "textarea"} = assigns) do
     ~H"""
     <div class={@rest[:class]}>
-      <.label for={@id}><%= @label %></.label>
+      <.label for={@id}>{@label}</.label>
       <textarea
         id={@id}
         name={@name}
         class={[
           @errors == [] && "border-input",
-          "mt-2 min-h-[10rem] bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:ring-offset-background focus:border-input focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "min-h-[10rem] bg-background ring-offset-background mt-2 flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:ring-offset-background focus:border-input focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
         {@rest}
-      ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -128,20 +132,22 @@ defmodule TikiWeb.Component.Input do
   def input(assigns) do
     ~H"""
     <div class={@rest[:class]}>
-      <.label for={@id}><%= @label %></.label>
+      <.label for={@id}>{@label}</.label>
       <input
         type={@type}
         name={@name}
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 flex h-10 w-full focus:ring-offset-background focus:border-input rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:ring-offset-background focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
         {@rest}
       />
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
+
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -161,8 +167,8 @@ defmodule TikiWeb.Component.Input do
       class="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       {@rest}
     >
-      <option :if={@prompt} value=""><%= @prompt %></option>
-      <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+      <option :if={@prompt} value="">{@prompt}</option>
+      {Phoenix.HTML.Form.options_for_select(@options, @value)}
     </select>
     """
   end
@@ -228,7 +234,7 @@ defmodule TikiWeb.Component.Input do
     ~H"""
     <div>
       <div class={@rest[:class]}>
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
         <div
           :for={
             {%{value: value, class: class} = rad, idx} <-
@@ -236,7 +242,7 @@ defmodule TikiWeb.Component.Input do
           }
           class={class}
         >
-          <label for={"#{@id}-#{idx}"}><%= render_slot(rad) %></label>
+          <label for={"#{@id}-#{idx}"}>{render_slot(rad)}</label>
           <input
             type="radio"
             name={@name}
@@ -248,7 +254,7 @@ defmodule TikiWeb.Component.Input do
           />
         </div>
       </div>
-      <.error :for={msg <- @errors}><%= msg %></.error>
+      <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
   end
@@ -256,12 +262,13 @@ defmodule TikiWeb.Component.Input do
   @doc """
   A generic form component that works with Changesets generated from Haj.Form.
 
-  Question types are: :select, :multi_select, :text_area, :text
+  Question types are: :select, :multi_select, :text_area, :text, :email, :attendee_name
   """
 
   attr :question, :any, required: true
   attr :field, :any, required: true
   attr :class, :string, default: ""
+  attr :default, :any
 
   def form_input(%{question: %{type: :select}} = assigns) do
     ~H"""
@@ -274,8 +281,8 @@ defmodule TikiWeb.Component.Input do
   def form_input(%{question: %{type: :multi_select}} = assigns) do
     ~H"""
     <div class={@class}>
-      <label class="block text-sm font-semibold leading-6 text-zinc-800">
-        <%= @question.name %>
+      <label class="text-muted-foreground block text-sm font-semibold leading-6">
+        {@question.name}
       </label>
       <div class="mt-2 flex flex-col gap-1">
         <div :for={option <- @question.options}>
@@ -288,7 +295,7 @@ defmodule TikiWeb.Component.Input do
             label={option}
           />
         </div>
-        <.error :for={msg <- @errors}><%= msg %></.error>
+        <.error :for={msg <- @errors}>{msg}</.error>
       </div>
     </div>
     """
@@ -302,10 +309,18 @@ defmodule TikiWeb.Component.Input do
     """
   end
 
+  def form_input(%{question: %{type: :email}} = assigns) do
+    ~H"""
+    <div class={@class}>
+      <.input field={@field} type="email" label={@question.name} default={@default} />
+    </div>
+    """
+  end
+
   def form_input(assigns) do
     ~H"""
     <div class={@class}>
-      <.input field={@field} type="text" label={@question.name} />
+      <.input field={@field} type="text" label={@question.name} default={@default} />
     </div>
     """
   end

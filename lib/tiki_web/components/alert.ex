@@ -25,14 +25,14 @@ defmodule TikiWeb.Component.Alert do
     <div
       class={
         classes([
-          "relative w-full rounded-lg border p-4 [&>span~*]:pl-7 [&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:left-4 [&>span]:top-4",
+          "[&>span+div]:translate-y-[-3px] [&>span]:absolute [&>span]:top-4 [&>span]:left-4 [&>span~*]:pl-7 relative w-full rounded-lg border p-4",
           @variant_class,
           @class
         ])
       }
       {@rest}
     >
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -46,16 +46,8 @@ defmodule TikiWeb.Component.Alert do
 
   def alert_title(assigns) do
     ~H"""
-    <h5
-      class={
-        classes([
-          "mb-1 font-medium leading-none tracking-tight",
-          @class
-        ])
-      }
-      {@rest}
-    >
-      <%= render_slot(@inner_block) %>
+    <h5 class={classes(["mb-1 font-medium leading-none tracking-tight", @class])} {@rest}>
+      {render_slot(@inner_block)}
     </h5>
     """
   end
@@ -69,16 +61,8 @@ defmodule TikiWeb.Component.Alert do
 
   def alert_description(assigns) do
     ~H"""
-    <div
-      class={
-        classes([
-          "text-sm [&_p]:leading-relaxed",
-          @class
-        ])
-      }
-      {@rest}
-    >
-      <%= render_slot(@inner_block) %>
+    <div class={classes(["[&_p]:leading-relaxed text-sm", @class])} {@rest}>
+      {render_slot(@inner_block)}
     </div>
     """
   end

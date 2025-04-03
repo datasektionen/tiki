@@ -6,14 +6,114 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   alias Tiki.Tickets
   alias Tiki.Tickets.TicketType
 
+  import TikiWeb.Component.Sheet
+
   @impl Phoenix.LiveView
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def render(assigns) do
+    ~H"""
+    <div class="my-8">
+      <.header>
+        {gettext("Tickets")}
+        <:subtitle>
+          {gettext(
+            "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
+          )}
+        </:subtitle>
+
+        <:actions>
+          <.link patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
+            <.button variant="secondary">
+              {gettext("New batch")}
+            </.button>
+          </.link>
+
+          <.link patch={~p"/admin/events/#{@event}/tickets/types/new"}>
+            <.button variant="secondary">
+              {gettext("New ticket type")}
+            </.button>
+          </.link>
+        </:actions>
+      </.header>
+
+      <div id="batch-root" class="my-8 flex flex-col gap-4" data-batch="none">
+        <.ticket_batch :for={batch <- @batches} batch={batch} />
+
+        <div :if={@batches == []} class="p-4 text-center">
+          <.icon name="hero-rectangle-stack-solid" class="text-muted-foreground/20 size-12" />
+          <h3 class="text-foreground mt-2 text-sm font-semibold">
+            {gettext("No ticket batches")}
+          </h3>
+          <p class="text-muted-foreground mt-1 text-sm">
+            {gettext("Create a new batch to get started.")}
+          </p>
+          <div class="mt-6">
+            <.link :if={@batches == []} patch={~p"/admin/events/#{@event}/tickets/batches/new"}>
+              <.button>
+                <.icon name="hero-plus" class="size-4 mr-2" />
+                {gettext("Create batch")}
+              </.button>
+            </.link>
+          </div>
+        </div>
+      </div>
+
+      <.sheet :if={@live_action in [:new_batch, :edit_batch]} class="">
+        <.sheet_content
+          show
+          id="batch-sheet"
+          side="right"
+          class="w-full"
+          on_cancel={JS.navigate(~p"/admin/events/#{@event}/tickets")}
+        >
+          <.live_component
+            id="batch-form-component"
+            module={TikiWeb.AdminLive.Ticket.BatchFormComponent}
+            batch={@batch}
+            event={@event}
+            action={@live_action}
+          />
+        </.sheet_content>
+      </.sheet>
+
+      <.sheet :if={@live_action in [:new_ticket_type, :edit_ticket_type]} class="">
+        <.sheet_content
+          show
+          id="batch-sheet"
+          side="right"
+          class="w-full"
+          on_cancel={JS.navigate(~p"/admin/events/#{@event}/tickets")}
+        >
+          <.live_component
+            id="batch-form-component"
+            module={TikiWeb.AdminLive.Ticket.TicketTypeFormComponent}
+            ticket_type={@ticket_type}
+            event={@event}
+            action={@live_action}
+          />
+        </.sheet_content>
+      </.sheet>
+    </div>
+    """
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"id" => event_id} = params, _session, socket) do
-    socket = assign_graph(socket, event_id)
+  def mount(%{"id" => event_id}, _session, socket) do
+    event = Events.get_event!(event_id, preload_ticket_types: true)
+
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      {:ok, assign(socket, event: event)}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+    end
+  end
+
+  @impl Phoenix.LiveView
+  def handle_params(params, _session, socket) do
+    socket = assign_graph(socket, socket.assigns.event)
 
     {:noreply,
      socket
@@ -31,9 +131,15 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   def apply_action(socket, :edit_batch, %{"batch_id" => batch_id}) do
     batch = Tickets.get_ticket_batch!(batch_id)
 
-    socket
-    |> assign(:page_title, gettext("Edit Ticket Batch"))
-    |> assign(:batch, batch)
+    if socket.assigns.event.id == batch.event_id do
+      socket
+      |> assign(:page_title, gettext("Edit Ticket Batch"))
+      |> assign(:batch, batch)
+    else
+      socket
+      |> put_flash(:error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/tickets")
+    end
   end
 
   def apply_action(socket, :new_batch, _params) do
@@ -45,43 +151,111 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   def apply_action(socket, :edit_ticket_type, %{"ticket_type_id" => tt_id}) do
     ticket_type = Tickets.get_ticket_type!(tt_id)
 
-    socket
-    |> assign(:page_title, gettext("Edit Ticket type"))
-    |> assign(:ticket_type, ticket_type)
-  end
-
-  def apply_action(socket, :new_ticket_type, _params) do
-    socket
-    |> assign(:page_title, gettext("New Ticket type"))
-    |> assign(:ticket_type, %TicketType{})
-  end
-
-  @impl Phoenix.LiveView
-  def handle_event("drop", %{"batch" => batch_id, "to" => %{"batch" => parent_batch_id}}, socket) do
-    ticket_batch = Tickets.get_ticket_batch!(batch_id)
-
-    parent_batch_id =
-      if parent_batch_id == "none", do: nil, else: String.to_integer(parent_batch_id)
-
-    if parent_batch_id == ticket_batch.id do
-      {:noreply, socket}
+    if socket.assigns.event.id == ticket_type.ticket_batch.event_id do
+      socket
+      |> assign(:page_title, gettext("Edit Ticket type"))
+      |> assign(:ticket_type, ticket_type)
     else
-      Tickets.update_ticket_batch(ticket_batch, %{"parent_batch_id" => parent_batch_id})
-
-      {:noreply, assign_graph(socket, socket.assigns.event.id)}
+      socket
+      |> put_flash(:error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/tickets")
     end
   end
 
-  def handle_event("drop", %{"ticketType" => tt_id, "to" => %{"batch" => batch_id}}, socket) do
-    ticket_type = Tickets.get_ticket_type!(tt_id)
+  def apply_action(socket, :new_ticket_type, params) do
+    ticket_type =
+      case params do
+        %{"batch_id" => batch_id} -> %TicketType{ticket_batch_id: batch_id}
+        _ -> %TicketType{}
+      end
 
-    Tickets.update_ticket_type(ticket_type, %{"ticket_batch_id" => batch_id})
-
-    {:noreply, assign_graph(socket, socket.assigns.event.id)}
+    socket
+    |> assign(:page_title, gettext("New Ticket type"))
+    |> assign(:ticket_type, ticket_type)
   end
 
-  defp assign_graph(socket, event_id) do
-    event = Events.get_event!(event_id, preload_ticket_types: true)
+  attr :batch, :map
+
+  defp ticket_batch(assigns) do
+    ~H"""
+    <div
+      class="border-border bg-muted/40 w-full overflow-hidden rounded-md text-sm"
+      data-batch={@batch.batch.id}
+    >
+      <.link
+        patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/batches/#{@batch.batch}/edit"}
+        class="flex flex-row items-center justify-between gap-2 rounded-md p-4 hover:bg-accent"
+      >
+        <div class="inline-flex items-center gap-2">
+          <.icon name="hero-rectangle-stack h-4 w-4" />
+          {@batch.batch.name}
+        </div>
+        <div :if={@batch.batch.max_size} class="text-muted-foreground">
+          {"#{@batch.batch.max_size} #{gettext("tickets")}"}
+        </div>
+      </.link>
+
+      <div
+        :if={@batch.batch.ticket_types != []}
+        class="flex flex-col pl-4"
+        id={"batch-zone-#{@batch.batch.id}"}
+        data-batch={@batch.batch.id}
+      >
+        <.link
+          :for={ticket_type <- @batch.batch.ticket_types |> Enum.sort_by(&{&1.price, &1.name})}
+          patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/types/#{ticket_type}/edit"}
+          class="ml-2 border-l"
+          data-ticket-type={ticket_type.id}
+        >
+          <div class="-ml-[1px] border-foreground flex flex-col border-l pl-2">
+            <div class="text-foreground inline-flex items-center gap-2 rounded-md p-4 hover:bg-accent">
+              <div class="inline-flex items-center gap-2">
+                <.icon name="hero-ticket h-4 w-4" />
+                {ticket_type.name}
+              </div>
+              <div class="text-muted-foreground">
+                {ticket_type.price} kr
+              </div>
+            </div>
+          </div>
+        </.link>
+      </div>
+
+      <div
+        :if={@batch.children != []}
+        class="flex flex-col pl-4"
+        id={"batch-zone-#{@batch.batch.id}-children"}
+        data-batch={@batch.batch.id}
+      >
+        <div
+          :for={child <- @batch.children |> Enum.sort_by(& &1.batch.name)}
+          class="ml-2 border-l"
+          data-batch={child.batch.id}
+        >
+          <div class="-ml-[1px] border-foreground flex flex-col border-l pl-2">
+            <div class="text-foreground inline-flex items-center gap-2 rounded-md">
+              <.ticket_batch batch={child} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <.link
+        class="flex flex-col gap-1 rounded-md p-4 hover:bg-accent"
+        patch={
+          ~p"/admin/events/#{@batch.batch.event_id}/tickets/types/new?batch_id=#{@batch.batch.id}"
+        }
+      >
+        <div class="text-foreground inline-flex items-center gap-2 rounded-md text-sm">
+          <.icon name="hero-plus-circle" class="size-4 ml-[1px]" />
+          {gettext("Add ticket")}
+        </div>
+      </.link>
+    </div>
+    """
+  end
+
+  defp assign_graph(socket, event) do
     batches = get_batch_graph(event.ticket_batches)
 
     assign(socket, event: event, batches: batches)
@@ -120,75 +294,5 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     {^node, label} = :digraph.vertex(graph, node)
 
     Map.put(label, :children, children)
-  end
-
-  attr :batch, :map
-  attr :level, :integer, default: 0
-
-  defp ticket_batch(assigns) do
-    ~H"""
-    <div
-      class="bg-accent/50 border-border shadow-xs w-full overflow-hidden rounded-lg border"
-      data-batch={@batch.batch.id}
-    >
-      <.link
-        patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/batches/#{@batch.batch}/edit"}
-        phx-click={JS.push_focus()}
-        class="bg-accent/50 flex flex-row justify-between px-4 py-4 hover:bg-accent"
-      >
-        <div class="inline-flex items-center gap-2">
-          <.icon name="hero-rectangle-stack-mini h-4 w-4" />
-          <%= @batch.batch.name %>
-        </div>
-        <div :if={@batch.batch.max_size}>
-          max <%= @batch.batch.max_size %>
-        </div>
-      </.link>
-      <div
-        :if={@batch.batch.ticket_types != []}
-        class="flex flex-col"
-        id={"batch-zone-#{@batch.batch.id}"}
-        phx-hook="Sortable"
-        data-batch={@batch.batch.id}
-      >
-        <.link
-          :for={ticket_type <- @batch.batch.ticket_types}
-          patch={~p"/admin/events/#{@batch.batch.event_id}/tickets/types/#{ticket_type}/edit"}
-          class="flex flex-row justify-between px-4 py-4 hover:bg-accent"
-          data-ticket-type={ticket_type.id}
-        >
-          <div class="inline-flex items-center gap-2">
-            <.icon name="hero-ticket-mini h-4 w-4" />
-            <%= ticket_type.name %>
-          </div>
-          <div class="text-muted-foreground">
-            <%= ticket_type.price %> kr
-          </div>
-        </.link>
-      </div>
-
-      <div
-        :if={@batch.children != []}
-        class="my-4 mr-2 flex flex-col gap-4"
-        id={"batch-zone-#{@batch.batch.id}-children"}
-        phx-hook="Sortable"
-        data-batch={@batch.batch.id}
-      >
-        <div :for={child <- @batch.children} class="ml-4" data-batch={child.batch.id}>
-          <.ticket_batch batch={child} level={@level + 1} />
-        </div>
-      </div>
-
-      <div
-        :if={@batch.batch.ticket_types == [] && @batch.children == []}
-        id={"batch-zone-#{@batch.batch.id}-no-children"}
-        phx-hook="Sortable"
-        data-batch={@batch.batch.id}
-        class="flex flex-col justify-between px-4 py-4 hover:bg-background"
-      >
-        <%= gettext("No tickets") %>
-      </div>
-    </div>
-    """
   end
 end
