@@ -1,5 +1,6 @@
 job "tiki" {
   type = "service"
+  namespace = "metaspexet"
 
   group "tiki" {
 
@@ -72,8 +73,8 @@ EOF
         provider = "nomad"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.imgproxy.rule=Host(`tiki-imgproxy.datasektionen.se`)",
-          "traefik.http.routers.imgproxy.tls.certresolver=default"
+          "traefik.http.routers.tiki-imgproxy.rule=Host(`tiki-imgproxy.datasektionen.se`)",
+          "traefik.http.routers.tiki-imgproxy.tls.certresolver=default"
         ]
       }
 
@@ -90,15 +91,15 @@ EOF
 {{ with nomadVar "nomad/jobs/tiki" }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
-IMGPROXY_BIND=:{{ env "NOMAD_PORT_imgproxyhttp" }}
 AWS_ACCESS_KEY_ID={{ .aws_access_key_id }}
 AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
+{{ end }}
+IMGPROXY_BIND=:{{ env "NOMAD_PORT_imgproxyhttp" }}
 IMGPROXY_MAX_SRC_RESOLUTION=30
 IMGPROXY_USE_S3=true
 IMGPROXY_TTL=31536000
 AWS_REGION="eu-west-1"
 IMGPROXY_BASE_URL="s3://salamon-test"
-{{ end }}
 EOF
         destination = "local/.env"
         env         = true
