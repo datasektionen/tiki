@@ -240,7 +240,11 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
 
   def handle_event("cancel", _params, socket) do
     Orders.maybe_cancel_order(socket.assigns.order.id)
-    {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
+
+    case socket.assigns.action do
+      :embedded_purchase -> {:noreply, socket}
+      _ -> {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
+    end
   end
 
   defp init_checkout(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)

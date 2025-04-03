@@ -75,6 +75,7 @@ defmodule TikiWeb.EventLive.Show do
     <.live_component
       :if={@live_action in [:purchase, :embedded_purchase]}
       module={TikiWeb.PurchaseLive.PurchaseComponent}
+      action={@live_action}
       id={@event.id}
       event={@event}
       order={@order}
