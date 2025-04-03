@@ -97,7 +97,7 @@ let liveSocket = new LiveSocket(socketUrl, Socket, {
   params: { _csrf_token: csrfToken },
   hooks: Hooks,
   longPollFallbackMs: socketUrl === "/embed/live" ? 2000 : undefined,
-  uploaders: Uploaders
+  uploaders: Uploaders,
 });
 
 // Show progress bar on live navigation and form submits
@@ -124,6 +124,12 @@ window.addEventListener("phx:js-exec", ({ detail }) => {
 window.addEventListener("embedded:close", (event) => {
   event.preventDefault();
   parent.postMessage({ type: "close" }, "*");
+});
+
+window.addEventListener("embedded:order", (event) => {
+  event.preventDefault();
+  console.log(event);
+  parent.postMessage({ type: "order", order: event.detail.order }, "*");
 });
 
 // Set dark/light mode

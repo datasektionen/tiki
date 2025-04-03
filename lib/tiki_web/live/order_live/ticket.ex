@@ -3,7 +3,6 @@ defmodule TikiWeb.OrderLive.Ticket do
 
   alias Tiki.Orders
 
-  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="space-y-8">
@@ -67,7 +66,7 @@ defmodule TikiWeb.OrderLive.Ticket do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => ticket_id} = params, _session, socket) do
+  def mount(%{"id" => ticket_id} = _params, _session, socket) do
     # TODO: fix this preloading nonsense
     ticket =
       Orders.get_ticket!(ticket_id)

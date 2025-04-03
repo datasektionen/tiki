@@ -60,8 +60,8 @@ defmodule TikiWeb.Router do
     live_session :embedded,
       layout: {TikiWeb.Layouts, :embedded},
       on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
-      live "/events/:event_id/tickets", PurchaseLive.Tickets, :embedded_tickets
-      live "/events/:event_id/purchase/:order_id", PurchaseLive.Tickets, :embedded_purchase
+      live "/events/:event_id/tickets", EventLive.Show, :embedded
+      live "/events/:event_id/purchase/:order_id", EventLive.Show, :embedded_purchase
 
       live "/orders/:id", OrderLive.Show, :embedded_show
       live "/tickets/:id/form", OrderLive.TicketForm, :embedded_form
@@ -75,7 +75,7 @@ defmodule TikiWeb.Router do
     |> put_resp_header(
       "content-security-policy",
       # Add your list of allowed domain(s) here
-      "frame-ancestors 'self' http://localhost:4001"
+      "frame-ancestors 'self' http://localhost:4001 http://localhost:4003"
     )
   end
 

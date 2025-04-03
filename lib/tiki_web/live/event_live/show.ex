@@ -11,7 +11,7 @@ defmodule TikiWeb.EventLive.Show do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="flex flex-col gap-4">
+    <div :if={@live_action not in [:embedded, :embedded_purchase]} class="flex flex-col gap-4">
       <h1 class="text-2xl font-bold leading-9">{@event.name}</h1>
       <div class="flex flex-col items-start gap-4 lg:grid lg:grid-cols-3">
         <div class="col-span-2 flex flex-col gap-4">
@@ -64,7 +64,16 @@ defmodule TikiWeb.EventLive.Show do
     </div>
 
     <.live_component
-      :if={@live_action == :purchase}
+      :if={@live_action == :embedded}
+      module={TicketsComponent}
+      id="tickets-component"
+      current_user={@current_user}
+      event={@event}
+      order={@order}
+    />
+
+    <.live_component
+      :if={@live_action in [:purchase, :embedded_purchase]}
       module={TikiWeb.PurchaseLive.PurchaseComponent}
       id={@event.id}
       event={@event}
@@ -90,12 +99,19 @@ defmodule TikiWeb.EventLive.Show do
       Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
     end
 
+    layout =
+      case socket.assigns.live_action do
+        :embedded_purchase -> :blank
+        :embedded -> :embedded
+        _ -> :app
+      end
+
     {:ok,
      assign(socket,
        event: event,
        online_count: initial_count,
        order: nil
-     )}
+     ), layout: {TikiWeb.Layouts, layout}}
   end
 
   @impl true
@@ -103,7 +119,18 @@ defmodule TikiWeb.EventLive.Show do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  def apply_action(socket, :purchase, %{"order_id" => order_id}) do
+  def apply_action(socket, :index, _params) do
+    socket
+    |> assign(:page_title, socket.assigns.event.name)
+  end
+
+  def apply_action(socket, :embedded, _params) do
+    socket
+    |> assign(:page_title, socket.assigns.event.name)
+  end
+
+  def apply_action(socket, purchase_action, %{"order_id" => order_id})
+      when purchase_action in [:purchase, :embedded_purchase] do
     order = Orders.get_order!(order_id)
 
     if connected?(socket) do
@@ -112,16 +139,16 @@ defmodule TikiWeb.EventLive.Show do
 
     case order.status do
       :paid ->
-        push_navigate(socket, to: ~p"/orders/#{order.id}")
+        url =
+          if socket.assigns.live_action in [:embedded, :embedded_purchase],
+            do: ~p"/embed/orders/#{order.id}",
+            else: ~p"/orders/#{order.id}"
+
+        push_navigate(socket, to: url)
 
       _ ->
         assign(socket, order: order)
     end
-  end
-
-  def apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, socket.assigns.event.name)
   end
 
   @impl true
@@ -136,9 +163,14 @@ defmodule TikiWeb.EventLive.Show do
 
   def handle_info({:paid, order}, socket) do
     if order.status == :paid do
+      url =
+        if socket.assigns.live_action in [:embedded, :embedded_purchase],
+          do: ~p"/embed/orders/#{order.id}",
+          else: ~p"/orders/#{order.id}"
+
       {:noreply,
        put_flash(socket, :info, gettext("Order paid!"))
-       |> push_navigate(to: ~p"/orders/#{order.id}")}
+       |> push_navigate(to: url)}
     else
       {:noreply, assign(socket, order: order)}
     end

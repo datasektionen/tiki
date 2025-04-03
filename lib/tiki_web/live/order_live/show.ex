@@ -6,10 +6,12 @@ defmodule TikiWeb.OrderLive.Show do
   import TikiWeb.Component.Card
   import TikiWeb.Component.Skeleton
 
-  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="space-y-2 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
+    <div
+      class="space-y-2 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0"
+      phx-mounted={JS.dispatch("embedded:order", detail: %{order: @order.id})}
+    >
       <div class="flex sm:items-baseline sm:space-x-4">
         <h1 class="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
           {gettext("Thank you for your order!")}
@@ -49,7 +51,7 @@ defmodule TikiWeb.OrderLive.Show do
               <div class="ml-6">
                 <.link navigate={ticket_path(ticket, @live_action)}>
                   <h3 class="text-foreground text-base font-medium">
-                    {ticket.ticket_type.name} <span aria-hidden="true"> &rarr;</span>;
+                    {ticket.ticket_type.name} <span aria-hidden="true"> &rarr;</span>
                   </h3>
                 </.link>
                 <p class="text-foreground mt-2 text-sm font-medium">
