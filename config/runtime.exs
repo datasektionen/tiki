@@ -87,12 +87,14 @@ if config_env() == :prod do
 
   # Stripe config
   stripe_api_key = System.get_env("STRIPE_API_KEY") || raise "STRIPE_API_KEY is not set"
+  stripe_public_key = System.get_env("STRIPE_PUBLIC_KEY") || raise "STRIPE_PUBLIC_KEY is not set"
 
   stripe_webhook_secret =
     System.get_env("STRIPE_WEBHOOK_SECRET") || raise "STRIPE_WEBHOOK_SECRET is not set"
 
   config :stripity_stripe,
     api_key: stripe_api_key,
+    public_key: stripe_public_key,
     webhook_secret: stripe_webhook_secret
 
   # Oidc login

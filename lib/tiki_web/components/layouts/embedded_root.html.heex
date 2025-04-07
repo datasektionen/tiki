@@ -20,4 +20,9 @@
   <body class="bg-transparent antialiased">
     {@inner_content}
   </body>
+  <script>
+    window._env_ = {
+      STRIPE_PUBLIC_KEY: "<%= Application.get_env(:stripity_stripe, :public_key) %>"
+    };
+  </script>
 </html>

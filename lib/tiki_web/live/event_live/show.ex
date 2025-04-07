@@ -65,6 +65,7 @@ defmodule TikiWeb.EventLive.Show do
 
     <.live_component
       :if={@live_action == :embedded}
+      embedded
       module={TicketsComponent}
       id="tickets-component"
       current_user={@current_user}
