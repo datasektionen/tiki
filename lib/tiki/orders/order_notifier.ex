@@ -81,7 +81,7 @@ defmodule Tiki.Orders.OrderNotifier do
               border-radius="8px"
               font-size="14px"
               font-weight="bold"
-              href={"http://localhost:4000/orders/#{@order.id}"}
+              href={"#{TikiWeb.Endpoint.url()}/orders/#{@order.id}"}
               align="left"
             >
               View your tickets
@@ -193,7 +193,7 @@ defmodule Tiki.Orders.OrderNotifier do
           <mj-column>
             <mj-text font-size="14px">
               Tiki är en eventplattform utvecklad för och av Datasektionen på KTH. <br />
-              tiki@datasektionen.se
+              tiki.datasektionen.se
             </mj-text>
           </mj-column>
         </mj-section>
