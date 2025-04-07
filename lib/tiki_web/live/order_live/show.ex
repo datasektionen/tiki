@@ -6,6 +6,7 @@ defmodule TikiWeb.OrderLive.Show do
   import TikiWeb.Component.Card
   import TikiWeb.Component.Skeleton
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div

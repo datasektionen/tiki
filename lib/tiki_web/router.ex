@@ -74,8 +74,8 @@ defmodule TikiWeb.Router do
     |> delete_resp_header("x-frame-options")
     |> put_resp_header(
       "content-security-policy",
-      # Add your list of allowed domain(s) here
-      "frame-ancestors 'self' http://localhost:4001 http://localhost:4003"
+      # Add your list of allowed domain(s) here.
+      "frame-ancestors 'self' #{Application.get_env(:tiki, :allowed_origins)}"
     )
   end
 

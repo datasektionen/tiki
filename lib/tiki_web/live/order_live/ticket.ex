@@ -3,6 +3,7 @@ defmodule TikiWeb.OrderLive.Ticket do
 
   alias Tiki.Orders
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="space-y-8">
