@@ -27,15 +27,14 @@ defmodule TikiWeb.OrderLive.Ticket do
               <h3 class="text-foreground">
                 {@ticket.ticket_type.name}
               </h3>
-              <p class="text-muted-foreground text-sm">
-                {@ticket.ticket_type.description}
+              <p :if={@ticket.ticket_type.start_time} class="text-muted-foreground text-sm">
+                {gettext("Start time")}
+                <time datetime={@ticket.ticket_type.start_time}>
+                  {Tiki.Cldr.DateTime.to_string!(@ticket.ticket_type.start_time, format: :short)}
+                </time>
               </p>
               <p class="text-muted-foreground text-sm">
-                {gettext("Purchased")}
-                <!-- TODO: have event date here instead of purchase date -->
-                <time datetime={@ticket.inserted_at}>
-                  {Tiki.Cldr.DateTime.to_string!(@ticket.inserted_at, format: :short)}
-                </time>
+                {@ticket.ticket_type.description}
               </p>
             </div>
           </div>
