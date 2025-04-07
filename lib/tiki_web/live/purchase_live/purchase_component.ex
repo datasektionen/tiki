@@ -37,7 +37,12 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)} safe>
+      <.dialog
+        id="purchase-modal"
+        show
+        on_cancel={JS.push("cancel", target: @myself) |> JS.dispatch("embedded:close")}
+        safe
+      >
         <div :if={@order.status == :cancelled}>
           {gettext("Ya messed up, order is cancelled")}
         </div>
@@ -235,7 +240,11 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
 
   def handle_event("cancel", _params, socket) do
     Orders.maybe_cancel_order(socket.assigns.order.id)
-    {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
+
+    case socket.assigns.action do
+      :embedded_purchase -> {:noreply, socket}
+      _ -> {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
+    end
   end
 
   defp init_checkout(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)

@@ -46,6 +46,7 @@ PHX_HOST=beta-tiki.datasektionen.se
 PORT={{ env "NOMAD_PORT_tikihttp" }}
 SPAM_API_KEY={{ .spam_api_key }}
 STRIPE_API_KEY={{ .stripe_api_key }}
+STRIPE_PUBLIC_KEY={{ .stripe_public_key }}
 STRIPE_WEBHOOK_SECRET={{ .stripe_webhook_secret }}
 OIDC_ISSUER_URL=https://sso.datasektionen.se/op
 OIDC_CLIENT_ID={{ .oidc_client_id }}

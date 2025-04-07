@@ -143,12 +143,13 @@ defmodule Tiki.Checkouts do
 
   @doc """
   Confirms a stripe payment intent with the stripe API,
-  and updates the stripe checkout in the database. Returns the order.
+  and updates the stripe checkout in the database. Returns the order and the email of
+  the recipient.
 
   ## Examples
 
       iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
-      {:ok, %Order{}}
+      {:ok, %Order{}, email}
 
       iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
       {:error, "Order not found"}

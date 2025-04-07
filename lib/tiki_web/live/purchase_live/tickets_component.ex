@@ -223,7 +223,13 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     %{event: %{id: event_id}} = socket.assigns
 
     with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase) do
-      {:noreply, push_patch(socket, to: ~p"/events/#{event_id}/purchase/#{order}")}
+      to =
+        case socket.assigns[:embedded] do
+          nil -> ~p"/events/#{event_id}/purchase/#{order}"
+          true -> ~p"/embed/events/#{event_id}/purchase/#{order}"
+        end
+
+      {:noreply, push_navigate(socket, to: to)}
     else
       {:error, reason} ->
         {:noreply, assign(socket, error: reason)}

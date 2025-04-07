@@ -72,7 +72,10 @@ config :tiki, TikiWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :tiki,
   dev_routes: true,
-  pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se")
+  # Url to PLS, use different url for development
+  pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se"),
+  # Allowed origins for embedded iframes. If you want more, add them here, separated by spaces.
+  allowed_origins: System.get_env("ALLOWED_ORIGINS", "http://localhost:4001")
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -90,6 +93,7 @@ config :swoosh, :api_client, false
 # Config for Stripe
 config :stripity_stripe,
   api_key: System.get_env("STRIPE_API_KEY"),
+  public_key: System.get_env("STRIPE_PUBLIC_KEY"),
   webhook_secret: System.get_env("STRIPE_WEBHOOK_SECRET")
 
 # Path to install SaladUI components

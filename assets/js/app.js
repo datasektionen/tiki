@@ -56,6 +56,10 @@ Hooks.Sortable = {
   },
 };
 
+let socketUrl = window.location.pathname.startsWith("/embed/")
+  ? "/embed/live"
+  : "/live";
+
 // S3 live uploads
 Uploaders.S3 = function (entries, onViewError) {
   entries.forEach((entry) => {
@@ -88,9 +92,11 @@ Uploaders.S3 = function (entries, onViewError) {
 let csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
-let liveSocket = new LiveSocket("/live", Socket, {
+
+let liveSocket = new LiveSocket(socketUrl, Socket, {
   params: { _csrf_token: csrfToken },
   hooks: Hooks,
+  longPollFallbackMs: socketUrl === "/embed/live" ? 2000 : undefined,
   uploaders: Uploaders,
 });
 
@@ -113,6 +119,17 @@ window.addEventListener("phx:js-exec", ({ detail }) => {
   document.querySelectorAll(detail.to).forEach((el) => {
     liveSocket.execJS(el, el.getAttribute(detail.attr));
   });
+});
+
+window.addEventListener("embedded:close", (event) => {
+  event.preventDefault();
+  parent.postMessage({ type: "close" }, "*");
+});
+
+window.addEventListener("embedded:order", (event) => {
+  event.preventDefault();
+  console.log(event);
+  parent.postMessage({ type: "order", order: event.detail.order }, "*");
 });
 
 // Set dark/light mode

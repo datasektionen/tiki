@@ -1,0 +1,41 @@
+<div
+  id="embedded-dialog"
+  phx-mounted={show_modal("embedded-dialog")}
+  phx-remove={hide_modal("embedded-dialog")}
+  data-cancel={JS.dispatch("embedded:close")}
+  class="group/dialog relative z-50 hidden"
+>
+  <div id="embedded-dialog-bg" class="bg-black/80 fixed inset-0 " aria-hidden="true" />
+  <div
+    class="fixed inset-0 flex items-center justify-center overflow-y-auto"
+    role="dialog"
+    aria-modal="true"
+    tabindex="0"
+  >
+    <.focus_wrap id="embedded-dialog-wrap" phx-key="escape" class="w-full sm:max-w-4xl">
+      <div class="left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] bg-background fixed z-50 grid w-full gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:max-w-4xl sm:rounded-lg">
+        {@inner_content}
+
+        <button
+          type="button"
+          class="rounded-xs ring-offset-background absolute top-4 right-4 opacity-70 transition-opacity group-data-[state=open]/dialog:bg-accent group-data-[state=open]/dialog:text-muted-foreground hover:opacity-100 focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none"
+          phx-click={JS.exec("data-cancel", to: "#embedded-dialog")}
+          data-confirm={gettext("Are you sure?")}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="h-5 w-5"
+          >
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
+    </.focus_wrap>
+  </div>
+</div>

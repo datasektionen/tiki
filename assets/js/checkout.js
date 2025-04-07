@@ -4,9 +4,7 @@ import { loadStripe } from "@stripe/stripe-js/pure";
 
 export const InitCheckout = {
   async mounted() {
-    stripe = await loadStripe(
-      "pk_test_51QFDv6ENoY5GyA7jeRaxuUSGKGzDLHEu7uRfVgbcAYabj5oepxaZMQ8rNakOQTD6OibKHaxLgUeZqITqtoRZYz2L00t62OGcoq",
-    );
+    stripe = await loadStripe(window._env_.STRIPE_PUBLIC_KEY);
 
     init(this.el);
   },

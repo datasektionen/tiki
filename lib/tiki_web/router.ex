@@ -14,6 +14,16 @@ defmodule TikiWeb.Router do
     plug :fetch_locale
   end
 
+  pipeline :embedded do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {TikiWeb.Layouts, :embedded_root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug :allow_iframe
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -38,6 +48,35 @@ defmodule TikiWeb.Router do
       live_dashboard "/dashboard", metrics: TikiWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+  end
+
+  ## Embedded routes
+
+  scope "/embed", TikiWeb do
+    pipe_through [:embedded]
+
+    get "/close", EmbeddedController, :close
+
+    live_session :embedded,
+      layout: {TikiWeb.Layouts, :embedded},
+      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
+      live "/events/:event_id/tickets", EventLive.Show, :embedded
+      live "/events/:event_id/purchase/:order_id", EventLive.Show, :embedded_purchase
+
+      live "/orders/:id", OrderLive.Show, :embedded_show
+      live "/tickets/:id/form", OrderLive.TicketForm, :embedded_form
+      live "/tickets/:id", OrderLive.Ticket, :embedded_show
+    end
+  end
+
+  defp allow_iframe(conn, _opts) do
+    conn
+    |> delete_resp_header("x-frame-options")
+    |> put_resp_header(
+      "content-security-policy",
+      # Add your list of allowed domain(s) here.
+      "frame-ancestors 'self' #{Application.get_env(:tiki, :allowed_origins)}"
+    )
   end
 
   ## Authentication routes
