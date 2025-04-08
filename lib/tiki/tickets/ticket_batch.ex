@@ -36,6 +36,7 @@ defmodule Tiki.Tickets.TicketBatch do
       {{:data, nil}, _} -> changeset
       {_, {:data, nil}} -> changeset
       {{_, a}, {_, b}} when a == b -> add_error(changeset, a, "#{a} must not be equal to #{b}")
+      _ -> changeset
     end
   end
 end
