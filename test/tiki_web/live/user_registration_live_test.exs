@@ -78,7 +78,7 @@ defmodule TikiWeb.UserRegistrationLiveTest do
         lv
         |> element(~s|main a:fl-contains("Sign in")|)
         |> render_click()
-        |> follow_redirect(conn, ~p"/account/log_in")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert login_html =~ "Log in"
     end

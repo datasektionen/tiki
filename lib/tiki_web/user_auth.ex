@@ -182,7 +182,7 @@ defmodule TikiWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
+        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
       {:halt, socket}
     end
@@ -203,7 +203,7 @@ defmodule TikiWeb.UserAuth do
               :error,
               gettext("You need to be an admin to access this page.")
             )
-            |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
+            |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
           {:halt, socket}
       end
@@ -211,7 +211,7 @@ defmodule TikiWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
+        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
       {:halt, socket}
     end
@@ -306,7 +306,7 @@ defmodule TikiWeb.UserAuth do
       conn
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/account/log_in")
+      |> redirect(to: ~p"/users/log_in")
       |> halt()
     end
   end
@@ -320,7 +320,7 @@ defmodule TikiWeb.UserAuth do
       conn
       |> put_flash(:error, "You need to be an admin to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/account/log_in")
+      |> redirect(to: ~p"/users/log_in")
       |> halt()
     end
   end

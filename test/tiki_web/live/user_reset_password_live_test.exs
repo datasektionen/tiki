@@ -61,7 +61,7 @@ defmodule TikiWeb.UserResetPasswordLiveTest do
           }
         )
         |> render_submit()
-        |> follow_redirect(conn, ~p"/account/log_in")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password reset successfully"
@@ -95,7 +95,7 @@ defmodule TikiWeb.UserResetPasswordLiveTest do
         lv
         |> element(~s|main a:fl-contains("Log in")|)
         |> render_click()
-        |> follow_redirect(conn, ~p"/account/log_in")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert conn.resp_body =~ "Log in"
     end

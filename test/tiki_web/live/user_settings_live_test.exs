@@ -10,17 +10,17 @@ defmodule TikiWeb.UserSettingsLiveTest do
       {:ok, _lv, html} =
         conn
         |> log_in_user(user_fixture())
-        |> live(~p"/account")
+        |> live(~p"/account/settings")
 
       assert html =~ "Change Email"
       assert html =~ "Change Password"
     end
 
     test "redirects if user is not logged in", %{conn: conn} do
-      assert {:error, redirect} = live(conn, ~p"/account")
+      assert {:error, redirect} = live(conn, ~p"/account/settings")
 
       assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/account/log_in"
+      assert path == ~p"/users/log_in"
       assert %{"error" => "You must log in to access this page."} = flash
     end
   end
@@ -35,7 +35,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
     test "updates the user email", %{conn: conn, password: password, user: user} do
       new_email = unique_user_email()
 
-      {:ok, lv, _html} = live(conn, ~p"/account")
+      {:ok, lv, _html} = live(conn, ~p"/account/settings")
 
       result =
         lv
@@ -50,7 +50,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
     end
 
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/account")
+      {:ok, lv, _html} = live(conn, ~p"/account/settings")
 
       result =
         lv
@@ -66,7 +66,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn, user: user} do
-      {:ok, lv, _html} = live(conn, ~p"/account")
+      {:ok, lv, _html} = live(conn, ~p"/account/settings")
 
       result =
         lv
@@ -94,7 +94,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
     test "updates the user password", %{conn: conn, user: user, password: password} do
       new_password = valid_user_password()
 
-      {:ok, lv, _html} = live(conn, ~p"/account")
+      {:ok, lv, _html} = live(conn, ~p"/account/settings")
 
       form =
         form(lv, "#password_form", %{
@@ -110,7 +110,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
 
       new_password_conn = follow_trigger_action(form, conn)
 
-      assert redirected_to(new_password_conn) == ~p"/account"
+      assert redirected_to(new_password_conn) == ~p"/account/settings"
 
       assert get_session(new_password_conn, :user_token) != get_session(conn, :user_token)
 
@@ -121,7 +121,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
     end
 
     test "renders errors with invalid data (phx-change)", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/account")
+      {:ok, lv, _html} = live(conn, ~p"/account/settings")
 
       result =
         lv
@@ -140,7 +140,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
     end
 
     test "renders errors with invalid data (phx-submit)", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/account")
+      {:ok, lv, _html} = live(conn, ~p"/account/settings")
 
       result =
         lv
@@ -177,7 +177,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
       {:error, redirect} = live(conn, ~p"/account/confirm_email/#{token}")
 
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/account"
+      assert path == ~p"/account/settings"
       assert %{"info" => message} = flash
       assert message == "Email changed successfully."
       refute Accounts.get_user_by_email(user.email)
@@ -186,7 +186,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
       # use confirm token again
       {:error, redirect} = live(conn, ~p"/account/confirm_email/#{token}")
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/account"
+      assert path == ~p"/account/settings"
       assert %{"error" => message} = flash
       assert message == "Email change link is invalid or it has expired."
     end
@@ -194,7 +194,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
     test "does not update email with invalid token", %{conn: conn, user: user} do
       {:error, redirect} = live(conn, ~p"/account/confirm_email/oops")
       assert {:live_redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/account"
+      assert path == ~p"/account/settings"
       assert %{"error" => message} = flash
       assert message == "Email change link is invalid or it has expired."
       assert Accounts.get_user_by_email(user.email)
@@ -204,7 +204,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
       conn = build_conn()
       {:error, redirect} = live(conn, ~p"/account/confirm_email/#{token}")
       assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/account/log_in"
+      assert path == ~p"/users/log_in"
       assert %{"error" => message} = flash
       assert message == "You must log in to access this page."
     end
