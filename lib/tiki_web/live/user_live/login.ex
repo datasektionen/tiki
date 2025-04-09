@@ -26,10 +26,11 @@ defmodule TikiWeb.UserLive.Login do
         action={~p"/users/log_in"}
         phx-update="ignore"
         phx-submit="submit_magic"
+        class="space-y-4"
       >
         <.input field={f[:email]} type="email" label="Email" autocomplete="username" required />
 
-        <.button class="mt-2 w-full">
+        <.button class="w-full">
           {gettext("Log in with email")}&nbsp;<span aria-hidden="true">→</span>
         </.button>
       </.form>
@@ -53,6 +54,12 @@ defmodule TikiWeb.UserLive.Login do
             <span class="text-sm font-semibold leading-6">Datasektionen</span>
           </.link>
         </div>
+      </div>
+
+      <div :if={local_mail_adapter?()} class="mt-6 text-sm ">
+        <.icon name="hero-exclamation-triangle" class="text-muted-foreground size-5" />
+        {gettext("You are running the local mail adapter, you can see all sent emails at")}
+        <.link href="/dev/mailbox" class="underline">{gettext("the mailbox page")}</.link>.
       </div>
     </div>
     """
@@ -79,5 +86,9 @@ defmodule TikiWeb.UserLive.Login do
      socket
      |> put_flash(:info, info)
      |> push_navigate(to: ~p"/users/log_in")}
+  end
+
+  defp local_mail_adapter? do
+    Application.get_env(:tiki, Tiki.Mailer)[:adapter] == Swoosh.Adapters.Local
   end
 end

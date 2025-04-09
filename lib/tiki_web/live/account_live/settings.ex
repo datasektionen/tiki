@@ -125,7 +125,7 @@ defmodule TikiWeb.AccountLive.Settings do
         info = gettext("A link to confirm your email change has been sent to the new address.")
         {:noreply, socket |> put_flash(:info, info)}
 
-      {:error, changeset} ->
+      changeset ->
         {:noreply, assign(socket, :email_form, to_form(changeset, action: :insert))}
     end
   end

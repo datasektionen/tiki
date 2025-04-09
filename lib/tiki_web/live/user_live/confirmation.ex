@@ -6,41 +6,59 @@ defmodule TikiWeb.UserLive.Confirmation do
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm">
-      <.header class="text-center">{gettext("Welcome")} {@user.email}</.header>
+      <div :if={!@user.confirmed_at}>
+        <.header class="text-center">{gettext("Welcome to Tiki!")}</.header>
 
-      <.simple_form
-        :if={!@user.confirmed_at}
-        for={@form}
-        id="confirmation_form"
-        phx-submit="submit"
-        action={~p"/users/log_in?_action=confirmed"}
-        phx-trigger-action={@trigger_submit}
-      >
-        <.input field={@form[:token]} type="hidden" />
-        <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
-        <:actions>
-          <.button phx-disable-with={gettext("Confirming...")} class="w-full">
-            {gettext("Confirm my account")}
-          </.button>
-        </:actions>
-      </.simple_form>
+        <div class="text-sm">
+          {gettext(
+            "Hi %{email}! You may go ahead and confirm your account now.",
+            email: @user.email
+          )}
+        </div>
 
-      <.simple_form
-        :if={@user.confirmed_at}
-        for={@form}
-        id="confirmation_form"
-        phx-submit="submit"
-        action={~p"/users/log_in?_action=confirmed"}
-        phx-trigger-action={@trigger_submit}
-      >
-        <.input field={@form[:token]} type="hidden" />
-        <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
-        <:actions>
-          <.button phx-disable-with={gettext("Logging in...")} class="w-full">
-            {gettext("Log in")}
-          </.button>
-        </:actions>
-      </.simple_form>
+        <.simple_form
+          for={@form}
+          id="confirmation_form"
+          phx-submit="submit"
+          action={~p"/users/log_in?_action=confirmed"}
+          phx-trigger-action={@trigger_submit}
+        >
+          <.input field={@form[:token]} type="hidden" />
+          <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
+          <:actions>
+            <.button phx-disable-with={gettext("Confirming...")} class="w-full">
+              {gettext("Confirm my account")}
+            </.button>
+          </:actions>
+        </.simple_form>
+      </div>
+
+      <div :if={@user.confirmed_at}>
+        <.header class="text-center">{gettext("Welcome back!")}</.header>
+
+        <div class="text-sm">
+          {gettext(
+            "Hi %{email}! Your log in link is valid, and you may proceed to log in.",
+            email: @user.email
+          )}
+        </div>
+
+        <.simple_form
+          for={@form}
+          id="confirmation_form"
+          phx-submit="submit"
+          action={~p"/users/log_in?_action=confirmed"}
+          phx-trigger-action={@trigger_submit}
+        >
+          <.input field={@form[:token]} type="hidden" />
+          <.input field={@form[:remember_me]} type="checkbox" label={gettext("Keep me logged in")} />
+          <:actions>
+            <.button phx-disable-with={gettext("Logging in...")} class="w-full">
+              {gettext("Log in")}
+            </.button>
+          </:actions>
+        </.simple_form>
+      </div>
     </div>
     """
   end
@@ -54,7 +72,7 @@ defmodule TikiWeb.UserLive.Confirmation do
     else
       {:ok,
        socket
-       |> put_flash(:error, gettext("Magic link is invalid or it has expired."))
+       |> put_flash(:error, gettext("Login link is invalid or it has expired."))
        |> push_navigate(to: ~p"/users/log_in")}
     end
   end
