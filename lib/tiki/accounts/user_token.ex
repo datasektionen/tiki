@@ -8,7 +8,7 @@ defmodule Tiki.Accounts.UserToken do
 
   # It is very important to keep the reset password token expiry short,
   # since someone with access to the email may take over the account.
-  @magic_link_validity_in_minutes 15
+  @magic_link_validity_in_minutes 20
   @change_email_validity_in_days 7
   @session_validity_in_days 60
 

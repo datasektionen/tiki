@@ -15,4 +15,11 @@ defmodule Tiki.Mail.Mjml do
       err -> err
     end
   end
+
+  def to_html!(component) do
+    case to_html(component) do
+      {:ok, html} -> html
+      err -> raise err
+    end
+  end
 end
