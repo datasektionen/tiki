@@ -79,7 +79,12 @@ defmodule TikiWeb.Component.Input do
           checked={@checked}
           class="border-primary text-primary bg-background size-4 rounded-sm shadow-sm checked:bg-primary focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
-        /> {@label}
+        />
+        <%= if @checkbox_label != [] do %>
+          {render_slot(@checkbox_label)}
+        <% else %>
+          {@label}
+        <% end %>
       </label>
       <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
