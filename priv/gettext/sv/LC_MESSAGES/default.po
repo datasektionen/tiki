@@ -1826,4 +1826,4 @@ msgstr "Aktivera"
 #: lib/tiki_web/components/layouts/footer.html.heex:19
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Terms"
-msgstr "Teams"
+msgstr "Villkor"
