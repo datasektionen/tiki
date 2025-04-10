@@ -63,6 +63,11 @@ EOF
         destination = "local/.env"
         env         = true
       }
+
+      resources {
+        cpu    = 512
+        memory = 1024
+      }
     }
 
 
