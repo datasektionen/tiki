@@ -1,0 +1,152 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: sv\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:84
+#, elixir-autogen, elixir-format
+msgid "A lost ticket will not be refunded, but the Customer can request that the Organizer resend the paid tickets by providing the reference number. The Act on Distance Contracts (Distansköplagen) does not apply to the purchase of event tickets, meaning the Customer is bound by their purchase once payment has been made."
+msgstr "En förlorad biljett kommer inte att återbetalas, men Kunden kan begära att Arrangören skickar de betalda biljetterna på nytt genom att ange referensnumret. Distansköplagen gäller inte vid köp av evenemangsbiljetter, vilket innebär att Kunden är bunden vid sitt köp när betalningen har genomförts."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:32
+#, elixir-autogen, elixir-format
+msgid "By purchasing a ticket from The System, the Customer agrees to these terms. The Customer is responsible for ensuring their ticket order is correct before completing an order. A ticket is only valid for the date specified on it. To ensure the Organizer can guarantee the delivery of orders, it is also the Customer's responsibility to provide correct details at the time of purchase."
+msgstr "Genom att köpa en biljett från Systemet godkänner Kunden dessa villkor. Kunden ansvarar för att säkerställa att biljettbeställningen är korrekt innan ordern slutförs. En biljett är endast giltig för det datum som anges på den. För att säkerställa att Arrangören kan garantera leverans av beställningar är det också Kundens ansvar att lämna korrekta uppgifter vid köptillfället."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:91
+#, elixir-autogen, elixir-format
+msgid "Cancelled Events and Refunds"
+msgstr "Inställda evenemang och återbetalningar"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:135
+#, elixir-autogen, elixir-format
+msgid "Changes to these Terms"
+msgstr "Ändringar av dessa villkor"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:107
+#, elixir-autogen, elixir-format
+msgid "Customer Service"
+msgstr "Kundtjänst och support"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "Customer's Obligations"
+msgstr "Kundens skyldigheter"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:100
+#, elixir-autogen, elixir-format
+msgid "Delivery"
+msgstr "Leveransvillkor"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:68
+#, elixir-autogen, elixir-format
+msgid "Discount codes are only valid for ticket purchases for Customers for which the code was intended to be used by when issued by the Organizer. A discount code cannot be exchanged for cash. If a ticket purchased with a discount code is refunded, only the paid amount will be refunded, not the difference to the regular price."
+msgstr "Rabattkoder är endast giltiga för biljettköp för Kunder för vilka koden var avsedd att användas av när den utfärdades av Arrangören. En rabattkod kan inte bytas mot kontanter. Om en biljett som köpts med rabattkod återbetalas kommer endast det betalda beloppet att återbetalas, inte skillnaden till det ordinarie priset."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:125
+#, elixir-autogen, elixir-format
+msgid "Force Majeure"
+msgstr "Force Majeure"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:19
+#, elixir-autogen, elixir-format
+msgid "General"
+msgstr "Allmänna villkor"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:110
+#, elixir-autogen, elixir-format
+msgid "If the Customer has any questions, problems, or wishes to contact the Organizer for any other reason, the Customer can reach the Organizer at tiki@datasektionen.se. If the matter concerns an already placed order, it may be necessary to have the purchase reference number, found on the receipt, available."
+msgstr "Om Kunden har några frågor, problem eller önskar kontakta Arrangören av någon annan anledning, kan Kunden nå Arrangören på tiki@datasektionen.se. Om ärendet gäller en redan placerad order kan det vara nödvändigt att ha köpreferensnumret som finns på kvittot tillgängligt."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:5
+#, elixir-autogen, elixir-format
+msgid "Konglig Datasektionen, updated %{date}"
+msgstr "Konglig Datasektionen, uppdaterad %{date}"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:59
+#, elixir-autogen, elixir-format
+msgid "Payments"
+msgstr "Betalningar"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:62
+#, elixir-autogen, elixir-format
+msgid "Payments for tickets are processed through our payment partners. The Organizer accepts the following methods of payment: Swish, and Stripe. Please refer to the terms and conditions of the respective payment partners. All prices listed on The System are in SEK (Swedish Krona) and are inclusive of VAT, unless stated otherwise. The Organizer reserves the right to adjust prices, VAT, printing errors, price mistakes, sold-out items, stock errors, and other changes. A ticket that has been paid for is not affected by any price adjustment, whether temporary or permanent, after the purchase."
+msgstr "Betalningar för biljetter behandlas genom våra betalningspartners. Systemet accepterar följande betalningsmetoder: Swish och Stripe. Vänligen se respektive betalningspartners villkor. Alla priser som anges i Systemet är i SEK (svenska kronor) och inklusive moms, om inget annat anges. Arrangören förbehåller sig rätten att justera priser, moms, tryckfel, prismisstag, slutsålda artiklar, lagerfel och andra ändringar. En biljett som har betalats påverkas inte av någon prisjustering, vare sig tillfällig eller permanent, efter köpet."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:45
+#, elixir-autogen, elixir-format
+msgid "Personal Data"
+msgstr "Personuppgifter"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:81
+#, elixir-autogen, elixir-format
+msgid "Right of Withdrawal and Open Purchase"
+msgstr "Ångerrätt och öppet köp"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:116
+#, elixir-autogen, elixir-format
+msgid "Service Interruptions"
+msgstr "Serviceavbrott"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:2
+#, elixir-autogen, elixir-format
+msgid "Terms and Conditions"
+msgstr "Köp och Leveransvillkor"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:94
+#, elixir-autogen, elixir-format
+msgid "The Customer is responsible for checking whether the event has been cancelled or rescheduled. If the event is cancelled, the Organizer is responsible for refunding all tickets. If the event is cancelled, any additional fees paid in connection with the purchase of the ticket will not be refunded. If an event is rescheduled or significantly altered, the Organizer will notify the Customer of the changes. In such cases, the Customer will have the option to request a refund for the changed event. Refunds are not provided for non-attendance for any other reason."
+msgstr "Kunden ansvarar för att kontrollera om evenemanget har ställts in eller ombokats. Om evenemanget ställs in ansvarar Arrangören för att återbetala alla biljetter. Om evenemanget ställs in kommer eventuella tilläggsavgifter som betalats i samband med köpet av biljetten inte att återbetalas. Om ett evenemang ombokats eller väsentligt ändrats kommer Arrangören att meddela Kunden om ändringarna. I sådana fall har Kunden möjlighet att begära återbetalning för det ändrade evenemanget. Återbetalning lämnas inte för uteblivet deltagande av någon annan anledning."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:48
+#, elixir-autogen, elixir-format
+msgid "The Customer's personal details will be handled in accordance with the Organizer's privacy policy"
+msgstr "Kundens personuppgifter kommer att hanteras i enlighet med Arrangörens informationshanteringspolicy"
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:119
+#, elixir-autogen, elixir-format
+msgid "The Organizer is not responsible for and will not compensate for damage caused by service interruptions, delays, outages, or other technical circumstances that prevent or hinder the use of the Organizer's system."
+msgstr "Arrangören ansvarar inte för och kommer inte att ersätta skador som orsakats av serviceavbrott, förseningar, driftstopp eller andra tekniska omständigheter som förhindrar eller försvårar användningen av Systemet."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:128
+#, elixir-autogen, elixir-format
+msgid "The Organizer is relieved from fulfilling its obligations under these terms in the event of changes in legislation, government actions, labor conflicts, fire, flood, war, terrorism, sabotage, major accidents, or similar events."
+msgstr "Arrangören befrias från att uppfylla sina skyldigheter enligt dessa villkor vid ändringar i lagstiftning, myndighetsåtgärder, arbetskonflikter, brand, översvämning, krig, terrorism, sabotage, allvarliga olyckor eller liknande händelser."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:22
+#, elixir-autogen, elixir-format
+msgid "The Organizer provides technical facilitation of tickets through The System and handles all matters related to this."
+msgstr "Arrangören tillhandahåller förmedling av biljetter genom Systemet och hanterar alla frågor relaterade till detta."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:38
+#, elixir-autogen, elixir-format
+msgid "The Organizer reserves the right to cancel purchases where false details have been provided by the Customer, or where the Customer attempts to bypass the terms that apply to the purchase. This applies, among other things, if the Customer purchases discounted tickets they are not eligible for or if the Customer resells tickets for the purpose of making a profit."
+msgstr "Arrangören förbehåller sig rätten att avbryta köp där falska uppgifter har lämnats av Kunden, eller där Kunden försöker kringgå de villkor som gäller för köpet. Detta gäller bland annat om Kunden köper rabatterade biljetter som de inte är berättigade till eller om Kunden säljer vidare biljetter i syfte att göra vinst."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:138
+#, elixir-autogen, elixir-format
+msgid "The Organizer reserves the right to modify or update these Terms at any time. Any changes will be posted on this page, and the effective date will be updated accordingly. It is the Customer's responsibility to review these Terms regularly to stay informed of any updates."
+msgstr "Arrangören förbehåller sig rätten att ändra eller uppdatera dessa Villkor när som helst. Alla ändringar kommer att publiceras på denna sida och giltighetsdatumet kommer att uppdateras i enlighet med detta. Det är Kundens ansvar att regelbundet granska dessa villkor för att hålla sig informerad om eventuella uppdateringar."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:13
+#, elixir-autogen, elixir-format
+msgid "These Purchase and Delivery Terms apply between the Computer Science Chapter at KTH (Konglig Datasektionen, org-id. 802412-7709), (hereinafter referred to as the \"Organizer\") and you (hereinafter referred to as the \"Customer\") who purchases tickets through Tiki (hereinafter referred to as \"The System\")."
+msgstr "Dessa Köp- och Leveransvillkor gäller mellan Datasektionen vid KTH (Konglig Datasektionen, org-nr. 802412-7709), (härefter kallad \"Arrangören\") och dig (härefter kallad \"Kunden\") som köper biljetter genom Tiki (härefter kallat \"Systemet\")."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:103
+#, elixir-autogen, elixir-format
+msgid "Tickets are delivered by email unless otherwise specified."
+msgstr "Biljetter levereras via e-post om inget annat anges."
+
+#: lib/tiki_web/controllers/page_html/terms.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "Tickets are non-transferable and cannot be resold. Only the person whose name is on the ticket will be allowed entry to the event unless otherwise specified. Any unauthorized resale or transfer of tickets is prohibited and may result in the cancellation of the ticket. The Organizer reserves the right to refuse entry or remove any person from an event who is engaging in disruptive behavior or violating the event's rules and regulations."
+msgstr "Biljetter går ej att överföra till andra personer och kan inte säljas vidare. Endast den person vars namn står på biljetten kommer att tillåtas inträde till evenemanget om inget annat anges. All obehörig återförsäljning eller överlåtelse av biljetter är förbjuden och kan leda till annullering av biljetten. Arrangören förbehåller sig rätten att neka inträde eller avlägsna personer från ett evenemang som uppvisar störande beteende eller bryter mot evenemangets regler och föreskrifter."

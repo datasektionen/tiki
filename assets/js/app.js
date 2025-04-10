@@ -128,7 +128,6 @@ window.addEventListener("embedded:close", (event) => {
 
 window.addEventListener("embedded:order", (event) => {
   event.preventDefault();
-  console.log(event);
   parent.postMessage({ type: "order", order: event.detail.order }, "*");
 });
 
@@ -140,7 +139,6 @@ function applyColorMode(mode) {
 window
   .matchMedia("(prefers-color-scheme: dark)")
   .addEventListener("change", (event) => {
-    console.log("event");
     if (!("theme" in localStorage)) {
       applyColorMode(event.matches ? "dark" : "light");
     }

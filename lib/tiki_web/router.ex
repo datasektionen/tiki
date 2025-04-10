@@ -99,6 +99,7 @@ defmodule TikiWeb.Router do
 
     get "/", PageController, :home
     get "/about", PageController, :about
+    get "/terms", PageController, :terms
 
     delete "/account/log_out", UserSessionController, :delete
 

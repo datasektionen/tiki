@@ -10,8 +10,8 @@ defmodule Tiki.PurchaseMonitor do
   alias Tiki.Orders
   alias Tiki.Orders.Order
 
-  # 1 minute
-  @order_timeout 60_000
+  # 10 minutes
+  @order_timeout 60_000 * 10
 
   def start_link(init_arg) do
     GenServer.start_link(__MODULE__, init_arg, name: __MODULE__)
@@ -36,5 +36,12 @@ defmodule Tiki.PurchaseMonitor do
     end
 
     {:noreply, %{state | orders: Map.delete(orders, order_id)}}
+  end
+
+  @doc """
+  Returns the configured time in minutes until an order is timed out.
+  """
+  def timeout_minutes do
+    div(@order_timeout, 60_000)
   end
 end

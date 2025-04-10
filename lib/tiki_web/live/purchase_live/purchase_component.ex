@@ -27,6 +27,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
     end
   end
 
+  alias Tiki.PurchaseMonitor
   use TikiWeb, :live_component
 
   alias Tiki.Orders
@@ -43,8 +44,13 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
         on_cancel={JS.push("cancel", target: @myself) |> JS.dispatch("embedded:close")}
         safe
       >
-        <div :if={@order.status == :cancelled}>
-          {gettext("Ya messed up, order is cancelled")}
+        <div :if={@order.status == :cancelled} class="flex w-full flex-col gap-2">
+          <h2 class="text-2xl font-semibold leading-none tracking-tight">{gettext("Error")}</h2>
+          <p class="text-muted-foreground text-sm">
+            {gettext(
+              "Something went wrong. Your order was cancelled or has expired. Please try again."
+            )}
+          </p>
         </div>
 
         <div :if={@order.status == :pending}>
@@ -55,7 +61,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                 {gettext(
                   "Purchase tickets for %{event}. You have %{count} minutes to complete your order.",
                   event: @event.name,
-                  count: 2
+                  count: PurchaseMonitor.timeout_minutes()
                 )}
               </:subtitle>
             </.header>
@@ -125,15 +131,17 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                 phx-debounce="blur-sm"
               />
 
-              <.input
-                type="checkbox"
-                field={@form[:terms_of_service]}
-                label={
-                  gettext(
-                    "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
-                  )
-                }
-              />
+              <.input type="checkbox" field={@form[:terms_of_service]}>
+                <:checkbox_label>
+                  <div>
+                    {gettext("I agree to the")} <.link
+                      href={~p"/terms"}
+                      class="text-primary underline"
+                      target="_blank"
+                    >{gettext("terms of service")}</.link>.
+                  </div>
+                </:checkbox_label>
+              </.input>
 
               <.button type="submit">
                 {gettext("Continue")}
