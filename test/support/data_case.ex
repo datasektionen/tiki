@@ -29,6 +29,7 @@ defmodule Tiki.DataCase do
 
   setup tags do
     Tiki.DataCase.setup_sandbox(tags)
+
     :ok
   end
 

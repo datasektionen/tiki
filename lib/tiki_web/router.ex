@@ -103,9 +103,6 @@ defmodule TikiWeb.Router do
     delete "/account/log_out", UserSessionController, :delete
 
     live_session :current_user, on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
-
       live "/events", EventLive.Index, :index
       live "/events/:event_id", EventLive.Show, :index
       live "/events/:event_id/purchase/:order_id", EventLive.Show, :purchase

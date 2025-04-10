@@ -83,7 +83,7 @@ defmodule Tiki.Accounts do
   """
   def register_user(attrs) do
     %User{}
-    |> User.email_changeset(attrs)
+    |> User.registration_changeset(attrs)
     |> Repo.insert(returning: [:full_name])
   end
 
@@ -93,7 +93,10 @@ defmodule Tiki.Accounts do
   def upsert_user_with_userinfo(%{"kth_id" => id} = attrs) do
     case Repo.get_by(User, kth_id: id) do
       nil ->
-        User.oidcc_changeset(%User{confirmed_at: DateTime.utc_now()}, attrs)
+        User.oidcc_changeset(
+          %User{confirmed_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)},
+          attrs
+        )
         |> Repo.insert()
 
       user ->

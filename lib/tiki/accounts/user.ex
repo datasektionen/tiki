@@ -46,6 +46,17 @@ defmodule Tiki.Accounts.User do
   end
 
   @doc """
+  A user changeset for registring a user.
+
+  It requires the email to change otherwise an error is added.
+  """
+  def registration_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email, :kth_id, :role, :first_name, :last_name])
+    |> validate_email(opts)
+  end
+
+  @doc """
   A user changeset for changing the email.
 
   It requires the email to change otherwise an error is added.

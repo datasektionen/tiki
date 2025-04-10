@@ -45,9 +45,9 @@ defmodule TikiWeb.UserLive.Confirmation do
 
         <.simple_form
           for={@form}
-          id="confirmation_form"
+          id="login_form"
           phx-submit="submit"
-          action={~p"/users/log_in?_action=confirmed"}
+          action={~p"/users/log_in"}
           phx-trigger-action={@trigger_submit}
         >
           <.input field={@form[:token]} type="hidden" />
