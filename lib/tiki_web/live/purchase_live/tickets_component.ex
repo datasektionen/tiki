@@ -100,7 +100,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
             value={@promo_code}
             class="border-input bg-background ring-offset-background flex h-10 rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-offset-background focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2"
           />
-          <.button :if={@promo_code != ""}>Aktivera</.button>
+          <.button :if={@promo_code != ""}>{gettext("Activate")}</.button>
         </.form>
 
         <div class="bg-background border-border fixed right-0 bottom-0 left-0 z-30 border-t px-6 py-3 lg:relative lg:border-none lg:p-0">
