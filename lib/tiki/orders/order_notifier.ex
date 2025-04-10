@@ -8,13 +8,16 @@ defmodule Tiki.Orders.OrderNotifier do
   use Gettext, backend: TikiWeb.Gettext
 
   def deliver(order) do
+    Gettext.put_locale(TikiWeb.Gettext, order.user.locale)
+    Tiki.Cldr.put_locale(order.user.locale)
+
     case render(%{order: order}) |> Tiki.Mail.Mjml.to_html() do
       {:ok, html} ->
         email =
           new()
           |> to(order.user.email)
           |> from({"Tiki", "noreply-tiki@datasektionen.se"})
-          |> subject("Your order for #{order.event.name}")
+          |> subject(gettext("Your order for %{event}", event: order.event.name))
           |> html_body(html)
 
         email =
@@ -48,24 +51,27 @@ defmodule Tiki.Orders.OrderNotifier do
 
   defp render(assigns) do
     ~H"""
-    <.default title={"Your order for #{@order.event.name}"}>
+    <.default title={gettext("Your order for %{event}", event: @order.event.name)}>
       <:section>
         <mj-column>
-          <mj-text font-size="24px" font-weight="bold">Thank you for your order!</mj-text>
+          <mj-text font-size="24px" font-weight="bold">
+            {gettext("Thank you for your order!")}
+          </mj-text>
           <mj-text>
-            We appreciate your purchase. Below are your order details. We look forward to seeing you at <a
+            {gettext(
+              "We appreciate your purchase. Below are your order details. We look forward to seeing you at"
+            )} <a
               href={"#{TikiWeb.Endpoint.url()}/events/#{@order.event.id}"}
               style="text-decoration: underline; color: #18181b;"
               target="_blank"
-            >{@order.event.name}</a>! Don't forget to fill
-            in your attendance information.
+            >{@order.event.name}</a>! {gettext("Don't forget to fill in your attendance information.")}
           </mj-text>
         </mj-column>
       </:section>
 
       <:section>
         <mj-column>
-          <.button href={"#{TikiWeb.Endpoint.url()}/orders/#{@order.id}"} align="left" phx-no-format>View your tickets</.button>
+          <.button href={"#{TikiWeb.Endpoint.url()}/orders/#{@order.id}"} align="left" phx-no-format>{gettext("View your tickets")}</.button>
         </mj-column>
       </:section>
 
@@ -77,10 +83,15 @@ defmodule Tiki.Orders.OrderNotifier do
 
       <:section>
         <mj-column width="100%">
-          <mj-text font-size="16px" font-weight="bold" padding-bottom="0">Reciept</mj-text>
+          <mj-text font-size="16px" font-weight="bold" padding-bottom="0">
+            {gettext("Receipt")}
+          </mj-text>
           <mj-text>
-            Buyer: {@order.user.full_name} <br /> Seller: Konglig datasektionen <br />
-            Order Date: {time_to_string(@order.updated_at, format: :short)}, Order reference: {@order.id}
+            {gettext("Buyer")}: {@order.user.full_name}
+            <br /> {gettext("Seller")}: Konglig Datasektionen <br />
+            {gettext("Order Date")}: {time_to_string(@order.updated_at, format: :short)}, {gettext(
+              "Order reference"
+            )}: {@order.id}
           </mj-text>
 
           <mj-table>
@@ -114,7 +125,7 @@ defmodule Tiki.Orders.OrderNotifier do
       <:section>
         <mj-column width="100%">
           <mj-text font-size="16px" font-weight="bold" padding-bottom="0">
-            Your tickets for {@order.event.name}
+            {gettext("Your tickets for %{event}", event: @order.event.name)}
           </mj-text>
         </mj-column>
       </:section>

@@ -52,7 +52,7 @@ defmodule Tiki.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :kth_id, :role, :first_name, :last_name])
+    |> cast(attrs, [:email, :kth_id, :role, :first_name, :last_name, :locale])
     |> validate_email(opts)
   end
 
@@ -63,7 +63,7 @@ defmodule Tiki.Accounts.User do
   """
   def email_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :kth_id, :role, :first_name, :last_name])
+    |> cast(attrs, [:email, :kth_id, :role, :first_name, :last_name, :locale])
     |> validate_email(opts)
     |> case do
       %{changes: %{email: _}} = changeset -> changeset

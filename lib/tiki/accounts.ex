@@ -107,7 +107,9 @@ defmodule Tiki.Accounts do
   @doc """
   Either creates a new user, or returns an existing user with the same email.
   """
-  def upsert_user_email(email, name) do
+  def upsert_user_email(email, name, opts \\ []) do
+    locale = Keyword.get(opts, :locale, "en")
+
     case Repo.get_by(User, email: email) do
       nil ->
         [first_name | last_name] = String.split(name, " ", parts: 2, trim: true)
@@ -116,7 +118,8 @@ defmodule Tiki.Accounts do
         User.email_changeset(%User{}, %{
           email: email,
           first_name: first_name,
-          last_name: last_name
+          last_name: last_name,
+          locale: locale
         })
         |> Repo.insert()
 

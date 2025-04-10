@@ -338,18 +338,18 @@ msgstr ""
 msgid "Teams"
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:184
-#: lib/tiki_web/user_auth.ex:213
+#: lib/tiki_web/user_auth.ex:207
+#: lib/tiki_web/user_auth.ex:236
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:243
+#: lib/tiki_web/user_auth.ex:266
 #, elixir-autogen, elixir-format
 msgid "You must select a team to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:204
+#: lib/tiki_web/user_auth.ex:227
 #, elixir-autogen, elixir-format
 msgid "You need to be an admin to access this page."
 msgstr ""
@@ -703,7 +703,7 @@ msgstr ""
 msgid "must have the @ sign and no spaces"
 msgstr ""
 
-#: lib/tiki/orders/order_notifier.ex:136
+#: lib/tiki/orders/order_notifier.ex:115
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:77
 #, elixir-autogen, elixir-format
 msgid "Total"
@@ -740,8 +740,9 @@ msgstr ""
 msgid "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
 msgstr ""
 
+#: lib/tiki/accounts/user_notifier.ex:109
 #: lib/tiki_web/components/layouts/nav.html.heex:90
-#: lib/tiki_web/live/user_live/confirmation.ex:40
+#: lib/tiki_web/live/user_live/confirmation.ex:57
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr ""
@@ -1008,6 +1009,7 @@ msgstr ""
 msgid "Swish payment reference"
 msgstr ""
 
+#: lib/tiki/orders/order_notifier.ex:58
 #: lib/tiki_web/live/order_live/show.ex:18
 #, elixir-autogen, elixir-format
 msgid "Thank you for your order!"
@@ -1299,7 +1301,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/ticket/index.ex:109
 #: lib/tiki_web/live/admin_live/ticket/index.ex:140
 #: lib/tiki_web/live/admin_live/ticket/index.ex:160
-#: lib/tiki_web/user_auth.ex:228
+#: lib/tiki_web/user_auth.ex:251
 #, elixir-autogen, elixir-format
 msgid "You are not authorized to do that."
 msgstr ""
@@ -1553,7 +1555,7 @@ msgstr ""
 msgid "Account Settings"
 msgstr ""
 
-#: lib/tiki_web/live/user_live/registration.ex:62
+#: lib/tiki_web/live/user_live/registration.ex:64
 #, elixir-autogen, elixir-format
 msgid "An email was sent to %{email}. please access it to confirm your account."
 msgstr ""
@@ -1568,12 +1570,12 @@ msgstr ""
 msgid "Changing..."
 msgstr ""
 
-#: lib/tiki_web/live/user_live/confirmation.ex:23
+#: lib/tiki_web/live/user_live/confirmation.ex:30
 #, elixir-autogen, elixir-format
 msgid "Confirm my account"
 msgstr ""
 
-#: lib/tiki_web/live/user_live/confirmation.ex:22
+#: lib/tiki_web/live/user_live/confirmation.ex:29
 #, elixir-autogen, elixir-format
 msgid "Confirming..."
 msgstr ""
@@ -1598,7 +1600,7 @@ msgstr ""
 msgid "Email changed successfully."
 msgstr ""
 
-#: lib/tiki_web/live/user_live/login.ex:33
+#: lib/tiki_web/live/user_live/login.ex:34
 #, elixir-autogen, elixir-format
 msgid "Log in with email"
 msgstr ""
@@ -1608,14 +1610,9 @@ msgstr ""
 msgid "Logged out successfully."
 msgstr ""
 
-#: lib/tiki_web/live/user_live/confirmation.ex:39
+#: lib/tiki_web/live/user_live/confirmation.ex:56
 #, elixir-autogen, elixir-format
 msgid "Logging in..."
-msgstr ""
-
-#: lib/tiki_web/live/user_live/confirmation.ex:57
-#, elixir-autogen, elixir-format
-msgid "Magic link is invalid or it has expired."
 msgstr ""
 
 #: lib/tiki_web/live/account_live/settings.ex:11
@@ -1633,12 +1630,175 @@ msgstr ""
 msgid "User confirmed successfully."
 msgstr ""
 
-#: lib/tiki_web/live/user_live/confirmation.ex:9
-#, elixir-autogen, elixir-format
-msgid "Welcome"
-msgstr ""
-
 #: lib/tiki_web/controllers/user_session_controller.ex:12
+#: lib/tiki_web/live/user_live/confirmation.ex:37
 #, elixir-autogen, elixir-format
 msgid "Welcome back!"
+msgstr ""
+
+#: lib/tiki_web/live/user_live/confirmation.ex:13
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You may go ahead and confirm your account now."
+msgstr ""
+
+#: lib/tiki_web/live/user_live/confirmation.ex:40
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! Your log in link is valid, and you may proceed to log in."
+msgstr ""
+
+#: lib/tiki_web/live/user_live/confirmation.ex:54
+#, elixir-autogen, elixir-format
+msgid "Keep me logged in"
+msgstr ""
+
+#: lib/tiki_web/live/user_live/confirmation.ex:75
+#, elixir-autogen, elixir-format
+msgid "Login link is invalid or it has expired."
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:31
+#: lib/tiki_web/live/user_live/confirmation.ex:10
+#, elixir-autogen, elixir-format
+msgid "Welcome to Tiki!"
+msgstr ""
+
+#: lib/tiki_web/live/user_live/login.ex:61
+#, elixir-autogen, elixir-format
+msgid "You are running the local mail adapter, you can see all sent emails at"
+msgstr ""
+
+#: lib/tiki_web/live/user_live/login.ex:62
+#, elixir-autogen, elixir-format
+msgid "the mailbox page"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:90
+#, elixir-autogen, elixir-format
+msgid "Buyer"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:38
+#, elixir-autogen, elixir-format
+msgid "Confirm account"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:28
+#, elixir-autogen, elixir-format
+msgid "Confirm your account"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:62
+#, elixir-autogen, elixir-format
+msgid "Confirm your email update"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:67
+#, elixir-autogen, elixir-format
+msgid "Don't forget to fill in your attendance information."
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:101
+#, elixir-autogen, elixir-format
+msgid "Here is your login link!"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:66
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You can change your email on Tiki by visiting the link below."
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:33
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You can confirm your account by visiting the link below."
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:103
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You recently requested a login link for your account. Here it comes!"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:41
+#, elixir-autogen, elixir-format
+msgid "If you didn't create an account with us, please ignore this."
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:74
+#, elixir-autogen, elixir-format
+msgid "If you didn't request this change, please ignore this."
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:92
+#, elixir-autogen, elixir-format
+msgid "Order Date"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:92
+#, elixir-autogen, elixir-format
+msgid "Order reference"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:87
+#, elixir-autogen, elixir-format
+msgid "Receipt"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:91
+#, elixir-autogen, elixir-format
+msgid "Seller"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:112
+#, elixir-autogen, elixir-format
+msgid "The link is valid for 20 minutes, and can only be used once. If you didn't request this email, please ignore this."
+msgstr ""
+
+#: lib/tiki/mail/layouts.ex:79
+#, elixir-autogen, elixir-format
+msgid "Tiki is an event platform developed by and for the Computer Science Chapter at KTH."
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:71
+#, elixir-autogen, elixir-format
+msgid "Update email"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:81
+#, elixir-autogen, elixir-format
+msgid "Update email instructions"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:98
+#, elixir-autogen, elixir-format
+msgid "Use this this link to log in"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:74
+#, elixir-autogen, elixir-format
+msgid "View your tickets"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:61
+#, elixir-autogen, elixir-format
+msgid "We appreciate your purchase. Below are your order details. We look forward to seeing you at"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:50
+#, elixir-autogen, elixir-format
+msgid "Welcome to Tiki! Confirm your account"
+msgstr ""
+
+#: lib/tiki/accounts/user_notifier.ex:121
+#, elixir-autogen, elixir-format
+msgid "Your log in link for Tiki"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:20
+#: lib/tiki/orders/order_notifier.ex:54
+#, elixir-autogen, elixir-format
+msgid "Your order for %{event}"
+msgstr ""
+
+#: lib/tiki/orders/order_notifier.ex:128
+#, elixir-autogen, elixir-format
+msgid "Your tickets for %{event}"
 msgstr ""
