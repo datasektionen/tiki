@@ -65,9 +65,7 @@ defmodule Tiki.Orders.OrderNotifier do
 
       <:section>
         <mj-column>
-          <.button href={"#{TikiWeb.Endpoint.url()}/orders/#{@order.id}"} align="left">
-            View your tickets
-          </.button>
+          <.button href={"#{TikiWeb.Endpoint.url()}/orders/#{@order.id}"} align="left" phx-no-format>View your tickets</.button>
         </mj-column>
       </:section>
 

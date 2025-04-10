@@ -41,9 +41,7 @@ defmodule Tiki.Accounts.UserNotifier do
             Hi {@user.email}! You can confirm your account by visiting the link below.
           </mj-text>
 
-          <.button href={@url}>
-            Confirm account
-          </.button>
+          <.button href={@url}>Confirm account</.button>
 
           <mj-text>
             If you didn't create an account with us, please ignore this.
@@ -74,9 +72,7 @@ defmodule Tiki.Accounts.UserNotifier do
             Hi {@user.email}! You can change your email on Tiki by visiting the link below.
           </mj-text>
 
-          <.button href={@url}>
-            Update email
-          </.button>
+          <.button href={@url}>Update email</.button>
 
           <mj-text>
             If you didn't request this change, please ignore this.
@@ -111,9 +107,7 @@ defmodule Tiki.Accounts.UserNotifier do
             Hi {@user.email}! You recently requested a login link for your account. Here it comes!
           </mj-text>
 
-          <.button href={@url}>
-            Log in
-          </.button>
+          <.button href={@url}>Log in</.button>
 
           <mj-text>
             The link is valid for 20 minutes, and can only be used once. If you didn't request this email, please ignore this.

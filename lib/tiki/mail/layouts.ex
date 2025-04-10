@@ -36,7 +36,8 @@ defmodule Tiki.Mail.Layouts do
                 align="left"
                 alt="Tiki logo"
                 width="64px"
-              />
+              >
+              </mj-image>
             </mj-column>
           </mj-section>
         </mj-wrapper>
@@ -106,9 +107,8 @@ defmodule Tiki.Mail.Layouts do
       font-weight="bold"
       href={@href}
       align={@align}
-    >
-      {render_slot(@inner_block)}
-    </mj-button>
+      phx-no-format
+    >{render_slot(@inner_block)}</mj-button>
     """
   end
 end
