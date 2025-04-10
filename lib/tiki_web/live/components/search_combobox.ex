@@ -131,7 +131,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
           >
             <li
               :for={{id, value} <- @results |> Enum.map(&@map_fn.(&1))}
-              class="text-foreground relative cursor-pointer select-none py-2 pr-9 pl-3 hover:bg-accent/50 focus:bg-accent/50 focus:outline-hidden"
+              class="text-foreground relative cursor-pointer select-none list-none py-2 pr-9 pl-3 hover:bg-accent/50 focus:bg-accent/50 focus:outline-hidden"
               role="option"
               tabindex="-1"
               phx-click={JS.push("chosen", value: %{id: id, value: value})}
