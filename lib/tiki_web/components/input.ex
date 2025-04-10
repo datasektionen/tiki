@@ -56,6 +56,8 @@ defmodule TikiWeb.Component.Input do
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step class)
 
+  slot :checkbox_label, required: false
+
   def input(%{field: %Phoenix.HTML.FormField{}} = assigns) do
     prepare_assign(assigns)
     |> input()
@@ -79,7 +81,12 @@ defmodule TikiWeb.Component.Input do
           checked={@checked}
           class="border-primary text-primary bg-background size-4 rounded-sm shadow-sm checked:bg-primary focus:ring-0 dark:checked:bg-dark-checkmark dark:checked:text-primary"
           {@rest}
-        /> {@label}
+        />
+        <%= if @checkbox_label do %>
+          {render_slot(@checkbox_label)}
+        <% else %>
+          {@label}
+        <% end %>
       </label>
       <p :if={@description != nil} class="text-muted-foreground mt-2 text-sm">{@description}</p>
       <.error :for={msg <- @errors}>{msg}</.error>

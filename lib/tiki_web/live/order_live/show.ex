@@ -18,12 +18,12 @@ defmodule TikiWeb.OrderLive.Show do
           {gettext("Thank you for your order!")}
         </h1>
         <!-- TODO: Receipt link -->
-        <.link
+        <%!-- <.link
           href="#"
           class="text-secondary-foreground hidden text-sm font-medium hover:text-secondary-foreground/80 sm:block"
         >
           {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
-        </.link>
+        </.link> --%>
       </div>
       <p class="text-muted-foreground text-sm">
         <!-- TODO: Proper time  -->
@@ -34,21 +34,21 @@ defmodule TikiWeb.OrderLive.Show do
         </time>
       </p>
       <!-- TODO: Receipt link -->
-      <.link href="#" class="text-sm font-medium sm:hidden">
+      <%!-- <.link href="#" class="text-sm font-medium sm:hidden">
         {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
-      </.link>
+      </.link> --%>
     </div>
 
     <div class="mt-6">
       <h2 class="sr-only">{gettext("Tickets")}</h2>
 
       <div class="space-y-4 md:space-y-8">
-        <.card :for={ticket <- @order.tickets}>
+        <.card :for={ticket <- @order.tickets} class="md:max-w-3xl">
           <div class="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
             <div class="flex lg:col-span-7">
-              <div class="size-24">
+              <.link class="size-24" navigate={ticket_path(ticket, @live_action)}>
                 <.svg_qr data={ticket.id} />
-              </div>
+              </.link>
               <div class="ml-6">
                 <.link navigate={ticket_path(ticket, @live_action)}>
                   <h3 class="text-foreground text-base font-medium">
@@ -93,7 +93,8 @@ defmodule TikiWeb.OrderLive.Show do
             :if={!ticket.form_response}
             class="border-border flex flex-row items-center justify-between border-t px-4 py-6 sm:px-6 lg:gap-x-8 lg:p-8"
           >
-            <p class="text-sm font-medium">
+            <p class="text-error flex items-center gap-2 text-sm font-medium">
+              <.icon name="hero-exclamation-triangle" />
               {gettext("You need to fill in attendance information for this ticket")}
             </p>
 
