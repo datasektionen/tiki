@@ -16,10 +16,10 @@ job "tiki" {
         provider = "nomad"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.tiki.rule=Host(`beta-tiki.datasektionen.se`)",
+          "traefik.http.routers.tiki.rule=Host(`tiki.datasektionen.se`)",
           "traefik.http.routers.tiki.tls.certresolver=default",
 
-          "traefik.http.routers.tiki-internal.rule=Host(`beta-tiki.nomad.dsekt.internal`)",
+          "traefik.http.routers.tiki-internal.rule=Host(`tiki.nomad.dsekt.internal`)",
           "traefik.http.routers.tiki-internal.entrypoints=web-internal",
         ]
       }
@@ -40,9 +40,9 @@ SWISH_API_URL=https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api
 SWISH_CERT={{ .swish_cert }}
 SWISH_KEY={{ .swish_key }}
 SWISH_MERCHANT_NUMBER={{ .swish_merchant_number }}
-SWISH_CALLBACK_URL=https://beta-tiki.datasektionen.se/swish/callback
+SWISH_CALLBACK_URL=https://tiki.datasektionen.se/swish/callback
 SECRET_KEY_BASE={{ .secret_key_base }}
-PHX_HOST=beta-tiki.datasektionen.se
+PHX_HOST=tiki.datasektionen.se
 PORT={{ env "NOMAD_PORT_tikihttp" }}
 SPAM_API_KEY={{ .spam_api_key }}
 STRIPE_API_KEY={{ .stripe_api_key }}
