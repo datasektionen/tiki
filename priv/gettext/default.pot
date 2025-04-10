@@ -11,17 +11,17 @@
 msgid ""
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:95
+#: lib/tiki_web/components/core_components.ex:103
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:86
+#: lib/tiki_web/components/core_components.ex:94
 #, elixir-autogen, elixir-format
 msgid "Error!"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:107
+#: lib/tiki_web/components/core_components.ex:115
 #, elixir-autogen, elixir-format
 msgid "Hang in there while we get back on track"
 msgstr ""
@@ -31,22 +31,22 @@ msgstr ""
 msgid "Modify user settings"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:102
+#: lib/tiki_web/components/core_components.ex:110
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:85
+#: lib/tiki_web/components/core_components.ex:93
 #, elixir-autogen, elixir-format
 msgid "Success!"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:90
+#: lib/tiki_web/components/core_components.ex:98
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:64
+#: lib/tiki_web/components/core_components.ex:72
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr ""
@@ -194,7 +194,6 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:93
 #: lib/tiki_web/live/admin_live/user/settings.ex:33
 #, elixir-autogen, elixir-format
 msgid "User settings updated"
@@ -338,18 +337,20 @@ msgstr ""
 msgid "Teams"
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:207
-#: lib/tiki_web/user_auth.ex:236
+#: lib/tiki_web/user_auth.ex:209
+#: lib/tiki_web/user_auth.ex:238
+#: lib/tiki_web/user_auth.ex:330
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:266
+#: lib/tiki_web/user_auth.ex:268
 #, elixir-autogen, elixir-format
 msgid "You must select a team to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:227
+#: lib/tiki_web/user_auth.ex:229
+#: lib/tiki_web/user_auth.ex:344
 #, elixir-autogen, elixir-format
 msgid "You need to be an admin to access this page."
 msgstr ""
@@ -448,7 +449,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/forms/form.ex:159
 #: lib/tiki_web/live/admin_live/team/members.ex:60
 #: lib/tiki_web/live/admin_live/team/show.ex:21
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:121
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:122
 #: lib/tiki_web/live/user_live/registration.ex:27
 #, elixir-autogen, elixir-format
 msgid "Email"
@@ -725,7 +726,7 @@ msgstr ""
 msgid "Browse events"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:137
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:139
 #, elixir-autogen, elixir-format
 msgid "Continue"
 msgstr ""
@@ -735,7 +736,7 @@ msgstr ""
 msgid "Credit card"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:130
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:132
 #, elixir-autogen, elixir-format
 msgid "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
 msgstr ""
@@ -747,12 +748,12 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:152
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:154
 #, elixir-autogen, elixir-format
 msgid "Open swish on this device"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:144
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:146
 #, elixir-autogen, elixir-format
 msgid "Pay using Swish"
 msgstr ""
@@ -789,7 +790,7 @@ msgstr ""
 msgid "You must accept the terms of service."
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:122
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:123
 #, elixir-autogen, elixir-format
 msgid "Your email"
 msgstr ""
@@ -967,7 +968,7 @@ msgstr ""
 msgid "Order number"
 msgstr ""
 
-#: lib/tiki_web/live/event_live/show.ex:174
+#: lib/tiki_web/live/event_live/show.ex:175
 #, elixir-autogen, elixir-format
 msgid "Order paid!"
 msgstr ""
@@ -1131,7 +1132,7 @@ msgstr ""
 msgid "Organized by"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:173
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:175
 #, elixir-autogen, elixir-format
 msgid "Pay"
 msgstr ""
@@ -1214,7 +1215,7 @@ msgstr ""
 msgid "Buy"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:365
+#: lib/tiki_web/components/core_components.ex:373
 #, elixir-autogen, elixir-format
 msgid "Accepts"
 msgstr ""
@@ -1272,7 +1273,7 @@ msgstr ""
 msgid "Team updated successfully"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:358
+#: lib/tiki_web/components/core_components.ex:366
 #, elixir-autogen, elixir-format
 msgid "Upload a file"
 msgstr ""
@@ -1301,22 +1302,22 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/ticket/index.ex:109
 #: lib/tiki_web/live/admin_live/ticket/index.ex:140
 #: lib/tiki_web/live/admin_live/ticket/index.ex:160
-#: lib/tiki_web/user_auth.ex:251
+#: lib/tiki_web/user_auth.ex:253
 #, elixir-autogen, elixir-format
 msgid "You are not authorized to do that."
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:361
+#: lib/tiki_web/components/core_components.ex:369
 #, elixir-autogen, elixir-format
 msgid "or drag and drop"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:365
+#: lib/tiki_web/components/core_components.ex:373
 #, elixir-autogen, elixir-format
 msgid "up to"
 msgstr ""
 
-#: lib/tiki_web/components/core_components.ex:377
+#: lib/tiki_web/components/core_components.ex:385
 #, elixir-autogen, elixir-format
 msgid "uploaded"
 msgstr ""
@@ -1545,7 +1546,7 @@ msgstr ""
 msgid "What is Tiki?"
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:125
+#: lib/tiki_web/live/account_live/settings.ex:130
 #, elixir-autogen, elixir-format
 msgid "A link to confirm your email change has been sent to the new address."
 msgstr ""
@@ -1801,4 +1802,14 @@ msgstr ""
 #: lib/tiki/orders/order_notifier.ex:128
 #, elixir-autogen, elixir-format
 msgid "Your tickets for %{event}"
+msgstr ""
+
+#: lib/tiki_web/live/user_live/login.ex:83
+#, elixir-autogen, elixir-format
+msgid "If your email is in our system, you will receive instructions for logging in shortly."
+msgstr ""
+
+#: lib/tiki_web/live/account_live/settings.ex:96
+#, elixir-autogen, elixir-format
+msgid "Profile updated successfully"
 msgstr ""

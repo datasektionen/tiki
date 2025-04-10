@@ -327,7 +327,7 @@ defmodule TikiWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You must log in to access this page.")
+      |> put_flash(:error, gettext("You must log in to access this page."))
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log_in")
       |> halt()
@@ -341,7 +341,7 @@ defmodule TikiWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You need to be an admin to access this page.")
+      |> put_flash(:error, gettext("You need to be an admin to access this page."))
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log_in")
       |> halt()
