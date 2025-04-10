@@ -1443,7 +1443,7 @@ msgstr "Evenemanget kommer endast åt via en direkt länk"
 #: lib/tiki_web/controllers/page_html/about.html.heex:88
 #, elixir-autogen, elixir-format
 msgid "By integrating directly with payment providers, the chapter saves money by eliminating\n             needless fees."
-msgstr ""
+msgstr "Genom att integrera direkt med betalningstjänster så kan sektionen undvika onödiga avgifter och spara pengar."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:103
 #, elixir-autogen, elixir-format
@@ -1463,7 +1463,7 @@ msgstr "Behöver jag ta med en biljett till evenemanget?"
 #: lib/tiki_web/controllers/page_html/about.html.heex:150
 #, elixir-autogen, elixir-format
 msgid "Do I need to have an account to use Tiki?"
-msgstr "Behöver jag haett konto för att använda Tiki?"
+msgstr "Behöver jag ha ett konto för att använda Tiki?"
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:69
 #, elixir-autogen, elixir-format
@@ -1483,12 +1483,12 @@ msgstr "Hur hanteras betalningar?"
 #: lib/tiki_web/controllers/page_html/about.html.heex:163
 #, elixir-autogen, elixir-format
 msgid "No. You can purchase a ticket and recieve it on any valid email address. If you register for an account,\n                you can log in and see your previous purchases, but this is not required."
-msgstr ""
+msgstr "Nej. Du kan köpa en biljett och få den skickad till godtycklig e-postadress. Om du registrerar ett konto kan du logga in och se dina tidigare köp, men detta är inte nödvändigt."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:189
 #, elixir-autogen, elixir-format
 msgid "No. You can show your digital ticket, including a QR code, when you show up to an event. You can find your ticket\n                either from your order confirmation confirmation email, or via the page containing your ticket on the\n                Tiki website."
-msgstr ""
+msgstr "Nej. Du kan visa din digitala biljett som inehåller en QR-kod när du anländer till ett evenemang. Du hittar din biljett\n                antingen i din orderbekräftelse via e-post, eller under \"Dina Biljetter\" på\n                Tiki-webbplatsen om du är inloggad."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:97
 #, elixir-autogen, elixir-format
@@ -1508,37 +1508,38 @@ msgstr "Skalbart."
 #: lib/tiki_web/controllers/page_html/about.html.heex:55
 #, elixir-autogen, elixir-format
 msgid "The Computer Science Chapter at KTH has for a long time had issues with event management, and\n        particularly with ticket releases. None of the existing solutions on the market were flexible enough for\n        our needs, and we needed something that could be adapted to our own specific needs. So, we decided to\n        build our own event managment platform, with built-in ticket releases and direct payments using multiple\n        payment providers. The result from more than two years of development is Tiki, our own event management\n        platform. It has been developed from scratch by passionate KTH students, with the main efforts lead\n        by Adrian Salamon."
-msgstr ""
+msgstr "Datasektionen på KTH har under lång tid haft problem med eventhantering. Framförallt har vi haft problem med biljettsläpp. Ingen av de befintliga lösningarna på marknaden var tillräckligt flexibla för\n        våra behov, och vi ville ha en plattform som kunde anpassas efter våra egna behov. Därför bestämde vi oss för att\n        bygga vår egen eventhanteringsplattform, med funktioner för biljettsläpp och direkta betalningar via flera\n        betalningstjänster. Resultatet efter mer än två års arbete är Tiki, vår egen eventplattform. Den har utvecklats från grunden av passionerade KTH-studenter, med merparten av arbetet gjort av Adrian Salamon."
+
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:45
 #, elixir-autogen, elixir-format
 msgid "Tiki is an event management platform developed by the Computer Science Chapter at KTH. It is designed to\n      be used for both internal and public events, and is built from the ground up to be flexible and easy to use."
-msgstr ""
+msgstr "Tiki är en eventhanteringsplattform utvecklad av Datasektionen på KTH. Den är utformad för att\n      användas för både interna och publika evenemang, och är byggd från grunden för att vara flexibel och lätt att använda."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "Tiki is built from the ground up to be scalable and performant. By building on\n           the scalable Elixir/BEAM platform, we can use realtime features while remaining performant."
-msgstr ""
+msgstr "Tiki har byggts från grunden för att vara snabb och skalbar. Genom att bygga med Elixir/BEAM-plattformen kan vi använda realtidsfunktioner samtidigt som vi behåller hög prestanda."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:109
 #, elixir-autogen, elixir-format
 msgid "Tiki is currently in the early stages of being deployed, and we would love your feedback. If you have any questions, suggestions or feedback, please don't hesitate to reach out to us at"
-msgstr ""
+msgstr "Tiki är en ny plattform, och vi skulle uppskatta din feedback. Om du har några frågor, förslag eller synpunkter, tveka inte att kontakta oss på"
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:70
 #, elixir-autogen, elixir-format
 msgid "Tiki is designed to be flexible and easy to use. It is built from the ground\n           based on the needs of the Computer Science Chapter."
-msgstr ""
+msgstr "Tiki är designad för att vara flexibel och lätt att använda. Den är byggd från grunden för Datasektionens behov"
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:98
 #, elixir-autogen, elixir-format
 msgid "Tiki is source-available software, licensed under the Source First License. You can modify and use\n            the software for your own purposes."
-msgstr ""
+msgstr "Tiki är öppen programvara, licensierad under Source First License. Du kan modifiera och använda\n            programvaran hur du vill."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:136
 #, elixir-autogen, elixir-format
 msgid "Two payments methods are currently supported: Stripe and Swish. Both methods are securely handled by the\n                respective payment providers. In order to use Swish, you need to be connected to a swedish bank that supports BankId and Swish. We support Stripe\n                payments via credit/debit cards from all major card vendors. No money is handled internally by Tiki."
-msgstr ""
+msgstr "För närvarande stöds två betalningsmetoder: Stripe och Swish. Båda metoderna hanteras säkert av\n                respektive betalningsleverantör. För att använda Swish behöver du vara ansluten till en svensk bank som stöder BankId och Swish. Vi stöder Stripe-betalningar via kredit- eller debitkort från alla större kortleverantörer. Inga pengar hanteras internt av Tiki."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:42
 #, elixir-autogen, elixir-format

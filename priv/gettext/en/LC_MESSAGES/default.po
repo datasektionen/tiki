@@ -1488,7 +1488,7 @@ msgstr ""
 #: lib/tiki_web/controllers/page_html/about.html.heex:189
 #, elixir-autogen, elixir-format
 msgid "No. You can show your digital ticket, including a QR code, when you show up to an event. You can find your ticket\n                either from your order confirmation confirmation email, or via the page containing your ticket on the\n                Tiki website."
-msgstr ""
+msgstr "No. You can show your digital ticket, including a QR code, when you show up to an event. You can find your ticket\n                either from your order confirmation confirmation email, or via the \"Your Tickets\" page when logged in on the\n                Tiki website."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:97
 #, elixir-autogen, elixir-format
