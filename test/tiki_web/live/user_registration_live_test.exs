@@ -28,30 +28,26 @@ defmodule TikiWeb.UserRegistrationLiveTest do
       result =
         lv
         |> element("#registration_form")
-        |> render_change(user: %{"email" => "with spaces", "password" => "too short"})
+        |> render_change(user: %{"email" => "with spaces"})
 
       assert result =~ "Register"
       assert result =~ "must have the @ sign and no spaces"
-      assert result =~ "should be at least 12 character"
     end
   end
 
   describe "register user" do
-    test "creates account and logs the user in", %{conn: conn} do
+    test "creates account but does not log the user in", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       email = unique_user_email()
       form = form(lv, "#registration_form", user: valid_user_attributes(email: email))
-      render_submit(form)
-      conn = follow_trigger_action(form, conn)
 
-      assert redirected_to(conn) == ~p"/"
+      {:ok, _lv, html} =
+        render_submit(form)
+        |> follow_redirect(conn, ~p"/users/log_in")
 
-      # Now do a logged in request and assert on the menu
-      conn = get(conn, "/account")
-      response = html_response(conn, 200)
-      assert response =~ email
-      assert response =~ "Settings"
+      assert html =~
+               ~r/An email was sent to/
     end
 
     test "renders errors for duplicated email", %{conn: conn} do
@@ -62,7 +58,7 @@ defmodule TikiWeb.UserRegistrationLiveTest do
       result =
         lv
         |> form("#registration_form",
-          user: %{"email" => user.email, "password" => "valid_password"}
+          user: %{"email" => user.email}
         )
         |> render_submit()
 
@@ -78,7 +74,7 @@ defmodule TikiWeb.UserRegistrationLiveTest do
         lv
         |> element(~s|main a:fl-contains("Sign in")|)
         |> render_click()
-        |> follow_redirect(conn, ~p"/account/log_in")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert login_html =~ "Log in"
     end

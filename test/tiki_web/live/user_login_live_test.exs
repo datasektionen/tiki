@@ -6,18 +6,17 @@ defmodule TikiWeb.UserLoginLiveTest do
 
   describe "Log in page" do
     test "renders log in page", %{conn: conn} do
-      {:ok, _lv, html} = live(conn, ~p"/account/log_in")
+      {:ok, _lv, html} = live(conn, ~p"/users/log_in")
 
       assert html =~ "Log in"
       assert html =~ "Sign up"
-      assert html =~ "Forgot your password?"
     end
 
     test "redirects if already logged in", %{conn: conn} do
       result =
         conn
         |> log_in_user(user_fixture())
-        |> live(~p"/account/log_in")
+        |> live(~p"/users/log_in")
         |> follow_redirect(conn, "/")
 
       assert {:ok, _conn} = result
@@ -25,41 +24,36 @@ defmodule TikiWeb.UserLoginLiveTest do
   end
 
   describe "user login" do
-    test "redirects if user login with valid credentials", %{conn: conn} do
-      password = "123456789abcd"
-      user = user_fixture(%{password: password})
+    test "sends magic link email when user exists", %{conn: conn} do
+      user = user_fixture()
 
-      {:ok, lv, _html} = live(conn, ~p"/account/log_in")
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
-      form =
-        form(lv, "#login_form", user: %{email: user.email, password: password, remember_me: true})
+      {:ok, _lv, html} =
+        form(lv, "#login_form_magic", user: %{email: user.email})
+        |> render_submit()
+        |> follow_redirect(conn, ~p"/users/log_in")
 
-      conn = submit_form(form, conn)
+      assert html =~ "If your email is in our system"
 
-      assert redirected_to(conn) == ~p"/"
+      assert Tiki.Repo.get_by!(Tiki.Accounts.UserToken, user_id: user.id).context == "login"
     end
 
-    test "redirects to login page with a flash error if there are no valid credentials", %{
-      conn: conn
-    } do
-      {:ok, lv, _html} = live(conn, ~p"/account/log_in")
+    test "does not disclose if user is registered", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
-      form =
-        form(lv, "#login_form",
-          user: %{email: "test@email.com", password: "123456", remember_me: true}
-        )
+      {:ok, _lv, html} =
+        form(lv, "#login_form_magic", user: %{email: "idonotexist@example.com"})
+        |> render_submit()
+        |> follow_redirect(conn, ~p"/users/log_in")
 
-      conn = submit_form(form, conn)
-
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Invalid email or password"
-
-      assert redirected_to(conn) == "/account/log_in"
+      assert html =~ "If your email is in our system"
     end
   end
 
   describe "login navigation" do
     test "redirects to registration page when the Register button is clicked", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/account/log_in")
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
       {:ok, _login_live, login_html} =
         lv
@@ -68,20 +62,6 @@ defmodule TikiWeb.UserLoginLiveTest do
         |> follow_redirect(conn, ~p"/users/register")
 
       assert login_html =~ "Register"
-    end
-
-    test "redirects to forgot password page when the Forgot Password button is clicked", %{
-      conn: conn
-    } do
-      {:ok, lv, _html} = live(conn, ~p"/account/log_in")
-
-      {:ok, conn} =
-        lv
-        |> element(~s|main a:fl-contains("Forgot your password?")|)
-        |> render_click()
-        |> follow_redirect(conn, ~p"/users/reset_password")
-
-      assert conn.resp_body =~ "Forgot your password?"
     end
   end
 end

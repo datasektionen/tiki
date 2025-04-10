@@ -51,13 +51,13 @@ STRIPE_WEBHOOK_SECRET={{ .stripe_webhook_secret }}
 OIDC_ISSUER_URL=https://sso.datasektionen.se/op
 OIDC_CLIENT_ID={{ .oidc_client_id }}
 OIDC_CLIENT_SECRET={{ .oidc_client_secret }}
-S3_BUCKET_NAME=salamon-test
-AWS_REGION="eu-west-1"
+S3_BUCKET_NAME=dsekt-tiki
+AWS_REGION="eu-north-1"
 AWS_ACCESS_KEY_ID={{ .aws_access_key_id }}
 AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
-IMAGE_FRONTEND_URL=https://tiki-imgproxy.datasektionen.se
+IMAGE_FRONTEND_URL=https://dnok4ulql7gij.cloudfront.net
 {{ end }}
 EOF
         destination = "local/.env"
@@ -92,15 +92,15 @@ EOF
 {{ with nomadVar "nomad/jobs/tiki" }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
-AWS_ACCESS_KEY_ID={{ .aws_access_key_id }}
-AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
+AWS_ACCESS_KEY_ID={{ .imgproxy_aws_access_key_id }}
+AWS_SECRET_ACCESS_KEY={{ .imgproxy_aws_secret_access_key }}
 {{ end }}
 IMGPROXY_BIND=:{{ env "NOMAD_PORT_imgproxyhttp" }}
 IMGPROXY_MAX_SRC_RESOLUTION=30
 IMGPROXY_USE_S3=true
 IMGPROXY_TTL=31536000
-AWS_REGION="eu-west-1"
-IMGPROXY_BASE_URL="s3://salamon-test"
+AWS_REGION="eu-north-1"
+IMGPROXY_BASE_URL="s3://dsekt-tiki"
 EOF
         destination = "local/.env"
         env         = true

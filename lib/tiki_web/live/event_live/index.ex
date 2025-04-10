@@ -5,6 +5,7 @@ defmodule TikiWeb.EventLive.Index do
 
   def render(assigns) do
     ~H"""
+    <.header>{gettext("Public events")}</.header>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <.link :for={event <- @events} navigate={~p"/events/#{event}"} class="">
         <div class="w-full space-y-3">
