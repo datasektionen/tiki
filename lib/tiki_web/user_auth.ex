@@ -285,7 +285,7 @@ defmodule TikiWeb.UserAuth do
 
   defp mount_current_user(session, socket) do
     Phoenix.Component.assign_new(socket, :locale, fn ->
-      %{"locale" => locale} = session
+      locale = session["locale"] || "en"
       Gettext.put_locale(TikiWeb.Gettext, locale)
       Cldr.put_locale(Tiki.Cldr, locale)
       locale
