@@ -3,6 +3,14 @@ defmodule Tiki.Mail.Layouts do
 
   use Gettext, backend: TikiWeb.Gettext
 
+  defmacro __using__(_opts) do
+    quote do
+      import Phoenix.Component
+      import Tiki.Mail.Layouts
+      use Gettext, backend: TikiWeb.Gettext
+    end
+  end
+
   @doc """
   Default template.
   """
@@ -68,7 +76,9 @@ defmodule Tiki.Mail.Layouts do
         <mj-section>
           <mj-column>
             <mj-text font-size="14px">
-              Tiki is an event platform developed by and for the Computer Science Chapter at KTH.<br />
+              {gettext(
+                "Tiki is an event platform developed by and for the Computer Science Chapter at KTH."
+              )}<br />
 
               <a
                 target="_blank"

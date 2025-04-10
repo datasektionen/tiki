@@ -11,17 +11,17 @@ msgstr ""
 "Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/tiki_web/components/core_components.ex:95
+#: lib/tiki_web/components/core_components.ex:103
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr "Försöker återuppkopplla"
 
-#: lib/tiki_web/components/core_components.ex:86
+#: lib/tiki_web/components/core_components.ex:94
 #, elixir-autogen, elixir-format
 msgid "Error!"
 msgstr "Fel!"
 
-#: lib/tiki_web/components/core_components.ex:107
+#: lib/tiki_web/components/core_components.ex:115
 #, elixir-autogen, elixir-format
 msgid "Hang in there while we get back on track"
 msgstr "Vänta en stund"
@@ -31,22 +31,22 @@ msgstr "Vänta en stund"
 msgid "Modify user settings"
 msgstr "Ändra användarinställningar"
 
-#: lib/tiki_web/components/core_components.ex:102
+#: lib/tiki_web/components/core_components.ex:110
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr "Något gick fel!"
 
-#: lib/tiki_web/components/core_components.ex:85
+#: lib/tiki_web/components/core_components.ex:93
 #, elixir-autogen, elixir-format
 msgid "Success!"
 msgstr "Lyckades!"
 
-#: lib/tiki_web/components/core_components.ex:90
+#: lib/tiki_web/components/core_components.ex:98
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr "Ingen uppkoppling"
 
-#: lib/tiki_web/components/core_components.ex:64
+#: lib/tiki_web/components/core_components.ex:72
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr "stäng"
@@ -194,7 +194,6 @@ msgstr "Föredraget språk"
 msgid "Save"
 msgstr "Spara"
 
-#: lib/tiki_web/live/account_live/settings.ex:93
 #: lib/tiki_web/live/admin_live/user/settings.ex:33
 #, elixir-autogen, elixir-format, fuzzy
 msgid "User settings updated"
@@ -338,18 +337,20 @@ msgstr "Inget team"
 msgid "Teams"
 msgstr "Teams"
 
-#: lib/tiki_web/user_auth.ex:184
-#: lib/tiki_web/user_auth.ex:213
+#: lib/tiki_web/user_auth.ex:209
+#: lib/tiki_web/user_auth.ex:238
+#: lib/tiki_web/user_auth.ex:330
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr "Du måste logga in för att komma åt denna sida."
 
-#: lib/tiki_web/user_auth.ex:243
+#: lib/tiki_web/user_auth.ex:268
 #, elixir-autogen, elixir-format
 msgid "You must select a team to access this page."
 msgstr "Du måste välja ett team för att komma åt denna sida."
 
-#: lib/tiki_web/user_auth.ex:204
+#: lib/tiki_web/user_auth.ex:229
+#: lib/tiki_web/user_auth.ex:344
 #, elixir-autogen, elixir-format
 msgid "You need to be an admin to access this page."
 msgstr "Du måste vara admin för att komma åt denna sida."
@@ -448,7 +449,7 @@ msgstr "från förra månaden"
 #: lib/tiki_web/live/admin_live/forms/form.ex:159
 #: lib/tiki_web/live/admin_live/team/members.ex:60
 #: lib/tiki_web/live/admin_live/team/show.ex:21
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:121
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:122
 #: lib/tiki_web/live/user_live/registration.ex:27
 #, elixir-autogen, elixir-format
 msgid "Email"
@@ -703,7 +704,7 @@ msgstr "Köp biljetter till %{event}. Du har %{count} minuter på dig att slutf�
 msgid "must have the @ sign and no spaces"
 msgstr "Måste innehålla @-tecken och inga mellanslag"
 
-#: lib/tiki/orders/order_notifier.ex:136
+#: lib/tiki/orders/order_notifier.ex:115
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:77
 #, elixir-autogen, elixir-format
 msgid "Total"
@@ -725,7 +726,7 @@ msgstr "Alla evenemang för %{team}"
 msgid "Browse events"
 msgstr "Bläddra bland events"
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:137
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:139
 #, elixir-autogen, elixir-format
 msgid "Continue"
 msgstr "Fortsätt"
@@ -735,23 +736,24 @@ msgstr "Fortsätt"
 msgid "Credit card"
 msgstr "Kreditkort"
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:130
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:132
 #, elixir-autogen, elixir-format
 msgid "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
 msgstr "Jag har läst villkoren och godkänner försäljning av mina personuppgifter till högstbjudande."
 
+#: lib/tiki/accounts/user_notifier.ex:109
 #: lib/tiki_web/components/layouts/nav.html.heex:90
-#: lib/tiki_web/live/user_live/confirmation.ex:40
+#: lib/tiki_web/live/user_live/confirmation.ex:57
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "Logga in"
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:152
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:154
 #, elixir-autogen, elixir-format
 msgid "Open swish on this device"
 msgstr "Öppna Swish på denna enhet"
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:144
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:146
 #, elixir-autogen, elixir-format
 msgid "Pay using Swish"
 msgstr "Betala med Swish"
@@ -788,7 +790,7 @@ msgstr "Något gick fel, ordern avbröts"
 msgid "You must accept the terms of service."
 msgstr "Du måste acceptera användarvillkoren."
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:122
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:123
 #, elixir-autogen, elixir-format
 msgid "Your email"
 msgstr "Din epost"
@@ -966,7 +968,7 @@ msgstr "Beställningsinformation"
 msgid "Order number"
 msgstr "Ordernummer"
 
-#: lib/tiki_web/live/event_live/show.ex:174
+#: lib/tiki_web/live/event_live/show.ex:175
 #, elixir-autogen, elixir-format
 msgid "Order paid!"
 msgstr "Beställningen är betald!"
@@ -1008,6 +1010,7 @@ msgstr "Subtotal"
 msgid "Swish payment reference"
 msgstr "Betalningsreferens för Swish"
 
+#: lib/tiki/orders/order_notifier.ex:58
 #: lib/tiki_web/live/order_live/show.ex:18
 #, elixir-autogen, elixir-format
 msgid "Thank you for your order!"
@@ -1129,7 +1132,7 @@ msgstr "Inga biljettbatchar"
 msgid "Organized by"
 msgstr "Organiseras av"
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:173
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:175
 #, elixir-autogen, elixir-format
 msgid "Pay"
 msgstr "Betala"
@@ -1212,7 +1215,7 @@ msgstr "Utvecklat av Adrian Salamon."
 msgid "Buy"
 msgstr "Köp"
 
-#: lib/tiki_web/components/core_components.ex:365
+#: lib/tiki_web/components/core_components.ex:373
 #, elixir-autogen, elixir-format
 msgid "Accepts"
 msgstr "Tillåter"
@@ -1270,7 +1273,7 @@ msgstr "Logga"
 msgid "Team updated successfully"
 msgstr "Team uppdaterades"
 
-#: lib/tiki_web/components/core_components.ex:358
+#: lib/tiki_web/components/core_components.ex:366
 #, elixir-autogen, elixir-format
 msgid "Upload a file"
 msgstr "Ladda upp en fil"
@@ -1299,22 +1302,22 @@ msgstr "Ladda upp en fil"
 #: lib/tiki_web/live/admin_live/ticket/index.ex:109
 #: lib/tiki_web/live/admin_live/ticket/index.ex:140
 #: lib/tiki_web/live/admin_live/ticket/index.ex:160
-#: lib/tiki_web/user_auth.ex:228
+#: lib/tiki_web/user_auth.ex:253
 #, elixir-autogen, elixir-format
 msgid "You are not authorized to do that."
 msgstr "Du är inte behörig."
 
-#: lib/tiki_web/components/core_components.ex:361
+#: lib/tiki_web/components/core_components.ex:369
 #, elixir-autogen, elixir-format
 msgid "or drag and drop"
 msgstr "eller dra en fil hit"
 
-#: lib/tiki_web/components/core_components.ex:365
+#: lib/tiki_web/components/core_components.ex:373
 #, elixir-autogen, elixir-format
 msgid "up to"
 msgstr "upp till"
 
-#: lib/tiki_web/components/core_components.ex:377
+#: lib/tiki_web/components/core_components.ex:385
 #, elixir-autogen, elixir-format
 msgid "uploaded"
 msgstr "uppladdad"
@@ -1441,7 +1444,7 @@ msgstr "Evenemanget kommer endast åt via en direkt länk"
 #: lib/tiki_web/controllers/page_html/about.html.heex:88
 #, elixir-autogen, elixir-format
 msgid "By integrating directly with payment providers, the chapter saves money by eliminating\n             needless fees."
-msgstr ""
+msgstr "Genom att integrera direkt med betalningstjänster så kan sektionen undvika onödiga avgifter och spara pengar."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:103
 #, elixir-autogen, elixir-format
@@ -1461,7 +1464,7 @@ msgstr "Behöver jag ta med en biljett till evenemanget?"
 #: lib/tiki_web/controllers/page_html/about.html.heex:150
 #, elixir-autogen, elixir-format
 msgid "Do I need to have an account to use Tiki?"
-msgstr "Behöver jag haett konto för att använda Tiki?"
+msgstr "Behöver jag ha ett konto för att använda Tiki?"
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:69
 #, elixir-autogen, elixir-format
@@ -1481,12 +1484,12 @@ msgstr "Hur hanteras betalningar?"
 #: lib/tiki_web/controllers/page_html/about.html.heex:163
 #, elixir-autogen, elixir-format
 msgid "No. You can purchase a ticket and recieve it on any valid email address. If you register for an account,\n                you can log in and see your previous purchases, but this is not required."
-msgstr ""
+msgstr "Nej. Du kan köpa en biljett och få den skickad till godtycklig e-postadress. Om du registrerar ett konto kan du logga in och se dina tidigare köp, men detta är inte nödvändigt."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:189
 #, elixir-autogen, elixir-format
 msgid "No. You can show your digital ticket, including a QR code, when you show up to an event. You can find your ticket\n                either from your order confirmation confirmation email, or via the page containing your ticket on the\n                Tiki website."
-msgstr ""
+msgstr "Nej. Du kan visa din digitala biljett som inehåller en QR-kod när du anländer till ett evenemang. Du hittar din biljett\n                antingen i din orderbekräftelse via e-post, eller under \"Dina Biljetter\" på\n                Tiki-webbplatsen om du är inloggad."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:97
 #, elixir-autogen, elixir-format
@@ -1506,44 +1509,44 @@ msgstr "Skalbart."
 #: lib/tiki_web/controllers/page_html/about.html.heex:55
 #, elixir-autogen, elixir-format
 msgid "The Computer Science Chapter at KTH has for a long time had issues with event management, and\n        particularly with ticket releases. None of the existing solutions on the market were flexible enough for\n        our needs, and we needed something that could be adapted to our own specific needs. So, we decided to\n        build our own event managment platform, with built-in ticket releases and direct payments using multiple\n        payment providers. The result from more than two years of development is Tiki, our own event management\n        platform. It has been developed from scratch by passionate KTH students, with the main efforts lead\n        by Adrian Salamon."
-msgstr ""
+msgstr "Datasektionen på KTH har under lång tid haft problem med eventhantering. Framförallt har vi haft problem med biljettsläpp. Ingen av de befintliga lösningarna på marknaden var tillräckligt flexibla för\n        våra behov, och vi ville ha en plattform som kunde anpassas efter våra egna behov. Därför bestämde vi oss för att\n        bygga vår egen eventhanteringsplattform, med funktioner för biljettsläpp och direkta betalningar via flera\n        betalningstjänster. Resultatet efter mer än två års arbete är Tiki, vår egen eventplattform. Den har utvecklats från grunden av passionerade KTH-studenter, med merparten av arbetet gjort av Adrian Salamon."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:45
 #, elixir-autogen, elixir-format
 msgid "Tiki is an event management platform developed by the Computer Science Chapter at KTH. It is designed to\n      be used for both internal and public events, and is built from the ground up to be flexible and easy to use."
-msgstr ""
+msgstr "Tiki är en eventhanteringsplattform utvecklad av Datasektionen på KTH. Den är utformad för att\n      användas för både interna och publika evenemang, och är byggd från grunden för att vara flexibel och lätt att använda."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "Tiki is built from the ground up to be scalable and performant. By building on\n           the scalable Elixir/BEAM platform, we can use realtime features while remaining performant."
-msgstr ""
+msgstr "Tiki har byggts från grunden för att vara snabb och skalbar. Genom att bygga med Elixir/BEAM-plattformen kan vi använda realtidsfunktioner samtidigt som vi behåller hög prestanda."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:109
 #, elixir-autogen, elixir-format
 msgid "Tiki is currently in the early stages of being deployed, and we would love your feedback. If you have any questions, suggestions or feedback, please don't hesitate to reach out to us at"
-msgstr ""
+msgstr "Tiki är en ny plattform, och vi skulle uppskatta din feedback. Om du har några frågor, förslag eller synpunkter, tveka inte att kontakta oss på"
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:70
 #, elixir-autogen, elixir-format
 msgid "Tiki is designed to be flexible and easy to use. It is built from the ground\n           based on the needs of the Computer Science Chapter."
-msgstr ""
+msgstr "Tiki är designad för att vara flexibel och lätt att använda. Den är byggd från grunden för Datasektionens behov"
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:98
 #, elixir-autogen, elixir-format
 msgid "Tiki is source-available software, licensed under the Source First License. You can modify and use\n            the software for your own purposes."
-msgstr ""
+msgstr "Tiki är öppen programvara, licensierad under Source First License. Du kan modifiera och använda\n            programvaran hur du vill."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:136
 #, elixir-autogen, elixir-format
 msgid "Two payments methods are currently supported: Stripe and Swish. Both methods are securely handled by the\n                respective payment providers. In order to use Swish, you need to be connected to a swedish bank that supports BankId and Swish. We support Stripe\n                payments via credit/debit cards from all major card vendors. No money is handled internally by Tiki."
-msgstr ""
+msgstr "För närvarande stöds två betalningsmetoder: Stripe och Swish. Båda metoderna hanteras säkert av\n                respektive betalningsleverantör. För att använda Swish behöver du vara ansluten till en svensk bank som stöder BankId och Swish. Vi stöder Stripe-betalningar via kredit- eller debitkort från alla större kortleverantörer. Inga pengar hanteras internt av Tiki."
 
 #: lib/tiki_web/controllers/page_html/about.html.heex:42
 #, elixir-autogen, elixir-format
 msgid "What is Tiki?"
 msgstr "Vad är Tiki?"
 
-#: lib/tiki_web/live/account_live/settings.ex:125
+#: lib/tiki_web/live/account_live/settings.ex:130
 #, elixir-autogen, elixir-format
 msgid "A link to confirm your email change has been sent to the new address."
 msgstr "En länk för att bekräfta din e-postadress har skickats till den nya adressen."
@@ -1553,7 +1556,7 @@ msgstr "En länk för att bekräfta din e-postadress har skickats till den nya a
 msgid "Account Settings"
 msgstr "Användarinställningar"
 
-#: lib/tiki_web/live/user_live/registration.ex:62
+#: lib/tiki_web/live/user_live/registration.ex:64
 #, elixir-autogen, elixir-format
 msgid "An email was sent to %{email}. please access it to confirm your account."
 msgstr "Ett e-postmeddelande skickades till %{email}. Vänligen öppna det för att bekräfta ditt konto."
@@ -1568,12 +1571,12 @@ msgstr "Ändra e-post"
 msgid "Changing..."
 msgstr "Ändrar..."
 
-#: lib/tiki_web/live/user_live/confirmation.ex:23
+#: lib/tiki_web/live/user_live/confirmation.ex:30
 #, elixir-autogen, elixir-format
 msgid "Confirm my account"
 msgstr "Bekräfta mitt konto"
 
-#: lib/tiki_web/live/user_live/confirmation.ex:22
+#: lib/tiki_web/live/user_live/confirmation.ex:29
 #, elixir-autogen, elixir-format
 msgid "Confirming..."
 msgstr "Bekräftar..."
@@ -1598,7 +1601,7 @@ msgstr "Länken för att ändra e-postadressen är ogiltig eller har gått ut."
 msgid "Email changed successfully."
 msgstr "E-postadressen har ändrats."
 
-#: lib/tiki_web/live/user_live/login.ex:33
+#: lib/tiki_web/live/user_live/login.ex:34
 #, elixir-autogen, elixir-format
 msgid "Log in with email"
 msgstr "Logga in med e-post"
@@ -1608,15 +1611,10 @@ msgstr "Logga in med e-post"
 msgid "Logged out successfully."
 msgstr "Du har loggats ut."
 
-#: lib/tiki_web/live/user_live/confirmation.ex:39
+#: lib/tiki_web/live/user_live/confirmation.ex:56
 #, elixir-autogen, elixir-format
 msgid "Logging in..."
 msgstr "Loggar in..."
-
-#: lib/tiki_web/live/user_live/confirmation.ex:57
-#, elixir-autogen, elixir-format
-msgid "Magic link is invalid or it has expired."
-msgstr "Inloggningslänken är ogiltig eller har gått ut."
 
 #: lib/tiki_web/live/account_live/settings.ex:11
 #, elixir-autogen, elixir-format
@@ -1633,12 +1631,185 @@ msgstr "Länken är ogiltig eller har gått ut."
 msgid "User confirmed successfully."
 msgstr "Kontot har bekräftats."
 
-#: lib/tiki_web/live/user_live/confirmation.ex:9
-#, elixir-autogen, elixir-format
-msgid "Welcome"
-msgstr "Välkommen"
-
 #: lib/tiki_web/controllers/user_session_controller.ex:12
+#: lib/tiki_web/live/user_live/confirmation.ex:37
 #, elixir-autogen, elixir-format
 msgid "Welcome back!"
 msgstr "Välkommen tillbaka!"
+
+#: lib/tiki_web/live/user_live/confirmation.ex:13
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You may go ahead and confirm your account now."
+msgstr "Hej %{email}! Du kan nu bekräfta ditt konto."
+
+#: lib/tiki_web/live/user_live/confirmation.ex:40
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! Your log in link is valid, and you may proceed to log in."
+msgstr "Hej %{email}! Din inloggningslänk är giltig och du kan nu logga in."
+
+#: lib/tiki_web/live/user_live/confirmation.ex:54
+#, elixir-autogen, elixir-format
+msgid "Keep me logged in"
+msgstr "Håll mig inloggad"
+
+#: lib/tiki_web/live/user_live/confirmation.ex:75
+#, elixir-autogen, elixir-format
+msgid "Login link is invalid or it has expired."
+msgstr "Inloggningslänken är ogiltig eller har gått ut."
+
+#: lib/tiki/accounts/user_notifier.ex:31
+#: lib/tiki_web/live/user_live/confirmation.ex:10
+#, elixir-autogen, elixir-format
+msgid "Welcome to Tiki!"
+msgstr "Välkommen till Tiki!"
+
+#: lib/tiki_web/live/user_live/login.ex:61
+#, elixir-autogen, elixir-format
+msgid "You are running the local mail adapter, you can see all sent emails at"
+msgstr "Du använder den lokala e-postadaptern, du kan se alla skickade e-postmeddelanden på"
+
+#: lib/tiki_web/live/user_live/login.ex:62
+#, elixir-autogen, elixir-format
+msgid "the mailbox page"
+msgstr "e-postsidan"
+
+#: lib/tiki/orders/order_notifier.ex:90
+#, elixir-autogen, elixir-format
+msgid "Buyer"
+msgstr "Köpare"
+
+#: lib/tiki/accounts/user_notifier.ex:38
+#, elixir-autogen, elixir-format
+msgid "Confirm account"
+msgstr "Bekräfta konto"
+
+#: lib/tiki/accounts/user_notifier.ex:28
+#, elixir-autogen, elixir-format
+msgid "Confirm your account"
+msgstr "Bekräfta ditt konto"
+
+#: lib/tiki/accounts/user_notifier.ex:62
+#, elixir-autogen, elixir-format
+msgid "Confirm your email update"
+msgstr "Bekräfta uppdatering av e-postadress"
+
+#: lib/tiki/orders/order_notifier.ex:67
+#, elixir-autogen, elixir-format
+msgid "Don't forget to fill in your attendance information."
+msgstr "Glöm inte att fylla i din deltagarinformation."
+
+#: lib/tiki/accounts/user_notifier.ex:101
+#, elixir-autogen, elixir-format
+msgid "Here is your login link!"
+msgstr "Här är din inloggningslänk!"
+
+#: lib/tiki/accounts/user_notifier.ex:66
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You can change your email on Tiki by visiting the link below."
+msgstr "Hej %{email}! Du kan ändra din e-postadress på Tiki genom att besöka länken nedan."
+
+#: lib/tiki/accounts/user_notifier.ex:33
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You can confirm your account by visiting the link below."
+msgstr "Hej %{email}! Du kan bekräfta ditt konto genom att besöka länken nedan."
+
+#: lib/tiki/accounts/user_notifier.ex:103
+#, elixir-autogen, elixir-format
+msgid "Hi %{email}! You recently requested a login link for your account. Here it comes!"
+msgstr "Hej %{email}! Du har nyligen begärt en inloggningslänk för ditt konto. Här kommer den!"
+
+#: lib/tiki/accounts/user_notifier.ex:41
+#, elixir-autogen, elixir-format
+msgid "If you didn't create an account with us, please ignore this."
+msgstr "Om du inte skapade ett konto hos oss, vänligen ignorera detta."
+
+#: lib/tiki/accounts/user_notifier.ex:74
+#, elixir-autogen, elixir-format
+msgid "If you didn't request this change, please ignore this."
+msgstr "Om du inte begärde denna ändring, vänligen ignorera detta."
+
+#: lib/tiki/orders/order_notifier.ex:92
+#, elixir-autogen, elixir-format
+msgid "Order Date"
+msgstr "Orderdatum"
+
+#: lib/tiki/orders/order_notifier.ex:92
+#, elixir-autogen, elixir-format
+msgid "Order reference"
+msgstr "Orderreferens"
+
+#: lib/tiki/orders/order_notifier.ex:87
+#, elixir-autogen, elixir-format
+msgid "Receipt"
+msgstr "Kvitto"
+
+#: lib/tiki/orders/order_notifier.ex:91
+#, elixir-autogen, elixir-format
+msgid "Seller"
+msgstr "Säljare"
+
+#: lib/tiki/accounts/user_notifier.ex:112
+#, elixir-autogen, elixir-format
+msgid "The link is valid for 20 minutes, and can only be used once. If you didn't request this email, please ignore this."
+msgstr "Länken är giltig i 20 minuter och kan endast användas en gång. Om du inte begärde detta e-postmeddelande, vänligen ignorera detta."
+
+#: lib/tiki/mail/layouts.ex:79
+#, elixir-autogen, elixir-format
+msgid "Tiki is an event platform developed by and for the Computer Science Chapter at KTH."
+msgstr "Tiki är en eventplattform utvecklad av och för Datasektionen på KTH."
+
+#: lib/tiki/accounts/user_notifier.ex:71
+#, elixir-autogen, elixir-format
+msgid "Update email"
+msgstr "Uppdatera e-post"
+
+#: lib/tiki/accounts/user_notifier.ex:81
+#, elixir-autogen, elixir-format
+msgid "Update email instructions"
+msgstr "Instruktioner för att uppdatera e-post"
+
+#: lib/tiki/accounts/user_notifier.ex:98
+#, elixir-autogen, elixir-format
+msgid "Use this this link to log in"
+msgstr "Använd denna länk för att logga in"
+
+#: lib/tiki/orders/order_notifier.ex:74
+#, elixir-autogen, elixir-format
+msgid "View your tickets"
+msgstr "Visa dina biljetter"
+
+#: lib/tiki/orders/order_notifier.ex:61
+#, elixir-autogen, elixir-format
+msgid "We appreciate your purchase. Below are your order details. We look forward to seeing you at"
+msgstr "Tack för ditt köp. Nedan finns din orderinformation. Vi ser fram emot att ses på"
+
+#: lib/tiki/accounts/user_notifier.ex:50
+#, elixir-autogen, elixir-format
+msgid "Welcome to Tiki! Confirm your account"
+msgstr "Välkommen till Tiki! Bekräfta ditt konto"
+
+#: lib/tiki/accounts/user_notifier.ex:121
+#, elixir-autogen, elixir-format
+msgid "Your log in link for Tiki"
+msgstr "Din inloggningslänk för Tiki"
+
+#: lib/tiki/orders/order_notifier.ex:20
+#: lib/tiki/orders/order_notifier.ex:54
+#, elixir-autogen, elixir-format
+msgid "Your order for %{event}"
+msgstr "Din order för %{event}"
+
+#: lib/tiki/orders/order_notifier.ex:128
+#, elixir-autogen, elixir-format
+msgid "Your tickets for %{event}"
+msgstr "Dina biljetter till %{event}"
+
+#: lib/tiki_web/live/user_live/login.ex:83
+#, elixir-autogen, elixir-format
+msgid "If your email is in our system, you will receive instructions for logging in shortly."
+msgstr "Om adressen finns i systemet så skickas instruktioner för att logga in."
+
+#: lib/tiki_web/live/account_live/settings.ex:96
+#, elixir-autogen, elixir-format, fuzzy
+msgid "Profile updated successfully"
+msgstr "Profil uppdaterades"

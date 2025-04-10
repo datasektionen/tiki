@@ -1,16 +1,8 @@
 defmodule Tiki.Accounts.UserNotifier do
+  use Tiki.Mail.Layouts
+
   import Swoosh.Email
-  import Phoenix.Component
-
-  import Tiki.Mail.Layouts
-
   alias Tiki.Accounts.User
-
-  # TODO
-  # TODO!
-  # TODO!!
-  #
-  # Use Oban, and make actual mjml templates for emails!
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
@@ -33,18 +25,20 @@ defmodule Tiki.Accounts.UserNotifier do
     assigns = %{user: user, url: url}
 
     html = ~H"""
-    <Tiki.Mail.Layouts.default title="Confirm your account">
+    <Tiki.Mail.Layouts.default title={gettext("Confirm your account")}>
       <:section>
         <mj-column>
-          <mj-text font-size="24px" font-weight="bold">Welcome to Tiki!</mj-text>
+          <mj-text font-size="24px" font-weight="bold">{gettext("Welcome to Tiki!")}</mj-text>
           <mj-text>
-            Hi {@user.email}! You can confirm your account by visiting the link below.
+            {gettext("Hi %{email}! You can confirm your account by visiting the link below.",
+              email: @user.email
+            )}
           </mj-text>
 
-          <.button href={@url}>Confirm account</.button>
+          <.button href={@url}>{gettext("Confirm account")}</.button>
 
           <mj-text>
-            If you didn't create an account with us, please ignore this.
+            {gettext("If you didn't create an account with us, please ignore this.")}
           </mj-text>
         </mj-column>
       </:section>
@@ -53,7 +47,7 @@ defmodule Tiki.Accounts.UserNotifier do
 
     deliver(
       user.email,
-      "Welcome to Tiki! Confirm your account",
+      gettext("Welcome to Tiki! Confirm your account"),
       Tiki.Mail.Mjml.to_html!(html)
     )
   end
@@ -65,24 +59,26 @@ defmodule Tiki.Accounts.UserNotifier do
     assigns = %{user: user, url: url}
 
     html = ~H"""
-    <Tiki.Mail.Layouts.default title="Confirm your email update">
+    <Tiki.Mail.Layouts.default title={gettext("Confirm your email update")}>
       <:section>
         <mj-column>
           <mj-text>
-            Hi {@user.email}! You can change your email on Tiki by visiting the link below.
+            {gettext("Hi %{email}! You can change your email on Tiki by visiting the link below.",
+              email: @user.email
+            )}
           </mj-text>
 
-          <.button href={@url}>Update email</.button>
+          <.button href={@url}>{gettext("Update email")}</.button>
 
           <mj-text>
-            If you didn't request this change, please ignore this.
+            {gettext("If you didn't request this change, please ignore this.")}
           </mj-text>
         </mj-column>
       </:section>
     </Tiki.Mail.Layouts.default>
     """
 
-    deliver(user.email, "Update email instructions", Tiki.Mail.Mjml.to_html!(html))
+    deliver(user.email, gettext("Update email instructions"), Tiki.Mail.Mjml.to_html!(html))
   end
 
   @doc """
@@ -99,24 +95,29 @@ defmodule Tiki.Accounts.UserNotifier do
     assigns = %{user: user, url: url}
 
     html = ~H"""
-    <Tiki.Mail.Layouts.default title="Use this this link to log in">
+    <Tiki.Mail.Layouts.default title={gettext("Use this this link to log in")}>
       <:section>
         <mj-column>
-          <mj-text font-size="24px" font-weight="bold">Here is your login link!</mj-text>
+          <mj-text font-size="24px" font-weight="bold">{gettext("Here is your login link!")}</mj-text>
           <mj-text>
-            Hi {@user.email}! You recently requested a login link for your account. Here it comes!
+            {gettext(
+              "Hi %{email}! You recently requested a login link for your account. Here it comes!",
+              email: @user.email
+            )}
           </mj-text>
 
-          <.button href={@url}>Log in</.button>
+          <.button href={@url}>{gettext("Log in")}</.button>
 
           <mj-text>
-            The link is valid for 20 minutes, and can only be used once. If you didn't request this email, please ignore this.
+            {gettext(
+              "The link is valid for 20 minutes, and can only be used once. If you didn't request this email, please ignore this."
+            )}
           </mj-text>
         </mj-column>
       </:section>
     </Tiki.Mail.Layouts.default>
     """
 
-    deliver(user.email, "Your log in link for Tiki", Tiki.Mail.Mjml.to_html!(html))
+    deliver(user.email, gettext("Your log in link for Tiki"), Tiki.Mail.Mjml.to_html!(html))
   end
 end

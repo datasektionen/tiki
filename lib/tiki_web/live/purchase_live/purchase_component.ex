@@ -114,12 +114,14 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                 field={@form[:name]}
                 label={gettext("Name")}
                 placeholder={gettext("Your name")}
+                default={@current_user && @current_user.full_name}
                 phx-debounce="300"
               />
               <.input
                 field={@form[:email]}
                 label={gettext("Email")}
                 placeholder={gettext("Your email")}
+                default={@current_user && @current_user.email}
                 phx-debounce="blur-sm"
               />
 
@@ -222,7 +224,10 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
       |> Map.put(:action, :save)
 
     with {:ok, %Response{} = response} <- Ecto.Changeset.apply_action(changeset, :save),
-         {:ok, user} <- Accounts.upsert_user_email(response.email, response.name),
+         {:ok, user} <-
+           Accounts.upsert_user_email(response.email, response.name,
+             locale: Gettext.get_locale(TikiWeb.Gettext)
+           ),
          {:ok, order} <- Orders.update_order(socket.assigns.order, %{user_id: user.id}),
          {:ok, checkout} = init_checkout(order, response.payment_method) do
       order =

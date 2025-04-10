@@ -87,10 +87,15 @@ defmodule TikiWeb.AccountLive.Settings do
 
   def handle_event("update_user", %{"user" => user_params}, socket) do
     case Accounts.update_user_data(socket.assigns.current_user, user_params) do
-      {:ok, _user} ->
+      {:ok, user} ->
         {:noreply,
          socket
-         |> put_flash(:info, gettext("User settings updated"))
+         |> put_flash(
+           :info,
+           Gettext.with_locale(TikiWeb.Gettext, user.locale, fn ->
+             gettext("Profile updated successfully")
+           end)
+         )
          |> redirect(to: ~p"/account/settings")}
 
       {:error, changeset} ->
