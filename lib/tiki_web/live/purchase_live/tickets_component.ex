@@ -23,13 +23,15 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
           </p>
         </div>
 
-        <div :for={ticket_type <- @ticket_types}
-          class="bg-accent rounded-xl"
-        >
-          <div :if={ticket_type.promo_code != nil}>
-            <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
-              {ticket_type.promo_code}
-            </div>
+        <div :for={{date, ticket_types} <- @ticket_types} class="flex flex-col gap-3">
+          <div :if={date}>
+            <span class="font-semibold">
+              {time_to_string(date, format: :MMMEd)}
+            </span>
+            ·
+            <span class="text-muted-foreground">
+              {time_to_string(date, format: :Hm)}
+            </span>
           </div>
           <div :for={ticket_type <- ticket_types} class="bg-accent overflow-hidden rounded-xl">
             <div :if={ticket_type.promo_code != nil}>
