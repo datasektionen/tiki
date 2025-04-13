@@ -1,19 +1,18 @@
 <div
   id="embedded-dialog"
-  phx-mounted={show_modal("embedded-dialog")}
+  phx-mounted={show_emb_modal("embedded-dialog")}
   phx-remove={hide_modal("embedded-dialog")}
   data-cancel={JS.dispatch("embedded:close")}
   class="group/dialog relative z-50 hidden"
 >
-  <div id="embedded-dialog-bg" class="bg-black/80 fixed inset-0 " aria-hidden="true" />
   <div
-    class="fixed inset-0 flex items-center justify-center overflow-y-auto"
-    role="dialog"
-    aria-modal="true"
-    tabindex="0"
-  >
-    <.focus_wrap id="embedded-dialog-wrap" phx-key="escape" class="w-full sm:max-w-4xl">
-      <div class="left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] bg-background fixed z-50 grid w-full gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:max-w-4xl sm:rounded-lg">
+    id="embedded-dialog-bg"
+    class="bg-black/80 fixed inset-0 z-30 transition-opacity group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0"
+    aria-hidden="true"
+  />
+  <div class="animate bg-background relative z-40 my-4 mr-auto ml-auto max-w-xl gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:max-w-4xl sm:rounded-lg">
+    <.focus_wrap phx-key="escape" id="embedded-dialog-focus">
+      <div id="embedded-dialog-content">
         {@inner_content}
 
         <button
