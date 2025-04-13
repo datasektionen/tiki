@@ -134,11 +134,11 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
               <.input type="checkbox" field={@form[:terms_of_service]}>
                 <:checkbox_label>
                   <div>
-                    {gettext("I agree to the")} <.link
+                    {gettext("I agree to")} <.link
                       href={~p"/terms"}
                       class="text-primary underline"
                       target="_blank"
-                    >{gettext("terms of service")}</.link>.
+                    >{gettext("the terms of service")}</.link>.
                   </div>
                 </:checkbox_label>
               </.input>

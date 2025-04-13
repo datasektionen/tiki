@@ -1803,19 +1803,9 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:137
-#, elixir-autogen, elixir-format
-msgid "I agree to the"
-msgstr ""
-
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:50
 #, elixir-autogen, elixir-format
 msgid "Something went wrong. Your order was cancelled or has expired. Please try again."
-msgstr ""
-
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:141
-#, elixir-autogen, elixir-format
-msgid "terms of service"
 msgstr ""
 
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:103
@@ -1826,4 +1816,14 @@ msgstr ""
 #: lib/tiki_web/components/layouts/footer.html.heex:19
 #, elixir-autogen, elixir-format
 msgid "Terms"
+msgstr ""
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:137
+#, elixir-autogen, elixir-format
+msgid "I agree to"
+msgstr ""
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:141
+#, elixir-autogen, elixir-format
+msgid "the terms of service"
 msgstr ""

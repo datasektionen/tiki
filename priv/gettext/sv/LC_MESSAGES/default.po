@@ -1803,20 +1803,10 @@ msgstr "Profil uppdaterades"
 msgid "Error"
 msgstr "Fel"
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:137
-#, elixir-autogen, elixir-format
-msgid "I agree to the"
-msgstr "Jag godkänner"
-
 #: lib/tiki_web/live/purchase_live/purchase_component.ex:50
 #, elixir-autogen, elixir-format
 msgid "Something went wrong. Your order was cancelled or has expired. Please try again."
 msgstr "Något gick fel. Din beställning är avbruten eller har gått ut. Vänligen försök igen."
-
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:141
-#, elixir-autogen, elixir-format
-msgid "terms of service"
-msgstr "köp och leveransvillkor"
 
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:103
 #, elixir-autogen, elixir-format
@@ -1827,3 +1817,13 @@ msgstr "Aktivera"
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Terms"
 msgstr "Villkor"
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:137
+#, elixir-autogen, elixir-format
+msgid "I agree to"
+msgstr "Jag godkänner"
+
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:141
+#, elixir-autogen, elixir-format
+msgid "the terms of service"
+msgstr "köp och leveransvillkoren"
