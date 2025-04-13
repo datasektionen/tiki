@@ -20,68 +20,68 @@ services:
       timeout: 5s
       retries: 5
 
-  minio:
-    image: minio/minio
-    environment:
-      MINIO_DOMAIN: localhost # Needed to enable virtual host style requests
-      # Encryption stuff
-      MINIO_KMS_KES_ENDPOINT: https://play.min.io:7373
-      MINIO_KMS_KES_KEY_FILE: root.key
-      MINIO_KMS_KES_CERT_FILE: root.cert
-      MINIO_KMS_KES_KEY_NAME: my-minio-sse-kms-key
-      # Root admin user
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: adminadmin
-    # We need to download the root.key and root.cert files before starting the server
-    entrypoint: >
-      bin/sh -c 'curl -sSL --tlsv1.2 -O "https://raw.githubusercontent.com/minio/kes/master/root.key" -O "https://raw.githubusercontent.com/minio/kes/master/root.cert";
-      minio server /data --console-address ":9001";'
-    volumes:
-      - _minio:/data
-    ports:
-      - "9000:9000"
-      - "9001:9001" # Console port
-    healthcheck:
-      test: "mc ready local"
-      interval: 2s
-      timeout: 10s
-      retries: 5
+  # minio:
+  #   image: minio/minio
+  #   environment:
+  #     MINIO_DOMAIN: localhost # Needed to enable virtual host style requests
+  #     # Encryption stuff
+  #     MINIO_KMS_KES_ENDPOINT: https://play.min.io:7373
+  #     MINIO_KMS_KES_KEY_FILE: root.key
+  #     MINIO_KMS_KES_CERT_FILE: root.cert
+  #     MINIO_KMS_KES_KEY_NAME: my-minio-sse-kms-key
+  #     # Root admin user
+  #     MINIO_ROOT_USER: admin
+  #     MINIO_ROOT_PASSWORD: adminadmin
+  #   # We need to download the root.key and root.cert files before starting the server
+  #   entrypoint: >
+  #     bin/sh -c 'curl -sSL --tlsv1.2 -O "https://raw.githubusercontent.com/minio/kes/master/root.key" -O "https://raw.githubusercontent.com/minio/kes/master/root.cert";
+  #     minio server /data --console-address ":9001";'
+  #   volumes:
+  #     - _minio:/data
+  #   ports:
+  #     - "9000:9000"
+  #     - "9001:9001" # Console port
+  #   healthcheck:
+  #     test: "mc ready local"
+  #     interval: 2s
+  #     timeout: 10s
+  #     retries: 5
 
-  # Service to create buckets and set up encryption on Minio
-  createbuckets:
-    image: minio/mc
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set myminio http://minio:9000 admin adminadmin;
-      mc admin user add myminio IPGAGmgxUBwvZoHowCez RNHuldJLrZSB0RxmpCEYzLOwN0HRIz9RnC2I4qQG;
-      mc admin policy attach myminio readwrite --user IPGAGmgxUBwvZoHowCez;
-      mc mb myminio/tiki-dev;
-      mc encrypt set sse-s3 myminio/tiki-dev;
-      exit 0;
-      "
+  # # Service to create buckets and set up encryption on Minio
+  # createbuckets:
+  #   image: minio/mc
+  #   depends_on:
+  #     minio:
+  #       condition: service_healthy
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     mc alias set myminio http://minio:9000 admin adminadmin;
+  #     mc admin user add myminio IPGAGmgxUBwvZoHowCez RNHuldJLrZSB0RxmpCEYzLOwN0HRIz9RnC2I4qQG;
+  #     mc admin policy attach myminio readwrite --user IPGAGmgxUBwvZoHowCez;
+  #     mc mb myminio/tiki-dev;
+  #     mc encrypt set sse-s3 myminio/tiki-dev;
+  #     exit 0;
+  #     "
 
-  imgproxy:
-    image: darthsim/imgproxy
-    environment:
-      # Imgproxy encryption stuff
-      IMGPROXY_KEY: "aaaa"
-      IMGPROXY_SALT: "1b1b"
-      # Minio configuration
-      IMGPROXY_USE_S3: true
-      AWS_ACCESS_KEY_ID: IPGAGmgxUBwvZoHowCez
-      AWS_SECRET_ACCESS_KEY: RNHuldJLrZSB0RxmpCEYzLOwN0HRIz9RnC2I4qQG
-      IMGPROXY_S3_ENDPOINT: "http://minio:9000"
-      IMGPROXY_S3_REGION: "eu-north-1"
-      IMGPROXY_BASE_URL: "s3://tiki-dev/"
-      # Imgproxy configuration
-      IMGPROXY_TTL: 31536000
-      IMGPROXY_MAX_SRC_RESOLUTION: 30
-      IMGPROXY_DEVELOPMENT_ERRORS_MODE: true
-    ports:
-      - "8080:8080"
+  # imgproxy:
+  #   image: darthsim/imgproxy
+  #   environment:
+  #     # Imgproxy encryption stuff
+  #     IMGPROXY_KEY: "aaaa"
+  #     IMGPROXY_SALT: "1b1b"
+  #     # Minio configuration
+  #     IMGPROXY_USE_S3: true
+  #     AWS_ACCESS_KEY_ID: IPGAGmgxUBwvZoHowCez
+  #     AWS_SECRET_ACCESS_KEY: RNHuldJLrZSB0RxmpCEYzLOwN0HRIz9RnC2I4qQG
+  #     IMGPROXY_S3_ENDPOINT: "http://minio:9000"
+  #     IMGPROXY_S3_REGION: "eu-north-1"
+  #     IMGPROXY_BASE_URL: "s3://tiki-dev/"
+  #     # Imgproxy configuration
+  #     IMGPROXY_TTL: 31536000
+  #     IMGPROXY_MAX_SRC_RESOLUTION: 30
+  #     IMGPROXY_DEVELOPMENT_ERRORS_MODE: true
+  #   ports:
+  #     - "8080:8080"
 
   app:
     build:

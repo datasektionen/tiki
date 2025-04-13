@@ -13,7 +13,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         {@error}
       </div>
 
-      <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pb-4">
         <div :if={@ticket_types == []} class="text-center text-lg">
           <h3 class="text-foreground text-sm font-semibold">
             {gettext("No tickets available")}
@@ -23,7 +23,9 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
           </p>
         </div>
 
-        <div :for={ticket_type <- @ticket_types} class="bg-accent overflow-hidden rounded-xl">
+        <div :for={ticket_type <- @ticket_types}
+          class="bg-accent rounded-xl"
+        >
           <div :if={ticket_type.promo_code != nil}>
             <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
               {ticket_type.promo_code}
