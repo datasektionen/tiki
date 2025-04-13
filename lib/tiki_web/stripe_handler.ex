@@ -6,7 +6,12 @@ defmodule TikiWeb.StripeHandler do
 
   def handle_event(%Stripe.Event{
         type: "payment_intent.succeeded",
-        data: %{object: %Stripe.PaymentIntent{} = payment_intent}
+        data: %{
+          object:
+            %Stripe.PaymentIntent{
+              metadata: %{"tiki_order_id" => _order_id}
+            } = payment_intent
+        }
       }) do
     Checkouts.confirm_stripe_payment(payment_intent)
   end

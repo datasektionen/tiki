@@ -126,7 +126,8 @@ defmodule Tiki.Checkouts do
          when not is_nil(secret) <-
            @stripe.PaymentIntent.create(%{
              amount: price * 100,
-             currency: "sek"
+             currency: "sek",
+             metadata: %{tiki_order_id: order.id}
            }),
          {:ok, stripe_ceckout} <-
            create_stripe_checkout(%{
