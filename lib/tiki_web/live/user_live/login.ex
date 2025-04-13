@@ -1,5 +1,7 @@
-defmodule TikiWeb.UserLoginLive do
+defmodule TikiWeb.UserLive.Login do
   use TikiWeb, :live_view
+
+  alias Tiki.Accounts
 
   def render(assigns) do
     ~H"""
@@ -17,22 +19,21 @@ defmodule TikiWeb.UserLoginLive do
         </div>
       </div>
 
-      <.simple_form for={@form} id="login_form" action={~p"/account/log_in"} phx-update="ignore">
-        <.input field={@form[:email]} type="email" label="Email" required />
-        <.input field={@form[:password]} type="password" label="Password" required />
+      <.form
+        :let={f}
+        for={@form}
+        id="login_form_magic"
+        action={~p"/users/log_in"}
+        phx-update="ignore"
+        phx-submit="submit_magic"
+        class="space-y-4"
+      >
+        <.input field={f[:email]} type="email" label="Email" autocomplete="username" required />
 
-        <:actions>
-          <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
-          <.link href={~p"/users/reset_password"} class="text-sm font-semibold">
-            Forgot your password?
-          </.link>
-        </:actions>
-        <:actions>
-          <.button phx-disable-with="Signing in..." class="w-full">
-            Sign in <span aria-hidden="true">→</span>
-          </.button>
-        </:actions>
-      </.simple_form>
+        <.button class="w-full">
+          {gettext("Log in with email")}&nbsp;<span aria-hidden="true">→</span>
+        </.button>
+      </.form>
 
       <div>
         <div class="relative mt-10">
@@ -54,6 +55,12 @@ defmodule TikiWeb.UserLoginLive do
           </.link>
         </div>
       </div>
+
+      <div :if={local_mail_adapter?()} class="mt-6 text-sm ">
+        <.icon name="hero-exclamation-triangle" class="text-muted-foreground size-5" />
+        {gettext("You are running the local mail adapter, you can see all sent emails at")}
+        <.link href="/dev/mailbox" class="underline">{gettext("the mailbox page")}</.link>.
+      </div>
     </div>
     """
   end
@@ -61,6 +68,29 @@ defmodule TikiWeb.UserLoginLive do
   def mount(_params, _session, socket) do
     email = Phoenix.Flash.get(socket.assigns.flash, :email)
     form = to_form(%{"email" => email}, as: "user")
-    {:ok, assign(socket, form: form), temporary_assigns: [form: form]}
+    {:ok, assign(socket, form: form)}
+  end
+
+  def handle_event("submit_magic", %{"user" => %{"email" => email}}, socket) do
+    if user = Accounts.get_user_by_email(email) do
+      Accounts.deliver_login_instructions(
+        user,
+        &url(~p"/users/log_in/#{&1}")
+      )
+    end
+
+    info =
+      gettext(
+        "If your email is in our system, you will receive instructions for logging in shortly."
+      )
+
+    {:noreply,
+     socket
+     |> put_flash(:info, info)
+     |> push_navigate(to: ~p"/users/log_in")}
+  end
+
+  defp local_mail_adapter? do
+    Application.get_env(:tiki, Tiki.Mailer)[:adapter] == Swoosh.Adapters.Local
   end
 end

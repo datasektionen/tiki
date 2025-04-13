@@ -112,7 +112,7 @@ defmodule Tiki.CheckoutsTest do
       assert_received {:paid, paid_order}
 
       paid_order =
-        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user])
+        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])
 
       assert order.id == paid_order.id
       assert paid_order.status == :paid
@@ -134,7 +134,7 @@ defmodule Tiki.CheckoutsTest do
       assert_received {:paid, paid_order}
 
       paid_order =
-        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user])
+        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])
 
       assert Orders.get_order!(order.id) == paid_order
 
@@ -212,7 +212,7 @@ defmodule Tiki.CheckoutsTest do
       assert_received {:paid, paid_order}
 
       paid_order =
-        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user])
+        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])
 
       assert order.id == paid_order.id
       assert paid_order.status == :paid
@@ -232,7 +232,7 @@ defmodule Tiki.CheckoutsTest do
       assert_received {:paid, paid_order}
 
       paid_order =
-        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user])
+        Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])
 
       assert Orders.get_order!(order.id) == paid_order
 

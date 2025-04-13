@@ -31,47 +31,54 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
               {ticket_type.promo_code}
             </div>
           </div>
-
-          <div class="flex flex-row justify-between px-4 py-4">
-            <div class="flex flex-col">
-              <h3 class="text-md pb-1 font-semibold">{ticket_type.name}</h3>
-              <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
+          <div :for={ticket_type <- ticket_types} class="bg-accent overflow-hidden rounded-xl">
+            <div :if={ticket_type.promo_code != nil}>
+              <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
+                {ticket_type.promo_code}
+              </div>
             </div>
 
-            <div :if={purchasable(ticket_type)} class="flex flex-row items-center gap-2">
-              <button
-                :if={@counts[ticket_type.id] > 0}
-                class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
-                phx-click={JS.push("dec", value: %{id: ticket_type.id})}
-                phx-target={@myself}
-              >
-                <.icon name="hero-minus-mini" />
-              </button>
-
-              <div class="flex h-10 w-8 items-center justify-center rounded-lg bg-slate-200 dark:bg-zinc-900">
-                {@counts[ticket_type.id]}
+            <div class="flex flex-row justify-between px-4 py-4">
+              <div class="flex flex-col">
+                <h3 class="text-md pb-1 font-semibold">{ticket_type.name}</h3>
+                <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
               </div>
 
-              <button
-                :if={compare_available(@counts, ticket_type, @event) in [:gt, :eq]}
-                class="bg-accent flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md"
-                disabled
-              >
-                <.icon name="hero-plus-mini" />
-              </button>
+              <div :if={purchasable(ticket_type)} class="flex flex-row items-center gap-2">
+                <button
+                  :if={@counts[ticket_type.id] > 0}
+                  class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
+                  phx-click={JS.push("dec", value: %{id: ticket_type.id})}
+                  phx-target={@myself}
+                >
+                  <.icon name="hero-minus-mini" />
+                </button>
 
-              <button
-                :if={compare_available(@counts, ticket_type, @event) == :lt}
-                class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
-                phx-click={JS.push("inc", value: %{id: ticket_type.id})}
-                phx-target={@myself}
-              >
-                <.icon name="hero-plus-mini" />
-              </button>
+                <div class="flex h-10 w-8 items-center justify-center rounded-lg bg-slate-200 dark:bg-zinc-900">
+                  {@counts[ticket_type.id]}
+                </div>
+
+                <button
+                  :if={compare_available(@counts, ticket_type, @event) in [:gt, :eq]}
+                  class="bg-accent flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md"
+                  disabled
+                >
+                  <.icon name="hero-plus-mini" />
+                </button>
+
+                <button
+                  :if={compare_available(@counts, ticket_type, @event) == :lt}
+                  class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
+                  phx-click={JS.push("inc", value: %{id: ticket_type.id})}
+                  phx-target={@myself}
+                >
+                  <.icon name="hero-plus-mini" />
+                </button>
+              </div>
             </div>
-          </div>
 
-          <.not_available_label ticket_type={ticket_type} />
+            <.not_available_label ticket_type={ticket_type} />
+          </div>
         </div>
       </div>
 
@@ -91,7 +98,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
             value={@promo_code}
             class="border-input bg-background ring-offset-background flex h-10 rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-offset-background focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2"
           />
-          <.button :if={@promo_code != ""}>Aktivera</.button>
+          <.button :if={@promo_code != ""}>{gettext("Activate")}</.button>
         </.form>
 
         <div class="bg-background border-border fixed right-0 bottom-0 left-0 z-30 border-t px-6 py-3 lg:relative lg:border-none lg:p-0">
@@ -181,13 +188,13 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
       |> Enum.filter(fn tt ->
         tt.promo_code == nil || tt.promo_code in socket.assigns.promo_codes
       end)
-      |> Enum.sort(fn tt_a, tt_b ->
-        dawn_of_time = DateTime.from_unix!(0)
-
-        case DateTime.compare(tt_a.start_time || dawn_of_time, tt_b.start_time || dawn_of_time) do
-          :gt -> true
-          :lt -> false
-          :eq -> tt_a.price < tt_b.price
+      |> Enum.sort_by(fn tt -> tt.price end)
+      |> Enum.group_by(fn tt -> tt.start_time end)
+      |> Enum.sort(fn {start_a, _}, {start_b, _} ->
+        case {start_a, start_b} do
+          {nil, _} -> false
+          {_, nil} -> true
+          {a, b} -> DateTime.compare(a, b) in [:lt, :eq]
         end
       end)
 

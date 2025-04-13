@@ -8,6 +8,8 @@ defmodule TikiWeb.UserAuth do
   alias Tiki.Teams
   use Gettext, backend: TikiWeb.Gettext
 
+  @supported_langs Gettext.known_locales(TikiWeb.Gettext)
+
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
   # the token expiry itself in UserToken.
@@ -101,8 +103,6 @@ defmodule TikiWeb.UserAuth do
         team_id -> Teams.get_team(team_id)
       end
 
-    conn = if user, do: put_session(conn, :locale, user.locale), else: conn
-
     assign(conn, :current_user, user)
     |> assign(:current_team, team)
     |> assign(:testthing, %{foo: "bar"})
@@ -112,10 +112,35 @@ defmodule TikiWeb.UserAuth do
   Fetches the locale from the session and assigns it to the socket.
   """
   def fetch_locale(conn, _opts) do
-    locale = get_session(conn, :locale) || "en"
+    locale =
+      case conn.assigns.current_user do
+        nil -> locale_from_header(conn)
+        user -> user.locale
+      end
+
+    conn = put_session(conn, :locale, locale)
     Gettext.put_locale(TikiWeb.Gettext, locale)
     Cldr.put_locale(Tiki.Cldr, locale)
     conn
+  end
+
+  defp locale_from_header(conn) do
+    parse_locale = fn entry ->
+      case String.split(entry, ";q=") do
+        [lang, q] -> {lang, String.to_float(q)}
+        [lang] -> {lang, 1.0}
+      end
+    end
+
+    with [locale | _] <- get_req_header(conn, "accept-language"),
+         languages <- String.split(locale, ",", trim: true) do
+      Enum.map(languages, parse_locale)
+      |> Enum.sort_by(fn {_, q} -> -q end)
+      |> Enum.map(fn {lang, _} -> lang end)
+      |> Enum.find("en", fn lang -> lang in @supported_langs end)
+    else
+      _ -> "en"
+    end
   end
 
   defp ensure_user_token(conn) do
@@ -182,7 +207,7 @@ defmodule TikiWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
+        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
       {:halt, socket}
     end
@@ -203,7 +228,7 @@ defmodule TikiWeb.UserAuth do
               :error,
               gettext("You need to be an admin to access this page.")
             )
-            |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
+            |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
           {:halt, socket}
       end
@@ -211,7 +236,7 @@ defmodule TikiWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/account/log_in")
+        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
 
       {:halt, socket}
     end
@@ -259,17 +284,15 @@ defmodule TikiWeb.UserAuth do
   end
 
   defp mount_current_user(session, socket) do
-    Phoenix.Component.assign_new(socket, :current_user, fn ->
+    Phoenix.Component.assign_new(socket, :locale, fn ->
+      locale = session["locale"] || "en"
+      Gettext.put_locale(TikiWeb.Gettext, locale)
+      Cldr.put_locale(Tiki.Cldr, locale)
+      locale
+    end)
+    |> Phoenix.Component.assign_new(:current_user, fn ->
       if user_token = session["user_token"] do
-        user = Accounts.get_user_by_session_token(user_token)
-
-        if user do
-          locale = Map.get(user, :locale, "en")
-          Gettext.put_locale(TikiWeb.Gettext, locale)
-          Cldr.put_locale(Tiki.Cldr, locale)
-        end
-
-        user
+        Accounts.get_user_by_session_token(user_token)
       end
     end)
     |> Phoenix.Component.assign_new(:current_team, fn ->
@@ -304,9 +327,9 @@ defmodule TikiWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You must log in to access this page.")
+      |> put_flash(:error, gettext("You must log in to access this page."))
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/account/log_in")
+      |> redirect(to: ~p"/users/log_in")
       |> halt()
     end
   end
@@ -318,9 +341,9 @@ defmodule TikiWeb.UserAuth do
       conn
     else
       conn
-      |> put_flash(:error, "You need to be an admin to access this page.")
+      |> put_flash(:error, gettext("You need to be an admin to access this page."))
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/account/log_in")
+      |> redirect(to: ~p"/users/log_in")
       |> halt()
     end
   end

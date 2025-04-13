@@ -50,7 +50,7 @@ defmodule Tiki.MixProject do
       {:floki, ">= 0.30.0", only: :test},
       {:phoenix_live_dashboard, "~> 0.8.3"},
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.2.0", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.3.0", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
@@ -64,7 +64,7 @@ defmodule Tiki.MixProject do
       {:req_s3, "~> 0.2.3"},
       {:imgproxy, "~> 3.0"},
       {:oidcc_plug, "~> 0.1.0"},
-      {:oidcc, "~> 3.2.0"},
+      {:oidcc, "~> 3.4.0"},
       {:let_me, "~> 1.2"},
       {:qrcode_ex, "~> 0.1.0"},
       {:excoveralls, "~> 0.18", only: :test},
@@ -78,7 +78,7 @@ defmodule Tiki.MixProject do
        only: :dev,
        runtime: false},
       {:tails, "~> 0.1"},
-      {:mjml, "~> 4.0"},
+      {:mjml, "~> 5.0"},
       {:oban, "~> 2.18"}
     ]
   end

@@ -9,7 +9,7 @@ defmodule Tiki.OrdersTest do
     import Tiki.OrdersFixtures
 
     @invalid_attrs %{"status" => "wierd"}
-    @standard_preloads [:user, [tickets: :ticket_type], :stripe_checkout, :swish_checkout]
+    @standard_preloads [:user, [tickets: :ticket_type], :stripe_checkout, :swish_checkout, :event]
 
     test "list_order/0 returns all order" do
       order = order_fixture()

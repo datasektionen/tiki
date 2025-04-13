@@ -17,7 +17,7 @@ defmodule Tiki.EventsTest do
 
     test "list_public_events/0 returns all public events" do
       public_event = event_fixture(%{is_hidden: false})
-      private_event = event_fixture(%{is_hidden: true})
+      _private_event = event_fixture(%{is_hidden: true})
 
       assert Events.list_public_events() == [public_event]
     end

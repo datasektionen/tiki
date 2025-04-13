@@ -49,12 +49,19 @@ defmodule Tiki.Orders do
 
   defp order_query(_opts \\ []) do
     from o in Order,
+      join: e in assoc(o, :event),
       left_join: t in assoc(o, :tickets),
       left_join: tt in assoc(t, :ticket_type),
       left_join: u in assoc(o, :user),
       left_join: stc in assoc(o, :stripe_checkout),
       left_join: swc in assoc(o, :swish_checkout),
-      preload: [tickets: {t, ticket_type: tt}, user: u, stripe_checkout: stc, swish_checkout: swc]
+      preload: [
+        tickets: {t, ticket_type: tt},
+        user: u,
+        stripe_checkout: stc,
+        swish_checkout: swc,
+        event: e
+      ]
   end
 
   @doc """
@@ -301,10 +308,8 @@ defmodule Tiki.Orders do
     statuses = Keyword.get(opts, :status, Ecto.Enum.dump_values(Order, :status))
 
     order_query()
-    |> join(:inner, [o], e in assoc(o, :event))
-    |> where([o, ..., e], e.team_id == ^team_id and o.status in ^statuses)
+    |> where([o, e], e.team_id == ^team_id and o.status in ^statuses)
     |> order_by([o], desc: o.inserted_at)
-    |> preload([..., e], event: e)
     |> then(fn query ->
       case Keyword.get(opts, :limit) do
         nil -> query
@@ -359,8 +364,6 @@ defmodule Tiki.Orders do
     order_query()
     |> where([o], o.user_id == ^user_id)
     |> where([o], o.status in ^statuses)
-    |> join(:inner, [o], e in assoc(o, :event))
-    |> preload([o, ..., e], event: e)
     |> order_by([o], desc: o.inserted_at)
     |> Repo.all()
   end

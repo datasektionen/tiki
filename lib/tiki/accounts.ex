@@ -52,24 +52,6 @@ defmodule Tiki.Accounts do
   end
 
   @doc """
-  Gets a user by email and password.
-
-  ## Examples
-
-      iex> get_user_by_email_and_password("foo@example.com", "correct_password")
-      %User{}
-
-      iex> get_user_by_email_and_password("foo@example.com", "invalid_password")
-      nil
-
-  """
-  def get_user_by_email_and_password(email, password)
-      when is_binary(email) and is_binary(password) do
-    user = Repo.get_by(User, email: email)
-    if User.valid_password?(user, password), do: user
-  end
-
-  @doc """
   Gets a single user.
 
   Raises `Ecto.NoResultsError` if the User does not exist.
@@ -106,25 +88,15 @@ defmodule Tiki.Accounts do
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user changes.
-
-  ## Examples
-
-      iex> change_user_registration(user)
-      %Ecto.Changeset{data: %User{}}
-
-  """
-  def change_user_registration(%User{} = user, attrs \\ %{}) do
-    User.registration_changeset(user, attrs, hash_password: false, validate_email: false)
-  end
-
-  @doc """
   Either creates a new user, or returns an existing user with the same KTH ID.
   """
   def upsert_user_with_userinfo(%{"kth_id" => id} = attrs) do
     case Repo.get_by(User, kth_id: id) do
       nil ->
-        User.oidcc_changeset(%User{}, attrs)
+        User.oidcc_changeset(
+          %User{confirmed_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)},
+          attrs
+        )
         |> Repo.insert()
 
       user ->
@@ -135,7 +107,9 @@ defmodule Tiki.Accounts do
   @doc """
   Either creates a new user, or returns an existing user with the same email.
   """
-  def upsert_user_email(email, name) do
+  def upsert_user_email(email, name, opts \\ []) do
+    locale = Keyword.get(opts, :locale, "en")
+
     case Repo.get_by(User, email: email) do
       nil ->
         [first_name | last_name] = String.split(name, " ", parts: 2, trim: true)
@@ -144,7 +118,8 @@ defmodule Tiki.Accounts do
         User.email_changeset(%User{}, %{
           email: email,
           first_name: first_name,
-          last_name: last_name
+          last_name: last_name,
+          locale: locale
         })
         |> Repo.insert()
 
@@ -166,26 +141,6 @@ defmodule Tiki.Accounts do
   """
   def change_user_email(user, attrs \\ %{}) do
     User.email_changeset(user, attrs, validate_email: false)
-  end
-
-  @doc """
-  Emulates that the email will change without actually changing
-  it in the database.
-
-  ## Examples
-
-      iex> apply_user_email(user, "valid password", %{email: ...})
-      {:ok, %User{}}
-
-      iex> apply_user_email(user, "invalid password", %{email: ...})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def apply_user_email(user, password, attrs) do
-    user
-    |> User.email_changeset(attrs)
-    |> User.validate_current_password(password)
-    |> Ecto.Changeset.apply_action(:update)
   end
 
   @doc """
@@ -217,6 +172,50 @@ defmodule Tiki.Accounts do
     |> Ecto.Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, [context]))
   end
 
+  @doc """
+  Gets the user with the given magic link token.
+  """
+  def get_user_by_magic_link_token(token) do
+    with {:ok, query} <- UserToken.verify_magic_link_token_query(token),
+         {user, _token} <- Repo.one(query) do
+      user
+    else
+      _ -> nil
+    end
+  end
+
+  @doc """
+  Logs the user in by magic link.
+
+  There are two cases to consider:
+
+  1. The user has already confirmed their email. They are logged in
+     and the magic link is expired.
+
+  2. The user has not confirmed their email.
+     In this case, the user gets confirmed, logged in, and all tokens -
+     including session ones - are expired. In theory, no other tokens
+     exist but we delete all of them for best security practices.
+
+  """
+  def login_user_by_magic_link(token) do
+    {:ok, query} = UserToken.verify_magic_link_token_query(token)
+
+    case Repo.one(query) do
+      {%User{confirmed_at: nil} = user, _token} ->
+        user
+        |> User.confirm_changeset()
+        |> update_user_and_delete_all_tokens()
+
+      {user, token} ->
+        Repo.delete!(token)
+        {:ok, user, []}
+
+      nil ->
+        {:error, :not_found}
+    end
+  end
+
   @doc ~S"""
   Delivers the update email instructions to the given user.
 
@@ -234,45 +233,14 @@ defmodule Tiki.Accounts do
     UserNotifier.deliver_update_email_instructions(user, update_email_url_fun.(encoded_token))
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for changing the user password.
-
-  ## Examples
-
-      iex> change_user_password(user)
-      %Ecto.Changeset{data: %User{}}
-
+  @doc ~S"""
+  Delivers the magic link login instructions to the given user.
   """
-  def change_user_password(user, attrs \\ %{}) do
-    User.password_changeset(user, attrs, hash_password: false)
-  end
-
-  @doc """
-  Updates the user password.
-
-  ## Examples
-
-      iex> update_user_password(user, "valid password", %{password: ...})
-      {:ok, %User{}}
-
-      iex> update_user_password(user, "invalid password", %{password: ...})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user_password(user, password, attrs) do
-    changeset =
-      user
-      |> User.password_changeset(attrs)
-      |> User.validate_current_password(password)
-
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, changeset)
-    |> Ecto.Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{user: user}} -> {:ok, user}
-      {:error, :user, changeset, _} -> {:error, changeset}
-    end
+  def deliver_login_instructions(%User{} = user, magic_link_url_fun)
+      when is_function(magic_link_url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "login")
+    Repo.insert!(user_token)
+    UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
   end
 
   @doc """
@@ -347,87 +315,20 @@ defmodule Tiki.Accounts do
     end
   end
 
-  @doc """
-  Confirms a user by the given token.
+  ## Token helper
 
-  If the token matches, the user account is marked as confirmed
-  and the token is deleted.
-  """
-  def confirm_user(token) do
-    with {:ok, query} <- UserToken.verify_email_token_query(token, "confirm"),
-         %User{} = user <- Repo.one(query),
-         {:ok, %{user: user}} <- Repo.transaction(confirm_user_multi(user)) do
-      {:ok, user}
-    else
-      _ -> :error
-    end
-  end
+  defp update_user_and_delete_all_tokens(changeset) do
+    %{data: %User{} = user} = changeset
 
-  defp confirm_user_multi(user) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, User.confirm_changeset(user))
-    |> Ecto.Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, ["confirm"]))
-  end
-
-  ## Reset password
-
-  @doc ~S"""
-  Delivers the reset password email to the given user.
-
-  ## Examples
-
-      iex> deliver_user_reset_password_instructions(user, &url(~p"/users/reset_password/#{&1}"))
-      {:ok, %{to: ..., body: ...}}
-
-  """
-  def deliver_user_reset_password_instructions(%User{} = user, reset_password_url_fun)
-      when is_function(reset_password_url_fun, 1) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
-    Repo.insert!(user_token)
-    UserNotifier.deliver_reset_password_instructions(user, reset_password_url_fun.(encoded_token))
-  end
-
-  @doc """
-  Gets the user by reset password token.
-
-  ## Examples
-
-      iex> get_user_by_reset_password_token("validtoken")
-      %User{}
-
-      iex> get_user_by_reset_password_token("invalidtoken")
-      nil
-
-  """
-  def get_user_by_reset_password_token(token) do
-    with {:ok, query} <- UserToken.verify_email_token_query(token, "reset_password"),
-         %User{} = user <- Repo.one(query) do
-      user
-    else
-      _ -> nil
-    end
-  end
-
-  @doc """
-  Resets the user password.
-
-  ## Examples
-
-      iex> reset_user_password(user, %{password: "new long password", password_confirmation: "new long password"})
-      {:ok, %User{}}
-
-      iex> reset_user_password(user, %{password: "valid", password_confirmation: "not the same"})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def reset_user_password(user, attrs) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:user, User.password_changeset(user, attrs))
-    |> Ecto.Multi.delete_all(:tokens, UserToken.user_and_contexts_query(user, :all))
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{user: user}} -> {:ok, user}
-      {:error, :user, changeset, _} -> {:error, changeset}
+    with {:ok, %{user: user, tokens_to_expire: expired_tokens}} <-
+           Ecto.Multi.new()
+           |> Ecto.Multi.update(:user, changeset)
+           |> Ecto.Multi.all(:tokens_to_expire, UserToken.user_and_contexts_query(user, :all))
+           |> Ecto.Multi.delete_all(:tokens, fn %{tokens_to_expire: tokens_to_expire} ->
+             UserToken.delete_all_query(tokens_to_expire)
+           end)
+           |> Repo.transaction() do
+      {:ok, user, expired_tokens}
     end
   end
 end

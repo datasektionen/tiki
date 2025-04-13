@@ -71,12 +71,15 @@ defmodule TikiWeb.Component.Dialog do
             phx-click-away={if !@safe, do: JS.exec("data-cancel", to: "##{@id}")}
             class="relative w-full sm:max-w-xl"
           >
-            <div class={
-              classes([
-                "bg-background z-50 grid w-full max-w-xl gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:rounded-lg",
-                @class
-              ])
-            }>
+            <div
+              id={"#{@id}-content"}
+              class={
+                classes([
+                  "bg-background z-50 grid w-full max-w-xl gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:rounded-lg",
+                  @class
+                ])
+              }
+            >
               {render_slot(@inner_block)}
 
               <.close_button id={@id} safe={@safe} />

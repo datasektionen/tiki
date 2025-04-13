@@ -4,14 +4,19 @@ defmodule TikiWeb.UserSessionControllerTest do
   import Tiki.AccountsFixtures
 
   setup do
-    %{user: user_fixture(first_name: "John", last_name: "Doe")}
+    %{
+      user: user_fixture(first_name: "John", last_name: "Doe"),
+      unconfirmed_user: unconfirmed_user_fixture()
+    }
   end
 
-  describe "POST /account/log_in" do
+  describe "POST /users/log_in" do
     test "logs the user in", %{conn: conn, user: user} do
+      {token, _hashed_token} = generate_user_magic_link_token(user)
+
       conn =
-        post(conn, ~p"/account/log_in", %{
-          "user" => %{"email" => user.email, "password" => valid_user_password()}
+        post(conn, ~p"/users/log_in", %{
+          "user" => %{"token" => token}
         })
 
       assert get_session(conn, :user_token)
@@ -21,76 +26,55 @@ defmodule TikiWeb.UserSessionControllerTest do
       conn = get(conn, ~p"/")
       response = html_response(conn, 200)
       assert response =~ user.full_name
-      assert response =~ ~p"/account"
-    end
-
-    test "logs the user in with remember me", %{conn: conn, user: user} do
-      conn =
-        post(conn, ~p"/account/log_in", %{
-          "user" => %{
-            "email" => user.email,
-            "password" => valid_user_password(),
-            "remember_me" => "true"
-          }
-        })
-
-      assert conn.resp_cookies["_tiki_web_user_remember_me"]
-      assert redirected_to(conn) == ~p"/"
+      assert response =~ ~p"/account/settings"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user} do
+      {token, _hashed_token} = generate_user_magic_link_token(user)
+
       conn =
         conn
         |> init_test_session(user_return_to: "/foo/bar")
-        |> post(~p"/account/log_in", %{
-          "user" => %{
-            "email" => user.email,
-            "password" => valid_user_password()
-          }
+        |> post(~p"/users/log_in", %{
+          "user" => %{"token" => token}
         })
 
       assert redirected_to(conn) == "/foo/bar"
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Welcome back!"
     end
 
-    test "login following registration", %{conn: conn, user: user} do
+    test "confirms unconfirmed user", %{conn: conn, unconfirmed_user: user} do
+      {token, _hashed_token} = generate_user_magic_link_token(user)
+
       conn =
-        conn
-        |> post(~p"/account/log_in", %{
-          "_action" => "registered",
-          "user" => %{
-            "email" => user.email,
-            "password" => valid_user_password()
-          }
+        post(conn, ~p"/users/log_in", %{
+          "user" => %{"token" => token}
         })
 
+      assert get_session(conn, :user_token)
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Welcome back"
       assert redirected_to(conn) == ~p"/"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Account created successfully"
+
+      assert Tiki.Accounts.get_user!(user.id).confirmed_at
+
+      # Now do a logged in request and assert on the menu
+      conn = get(conn, ~p"/")
+      response = html_response(conn, 200)
+      assert response =~ user.email
+      assert response =~ ~p"/account/settings"
+      assert response =~ ~p"/account/log_out"
     end
 
-    test "login following password update", %{conn: conn, user: user} do
+    test "redirects to login page with invalid token", %{conn: conn} do
       conn =
-        conn
-        |> post(~p"/account/log_in", %{
-          "_action" => "password_updated",
-          "user" => %{
-            "email" => user.email,
-            "password" => valid_user_password()
-          }
+        post(conn, ~p"/users/log_in", %{
+          "user" => %{"token" => "invalid"}
         })
 
-      assert redirected_to(conn) == ~p"/account"
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Password updated successfully"
-    end
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
+               "The link is invalid or it has expired"
 
-    test "redirects to login page with invalid credentials", %{conn: conn} do
-      conn =
-        post(conn, ~p"/account/log_in", %{
-          "user" => %{"email" => "invalid@email.com", "password" => "invalid_password"}
-        })
-
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Invalid email or password"
-      assert redirected_to(conn) == ~p"/account/log_in"
+      assert redirected_to(conn) == ~p"/users/log_in"
     end
   end
 
