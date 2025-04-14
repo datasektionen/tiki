@@ -102,6 +102,16 @@ config :tiki, Oban,
   queues: [default: 10, mail: 10],
   repo: Tiki.Repo
 
+config :fun_with_flags, :persistence,
+  adapter: FunWithFlags.Store.Persistent.Ecto,
+  repo: Tiki.Repo,
+  ecto_table_name: "fun_with_flags_toggles"
+
+config :fun_with_flags, :cache_bust_notifications,
+  enabled: true,
+  adapter: FunWithFlags.Notifications.PhoenixPubSub,
+  client: Tiki.PubSub
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

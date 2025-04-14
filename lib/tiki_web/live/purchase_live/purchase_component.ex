@@ -106,10 +106,18 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                   field={@form[:payment_method]}
                   class="text-bold mt-2 flex flex-row gap-10 text-sm"
                 >
-                  <:radio value="credit_card" class="flex flex-row-reverse items-center gap-3">
+                  <:radio
+                    :if={FunWithFlags.enabled?(:stripe_enabled)}
+                    value="credit_card"
+                    class="flex flex-row-reverse items-center gap-3"
+                  >
                     {gettext("Credit card")}
                   </:radio>
-                  <:radio value="swish" class="flex flex-row-reverse items-center gap-3">
+                  <:radio
+                    :if={FunWithFlags.enabled?(:swish_enabled)}
+                    value="swish"
+                    class="flex flex-row-reverse items-center gap-3"
+                  >
                     {gettext("Swish")}
                   </:radio>
 
