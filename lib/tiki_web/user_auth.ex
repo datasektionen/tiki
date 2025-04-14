@@ -348,6 +348,20 @@ defmodule TikiWeb.UserAuth do
     end
   end
 
+  def require_admin(conn, opts) do
+    conn = require_authenticated_user(conn, opts)
+
+    if Tiki.Policy.authorize?(:tiki_admin, conn.assigns.current_user) do
+      conn
+    else
+      conn
+      |> put_flash(:error, gettext("You need to be an admin to access this page."))
+      |> maybe_store_return_to()
+      |> redirect(to: ~p"/users/log_in")
+      |> halt()
+    end
+  end
+
   defp put_token_in_session(conn, token) do
     conn
     |> put_session(:user_token, token)
