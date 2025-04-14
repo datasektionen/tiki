@@ -84,7 +84,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         </div>
       </div>
 
-      <div class="flex flex-row justify-between">
+      <div class="flex flex-row justify-between pb-6 lg:pb-0">
         <.form
           for={%{}}
           as={:promo_form}
@@ -98,7 +98,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
             name="code"
             placeholder={gettext("Promo code")}
             value={@promo_code}
-            class="border-input bg-background ring-offset-background flex h-10 rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-offset-background focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2"
+            class="border-input bg-background ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-offset-background focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 md:w-auto"
           />
           <.button :if={@promo_code != ""}>{gettext("Activate")}</.button>
         </.form>
