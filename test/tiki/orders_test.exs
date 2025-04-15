@@ -356,4 +356,119 @@ defmodule Tiki.OrdersTest do
       assert msg =~ "order not found, nothing to cancel"
     end
   end
+
+  describe "checkouts" do
+    alias Tiki.Checkouts
+
+    test "init_checkout/2 fails with no user data" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:error, resason} =
+               Orders.init_checkout(order, "credit_card")
+
+      assert resason =~ "`user_id` or `user` must be provided"
+    end
+
+    test "init_checkout/2 with user id creates a stripe checkout" do
+      user = Tiki.AccountsFixtures.user_fixture()
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{stripe_checkout: %Checkouts.StripeCheckout{}} = updated} =
+               Orders.init_checkout(order, "credit_card", user_id: user.id)
+
+      assert updated.user_id == user.id
+      assert String.starts_with?(updated.stripe_checkout.payment_intent_id, "pi_")
+    end
+
+    test "init_checkout/2 with user data creates a stripe checkout" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{stripe_checkout: %Checkouts.StripeCheckout{}} = updated} =
+               Orders.init_checkout(order, "credit_card",
+                 user: %{name: "John Doe", email: "john@doe.com"}
+               )
+
+      assert updated.user_id != nil
+      assert String.starts_with?(updated.stripe_checkout.payment_intent_id, "pi_")
+
+      user = Tiki.Accounts.get_user!(updated.user_id)
+
+      assert user.first_name == "John"
+      assert user.last_name == "Doe"
+      assert user.locale == "en"
+      assert user.full_name == "John Doe"
+      assert user.email == "john@doe.com"
+    end
+
+    test "init_checkout/2 with user data creates a stripe checkout with locale" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{stripe_checkout: %Checkouts.StripeCheckout{}} = updated} =
+               Orders.init_checkout(order, "credit_card",
+                 user: %{name: "John Doe", email: "john@doe.com", locale: "sv"}
+               )
+
+      assert updated.user_id != nil
+      assert String.starts_with?(updated.stripe_checkout.payment_intent_id, "pi_")
+
+      user = Tiki.Accounts.get_user!(updated.user_id)
+
+      assert user.first_name == "John"
+      assert user.last_name == "Doe"
+      assert user.locale == "sv"
+      assert user.full_name == "John Doe"
+      assert user.email == "john@doe.com"
+    end
+
+    test "init_checkout/2 with invalid payment method fails" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:error, reason} =
+               Orders.init_checkout(order, "invalid",
+                 user: %{name: "test", email: "adr@test.com"}
+               )
+
+      assert reason =~ "not a valid payment method"
+    end
+
+    test "init_checkout/2 with with swish creates a swish checkout" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{swish_checkout: %Checkouts.SwishCheckout{}} = updated} =
+               Orders.init_checkout(order, "swish",
+                 user: %{name: "John Doe", email: "john@doe.com", locale: "sv"}
+               )
+
+      assert updated.user_id != nil
+      assert updated.swish_checkout.swish_id != nil
+      assert updated.swish_checkout.callback_identifier != nil
+      assert updated.swish_checkout.token != nil
+
+      user = Tiki.Accounts.get_user!(updated.user_id)
+
+      assert user.first_name == "John"
+      assert user.last_name == "Doe"
+      assert user.locale == "sv"
+      assert user.full_name == "John Doe"
+      assert user.email == "john@doe.com"
+    end
+  end
 end

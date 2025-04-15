@@ -192,7 +192,7 @@ defmodule Tiki.Checkouts do
     end
   end
 
-  defp create_stripe_checkout(attrs \\ %{}) do
+  defp create_stripe_checkout(attrs) do
     %StripeCheckout{}
     |> StripeCheckout.changeset(attrs)
     |> Repo.insert()
@@ -204,7 +204,7 @@ defmodule Tiki.Checkouts do
     |> Repo.update()
   end
 
-  defp create_swish_checkout(attrs \\ %{}) do
+  defp create_swish_checkout(attrs) do
     %SwishCheckout{}
     |> SwishCheckout.changeset(attrs)
     |> Repo.insert()

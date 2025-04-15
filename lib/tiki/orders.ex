@@ -173,8 +173,8 @@ defmodule Tiki.Orders do
       `:name` and `:email` fields, and optionally `:locale`.
   """
   def init_checkout(order, payment_method, opts \\ []) do
-    with {:ok, user_id} <- upsert_or_get_user_id(opts),
-         {:ok, order} <- update_order(order, %{user_id: user_id}),
+    with {:ok, user} <- upsert_or_get_user(opts),
+         {:ok, order} <- update_order(order, %{user_id: user.id}),
          {:ok, checkout} <- create_payment(order, payment_method) do
       {:ok,
        case checkout do
@@ -182,7 +182,8 @@ defmodule Tiki.Orders do
          %Checkouts.StripeCheckout{} -> Map.put(order, :stripe_checkout, checkout)
        end}
     else
-      {:error, reason} -> {:error, reason}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -194,17 +195,18 @@ defmodule Tiki.Orders do
 
   defp create_payment(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)
   defp create_payment(order, "swish"), do: Checkouts.create_swish_payment_request(order)
+  defp create_payment(_order, _), do: {:error, "not a valid payment method"}
 
-  defp upsert_or_get_user_id(opts) do
+  defp upsert_or_get_user(opts) do
     case {Keyword.get(opts, :user_id), Keyword.get(opts, :user)} do
-      {nil, %{name: name, email: email, locale: locale} = data} ->
+      {nil, %{name: name, email: email, locale: locale}} ->
         Accounts.upsert_user_email(email, name, locale: locale)
 
-      {nil, %{name: name, email: email} = data} ->
-        Accounts.upsert_user_email(email, name, data)
+      {nil, %{name: name, email: email}} ->
+        Accounts.upsert_user_email(email, name)
 
-      {id, _} ->
-        {:ok, id}
+      {id, _} when not is_nil(id) ->
+        {:ok, Accounts.get_user!(id)}
 
       _ ->
         {:error, "`user_id` or `user` must be provided"}

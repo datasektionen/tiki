@@ -32,7 +32,6 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
 
   alias Tiki.Orders
   alias Tiki.Checkouts
-  alias Tiki.Accounts
 
   @impl Phoenix.LiveComponent
   def render(assigns) do
