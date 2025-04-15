@@ -17,95 +17,6 @@ defmodule Tiki.Checkouts do
   alias Tiki.Tickets
 
   @doc """
-  Returns the list of stripe_checkouts.
-
-  ## Examples
-
-      iex> list_stripe_checkouts()
-      [%StripeCheckout{}, ...]
-
-  """
-  def list_stripe_checkouts do
-    Repo.all(StripeCheckout)
-  end
-
-  @doc """
-  Gets a single stripe_checkout.
-
-  Raises `Ecto.NoResultsError` if the Stripe checkout does not exist.
-
-  ## Examples
-
-      iex> get_stripe_checkout!(123)
-      %StripeCheckout{}
-
-      iex> get_stripe_checkout!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_stripe_checkout!(id), do: Repo.get!(StripeCheckout, id)
-
-  @doc """
-  Creates a stripe_checkout.
-
-  ## Examples
-
-      iex> create_stripe_checkout(%{field: value})
-      {:ok, %StripeCheckout{}}
-
-      iex> create_stripe_checkout(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_stripe_checkout(attrs \\ %{}) do
-    %StripeCheckout{}
-    |> StripeCheckout.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a stripe_checkout.
-
-  ## Examples
-
-      iex> update_stripe_checkout(stripe_checkout, %{field: new_value})
-      {:ok, %StripeCheckout{}}
-
-      iex> update_stripe_checkout(stripe_checkout, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_stripe_checkout(%StripeCheckout{} = stripe_checkout, attrs) do
-    stripe_checkout
-    |> StripeCheckout.changeset(attrs)
-    |> Repo.update()
-  end
-
-  def create_swish_checkout(attrs \\ %{}) do
-    %SwishCheckout{}
-    |> SwishCheckout.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a swish_checkout.
-
-  ## Examples
-
-      iex> update_swish_checkout(stripe_checkout, %{field: new_value})
-      {:ok, %StripeCheckout{}}
-
-      iex> update_swish_checkout(stripe_checkout, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_swish_checkout(%SwishCheckout{} = swish_checkout, attrs) do
-    swish_checkout
-    |> SwishCheckout.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
   Creates a stripe payment intent with the stripe API,
   and creates a stripe checkout in the database. Returns the intent.any()
 
@@ -279,6 +190,30 @@ defmodule Tiki.Checkouts do
       {:error, _, msg, _} ->
         {:error, msg}
     end
+  end
+
+  defp create_stripe_checkout(attrs \\ %{}) do
+    %StripeCheckout{}
+    |> StripeCheckout.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp update_stripe_checkout(%StripeCheckout{} = stripe_checkout, attrs) do
+    stripe_checkout
+    |> StripeCheckout.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp create_swish_checkout(attrs \\ %{}) do
+    %SwishCheckout{}
+    |> SwishCheckout.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp update_swish_checkout(%SwishCheckout{} = swish_checkout, attrs) do
+    swish_checkout
+    |> SwishCheckout.changeset(attrs)
+    |> Repo.update()
   end
 
   defp swish_to_order_status("PAID"), do: :paid

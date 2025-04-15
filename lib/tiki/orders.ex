@@ -4,6 +4,8 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
+  alias Tiki.Accounts
+  alias Tiki.Checkouts
   alias Tiki.Orders.OrderNotifier
   alias Ecto.Multi
   alias Phoenix.PubSub
@@ -13,19 +15,6 @@ defmodule Tiki.Orders do
   alias Tiki.Repo
 
   alias Tiki.OrderHandler
-
-  @doc """
-  Returns the list of order.
-
-  ## Examples
-
-      iex> list_orders()
-      [%Order{}, ...]
-
-  """
-  def list_orders do
-    Repo.all(Order)
-  end
 
   @doc """
   Gets a single order.
@@ -65,84 +54,6 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  Creates a order.
-
-  ## Examples
-
-      iex> create_order(%{field: value})
-      {:ok, %Order{}}
-
-      iex> create_order(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_order(attrs \\ %{}) do
-    %Order{}
-    |> Order.changeset(attrs)
-    |> Repo.insert(returning: [:id])
-  end
-
-  @doc """
-  Updates a order.
-
-  ## Examples
-
-      iex> update_order(order, %{field: new_value})
-      {:ok, %Order{}}
-
-      iex> update_order(order, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_order(%Order{} = order, attrs) do
-    order
-    |> Order.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a order.
-
-  ## Examples
-
-      iex> delete_order(order)
-      {:ok, %Order{}}
-
-      iex> delete_order(order)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_order(%Order{} = order) do
-    Repo.delete(order)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking order changes.
-
-  ## Examples
-
-      iex> change_order(order)
-      %Ecto.Changeset{data: %Order{}}
-
-  """
-  def change_order(%Order{} = order, attrs \\ %{}) do
-    Order.changeset(order, attrs)
-  end
-
-  @doc """
-  Returns the list of ticket.
-
-  ## Examples
-
-      iex> list_ticket()
-      [%Ticket{}, ...]
-
-  """
-  def list_tickets do
-    Repo.all(Ticket)
-  end
-
-  @doc """
   Gets a single ticket.
 
   Raises `Ecto.NoResultsError` if the Ticket does not exist.
@@ -173,24 +84,6 @@ defmodule Tiki.Orders do
         ]
 
     Repo.one!(query)
-  end
-
-  @doc """
-  Creates a ticket.
-
-  ## Examples
-
-      iex> create_ticket(%{field: value})
-      {:ok, %Ticket{}}
-
-      iex> create_ticket(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_ticket(attrs \\ %{}) do
-    %Ticket{}
-    |> Ticket.changeset(attrs)
-    |> Repo.insert(returning: [:id])
   end
 
   @doc """
@@ -246,7 +139,7 @@ defmodule Tiki.Orders do
         from t in Ticket, where: t.order_id == ^order.id
       end)
       |> Multi.update(:order_failed, fn %{order: order} ->
-        change_order(order, %{status: :cancelled})
+        Order.changeset(order, %{status: :cancelled})
       end)
 
     case Repo.transaction(multi) do
@@ -268,6 +161,53 @@ defmodule Tiki.Orders do
 
       _ ->
         {:error, "could not cancel reservation"}
+    end
+  end
+
+  @doc """
+  Initializes a checkout for an order. Returns the uptaded order with associated checkout.
+
+  Options:
+    * `:user_id` - The user id of the user who is purchasing the tickets.
+    * `:user` - Optionally, a user struct to be used for creating a new user. It must contain
+      `:name` and `:email` fields, and optionally `:locale`.
+  """
+  def init_checkout(order, payment_method, opts \\ []) do
+    with {:ok, user_id} <- upsert_or_get_user_id(opts),
+         {:ok, order} <- update_order(order, %{user_id: user_id}),
+         {:ok, checkout} <- create_payment(order, payment_method) do
+      {:ok,
+       case checkout do
+         %Checkouts.SwishCheckout{} -> Map.put(order, :swish_checkout, checkout)
+         %Checkouts.StripeCheckout{} -> Map.put(order, :stripe_checkout, checkout)
+       end}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp update_order(%Order{} = order, attrs) do
+    order
+    |> Order.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp create_payment(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)
+  defp create_payment(order, "swish"), do: Checkouts.create_swish_payment_request(order)
+
+  defp upsert_or_get_user_id(opts) do
+    case {Keyword.get(opts, :user_id), Keyword.get(opts, :user)} do
+      {nil, %{name: name, email: email, locale: locale} = data} ->
+        Accounts.upsert_user_email(email, name, locale: locale)
+
+      {nil, %{name: name, email: email} = data} ->
+        Accounts.upsert_user_email(email, name, data)
+
+      {id, _} ->
+        {:ok, id}
+
+      _ ->
+        {:error, "`user_id` or `user` must be provided"}
     end
   end
 

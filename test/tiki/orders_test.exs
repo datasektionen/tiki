@@ -1,4 +1,5 @@
 defmodule Tiki.OrdersTest do
+  alias Tiki.OrdersFixtures
   use Tiki.DataCase
 
   alias Tiki.Orders
@@ -8,13 +9,7 @@ defmodule Tiki.OrdersTest do
 
     import Tiki.OrdersFixtures
 
-    @invalid_attrs %{"status" => "wierd"}
     @standard_preloads [:user, [tickets: :ticket_type], :stripe_checkout, :swish_checkout, :event]
-
-    test "list_order/0 returns all order" do
-      order = order_fixture()
-      assert Orders.list_orders() == [order]
-    end
 
     test "list_team_orders/1 returns all orders for a given team" do
       order = order_fixture() |> Tiki.Repo.preload([:event | @standard_preloads])
@@ -30,7 +25,7 @@ defmodule Tiki.OrdersTest do
           user = Tiki.AccountsFixtures.user_fixture()
 
           {:ok, order} =
-            Tiki.Orders.create_order(%{user_id: user.id, event_id: event.id, price: 100})
+            OrdersFixtures.create_order(%{user_id: user.id, event_id: event.id, price: 100})
 
           order
         end)
@@ -48,7 +43,7 @@ defmodule Tiki.OrdersTest do
           user = Tiki.AccountsFixtures.user_fixture()
 
           {:ok, order} =
-            Tiki.Orders.create_order(%{user_id: user.id, event_id: event.id, price: 100})
+            OrdersFixtures.create_order(%{user_id: user.id, event_id: event.id, price: 100})
 
           order
         end)
@@ -155,54 +150,10 @@ defmodule Tiki.OrdersTest do
       order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order
     end
-
-    test "create_order/1 with valid data creates a order" do
-      event = Tiki.EventsFixtures.event_fixture()
-
-      valid_attrs = %{event_id: event.id, price: 100}
-
-      assert {:ok, %Order{} = _order} = Orders.create_order(valid_attrs)
-    end
-
-    test "create_order/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Orders.create_order(@invalid_attrs)
-    end
-
-    test "update_order/2 with valid data updates the order" do
-      order = order_fixture()
-      update_attrs = %{}
-
-      assert {:ok, %Order{} = _order} = Orders.update_order(order, update_attrs)
-    end
-
-    test "update_order/2 with invalid data returns error changeset" do
-      order = Tiki.Repo.preload(order_fixture(), @standard_preloads)
-
-      assert {:error, %Ecto.Changeset{}} = Orders.update_order(order, @invalid_attrs)
-
-      assert order ==
-               Orders.get_order!(order.id)
-    end
-
-    test "delete_order/1 deletes the order" do
-      order = order_fixture()
-      assert {:ok, %Order{}} = Orders.delete_order(order)
-      assert_raise Ecto.NoResultsError, fn -> Orders.get_order!(order.id) end
-    end
-
-    test "change_order/1 returns a order changeset" do
-      order = order_fixture()
-      assert %Ecto.Changeset{} = Orders.change_order(order)
-    end
   end
 
   describe "ticket" do
     import Tiki.OrdersFixtures
-
-    test "list_ticket/0 returns all ticket" do
-      ticket = ticket_fixture()
-      assert Orders.list_tickets() == [ticket]
-    end
 
     test "get_ticket!/1 returns the ticket with given id" do
       ticket =

@@ -21,7 +21,7 @@ defmodule Tiki.CheckoutsFixtures do
         payment_method_id: "some payment_method_id",
         status: "some status"
       })
-      |> Tiki.Checkouts.create_stripe_checkout()
+      |> create_stripe_checkout()
 
     stripe_checkout
   end
@@ -42,8 +42,23 @@ defmodule Tiki.CheckoutsFixtures do
         callback_identifier: "some callback_identifier",
         token: "some token"
       })
-      |> Tiki.Checkouts.create_swish_checkout()
+      |> create_swish_checkout()
 
     swish_checkout
+  end
+
+  alias Tiki.Checkouts.StripeCheckout
+  alias Tiki.Checkouts.SwishCheckout
+
+  def create_stripe_checkout(attrs \\ %{}) do
+    %StripeCheckout{}
+    |> StripeCheckout.changeset(attrs)
+    |> Tiki.Repo.insert(returning: [:id])
+  end
+
+  def create_swish_checkout(attrs \\ %{}) do
+    %SwishCheckout{}
+    |> SwishCheckout.changeset(attrs)
+    |> Tiki.Repo.insert(returning: [:id])
   end
 end

@@ -132,7 +132,7 @@ defmodule Tiki.OrderHandler.Worker do
       |> Multi.insert(
         :order,
         fn %{total_price: total_price} ->
-          Orders.change_order(%Orders.Order{}, %{
+          Orders.Order.changeset(%Orders.Order{}, %{
             event_id: event_id,
             status: :pending,
             price: total_price
