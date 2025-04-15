@@ -240,13 +240,11 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
 
     with {:ok, %Response{} = response} <- Ecto.Changeset.apply_action(changeset, :save),
          {:ok, order} <-
-           Orders.init_checkout(socket.assigns.order, response.payment_method,
-             user: %{
-               email: response.email,
-               name: response.name,
-               locale: Gettext.get_locale(TikiWeb.Gettext)
-             }
-           ) do
+           Orders.init_checkout(socket.assigns.order, response.payment_method, %{
+             email: response.email,
+             name: response.name,
+             locale: Gettext.get_locale(TikiWeb.Gettext)
+           }) do
       {:noreply, assign(socket, order: order)}
     else
       {:error, changeset} ->

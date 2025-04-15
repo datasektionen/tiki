@@ -167,25 +167,45 @@ defmodule Tiki.Orders do
   @doc """
   Initializes a checkout for an order. Returns the uptaded order with associated checkout.
 
-  Options:
-    * `:user_id` - The user id of the user who is purchasing the tickets.
-    * `:user` - Optionally, a user struct to be used for creating a new user. It must contain
-      `:name` and `:email` fields, and optionally `:locale`.
+  Can be provided with a user_id to associate the checkout with a user, or a user_data map
+  to create a new user and associate the checkout with that user. The keys `name` and
+  `email` are required.
+
+  ## Examples
+
+      iex> init_checkout(order, "credit_card", user_id: 123)
+      {:ok, %Order{}}
+
+      iex> init_checkout(order, "credit_card", %{name: "John Doe", email: "john@doe.com", locale: "sv"})
+      {:ok, %Order{}}
+
   """
-  def init_checkout(order, payment_method, opts \\ []) do
-    with {:ok, user} <- upsert_or_get_user(opts),
-         {:ok, order} <- update_order(order, %{user_id: user.id}),
-         {:ok, checkout} <- create_payment(order, payment_method) do
-      {:ok,
-       case checkout do
-         %Checkouts.SwishCheckout{} -> Map.put(order, :swish_checkout, checkout)
-         %Checkouts.StripeCheckout{} -> Map.put(order, :stripe_checkout, checkout)
-       end}
+  def init_checkout(order, payment_method, user_id) when is_integer(user_id) do
+    with {:ok, order} <- update_order(order, %{user_id: user_id}),
+         {:ok, checkout} <- create_payment(order, payment_method),
+         order <- put_checkout(order, checkout) do
+      {:ok, order}
     else
       {:error, reason} ->
         {:error, reason}
     end
   end
+
+  def init_checkout(order, payment_method, %{name: name, email: email} = userdata) do
+    locale = Map.get(userdata, :locale, "en")
+
+    with {:ok, user} <- Accounts.upsert_user_email(email, name, locale: locale),
+         {:ok, order} <- update_order(order, %{user_id: user.id}),
+         {:ok, checkout} <- create_payment(order, payment_method),
+         order <- put_checkout(order, checkout) do
+      {:ok, order}
+    else
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  def init_checkout(_, _, _), do: {:error, "user_id or userdata is invalid"}
 
   defp update_order(%Order{} = order, attrs) do
     order
@@ -197,21 +217,11 @@ defmodule Tiki.Orders do
   defp create_payment(order, "swish"), do: Checkouts.create_swish_payment_request(order)
   defp create_payment(_order, _), do: {:error, "not a valid payment method"}
 
-  defp upsert_or_get_user(opts) do
-    case {Keyword.get(opts, :user_id), Keyword.get(opts, :user)} do
-      {nil, %{name: name, email: email, locale: locale}} ->
-        Accounts.upsert_user_email(email, name, locale: locale)
+  defp put_checkout(order, %Checkouts.SwishCheckout{} = checkout),
+    do: Map.put(order, :swish_checkout, checkout)
 
-      {nil, %{name: name, email: email}} ->
-        Accounts.upsert_user_email(email, name)
-
-      {id, _} when not is_nil(id) ->
-        {:ok, Accounts.get_user!(id)}
-
-      _ ->
-        {:error, "`user_id` or `user` must be provided"}
-    end
-  end
+  defp put_checkout(order, %Checkouts.StripeCheckout{} = checkout),
+    do: Map.put(order, :stripe_checkout, checkout)
 
   @doc """
   Returns the orders for an event, ordered by most recent first.

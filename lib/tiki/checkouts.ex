@@ -1,6 +1,9 @@
 defmodule Tiki.Checkouts do
   @moduledoc """
   The Checkouts context.
+
+  You probably don't want to interact with this module directly. Instead, use
+  the `Tiki.Orders` module with for example `Tiki.Orders.init_checkout/2`.
   """
 
   @stripe Application.compile_env(:tiki, :stripe_module)
