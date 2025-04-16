@@ -17,13 +17,13 @@ defmodule TikiWeb.OrderLive.Show do
         <h1 class="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
           {gettext("Thank you for your order!")}
         </h1>
-        <!-- TODO: Receipt link -->
-        <%!-- <.link
-          href="#"
+        <.link
+          :if={@live_action in [:show, :receipt]}
+          navigate={~p"/orders/#{@order.id}/receipt"}
           class="text-secondary-foreground hidden text-sm font-medium hover:text-secondary-foreground/80 sm:block"
         >
           {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
-        </.link> --%>
+        </.link>
       </div>
       <p class="text-muted-foreground text-sm">
         <!-- TODO: Proper time  -->
@@ -33,10 +33,13 @@ defmodule TikiWeb.OrderLive.Show do
           {Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short)}
         </time>
       </p>
-      <!-- TODO: Receipt link -->
-      <%!-- <.link href="#" class="text-sm font-medium sm:hidden">
+      <.link
+        :if={@live_action in [:show, :receipt]}
+        navigate={~p"/orders/#{@order.id}/receipt"}
+        class="text-sm font-medium sm:hidden"
+      >
         {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
-      </.link> --%>
+      </.link>
     </div>
 
     <div class="mt-6">
@@ -172,6 +175,79 @@ defmodule TikiWeb.OrderLive.Show do
           </div>
         </.card>
       </div>
+
+      <.dialog
+        :if={@live_action == :receipt}
+        id="receipt-dialog"
+        show
+        on_cancel={JS.navigate(~p"/orders/#{@order.id}")}
+      >
+        <.header class="border-none">
+          {gettext("Receipt")}
+        </.header>
+
+        <div>
+          <p class="text-sm font-semibold">{gettext("Event")}</p>
+          <p class="text-muted-foreground text-sm">{@order.event.name}</p>
+        </div>
+
+        <div>
+          <p class="text-sm font-semibold">{gettext("Order reference")}</p>
+          <p class="text-muted-foreground text-sm">{@order.id}</p>
+        </div>
+
+        <div>
+          <p class="text-sm font-semibold">{gettext("Buyer")}</p>
+          <p class="text-muted-foreground text-sm">{@order.user.full_name}</p>
+          <p class="text-muted-foreground text-sm">{@order.user.email}</p>
+        </div>
+        <div>
+          <p class="text-sm font-semibold">{gettext("Seller")}</p>
+          <pre class="text-muted-foreground font-sans whitespace-pre text-sm">{gettext("Konglig Datasektionen (Org id. 802412-7709)
+    Fack vid THS
+    100 44 Stockholm")}
+    </pre>
+        </div>
+        <div>
+          <p class="text-sm font-semibold">{gettext("Purchase date")}</p>
+          <time datetime={@order.updated_at} class="text-muted-foreground text-sm">
+            {time_to_string(@order.updated_at, format: :short)}
+          </time>
+        </div>
+
+        <table class="w-full border-collapse border-spacing-0">
+          <tbody class="text-sm">
+            <tr :for={%{ticket_type: tt, count: count} <- @order_summary} class="border-t">
+              <th class="py-1 pr-2 text-left">{tt.name}</th>
+              <td class="whitespace-nowrap py-1 pr-2 text-right">
+                {"#{count} x #{tt.price} kr"}
+              </td>
+              <td class="whitespace-nowrap py-1 text-right">
+                {tt.price * count} kr
+              </td>
+            </tr>
+          </tbody>
+          <tr class="border-border border-t-2 text-sm font-semibold">
+            <th></th>
+            <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
+              {gettext("Total")}
+            </td>
+            <td class="whitespace-nowrap py-1 text-right">
+              {@order.price} kr
+            </td>
+          </tr>
+
+          <tr class="text-sm">
+            <th></th>
+            <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
+              {gettext("Incl. VAT")}
+            </td>
+            <td class="whitespace-nowrap py-1 text-right">
+              {@order.price} kr
+            </td>
+          </tr>
+        </table>
+      </.dialog>
     </div>
     """
   end
@@ -203,6 +279,21 @@ defmodule TikiWeb.OrderLive.Show do
        end
      end)}
   end
+
+  @impl Phoenix.LiveView
+  def handle_params(_params, _uri, socket)
+      when socket.assigns.live_action in [:receipt, :embedded_receipt] do
+    order_summary =
+      socket.assigns.order.tickets
+      |> Enum.group_by(fn t -> t.ticket_type end)
+      |> Enum.map(fn {tt, tickets} ->
+        %{ticket_type: tt, count: Enum.count(tickets)}
+      end)
+
+    {:noreply, assign(socket, order_summary: order_summary)}
+  end
+
+  def handle_params(_, _, socket), do: {:noreply, socket}
 
   defp find_in_response(response, question) when is_binary(question),
     do: find_in_response(response, [question])
@@ -259,6 +350,7 @@ defmodule TikiWeb.OrderLive.Show do
     case live_action do
       :embedded_show -> ~p"/embed/tickets/#{ticket}?return_to=/embed/orders/#{ticket.order_id}"
       :show -> ~p"/tickets/#{ticket}?return_to=/orders/#{ticket.order_id}"
+      :receipt -> ~p"/tickets/#{ticket}?return_to=/orders/#{ticket.order_id}"
     end
   end
 end
