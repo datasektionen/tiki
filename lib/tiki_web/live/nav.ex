@@ -56,6 +56,7 @@ defmodule TikiWeb.Nav do
 
   tab AdminLive.Attendees.Index, :index, :event_attendees
   tab AdminLive.Attendees.Show, :show, :event_attendees
+  tab AdminLive.Orders.Show, :show, :event_attendees
 
   tab AdminLive.Ticket.Index, :index, :event_tickets
   tab AdminLive.Ticket.Index, :new_batch, :event_tickets

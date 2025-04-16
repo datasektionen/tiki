@@ -5,8 +5,6 @@ defmodule Tiki.OrderHandler.Worker do
   require Logger
 
   import Ecto.Query, only: [from: 2]
-  alias ElixirLS.LanguageServer.Providers.Completion.Reducers.Struct
-  alias Stripe.Climate.Order
   alias Ecto.Multi
 
   alias Tiki.Repo

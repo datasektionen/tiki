@@ -208,6 +208,7 @@ defmodule TikiWeb.Router do
           live "/queue", Attendees.Index, :index
           # live "/contact", Contact.Index, :index
           live "/attendees/:ticket_id", Attendees.Show, :show
+          live "/orders/:order_id", Orders.Show, :show
 
           # TODO: Forms
           live "/forms", Forms.Index, :index

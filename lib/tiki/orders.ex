@@ -54,6 +54,10 @@ defmodule Tiki.Orders do
       ]
   end
 
+  def get_order_log!(id) do
+    Repo.all(from ol in AuditLog, where: ol.order_id == ^id, order_by: {:desc, ol.inserted_at})
+  end
+
   @doc """
   Gets a single ticket.
 

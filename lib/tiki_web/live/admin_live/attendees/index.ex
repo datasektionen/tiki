@@ -71,9 +71,9 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
           <.simple_select id="sort" name="sort" options={[gettext("Sort by date")]} value="" />
         </div>
 
-        <.button navigate={~p"/admin/events/#{@event}/attendees/new"} class="ml-auto">
+        <%!-- <.button navigate={~p"/admin/events/#{@event}/attendees/new"} class="ml-auto">
           {gettext("New attendee")}
-        </.button>
+        </.button> --%>
       </div>
 
       <.card class="sm:col-span-6">
