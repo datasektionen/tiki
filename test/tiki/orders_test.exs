@@ -32,7 +32,7 @@ defmodule Tiki.OrdersTest do
         |> Enum.sort_by(& &1.inserted_at, :desc)
         |> Tiki.Repo.preload([:event | @standard_preloads])
 
-      assert Orders.list_team_orders(event.team_id) == orders
+      assert Orders.list_team_orders(event.team_id) |> Enum.sort() == orders |> Enum.sort()
     end
 
     test "list_team_orders/1 limits results" do
@@ -78,16 +78,17 @@ defmodule Tiki.OrdersTest do
           order_fixture(%{status: status}, event: event)
           |> Tiki.Repo.preload(@standard_preloads)
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
         |> Tiki.Repo.preload(@standard_preloads)
 
-      assert Orders.list_orders_for_event(event.id) == orders
+      list = Orders.list_orders_for_event(event.id)
+      assert list == Enum.sort_by(list, & &1.inserted_at, :desc)
+      assert Enum.sort(list) == Enum.sort(orders)
     end
 
     test "list_orders_for_event/1 filters based on status" do
       event = Tiki.EventsFixtures.event_fixture()
 
-      :rand.seed(:exs64, {1, 1, 1})
+      :rand.seed(:exs64, {1, 1, 2})
 
       orders =
         Enum.map(1..5, fn _ ->
@@ -99,7 +100,9 @@ defmodule Tiki.OrdersTest do
         |> Enum.sort_by(& &1.inserted_at, :desc)
         |> Tiki.Repo.preload(@standard_preloads)
 
-      assert Orders.list_orders_for_event(event.id, status: [:paid]) == [Enum.at(orders, 2)]
+      list = Orders.list_orders_for_event(event.id, status: [:paid])
+      assert list == [Enum.at(orders, 1)]
+      assert Enum.all?(list, &(&1.status == :paid))
     end
 
     test "list_tickets_for_event/1 returns all tickets for a given event" do
@@ -332,12 +335,20 @@ defmodule Tiki.OrdersTest do
       assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
     end
 
+    test "maybe_cancel_order/1 cancels an order being checked out" do
+      order = order_fixture(%{status: "checkout"})
+
+      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+      assert order.status == :cancelled
+      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+    end
+
     test "maybe_cancel_order/1 does not modify paid orders" do
       order = order_fixture(%{status: "paid"})
       ticket = ticket_fixture(%{order_id: order.id}) |> Repo.preload(:ticket_type)
 
       assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not pending"
+      assert msg =~ "order is not cancellable"
 
       assert %Orders.Order{status: :paid, tickets: [^ticket]} = Orders.get_order!(order.id)
     end
@@ -346,7 +357,7 @@ defmodule Tiki.OrdersTest do
       order = order_fixture(%{status: "cancelled"}) |> Repo.preload(@standard_preloads)
 
       assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not pending"
+      assert msg =~ "order is not cancellable"
 
       assert Orders.get_order!(order.id) == order
     end

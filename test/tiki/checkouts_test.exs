@@ -5,8 +5,6 @@ defmodule Tiki.CheckoutsTest do
   alias Tiki.Orders
 
   describe "stripe_checkouts" do
-    alias Tiki.Checkouts.StripeCheckout
-
     import Tiki.CheckoutsFixtures
 
     test "create_stripe_payment_intent/1 with a order creates a stripe payment intent" do
@@ -16,6 +14,9 @@ defmodule Tiki.CheckoutsTest do
                Checkouts.create_stripe_payment_intent(order)
 
       assert not is_nil(checkout.client_secret)
+
+      assert Map.drop(checkout, [:client_secret]) ==
+               Tiki.Repo.get!(Checkouts.StripeCheckout, checkout.id)
     end
 
     test "create_stripe_payment_intent/1 with an stripe API error returns an error" do
@@ -25,7 +26,7 @@ defmodule Tiki.CheckoutsTest do
     end
 
     test "confirm_stripe_payment/1 works with a valid stripe payment" do
-      order = Tiki.OrdersFixtures.order_fixture()
+      order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
       Orders.subscribe_to_order(order.id)
 
@@ -47,7 +48,7 @@ defmodule Tiki.CheckoutsTest do
     end
 
     test "confirm_stripe_payment/1 does nothing if the payment is already confirmed" do
-      order = Tiki.OrdersFixtures.order_fixture()
+      order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
       Orders.subscribe_to_order(order.id)
 
@@ -127,7 +128,7 @@ defmodule Tiki.CheckoutsTest do
     end
 
     test "confirm_swish_payment/2 works with valid swish callback data" do
-      order = Tiki.OrdersFixtures.order_fixture(%{status: :pending})
+      order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
       Orders.subscribe_to_order(order.id)
 
@@ -147,7 +148,7 @@ defmodule Tiki.CheckoutsTest do
     end
 
     test "confirm_swish_payment/2 does nothing if the payment is already confirmed" do
-      order = Tiki.OrdersFixtures.order_fixture(%{status: :pending})
+      order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
       Orders.subscribe_to_order(order.id)
 
