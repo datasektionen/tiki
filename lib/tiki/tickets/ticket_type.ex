@@ -3,6 +3,7 @@ defmodule Tiki.Tickets.TicketType do
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
+  @derive {Jason.Encoder, only: [:id, :name]}
   schema "ticket_types" do
     field :name, :string
     field :description, :string

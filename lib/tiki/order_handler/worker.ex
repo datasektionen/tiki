@@ -5,6 +5,8 @@ defmodule Tiki.OrderHandler.Worker do
   require Logger
 
   import Ecto.Query, only: [from: 2]
+  alias ElixirLS.LanguageServer.Providers.Completion.Reducers.Struct
+  alias Stripe.Climate.Order
   alias Ecto.Multi
 
   alias Tiki.Repo
@@ -179,6 +181,9 @@ defmodule Tiki.OrderHandler.Worker do
           {:ok, Map.put(order, :tickets, tickets)}
         end
       )
+      |> Multi.run(:audit, fn _repo, %{preloaded_order: order} ->
+        Orders.AuditLog.log(order.id, "order.created", order)
+      end)
       |> Repo.transaction()
 
     case result do

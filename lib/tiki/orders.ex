@@ -11,6 +11,7 @@ defmodule Tiki.Orders do
   alias Phoenix.PubSub
   alias Tiki.Orders.Order
   alias Tiki.Orders.Ticket
+  alias Tiki.Orders.AuditLog
   alias Tiki.Tickets
   alias Tiki.Repo
 
@@ -131,15 +132,20 @@ defmodule Tiki.Orders do
       |> Multi.run(:order, fn repo, _changes ->
         case repo.one(from o in Order, where: o.id == ^order_id) do
           nil -> {:error, :not_found}
-          %Order{status: :pending} = order -> {:ok, order}
-          %Order{} -> {:error, :not_pending}
+          %Order{} = order -> {:ok, order}
         end
+      end)
+      |> Multi.run(:transition_valid, fn _repo, %{order: order} ->
+        Order.valid_transition?(order.status, :cancelled) |> wrap_bool("invalid transition")
       end)
       |> Multi.delete_all(:delete_tickets, fn %{order: order} ->
         from t in Ticket, where: t.order_id == ^order.id
       end)
       |> Multi.update(:order_failed, fn %{order: order} ->
         Order.changeset(order, %{status: :cancelled})
+      end)
+      |> Multi.run(:audit, fn _repo, %{order_failed: order} ->
+        AuditLog.log(order.id, "order.cancelled", order)
       end)
 
     case Repo.transaction(multi) do
@@ -156,11 +162,18 @@ defmodule Tiki.Orders do
       {:error, :order, :not_found, _} ->
         {:error, "order not found, nothing to cancel"}
 
-      {:error, :order, :not_pending, _} ->
-        {:error, "order is not pending"}
+      {:error, :transition_valid, _, _} ->
+        {:error, "order is not cancellable"}
 
       _ ->
         {:error, "could not cancel reservation"}
+    end
+  end
+
+  defp wrap_bool(bool, message) do
+    case bool do
+      true -> {:ok, :ok}
+      false -> {:error, message}
     end
   end
 
@@ -180,28 +193,28 @@ defmodule Tiki.Orders do
       {:ok, %Order{}}
 
   """
-  def init_checkout(order, payment_method, user_id) when is_integer(user_id) do
-    with {:ok, order} <- update_order(order, %{user_id: user_id}),
-         {:ok, checkout} <- create_payment(order, payment_method),
-         order <- put_checkout(order, checkout) do
-      {:ok, order}
-    else
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
-
   def init_checkout(order, payment_method, %{name: name, email: email} = userdata) do
     locale = Map.get(userdata, :locale, "en")
 
-    with {:ok, user} <- Accounts.upsert_user_email(email, name, locale: locale),
-         {:ok, order} <- update_order(order, %{user_id: user.id}),
+    case Accounts.upsert_user_email(email, name, locale: locale) do
+      {:ok, user} -> init_checkout(order, payment_method, user.id)
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def init_checkout(order, payment_method, user_id) when is_integer(user_id) do
+    with true <- Order.valid_transition?(order.status, :checkout),
+         {:ok, order} <- update_order(order, %{user_id: user_id, status: :checkout}),
          {:ok, checkout} <- create_payment(order, payment_method),
          order <- put_checkout(order, checkout) do
+      AuditLog.log(order.id, "order.checkout.#{payment_method}", order)
       {:ok, order}
     else
       {:error, reason} ->
         {:error, reason}
+
+      false ->
+        {:error, "cannot initiate checkout from order state"}
     end
   end
 
@@ -222,6 +235,22 @@ defmodule Tiki.Orders do
 
   defp put_checkout(order, %Checkouts.StripeCheckout{} = checkout),
     do: Map.put(order, :stripe_checkout, checkout)
+
+  @doc """
+  Confirms an order after it has been paid. Returns the order. Does
+  some stuff like sending emails, logging, and broadcasting the order
+  over PubSub.
+  """
+  def confirm_order(%Order{status: :paid} = order) do
+    order = get_order!(order.id)
+
+    # Send email confirmaiton
+    OrderNotifier.deliver(order)
+    # Audit log
+    AuditLog.log(order.id, "order.paid", order)
+
+    broadcast_order(order.id, :paid, order)
+  end
 
   @doc """
   Returns the orders for an event, ordered by most recent first.
@@ -318,13 +347,6 @@ defmodule Tiki.Orders do
     |> where([o], o.status in ^statuses)
     |> order_by([o], desc: o.inserted_at)
     |> Repo.all()
-  end
-
-  def confirm_order(order) do
-    # Send email confirmaiton
-    get_order!(order.id) |> OrderNotifier.deliver()
-
-    broadcast_order(order.id, :paid, order)
   end
 
   def broadcast_order(order_id, :created, order) do

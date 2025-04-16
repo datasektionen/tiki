@@ -52,7 +52,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
           </p>
         </div>
 
-        <div :if={@order.status == :pending}>
+        <div :if={@order.status in [:pending, :checkout]}>
           <div>
             <.header class="border-none">
               {gettext("Payment")}
@@ -89,7 +89,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             </table>
           </div>
 
-          <div :if={!(@order.swish_checkout || @order.stripe_checkout)}>
+          <div :if={@order.status == :pending}>
             <.form
               for={@form}
               phx-target={@myself}
@@ -156,7 +156,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             </.form>
           </div>
 
-          <div :if={@order.swish_checkout} class="flex flex-col">
+          <div :if={@order.status == :checkout && @order.swish_checkout} class="flex flex-col">
             <.label>
               {gettext("Pay using Swish")}
             </.label>
@@ -172,7 +172,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
           </div>
 
           <form
-            :if={@order.stripe_checkout}
+            :if={@order.status == :checkout && @order.stripe_checkout}
             id="payment-form"
             phx-hook="InitCheckout"
             data-secret={@order.stripe_checkout.client_secret}
