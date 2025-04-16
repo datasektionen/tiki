@@ -212,6 +212,7 @@ defmodule Tiki.Orders do
          {:ok, checkout} <- create_payment(order, payment_method),
          order <- put_checkout(order, checkout) do
       AuditLog.log(order.id, "order.checkout.#{payment_method}", order)
+
       {:ok, order}
     else
       {:error, reason} ->

@@ -11,17 +11,7 @@ defmodule Tiki.Orders.Order do
   }
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :status,
-             :price,
-             :user_id,
-             :event_id,
-             :tickets,
-             :stripe_checkout,
-             :swish_checkout
-           ]}
+  # @derive {Jason.Encoder, only: [:id, :status, :price, :user_id, :event_id, :tickets, :stripe_checkout, :swish_checkout]}
   schema "orders" do
     field :status, Ecto.Enum, values: [:pending, :checkout, :paid, :cancelled], default: :pending
     field :price, :integer
