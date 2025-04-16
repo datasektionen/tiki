@@ -101,7 +101,7 @@ defmodule Tiki.OrdersTest do
         |> Tiki.Repo.preload(@standard_preloads)
 
       list = Orders.list_orders_for_event(event.id, status: [:paid])
-      assert list == [Enum.at(orders, 1)]
+      assert Enum.sort(list) == Enum.filter(orders, &(&1.status == :paid)) |> Enum.sort()
       assert Enum.all?(list, &(&1.status == :paid))
     end
 
