@@ -2,7 +2,6 @@ defmodule Tiki.Checkouts.SwishCheckout do
   use Tiki.Schema
   import Ecto.Changeset
 
-  @derive {Jason.Encoder, only: [:id, :swish_id, :callback_identifier, :token, :status]}
   schema "swish_checkouts" do
     field :swish_id, :string
     field :callback_identifier, :string
