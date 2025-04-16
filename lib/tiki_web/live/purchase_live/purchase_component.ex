@@ -77,7 +77,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                     {tt.price * count} kr
                   </td>
                 </tr>
-                <tr class="border-border border-t-2">
+                <tr class="border-border border-t-2 text-sm font-semibold">
                   <th></th>
                   <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
                     {gettext("Total")}
