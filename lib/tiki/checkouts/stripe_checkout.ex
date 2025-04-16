@@ -2,6 +2,7 @@ defmodule Tiki.Checkouts.StripeCheckout do
   use Tiki.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, only: [:id, :order_id, :payment_intent_id, :payment_method_id, :status]}
   schema "stripe_checkouts" do
     field :currency, :string
     field :payment_intent_id, :string

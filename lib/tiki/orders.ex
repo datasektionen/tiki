@@ -4,28 +4,18 @@ defmodule Tiki.Orders do
   """
 
   import Ecto.Query, warn: false
+  alias Tiki.Accounts
+  alias Tiki.Checkouts
   alias Tiki.Orders.OrderNotifier
   alias Ecto.Multi
   alias Phoenix.PubSub
   alias Tiki.Orders.Order
   alias Tiki.Orders.Ticket
+  alias Tiki.Orders.AuditLog
   alias Tiki.Tickets
   alias Tiki.Repo
 
   alias Tiki.OrderHandler
-
-  @doc """
-  Returns the list of order.
-
-  ## Examples
-
-      iex> list_orders()
-      [%Order{}, ...]
-
-  """
-  def list_orders do
-    Repo.all(Order)
-  end
 
   @doc """
   Gets a single order.
@@ -64,82 +54,8 @@ defmodule Tiki.Orders do
       ]
   end
 
-  @doc """
-  Creates a order.
-
-  ## Examples
-
-      iex> create_order(%{field: value})
-      {:ok, %Order{}}
-
-      iex> create_order(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_order(attrs \\ %{}) do
-    %Order{}
-    |> Order.changeset(attrs)
-    |> Repo.insert(returning: [:id])
-  end
-
-  @doc """
-  Updates a order.
-
-  ## Examples
-
-      iex> update_order(order, %{field: new_value})
-      {:ok, %Order{}}
-
-      iex> update_order(order, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_order(%Order{} = order, attrs) do
-    order
-    |> Order.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a order.
-
-  ## Examples
-
-      iex> delete_order(order)
-      {:ok, %Order{}}
-
-      iex> delete_order(order)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_order(%Order{} = order) do
-    Repo.delete(order)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking order changes.
-
-  ## Examples
-
-      iex> change_order(order)
-      %Ecto.Changeset{data: %Order{}}
-
-  """
-  def change_order(%Order{} = order, attrs \\ %{}) do
-    Order.changeset(order, attrs)
-  end
-
-  @doc """
-  Returns the list of ticket.
-
-  ## Examples
-
-      iex> list_ticket()
-      [%Ticket{}, ...]
-
-  """
-  def list_tickets do
-    Repo.all(Ticket)
+  def get_order_log!(id) do
+    Repo.all(from ol in AuditLog, where: ol.order_id == ^id, order_by: {:desc, ol.inserted_at})
   end
 
   @doc """
@@ -173,24 +89,6 @@ defmodule Tiki.Orders do
         ]
 
     Repo.one!(query)
-  end
-
-  @doc """
-  Creates a ticket.
-
-  ## Examples
-
-      iex> create_ticket(%{field: value})
-      {:ok, %Ticket{}}
-
-      iex> create_ticket(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_ticket(attrs \\ %{}) do
-    %Ticket{}
-    |> Ticket.changeset(attrs)
-    |> Repo.insert(returning: [:id])
   end
 
   @doc """
@@ -238,15 +136,20 @@ defmodule Tiki.Orders do
       |> Multi.run(:order, fn repo, _changes ->
         case repo.one(from o in Order, where: o.id == ^order_id) do
           nil -> {:error, :not_found}
-          %Order{status: :pending} = order -> {:ok, order}
-          %Order{} -> {:error, :not_pending}
+          %Order{} = order -> {:ok, order}
         end
+      end)
+      |> Multi.run(:transition_valid, fn _repo, %{order: order} ->
+        Order.valid_transition?(order.status, :cancelled) |> wrap_bool("invalid transition")
       end)
       |> Multi.delete_all(:delete_tickets, fn %{order: order} ->
         from t in Ticket, where: t.order_id == ^order.id
       end)
       |> Multi.update(:order_failed, fn %{order: order} ->
-        change_order(order, %{status: :cancelled})
+        Order.changeset(order, %{status: :cancelled})
+      end)
+      |> Multi.run(:audit, fn _repo, %{order_failed: order} ->
+        AuditLog.log(order.id, "order.cancelled", order)
       end)
 
     case Repo.transaction(multi) do
@@ -263,12 +166,94 @@ defmodule Tiki.Orders do
       {:error, :order, :not_found, _} ->
         {:error, "order not found, nothing to cancel"}
 
-      {:error, :order, :not_pending, _} ->
-        {:error, "order is not pending"}
+      {:error, :transition_valid, _, _} ->
+        {:error, "order is not cancellable"}
 
       _ ->
         {:error, "could not cancel reservation"}
     end
+  end
+
+  defp wrap_bool(bool, message) do
+    case bool do
+      true -> {:ok, :ok}
+      false -> {:error, message}
+    end
+  end
+
+  @doc """
+  Initializes a checkout for an order. Returns the uptaded order with associated checkout.
+
+  Can be provided with a user_id to associate the checkout with a user, or a user_data map
+  to create a new user and associate the checkout with that user. The keys `name` and
+  `email` are required.
+
+  ## Examples
+
+      iex> init_checkout(order, "credit_card", user_id: 123)
+      {:ok, %Order{}}
+
+      iex> init_checkout(order, "credit_card", %{name: "John Doe", email: "john@doe.com", locale: "sv"})
+      {:ok, %Order{}}
+
+  """
+  def init_checkout(order, payment_method, %{name: name, email: email} = userdata) do
+    locale = Map.get(userdata, :locale, "en")
+
+    case Accounts.upsert_user_email(email, name, locale: locale) do
+      {:ok, user} -> init_checkout(order, payment_method, user.id)
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def init_checkout(order, payment_method, user_id) when is_integer(user_id) do
+    with true <- Order.valid_transition?(order.status, :checkout),
+         {:ok, order} <- update_order(order, %{user_id: user_id, status: :checkout}),
+         {:ok, checkout} <- create_payment(order, payment_method),
+         order <- put_checkout(order, checkout) do
+      AuditLog.log(order.id, "order.checkout.#{payment_method}", order)
+      {:ok, order}
+    else
+      {:error, reason} ->
+        {:error, reason}
+
+      false ->
+        {:error, "cannot initiate checkout from order state"}
+    end
+  end
+
+  def init_checkout(_, _, _), do: {:error, "user_id or userdata is invalid"}
+
+  defp update_order(%Order{} = order, attrs) do
+    order
+    |> Order.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp create_payment(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)
+  defp create_payment(order, "swish"), do: Checkouts.create_swish_payment_request(order)
+  defp create_payment(_order, _), do: {:error, "not a valid payment method"}
+
+  defp put_checkout(order, %Checkouts.SwishCheckout{} = checkout),
+    do: Map.put(order, :swish_checkout, checkout)
+
+  defp put_checkout(order, %Checkouts.StripeCheckout{} = checkout),
+    do: Map.put(order, :stripe_checkout, checkout)
+
+  @doc """
+  Confirms an order after it has been paid. Returns the order. Does
+  some stuff like sending emails, logging, and broadcasting the order
+  over PubSub.
+  """
+  def confirm_order(%Order{status: :paid} = order) do
+    order = get_order!(order.id)
+
+    # Send email confirmaiton
+    OrderNotifier.deliver(order)
+    # Audit log
+    AuditLog.log(order.id, "order.paid", order)
+
+    broadcast_order(order.id, :paid, order)
   end
 
   @doc """
@@ -366,13 +351,6 @@ defmodule Tiki.Orders do
     |> where([o], o.status in ^statuses)
     |> order_by([o], desc: o.inserted_at)
     |> Repo.all()
-  end
-
-  def confirm_order(order) do
-    # Send email confirmaiton
-    get_order!(order.id) |> OrderNotifier.deliver()
-
-    broadcast_order(order.id, :paid, order)
   end
 
   def broadcast_order(order_id, :created, order) do

@@ -19,7 +19,7 @@ defmodule Tiki.OrdersFixtures do
     {:ok, order} =
       attrs
       |> Enum.into(%{user_id: user.id, event_id: event.id, price: 100})
-      |> Tiki.Orders.create_order()
+      |> create_order()
 
     order
   end
@@ -38,8 +38,24 @@ defmodule Tiki.OrdersFixtures do
         price: order.price,
         order_id: order.id
       })
-      |> Tiki.Orders.create_ticket()
+      |> create_ticket()
 
     ticket
+  end
+
+  alias Tiki.Orders.Order
+
+  def create_order(attrs \\ %{}) do
+    %Order{}
+    |> Order.changeset(attrs)
+    |> Tiki.Repo.insert(returning: [:id])
+  end
+
+  alias Tiki.Orders.Ticket
+
+  def create_ticket(attrs \\ %{}) do
+    %Ticket{}
+    |> Ticket.changeset(attrs)
+    |> Tiki.Repo.insert(returning: [:id])
   end
 end

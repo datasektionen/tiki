@@ -50,11 +50,10 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
         name={gettext("Ticket")}
         description={gettext("Information about ticket.")}
       >
-        <:item
-          name={gettext("Signed up at")}
-          value={Calendar.strftime(@ticket.order.updated_at, "%x %H:%M")}
-        />
-        <:item name={gettext("Ticket type")} value={@ticket.ticket_type.name} />
+        <:item name={gettext("Signed up at")}>
+          {Calendar.strftime(@ticket.order.updated_at, "%x %H:%M")}
+        </:item>
+        <:item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</:item>
 
         <:actions>
           <.link navigate={~p"/tickets/#{@ticket}"}>
@@ -79,38 +78,37 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
             <.button variant="link">{gettext("View ticket")}</.button>
           </.link>
         </:actions>
-        <:item
-          name={gettext("Signed up at")}
-          value={Calendar.strftime(@ticket.order.updated_at, "%x %H:%M")}
-        />
-        <:item name={gettext("Ticket type")} value={@ticket.ticket_type.name} />
-        <:item
-          :for={qr <- @ticket.form_response.question_responses}
-          name={qr.question.name}
-          value={qr}
-        />
+        <:item name={gettext("Signed up at")}>
+          {Calendar.strftime(@ticket.order.updated_at, "%x %H:%M")}
+        </:item>
+        <:item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</:item>
+        <:item :for={qr <- @ticket.form_response.question_responses} name={qr.question.name}>
+          {qr}
+        </:item>
       </.information_card>
 
       <%!-- Order information --%>
       <.information_card name={gettext("Order")} description={gettext("Information about order.")}>
-        <:item name={gettext("Order number")} value={@order.id} />
-        <:item name={gettext("Name")} value={@order.user.full_name} />
-        <:item name={gettext("Email")} value={@order.user.email} />
-        <:item name={gettext("Price")} value={"#{@order.price} SEK"} />
-
-        <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt class="text-muted-foreground text-sm font-medium">{gettext("Tickets")}</dt>
-          <dd class="text-foreground text-wrap mt-1 flex flex-row items-center gap-2 break-all text-sm sm:col-span-2 sm:mt-0">
-            <span :for={tt <- @order.tickets} class="text-foreground">
-              <.link navigate={~p"/admin/events/#{@event.id}/attendees/#{tt.id}"}>
-                <.badge variant="outline">
-                  <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
-                  {tt.ticket_type.name}
-                </.badge>
-              </.link>
-            </span>
-          </dd>
-        </div>
+        <:item name={gettext("Order number")}>
+          <.link navigate={~p"/admin/events/#{@event.id}/orders/#{@order.id}"}>
+            <.button variant="link" class="h-auto p-0">
+              {@order.id}
+            </.button>
+          </.link>
+        </:item>
+        <:item name={gettext("Name")}>{@order.user.full_name}</:item>
+        <:item name={gettext("Email")}>{@order.user.email}</:item>
+        <:item name={gettext("Price")}>{"#{@order.price} SEK"}</:item>
+        <:item name={gettext("Tickets")}>
+          <span :for={tt <- @order.tickets} class="text-foreground">
+            <.link navigate={~p"/admin/events/#{@event.id}/attendees/#{tt.id}"}>
+              <.badge variant="outline">
+                <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
+                {tt.ticket_type.name}
+              </.badge>
+            </.link>
+          </span>
+        </:item>
 
         <.payment_details order={@order} payment_method={@payment_method} />
       </.information_card>
@@ -123,7 +121,6 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
 
   slot :item, required: true do
     attr :name, :string, required: true
-    attr :value, :string, required: true
   end
 
   slot :actions
@@ -144,7 +141,9 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
         <dl class="divide-accent divide-y">
           <div :for={item <- @item} class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt class="text-muted-foreground text-sm font-medium">{item.name}</dt>
-            <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">{item.value}</dd>
+            <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
+              {render_slot(item)}
+            </dd>
           </div>
         </dl>
         {render_slot(@inner_block)}

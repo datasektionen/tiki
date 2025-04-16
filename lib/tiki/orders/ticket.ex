@@ -3,6 +3,7 @@ defmodule Tiki.Orders.Ticket do
   import Ecto.Changeset
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
+  @derive {Jason.Encoder, only: [:id, :price, :ticket_type]}
   schema "tickets" do
     field :price, :integer
 

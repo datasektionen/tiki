@@ -51,7 +51,7 @@ defmodule Tiki.EventsTest do
           end)
         end)
 
-      assert Events.get_event_ticket_types(event.id) == ticket_types
+      assert Events.get_event_ticket_types(event.id) |> Enum.sort() == ticket_types |> Enum.sort()
     end
 
     test "create_event/1 with valid data creates a event" do

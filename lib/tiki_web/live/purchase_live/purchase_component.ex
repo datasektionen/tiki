@@ -32,7 +32,6 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
 
   alias Tiki.Orders
   alias Tiki.Checkouts
-  alias Tiki.Accounts
 
   @impl Phoenix.LiveComponent
   def render(assigns) do
@@ -53,7 +52,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
           </p>
         </div>
 
-        <div :if={@order.status == :pending}>
+        <div :if={@order.status in [:pending, :checkout]}>
           <div>
             <.header class="border-none">
               {gettext("Payment")}
@@ -90,7 +89,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             </table>
           </div>
 
-          <div :if={!(@order.swish_checkout || @order.stripe_checkout)}>
+          <div :if={@order.status == :pending}>
             <.form
               for={@form}
               phx-target={@myself}
@@ -157,7 +156,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             </.form>
           </div>
 
-          <div :if={@order.swish_checkout} class="flex flex-col">
+          <div :if={@order.status == :checkout && @order.swish_checkout} class="flex flex-col">
             <.label>
               {gettext("Pay using Swish")}
             </.label>
@@ -173,7 +172,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
           </div>
 
           <form
-            :if={@order.stripe_checkout}
+            :if={@order.status == :checkout && @order.stripe_checkout}
             id="payment-form"
             phx-hook="InitCheckout"
             data-secret={@order.stripe_checkout.client_secret}
@@ -240,18 +239,12 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
       |> Map.put(:action, :save)
 
     with {:ok, %Response{} = response} <- Ecto.Changeset.apply_action(changeset, :save),
-         {:ok, user} <-
-           Accounts.upsert_user_email(response.email, response.name,
+         {:ok, order} <-
+           Orders.init_checkout(socket.assigns.order, response.payment_method, %{
+             email: response.email,
+             name: response.name,
              locale: Gettext.get_locale(TikiWeb.Gettext)
-           ),
-         {:ok, order} <- Orders.update_order(socket.assigns.order, %{user_id: user.id}),
-         {:ok, checkout} = init_checkout(order, response.payment_method) do
-      order =
-        case checkout do
-          %Checkouts.SwishCheckout{} = checkout -> Map.put(order, :swish_checkout, checkout)
-          %Checkouts.StripeCheckout{} -> Map.put(order, :stripe_checkout, checkout)
-        end
-
+           }) do
       {:noreply, assign(socket, order: order)}
     else
       {:error, changeset} ->
@@ -267,7 +260,4 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
       _ -> {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
     end
   end
-
-  defp init_checkout(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)
-  defp init_checkout(order, "swish"), do: Checkouts.create_swish_payment_request(order)
 end

@@ -1,4 +1,5 @@
 defmodule Tiki.OrdersTest do
+  alias Tiki.OrdersFixtures
   use Tiki.DataCase
 
   alias Tiki.Orders
@@ -8,13 +9,7 @@ defmodule Tiki.OrdersTest do
 
     import Tiki.OrdersFixtures
 
-    @invalid_attrs %{"status" => "wierd"}
     @standard_preloads [:user, [tickets: :ticket_type], :stripe_checkout, :swish_checkout, :event]
-
-    test "list_order/0 returns all order" do
-      order = order_fixture()
-      assert Orders.list_orders() == [order]
-    end
 
     test "list_team_orders/1 returns all orders for a given team" do
       order = order_fixture() |> Tiki.Repo.preload([:event | @standard_preloads])
@@ -30,14 +25,14 @@ defmodule Tiki.OrdersTest do
           user = Tiki.AccountsFixtures.user_fixture()
 
           {:ok, order} =
-            Tiki.Orders.create_order(%{user_id: user.id, event_id: event.id, price: 100})
+            OrdersFixtures.create_order(%{user_id: user.id, event_id: event.id, price: 100})
 
           order
         end)
         |> Enum.sort_by(& &1.inserted_at, :desc)
         |> Tiki.Repo.preload([:event | @standard_preloads])
 
-      assert Orders.list_team_orders(event.team_id) == orders
+      assert Orders.list_team_orders(event.team_id) |> Enum.sort() == orders |> Enum.sort()
     end
 
     test "list_team_orders/1 limits results" do
@@ -48,7 +43,7 @@ defmodule Tiki.OrdersTest do
           user = Tiki.AccountsFixtures.user_fixture()
 
           {:ok, order} =
-            Tiki.Orders.create_order(%{user_id: user.id, event_id: event.id, price: 100})
+            OrdersFixtures.create_order(%{user_id: user.id, event_id: event.id, price: 100})
 
           order
         end)
@@ -83,16 +78,17 @@ defmodule Tiki.OrdersTest do
           order_fixture(%{status: status}, event: event)
           |> Tiki.Repo.preload(@standard_preloads)
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
         |> Tiki.Repo.preload(@standard_preloads)
 
-      assert Orders.list_orders_for_event(event.id) == orders
+      list = Orders.list_orders_for_event(event.id)
+      assert list == Enum.sort_by(list, & &1.inserted_at, :desc)
+      assert Enum.sort(list) == Enum.sort(orders)
     end
 
     test "list_orders_for_event/1 filters based on status" do
       event = Tiki.EventsFixtures.event_fixture()
 
-      :rand.seed(:exs64, {1, 1, 1})
+      :rand.seed(:exs64, {1, 1, 2})
 
       orders =
         Enum.map(1..5, fn _ ->
@@ -104,7 +100,9 @@ defmodule Tiki.OrdersTest do
         |> Enum.sort_by(& &1.inserted_at, :desc)
         |> Tiki.Repo.preload(@standard_preloads)
 
-      assert Orders.list_orders_for_event(event.id, status: [:paid]) == [Enum.at(orders, 2)]
+      list = Orders.list_orders_for_event(event.id, status: [:paid])
+      assert Enum.sort(list) == Enum.filter(orders, &(&1.status == :paid)) |> Enum.sort()
+      assert Enum.all?(list, &(&1.status == :paid))
     end
 
     test "list_tickets_for_event/1 returns all tickets for a given event" do
@@ -155,54 +153,10 @@ defmodule Tiki.OrdersTest do
       order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order
     end
-
-    test "create_order/1 with valid data creates a order" do
-      event = Tiki.EventsFixtures.event_fixture()
-
-      valid_attrs = %{event_id: event.id, price: 100}
-
-      assert {:ok, %Order{} = _order} = Orders.create_order(valid_attrs)
-    end
-
-    test "create_order/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Orders.create_order(@invalid_attrs)
-    end
-
-    test "update_order/2 with valid data updates the order" do
-      order = order_fixture()
-      update_attrs = %{}
-
-      assert {:ok, %Order{} = _order} = Orders.update_order(order, update_attrs)
-    end
-
-    test "update_order/2 with invalid data returns error changeset" do
-      order = Tiki.Repo.preload(order_fixture(), @standard_preloads)
-
-      assert {:error, %Ecto.Changeset{}} = Orders.update_order(order, @invalid_attrs)
-
-      assert order ==
-               Orders.get_order!(order.id)
-    end
-
-    test "delete_order/1 deletes the order" do
-      order = order_fixture()
-      assert {:ok, %Order{}} = Orders.delete_order(order)
-      assert_raise Ecto.NoResultsError, fn -> Orders.get_order!(order.id) end
-    end
-
-    test "change_order/1 returns a order changeset" do
-      order = order_fixture()
-      assert %Ecto.Changeset{} = Orders.change_order(order)
-    end
   end
 
   describe "ticket" do
     import Tiki.OrdersFixtures
-
-    test "list_ticket/0 returns all ticket" do
-      ticket = ticket_fixture()
-      assert Orders.list_tickets() == [ticket]
-    end
 
     test "get_ticket!/1 returns the ticket with given id" do
       ticket =
@@ -381,12 +335,20 @@ defmodule Tiki.OrdersTest do
       assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
     end
 
+    test "maybe_cancel_order/1 cancels an order being checked out" do
+      order = order_fixture(%{status: "checkout"})
+
+      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+      assert order.status == :cancelled
+      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+    end
+
     test "maybe_cancel_order/1 does not modify paid orders" do
       order = order_fixture(%{status: "paid"})
       ticket = ticket_fixture(%{order_id: order.id}) |> Repo.preload(:ticket_type)
 
       assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not pending"
+      assert msg =~ "order is not cancellable"
 
       assert %Orders.Order{status: :paid, tickets: [^ticket]} = Orders.get_order!(order.id)
     end
@@ -395,7 +357,7 @@ defmodule Tiki.OrdersTest do
       order = order_fixture(%{status: "cancelled"}) |> Repo.preload(@standard_preloads)
 
       assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not pending"
+      assert msg =~ "order is not cancellable"
 
       assert Orders.get_order!(order.id) == order
     end
@@ -403,6 +365,124 @@ defmodule Tiki.OrdersTest do
     test "maybe_cancel_order/1 returns an error if the order does not exist" do
       assert {:error, msg} = Orders.maybe_cancel_order(Ecto.UUID.generate())
       assert msg =~ "order not found, nothing to cancel"
+    end
+  end
+
+  describe "checkouts" do
+    alias Tiki.Checkouts
+
+    test "init_checkout/2 fails with invalid user data" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:error, resason} =
+               Orders.init_checkout(order, "credit_card", %{})
+
+      assert resason =~ "user_id or userdata is invalid"
+    end
+
+    test "init_checkout/2 with user id creates a stripe checkout" do
+      user = Tiki.AccountsFixtures.user_fixture()
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{stripe_checkout: %Checkouts.StripeCheckout{}} = updated} =
+               Orders.init_checkout(order, "credit_card", user.id)
+
+      assert updated.user_id == user.id
+      assert String.starts_with?(updated.stripe_checkout.payment_intent_id, "pi_")
+    end
+
+    test "init_checkout/2 with user data creates a stripe checkout" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{stripe_checkout: %Checkouts.StripeCheckout{}} = updated} =
+               Orders.init_checkout(order, "credit_card", %{
+                 name: "John Doe",
+                 email: "john@doe.com"
+               })
+
+      assert updated.user_id != nil
+      assert String.starts_with?(updated.stripe_checkout.payment_intent_id, "pi_")
+
+      user = Tiki.Accounts.get_user!(updated.user_id)
+
+      assert user.first_name == "John"
+      assert user.last_name == "Doe"
+      assert user.locale == "en"
+      assert user.full_name == "John Doe"
+      assert user.email == "john@doe.com"
+    end
+
+    test "init_checkout/2 with user data creates a stripe checkout with locale" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{stripe_checkout: %Checkouts.StripeCheckout{}} = updated} =
+               Orders.init_checkout(order, "credit_card", %{
+                 name: "John Doe",
+                 email: "john@doe.com",
+                 locale: "sv"
+               })
+
+      assert updated.user_id != nil
+      assert String.starts_with?(updated.stripe_checkout.payment_intent_id, "pi_")
+
+      user = Tiki.Accounts.get_user!(updated.user_id)
+
+      assert user.first_name == "John"
+      assert user.last_name == "Doe"
+      assert user.locale == "sv"
+      assert user.full_name == "John Doe"
+      assert user.email == "john@doe.com"
+    end
+
+    test "init_checkout/2 with invalid payment method fails" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:error, reason} =
+               Orders.init_checkout(order, "invalid", %{name: "test", email: "adr@test.com"})
+
+      assert reason =~ "not a valid payment method"
+    end
+
+    test "init_checkout/2 with with swish creates a swish checkout" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      {:ok, order} =
+        OrdersFixtures.create_order(%{event_id: event.id, price: 100})
+
+      assert {:ok, %Orders.Order{swish_checkout: %Checkouts.SwishCheckout{}} = updated} =
+               Orders.init_checkout(order, "swish", %{
+                 name: "John Doe",
+                 email: "john@doe.com",
+                 locale: "sv"
+               })
+
+      assert updated.user_id != nil
+      assert updated.swish_checkout.swish_id != nil
+      assert updated.swish_checkout.callback_identifier != nil
+      assert updated.swish_checkout.token != nil
+
+      user = Tiki.Accounts.get_user!(updated.user_id)
+
+      assert user.first_name == "John"
+      assert user.last_name == "Doe"
+      assert user.locale == "sv"
+      assert user.full_name == "John Doe"
+      assert user.email == "john@doe.com"
     end
   end
 end

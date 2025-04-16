@@ -6,3 +6,7 @@ defmodule Tiki.Schema do
     end
   end
 end
+
+defimpl Jason.Encoder, for: Ecto.Association.NotLoaded do
+  def encode(_, _), do: Jason.encode!(nil)
+end
