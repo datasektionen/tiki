@@ -68,6 +68,21 @@ defmodule Tiki.EventsTest do
       assert event.description == "some description"
       assert event.event_date == ~U[2023-03-25 16:55:00Z]
       assert event.name == "some name"
+
+      # Assert that we have a default form
+
+      assert event.default_form_id != nil
+
+      form = Tiki.Forms.get_form!(event.default_form_id)
+
+      assert form.event_id == event.id
+      assert form.name =~ "Default form"
+      assert form.description =~ "We need some information to organize our event"
+
+      assert [
+               %{name: "Name", required: true, type: :attendee_name},
+               %{name: "Email", required: true, type: :email}
+             ] = form.questions
     end
 
     test "create_event/1 with invalid data returns error changeset" do

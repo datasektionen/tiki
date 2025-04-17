@@ -6,7 +6,7 @@ defmodule Tiki.FormsTest do
 
     test "list_forms_for_event/1 returns all forms" do
       form = form_fixture()
-      assert Tiki.Forms.list_forms_for_event(form.event_id) == [form]
+      assert form in Tiki.Forms.list_forms_for_event(form.event_id)
     end
 
     test "create_form/1 with valid data creates a form" do

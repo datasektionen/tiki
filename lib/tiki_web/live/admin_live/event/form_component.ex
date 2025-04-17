@@ -30,6 +30,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         />
 
         <.input
+          :if={@action == :edit}
           field={@form[:default_form_id]}
           type="select"
           label={gettext("Default signup form")}
@@ -89,7 +90,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
     |> assign_form(changeset)
   end
 
-  defp apply_action(socket, :edit, event) do
+  defp apply_action(socket, existing, event) when existing in [:edit, :delete] do
     changeset = Events.change_event(event)
     forms = Tiki.Forms.list_forms_for_event(event.id)
 
