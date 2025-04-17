@@ -83,13 +83,22 @@ defmodule Tiki.Events do
   * `:tickets_sold` total tickets sold
   """
   def get_event_stats!(id) do
-    query =
-      from e in Event,
-        where: e.id == ^id,
-        join: o in assoc(e, :orders),
+    orders =
+      from o in Tiki.Orders.Order,
+        where: o.event_id == ^id and o.status == :paid,
         join: t in assoc(o, :tickets),
-        where: o.status == :paid,
-        select: %{total_sales: sum(o.price), tickets_sold: count(t.id)}
+        group_by: o.id,
+        select: %{
+          order_price: o.price,
+          ticket_count: count(t.id)
+        }
+
+    query =
+      from o in subquery(orders),
+        select: %{
+          total_sales: sum(o.order_price),
+          tickets_sold: sum(o.ticket_count)
+        }
 
     Repo.one!(query)
   end
