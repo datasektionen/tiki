@@ -45,10 +45,7 @@ defmodule Tiki.Types.DatetimeStockholm do
   end
 
   defp cast_stockholm_datetime(%DateTime{} = datetime) do
-    case datetime |> DateTime.to_unix(:microsecond) |> DateTime.from_unix(:microsecond) do
-      {:ok, _} = ok -> ok
-      {:error, _} -> :error
-    end
+    {:ok, datetime}
   end
 
   defp cast_stockholm_datetime(%NaiveDateTime{} = datetime), do: to_utc(datetime)
