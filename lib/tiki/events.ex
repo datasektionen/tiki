@@ -77,6 +77,24 @@ defmodule Tiki.Events do
   end
 
   @doc """
+  Gets statistics for an event. Returns a map with stats. Current statistics:
+
+  * `:total_sales`, total sales in SEK
+  * `:tickets_sold` total tickets sold
+  """
+  def get_event_stats!(id) do
+    query =
+      from e in Event,
+        where: e.id == ^id,
+        join: o in assoc(e, :orders),
+        join: t in assoc(o, :tickets),
+        where: o.status == :paid,
+        select: %{total_sales: sum(o.price), tickets_sold: count(t.id)}
+
+    Repo.one!(query)
+  end
+
+  @doc """
   Creates a event.
 
   ## Examples

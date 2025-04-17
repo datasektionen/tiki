@@ -18,6 +18,7 @@ defmodule Tiki.Events.Event do
     belongs_to :default_form, Tiki.Forms.Form
 
     has_many :ticket_batches, Tiki.Tickets.TicketBatch
+    has_many :orders, Tiki.Orders.Order
 
     belongs_to :team, Tiki.Teams.Team
 
