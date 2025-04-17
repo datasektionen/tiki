@@ -4,6 +4,7 @@ defmodule Tiki.Events do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
   alias Tiki.Repo
 
   alias Tiki.Events.Event
@@ -96,15 +97,15 @@ defmodule Tiki.Events do
     query =
       from o in subquery(orders),
         select: %{
-          total_sales: sum(o.order_price),
-          tickets_sold: sum(o.ticket_count)
+          total_sales: coalesce(sum(o.order_price), 0),
+          tickets_sold: coalesce(sum(o.ticket_count), 0)
         }
 
     Repo.one!(query)
   end
 
   @doc """
-  Creates a event.
+  Creates an event.
 
   ## Examples
 
@@ -116,9 +117,43 @@ defmodule Tiki.Events do
 
   """
   def create_event(attrs \\ %{}) do
-    %Event{}
-    |> Event.changeset(attrs)
-    |> Repo.insert(returning: [:id])
+    multi =
+      Multi.new()
+      |> Multi.insert(:event, Event.changeset(%Event{}, attrs), returning: [:id])
+      |> Multi.run(
+        :default_form,
+        fn _repo, %{event: event} ->
+          Tiki.Forms.create_form(%{
+            description: "We need some information to organize our event",
+            name: "Default form",
+            event_id: event.id,
+            questions: [
+              %{
+                name: "Name",
+                type: "attendee_name",
+                required: true
+              },
+              %{
+                name: "Email",
+                type: "email",
+                required: true
+              }
+            ]
+          })
+        end
+      )
+      |> Multi.update(:update_event_form, fn %{event: event, default_form: form} ->
+        Event.changeset(event, %{default_form_id: form.id})
+      end)
+      |> Repo.transaction()
+
+    case multi do
+      {:ok, %{update_event_form: event}} ->
+        {:ok, event}
+
+      {:error, :event, changeset, _} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
