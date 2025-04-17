@@ -213,35 +213,6 @@ defmodule TikiWeb.UserAuth do
     end
   end
 
-  def on_mount(:ensure_admin, _params, session, socket) do
-    socket = mount_current_user(session, socket)
-
-    if socket.assigns.current_user do
-      case socket.assigns.current_user.role do
-        :admin ->
-          {:cont, socket}
-
-        _ ->
-          socket =
-            socket
-            |> Phoenix.LiveView.put_flash(
-              :error,
-              gettext("You need to be an admin to access this page.")
-            )
-            |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
-
-          {:halt, socket}
-      end
-    else
-      socket =
-        socket
-        |> Phoenix.LiveView.put_flash(:error, gettext("You must log in to access this page."))
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
-
-      {:halt, socket}
-    end
-  end
-
   def on_mount({:authorize, action}, _params, _session, socket) do
     with %Accounts.User{} = user <- socket.assigns.current_user,
          :ok <- Tiki.Policy.authorize(action, user) do

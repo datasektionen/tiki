@@ -3,9 +3,6 @@ defmodule Tiki.Policy.Checks do
   alias Tiki.Teams
   alias Tiki.Events
 
-  def role(%Accounts.User{role: role}, _object, role), do: true
-  def role(_, _, _), do: false
-
   def pls(%Accounts.User{} = user, _object, permission) do
     Tiki.Pls.get_permissions(user)
     |> Enum.any?(fn p -> p == permission end)

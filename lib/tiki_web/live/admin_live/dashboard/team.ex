@@ -63,7 +63,13 @@ defmodule TikiWeb.AdminLive.Dashboard.Team do
     if socket.assigns.current_team do
       {:ok, redirect(socket, to: ~p"/admin")}
     else
-      teams = Teams.get_teams_for_user(socket.assigns.current_user.id)
+      # Fetch all teams for admins, so that they easier can view stuff for teams where
+      # they are not members.
+      teams =
+        case Tiki.Policy.authorize?(:tiki_admin, socket.assigns.current_user) do
+          true -> Teams.list_teams()
+          false -> Teams.get_teams_for_user(socket.assigns.current_user.id)
+        end
 
       {:ok,
        socket
