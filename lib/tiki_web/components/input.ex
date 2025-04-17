@@ -286,6 +286,8 @@ defmodule TikiWeb.Component.Input do
   end
 
   def form_input(%{question: %{type: :multi_select}} = assigns) do
+    assigns = prepare_assign(assigns)
+
     ~H"""
     <div class={@class}>
       <label class="text-muted-foreground block text-sm font-semibold leading-6">
@@ -294,11 +296,9 @@ defmodule TikiWeb.Component.Input do
       <div class="mt-2 flex flex-col gap-1">
         <div :for={option <- @question.options}>
           <.input
-            name={"#{@field.name}[#{option}]"}
+            name={"#{@name}[#{option}]"}
             type="checkbox"
-            value={
-              option in Ecto.Changeset.get_field(assigns.field.form.source, assigns.field.field, [])
-            }
+            value={@value && option in @value}
             label={option}
           />
         </div>
