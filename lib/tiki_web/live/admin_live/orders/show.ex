@@ -89,7 +89,7 @@ defmodule TikiWeb.AdminLive.Orders.Show do
         </:item>
       </.information_card>
 
-      <.card>
+      <.card :if={@order_log != []}>
         <.card_header class="flex flex-row">
           <div class="space-y-1.5">
             <.card_title>{gettext("Events and logs")}</.card_title>
@@ -149,7 +149,8 @@ defmodule TikiWeb.AdminLive.Orders.Show do
   def mount(%{"id" => event_id, "order_id" => order_id}, _session, socket) do
     order = Orders.get_order!(order_id)
     event = Tiki.Events.get_event!(event_id)
-    order_log = Orders.get_order_log!(order_id)
+
+    order_log = Orders.get_order_logs(order_id)
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       {:ok,
@@ -221,11 +222,14 @@ defmodule TikiWeb.AdminLive.Orders.Show do
   defp get_payment_method(order) do
     payment_method =
       cond do
-        order.stripe_checkout ->
+        order.stripe_checkout && order.stripe_checkout.payment_method_id ->
           Tiki.Checkouts.retrieve_stripe_payment_method(order.stripe_checkout.payment_method_id)
 
         order.swish_checkout ->
           Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
+
+        true ->
+          {:error, "no saved payment method"}
       end
 
     case payment_method do

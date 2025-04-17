@@ -108,6 +108,7 @@ msgstr ""
 
 #: lib/tiki_web/components/sidebar.ex:102
 #: lib/tiki_web/live/admin_live/attendees/show.ex:102
+#: lib/tiki_web/live/admin_live/orders/show.ex:18
 #: lib/tiki_web/live/admin_live/ticket/index.ex:16
 #: lib/tiki_web/live/admin_live/ticket/index.ex:129
 #: lib/tiki_web/live/order_live/show.ex:46
@@ -144,7 +145,7 @@ msgstr ""
 msgid "Location"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:97
+#: lib/tiki_web/live/admin_live/attendees/show.ex:99
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:129
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:153
 #: lib/tiki_web/live/admin_live/event/form_component.ex:22
@@ -153,6 +154,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/forms/form.ex:12
 #: lib/tiki_web/live/admin_live/forms/form.ex:158
 #: lib/tiki_web/live/admin_live/forms/index.ex:22
+#: lib/tiki_web/live/admin_live/orders/show.ex:15
 #: lib/tiki_web/live/admin_live/team/form.ex:16
 #: lib/tiki_web/live/admin_live/team/index.ex:23
 #: lib/tiki_web/live/admin_live/team/members.ex:59
@@ -160,7 +162,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/ticket/batch_form.ex:26
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:26
 #: lib/tiki_web/live/order_live/show.ex:73
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:129
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:128
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
@@ -242,11 +244,6 @@ msgstr ""
 msgid "Ticket types"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/index.ex:75
-#, elixir-autogen, elixir-format
-msgid "New attendee"
-msgstr ""
-
 #: lib/tiki_web/live/admin_live/attendees/index.ex:66
 #, elixir-autogen, elixir-format
 msgid "Search"
@@ -289,7 +286,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/team/form.ex:22
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/ticket/batch_form.ex:38
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:92
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:94
 #: lib/tiki_web/live/order_live/ticket_form.ex:42
 #, elixir-autogen, elixir-format
 msgid "Saving..."
@@ -446,12 +443,13 @@ msgid "from last month"
 msgstr ""
 
 #: lib/tiki_web/live/account_live/settings.ex:22
-#: lib/tiki_web/live/admin_live/attendees/show.ex:98
+#: lib/tiki_web/live/admin_live/attendees/show.ex:100
 #: lib/tiki_web/live/admin_live/forms/form.ex:36
 #: lib/tiki_web/live/admin_live/forms/form.ex:159
+#: lib/tiki_web/live/admin_live/orders/show.ex:16
 #: lib/tiki_web/live/admin_live/team/members.ex:60
 #: lib/tiki_web/live/admin_live/team/show.ex:21
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:136
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:135
 #: lib/tiki_web/live/user_live/registration.ex:27
 #, elixir-autogen, elixir-format
 msgid "Email"
@@ -531,7 +529,7 @@ msgid "New batch"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/ticket/index.ex:32
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:187
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:189
 #, elixir-autogen, elixir-format
 msgid "New ticket type"
 msgstr ""
@@ -568,7 +566,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/team/members.ex:71
 #: lib/tiki_web/live/admin_live/team/show.ex:32
 #: lib/tiki_web/live/admin_live/ticket/batch_form.ex:48
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:102
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:104
 #, elixir-autogen, elixir-format
 msgid "Are you sure?"
 msgstr ""
@@ -593,13 +591,13 @@ msgstr ""
 msgid "Delete batch"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:104
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:106
 #, elixir-autogen, elixir-format
 msgid "Delete ticket type"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/ticket/batch_form.ex:47
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:101
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:103
 #, elixir-autogen, elixir-format
 msgid "Deleting..."
 msgstr ""
@@ -609,7 +607,7 @@ msgstr ""
 msgid "Edit batch"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:186
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:188
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Edit ticket type"
 msgstr ""
@@ -624,13 +622,14 @@ msgstr ""
 msgid "Number of tickets"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:99
+#: lib/tiki_web/live/admin_live/attendees/show.ex:101
+#: lib/tiki_web/live/admin_live/orders/show.ex:17
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:67
 #, elixir-autogen, elixir-format
 msgid "Price"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:88
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:90
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:99
 #, elixir-autogen, elixir-format
 msgid "Promo code"
@@ -641,7 +640,7 @@ msgstr ""
 msgid "Purchasable"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:78
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:80
 #, elixir-autogen, elixir-format
 msgid "Purchase deadline"
 msgstr ""
@@ -656,27 +655,27 @@ msgstr ""
 msgid "Save batch"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:93
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:95
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Save ticket type"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:85
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:87
 #, elixir-autogen, elixir-format
 msgid "Ticket batch"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:165
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:167
 #, elixir-autogen, elixir-format
 msgid "Ticket type created successfully"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:143
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:145
 #, elixir-autogen, elixir-format
 msgid "Ticket type deleted successfully"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:152
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:154
 #, elixir-autogen, elixir-format
 msgid "Ticket type updated successfully"
 msgstr ""
@@ -691,12 +690,14 @@ msgstr ""
 msgid "Team"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:59
+#: lib/tiki_web/live/admin_live/orders/show.ex:32
+#: lib/tiki_web/live/admin_live/orders/show.ex:64
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:58
 #, elixir-autogen, elixir-format
 msgid "Payment"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:61
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:60
 #, elixir-autogen, elixir-format
 msgid "Purchase tickets for %{event}. You have %{count} minutes to complete your order."
 msgstr ""
@@ -708,7 +709,7 @@ msgstr ""
 
 #: lib/tiki/orders/order_notifier.ex:115
 #: lib/tiki_web/live/order_live/show.ex:233
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:83
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:82
 #, elixir-autogen, elixir-format
 msgid "Total"
 msgstr ""
@@ -729,12 +730,12 @@ msgstr ""
 msgid "Browse events"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:155
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:154
 #, elixir-autogen, elixir-format
 msgid "Continue"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:114
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:113
 #, elixir-autogen, elixir-format
 msgid "Credit card"
 msgstr ""
@@ -746,19 +747,19 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:170
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:169
 #, elixir-autogen, elixir-format
 msgid "Open swish on this device"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:162
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:161
 #, elixir-autogen, elixir-format
 msgid "Pay using Swish"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:160
-#: lib/tiki_web/live/admin_live/attendees/show.ex:202
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:103
+#: lib/tiki_web/live/admin_live/attendees/show.ex:159
+#: lib/tiki_web/live/admin_live/attendees/show.ex:201
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:102
 #, elixir-autogen, elixir-format
 msgid "Payment method"
 msgstr ""
@@ -768,7 +769,7 @@ msgstr ""
 msgid "Read more"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:121
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:120
 #, elixir-autogen, elixir-format
 msgid "Swish"
 msgstr ""
@@ -783,12 +784,12 @@ msgstr ""
 msgid "You must accept the terms of service."
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:137
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:136
 #, elixir-autogen, elixir-format
 msgid "Your email"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:130
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:129
 #, elixir-autogen, elixir-format
 msgid "Your name"
 msgstr ""
@@ -884,7 +885,7 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:68
+#: lib/tiki_web/live/admin_live/attendees/show.ex:67
 #, elixir-autogen, elixir-format
 msgid "Attendeee has not filled in the required ticket information"
 msgstr ""
@@ -899,7 +900,8 @@ msgstr ""
 msgid "Billing summary"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:175
+#: lib/tiki_web/live/admin_live/attendees/show.ex:174
+#: lib/tiki_web/live/admin_live/orders/show.ex:40
 #, elixir-autogen, elixir-format
 msgid "Card details"
 msgstr ""
@@ -909,7 +911,7 @@ msgstr ""
 msgid "Contact information"
 msgstr ""
 
-#: lib/tiki_web/live/order_live/ticket.ex:61
+#: lib/tiki_web/live/order_live/ticket.ex:69
 #, elixir-autogen, elixir-format
 msgid "Edit details"
 msgstr ""
@@ -929,24 +931,29 @@ msgstr ""
 msgid "Fill in ticket information"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:95
+#: lib/tiki_web/live/admin_live/attendees/show.ex:91
+#: lib/tiki_web/live/admin_live/orders/show.ex:12
 #, elixir-autogen, elixir-format
 msgid "Information about order."
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/attendees/show.ex:51
-#: lib/tiki_web/live/admin_live/attendees/show.ex:75
+#: lib/tiki_web/live/admin_live/attendees/show.ex:74
 #, elixir-autogen, elixir-format
 msgid "Information about ticket."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:178
-#: lib/tiki_web/live/admin_live/attendees/show.ex:219
+#: lib/tiki_web/live/admin_live/attendees/show.ex:177
+#: lib/tiki_web/live/admin_live/attendees/show.ex:218
+#: lib/tiki_web/live/admin_live/orders/show.ex:43
+#: lib/tiki_web/live/admin_live/orders/show.ex:75
 #, elixir-autogen, elixir-format
 msgid "Loading..."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:95
+#: lib/tiki_web/live/admin_live/attendees/show.ex:91
+#: lib/tiki_web/live/admin_live/orders/show.ex:12
+#: lib/tiki_web/live/admin_live/orders/show.ex:162
 #, elixir-autogen, elixir-format
 msgid "Order"
 msgstr ""
@@ -956,7 +963,8 @@ msgstr ""
 msgid "Order information"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:96
+#: lib/tiki_web/live/admin_live/attendees/show.ex:92
+#: lib/tiki_web/live/admin_live/orders/show.ex:13
 #, elixir-autogen, elixir-format
 msgid "Order number"
 msgstr ""
@@ -982,13 +990,14 @@ msgstr ""
 msgid "Saved response"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:54
-#: lib/tiki_web/live/admin_live/attendees/show.ex:83
+#: lib/tiki_web/live/admin_live/attendees/show.ex:53
+#: lib/tiki_web/live/admin_live/attendees/show.ex:81
 #, elixir-autogen, elixir-format
 msgid "Signed up at"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:167
+#: lib/tiki_web/live/admin_live/attendees/show.ex:166
+#: lib/tiki_web/live/admin_live/orders/show.ex:37
 #, elixir-autogen, elixir-format
 msgid "Stripe payment reference"
 msgstr ""
@@ -998,7 +1007,8 @@ msgstr ""
 msgid "Subtotal"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:209
+#: lib/tiki_web/live/admin_live/attendees/show.ex:208
+#: lib/tiki_web/live/admin_live/orders/show.ex:69
 #, elixir-autogen, elixir-format
 msgid "Swish payment reference"
 msgstr ""
@@ -1009,26 +1019,28 @@ msgstr ""
 msgid "Thank you for your order!"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:181
-#: lib/tiki_web/live/admin_live/attendees/show.ex:222
+#: lib/tiki_web/live/admin_live/attendees/show.ex:180
+#: lib/tiki_web/live/admin_live/attendees/show.ex:221
+#: lib/tiki_web/live/admin_live/orders/show.ex:46
+#: lib/tiki_web/live/admin_live/orders/show.ex:78
 #: lib/tiki_web/live/order_live/show.ex:143
 #, elixir-autogen, elixir-format
 msgid "There was an error loading the payment method"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/attendees/show.ex:50
-#: lib/tiki_web/live/admin_live/attendees/show.ex:74
+#: lib/tiki_web/live/admin_live/attendees/show.ex:73
 #, elixir-autogen, elixir-format
 msgid "Ticket"
 msgstr ""
 
-#: lib/tiki_web/live/order_live/ticket.ex:44
+#: lib/tiki_web/live/order_live/ticket.ex:52
 #, elixir-autogen, elixir-format
 msgid "Ticket information"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:57
-#: lib/tiki_web/live/admin_live/attendees/show.ex:86
+#: lib/tiki_web/live/admin_live/attendees/show.ex:56
+#: lib/tiki_web/live/admin_live/attendees/show.ex:84
 #, elixir-autogen, elixir-format
 msgid "Ticket type"
 msgstr ""
@@ -1053,8 +1065,8 @@ msgstr ""
 msgid "Your ticket to %{event}"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:61
-#: lib/tiki_web/live/admin_live/attendees/show.ex:79
+#: lib/tiki_web/live/admin_live/attendees/show.ex:60
+#: lib/tiki_web/live/admin_live/attendees/show.ex:78
 #, elixir-autogen, elixir-format
 msgid "View ticket"
 msgstr ""
@@ -1119,7 +1131,7 @@ msgstr ""
 msgid "Organized by"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:191
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:190
 #, elixir-autogen, elixir-format
 msgid "Pay"
 msgstr ""
@@ -1157,12 +1169,12 @@ msgid "Signup form"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:31
-#: lib/tiki_web/live/order_live/ticket.ex:31
 #, elixir-autogen, elixir-format
 msgid "Start time"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/attendees/show.ex:216
+#: lib/tiki_web/live/admin_live/attendees/show.ex:215
+#: lib/tiki_web/live/admin_live/orders/show.ex:72
 #, elixir-autogen, elixir-format
 msgid "Swish number"
 msgstr ""
@@ -1276,6 +1288,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/forms/form.ex:129
 #: lib/tiki_web/live/admin_live/forms/form.ex:150
 #: lib/tiki_web/live/admin_live/forms/index.ex:61
+#: lib/tiki_web/live/admin_live/orders/show.ex:174
 #: lib/tiki_web/live/admin_live/team/form.ex:62
 #: lib/tiki_web/live/admin_live/team/form.ex:80
 #: lib/tiki_web/live/admin_live/team/form.ex:101
@@ -1380,18 +1393,6 @@ msgstr ""
 msgid "Please contact the event organizer if you have any questions."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:45
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:32
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:38
-#, elixir-autogen, elixir-format
-msgid "In UTC"
-msgstr ""
-
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:79
-#, elixir-autogen, elixir-format
-msgid "In UTC. Leave blank for none"
-msgstr ""
-
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:146
 #, elixir-autogen, elixir-format
 msgid "Sold out"
@@ -1406,11 +1407,6 @@ msgstr ""
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:142
 #, elixir-autogen, elixir-format
 msgid "Ticket releases at"
-msgstr ""
-
-#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:72
-#, elixir-autogen, elixir-format
-msgid "In UTC. Leave blank to make immediately available"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:28
@@ -1805,12 +1801,12 @@ msgstr ""
 msgid "Profile updated successfully"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:48
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:47
 #, elixir-autogen, elixir-format
 msgid "Error"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:50
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:49
 #, elixir-autogen, elixir-format
 msgid "Something went wrong. Your order was cancelled or has expired. Please try again."
 msgstr ""
@@ -1825,12 +1821,12 @@ msgstr ""
 msgid "Terms"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:145
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:144
 #, elixir-autogen, elixir-format
 msgid "I agree to"
 msgstr ""
 
-#: lib/tiki_web/live/purchase_live/purchase_component.ex:149
+#: lib/tiki_web/live/purchase_live/purchase_component.ex:148
 #, elixir-autogen, elixir-format
 msgid "the terms of service"
 msgstr ""
@@ -1854,4 +1850,54 @@ msgstr ""
 #: lib/tiki_web/live/order_live/show.ex:41
 #, elixir-autogen, elixir-format
 msgid "View receipt"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/orders/show.ex:95
+#, elixir-autogen, elixir-format
+msgid "Events and logs"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:45
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:32
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:38
+#, elixir-autogen, elixir-format
+msgid "In 'Europe/Stockholm' timezone"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:81
+#, elixir-autogen, elixir-format
+msgid "In 'Europe/Stockholm' timezone. Leave blank for none"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:73
+#, elixir-autogen, elixir-format
+msgid "In 'Europe/Stockholm' timezone. Leave blank to make immediately available"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/orders/show.ex:33
+#: lib/tiki_web/live/admin_live/orders/show.ex:65
+#, elixir-autogen, elixir-format
+msgid "Information about payment."
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/orders/show.ex:36
+#: lib/tiki_web/live/admin_live/orders/show.ex:68
+#, elixir-autogen, elixir-format
+msgid "Payment status"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/orders/show.ex:35
+#: lib/tiki_web/live/admin_live/orders/show.ex:67
+#, elixir-autogen, elixir-format
+msgid "Payment type"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/orders/show.ex:14
+#, elixir-autogen, elixir-format
+msgid "Status"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/orders/show.ex:97
+#, elixir-autogen, elixir-format
+msgid "These are all of the order change events that have happened to this order."
 msgstr ""

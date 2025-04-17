@@ -177,7 +177,9 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
           <span class="text-foreground text-sm">{gettext("Loading...")}</span>
         </:loading>
         <:failed :let={_failure}>
-          {gettext("There was an error loading the payment method")}
+          <span class="text-foreground text-sm">
+            {gettext("There was an error loading the payment method")}
+          </span>
         </:failed>
 
         <dd class="text-foreground mt-1 flex flex-row items-center gap-x-2 text-sm sm:col-span-2 sm:mt-0">
@@ -218,7 +220,9 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
           <span class="text-foreground text-sm">{gettext("Loading...")}</span>
         </:loading>
         <:failed :let={_failure}>
-          {gettext("There was an error loading the payment method")}
+          <span class="text-foreground text-sm">
+            {gettext("There was an error loading the payment method")}
+          </span>
         </:failed>
 
         <dd class="text-foreground mt-1 flex flex-row items-center gap-x-2 text-sm sm:col-span-2 sm:mt-0">
@@ -236,11 +240,14 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
   defp get_payment_method(order) do
     payment_method =
       cond do
-        order.stripe_checkout ->
+        order.stripe_checkout && order.stripe_checkout.payment_method_id ->
           Tiki.Checkouts.retrieve_stripe_payment_method(order.stripe_checkout.payment_method_id)
 
         order.swish_checkout ->
           Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
+
+        true ->
+          {:error, "no saved payment method"}
       end
 
     case payment_method do

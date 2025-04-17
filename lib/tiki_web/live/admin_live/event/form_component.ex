@@ -42,7 +42,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
           field={@form[:event_date]}
           type="datetime-local"
           label={gettext("Event date")}
-          description={gettext("In UTC")}
+          description={gettext("In 'Europe/Stockholm' timezone")}
         />
 
         <.input field={@form[:location]} type="text" label={gettext("Location")} />
