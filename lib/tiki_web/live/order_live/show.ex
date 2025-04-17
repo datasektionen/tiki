@@ -74,7 +74,7 @@ defmodule TikiWeb.OrderLive.Show do
                   </dt>
                   <dd class="text-muted-foreground mt-3">
                     <span class="block">
-                      {find_in_response(ticket.form_response, ["namn", "name"])}
+                      {response_name(ticket.form_response)}
                     </span>
                   </dd>
                 </div>
@@ -84,7 +84,7 @@ defmodule TikiWeb.OrderLive.Show do
                   </dt>
                   <dd class="text-muted-foreground mt-3 space-y-3">
                     <p>
-                      {find_in_response(ticket.form_response, "email")}
+                      {response_email(ticket.form_response)}
                     </p>
                   </dd>
                 </div>
@@ -295,12 +295,15 @@ defmodule TikiWeb.OrderLive.Show do
 
   def handle_params(_, _, socket), do: {:noreply, socket}
 
-  defp find_in_response(response, question) when is_binary(question),
-    do: find_in_response(response, [question])
-
-  defp find_in_response(response, questions) when is_list(questions) do
+  defp response_name(response) do
     response.question_responses
-    |> Enum.find(%{}, fn qr -> String.downcase(qr.question.name) in questions end)
+    |> Enum.find(%{}, fn qr -> qr.question.type == :attendee_name end)
+    |> Map.get(:answer, "")
+  end
+
+  defp response_email(response) do
+    response.question_responses
+    |> Enum.find(%{}, fn qr -> qr.question.type == :email end)
     |> Map.get(:answer, "")
   end
 
