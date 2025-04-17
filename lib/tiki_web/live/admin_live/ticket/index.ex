@@ -163,10 +163,15 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   end
 
   def apply_action(socket, :new_ticket_type, params) do
+    start_time = socket.assigns.event.event_date
+
     ticket_type =
       case params do
-        %{"batch_id" => batch_id} -> %TicketType{ticket_batch_id: batch_id}
-        _ -> %TicketType{}
+        %{"batch_id" => batch_id} ->
+          %TicketType{ticket_batch_id: batch_id, start_time: start_time}
+
+        _ ->
+          %TicketType{start_time: start_time}
       end
 
     socket
