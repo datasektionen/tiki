@@ -144,7 +144,7 @@ defmodule TikiWeb.Component.Input do
         type={@type}
         name={@name}
         id={@id}
-        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        value={normalize_value(@type, @value)}
         class={[
           "bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:ring-offset-background focus:border-input focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           @errors == [] && "border-input",
@@ -330,5 +330,26 @@ defmodule TikiWeb.Component.Input do
       <.input field={@field} type="text" label={@question.name} default={@default} />
     </div>
     """
+  end
+
+  defp normalize_value("datetime-local", %DateTime{} = datetime) do
+    datetime
+    |> DateTime.shift_zone!("Europe/Stockholm")
+    |> DateTime.to_string()
+    |> to_form_datetime()
+  end
+
+  defp normalize_value("datetime-local", %NaiveDateTime{} = datetime) do
+    datetime
+    |> DateTime.from_naive!("Etc/UTC")
+    |> DateTime.shift_zone!("Europe/Stockholm")
+    |> DateTime.to_string()
+    |> to_form_datetime()
+  end
+
+  defp normalize_value(type, value), do: Phoenix.HTML.Form.normalize_value(type, value)
+
+  defp to_form_datetime(<<date::10-binary, ?\s, hour_minute::5-binary, _rest::binary>>) do
+    {:safe, [date, ?T, hour_minute]}
   end
 end

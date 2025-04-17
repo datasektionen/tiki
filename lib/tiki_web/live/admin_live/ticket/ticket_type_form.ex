@@ -29,13 +29,13 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
           field={@form[:start_time]}
           type="datetime-local"
           label={gettext("Start time")}
-          description={gettext("In UTC")}
+          description={gettext("In 'Europe/Stockholm' timezone")}
         />
         <.input
           field={@form[:end_time]}
           type="datetime-local"
           label={gettext("End time")}
-          description={gettext("In UTC")}
+          description={gettext("In 'Europe/Stockholm' timezone")}
         />
 
         <.input
@@ -69,14 +69,16 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
           field={@form[:release_time]}
           type="datetime-local"
           label={gettext("Release time")}
-          description={gettext("In UTC. Leave blank to make immediately available")}
+          description={
+            gettext("In 'Europe/Stockholm' timezone. Leave blank to make immediately available")
+          }
         />
 
         <.input
           field={@form[:expire_time]}
           type="datetime-local"
           label={gettext("Purchase deadline")}
-          description={gettext("In UTC. Leave blank for none")}
+          description={gettext("In 'Europe/Stockholm' timezone. Leave blank for none")}
         />
 
         <.input

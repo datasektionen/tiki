@@ -46,7 +46,7 @@ defmodule TikiWeb.OrderLive.Show do
       <h2 class="sr-only">{gettext("Tickets")}</h2>
 
       <div class="space-y-4 md:space-y-8">
-        <.card :for={ticket <- @order.tickets} class="md:max-w-3xl">
+        <.card :for={ticket <- @order.tickets}>
           <div class="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
             <div class="flex lg:col-span-7">
               <.link class="size-24" navigate={ticket_path(ticket, @live_action)}>

@@ -5,7 +5,7 @@ defmodule Tiki.Events.Event do
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "events" do
     field :description, :string
-    field :event_date, :utc_datetime
+    field :event_date, Tiki.Types.DatetimeStockholm
     field :name, :string
     field :location, :string
     field :image_url, :string

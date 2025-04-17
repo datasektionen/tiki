@@ -24,13 +24,21 @@ defmodule TikiWeb.OrderLive.Ticket do
                   event: @ticket.ticket_type.ticket_batch.event.name
                 )}
               </h2>
-              <h3 class="text-foreground">
+              <h3 class="text-foreground mb-1">
                 {@ticket.ticket_type.name}
               </h3>
-              <p :if={@ticket.ticket_type.start_time} class="text-muted-foreground text-sm">
-                {gettext("Start time")}
+              <p class="text-muted-foreground flex flex-row items-center gap-1 text-sm">
+                <.icon name="hero-map-pin" class="text-muted-foreground size-4" />
+
+                {@ticket.ticket_type.ticket_batch.event.location}
+              </p>
+              <p
+                :if={@ticket.ticket_type.start_time}
+                class="text-muted-foreground flex flex-row items-center gap-1 text-sm"
+              >
+                <.icon name="hero-calendar" class="text-muted-foreground size-4" />
                 <time datetime={@ticket.ticket_type.start_time}>
-                  {Tiki.Cldr.DateTime.to_string!(@ticket.ticket_type.start_time, format: :short)}
+                  {time_to_string(@ticket.ticket_type.start_time, format: :short)}
                 </time>
               </p>
               <p class="text-muted-foreground text-sm">
