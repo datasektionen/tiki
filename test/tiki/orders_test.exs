@@ -71,6 +71,8 @@ defmodule Tiki.OrdersTest do
     test "list_orders_for_event/1 returns all orders for a given event" do
       event = Tiki.EventsFixtures.event_fixture()
 
+      :rand.seed(:exs64, {1, 1, 2})
+
       orders =
         Enum.map(1..5, fn _ ->
           status = Enum.random(Ecto.Enum.dump_values(Orders.Order, :status))
