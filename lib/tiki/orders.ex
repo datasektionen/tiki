@@ -197,12 +197,31 @@ defmodule Tiki.Orders do
       {:ok, %Order{}}
 
   """
-  def init_checkout(order, payment_method, %{name: name, email: email} = userdata) do
+
+  def init_checkout(%Order{} = order, payment_method, %{name: name, email: email} = userdata) do
     locale = Map.get(userdata, :locale, "en")
 
     case Accounts.upsert_user_email(email, name, locale: locale) do
       {:ok, user} -> init_checkout(order, payment_method, user.id)
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def init_checkout(%Order{price: 0} = order, _payment_method, user_id)
+      when is_integer(user_id) do
+    with true <- Order.valid_transition?(order.status, :paid),
+         {:ok, order} <- update_order(order, %{user_id: user_id, status: :paid}) do
+      AuditLog.log(order.id, "order.checkout.free", order)
+
+      confirm_order(order)
+
+      {:ok, order}
+    else
+      {:error, reason} ->
+        {:error, reason}
+
+      false ->
+        {:error, "cannot initiate checkout from order state"}
     end
   end
 
@@ -255,6 +274,11 @@ defmodule Tiki.Orders do
     AuditLog.log(order.id, "order.paid", order)
 
     broadcast_order(order.id, :paid, order)
+
+    broadcast(
+      order.event_id,
+      {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
+    )
   end
 
   @doc """
