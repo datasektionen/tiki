@@ -12,10 +12,11 @@ defmodule Tiki.Application do
       |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})
 
     oban_config = Application.fetch_env!(:tiki, Oban)
+    metrics_port = Application.get_env(:tiki, :metrics_port, 9001)
 
     children = [
-      # Start the Telemetry supervisor
-      TikiWeb.Telemetry,
+      # Start the PromEx metrics exporter and telemetry
+      Tiki.PromEx,
       # Start the Ecto repository
       Tiki.Repo,
       # Start Oban
@@ -27,6 +28,8 @@ defmodule Tiki.Application do
       {Finch, name: Tiki.Finch},
       # Start the Endpoint (http/https)
       TikiWeb.Endpoint,
+      # Start the PromEx plug endpoint
+      {Bandit, plug: TikiWeb.MetricsPlug, port: metrics_port},
       # Start the OIDC provider configuration worker (fetches the OIDC connect configuration)
       {Oidcc.ProviderConfiguration.Worker, oidc_config},
       # Start processes required for order handling
