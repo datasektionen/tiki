@@ -17,7 +17,6 @@ defmodule Tiki.Checkouts do
   alias Tiki.Checkouts.SwishCheckout
   alias Tiki.Orders
   alias Tiki.Orders.Order
-  alias Tiki.Tickets
 
   @doc """
   Creates a stripe payment intent with the stripe API,
