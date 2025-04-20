@@ -12,7 +12,8 @@ config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 config :tiki,
   ecto_repos: [Tiki.Repo],
   stripe_module: Stripe,
-  swish_module: Swish
+  swish_module: Swish,
+  metrics_port: 9001
 
 config :tiki, Tiki.Repo,
   migration_timestamps: [
@@ -29,6 +30,12 @@ config :tiki, TikiWeb.Endpoint,
   ],
   pubsub_server: Tiki.PubSub,
   live_view: [signing_salt: "FxCBFsEw"]
+
+# Configures metrics prometheus exporter
+config :tiki, Tiki.PromEx,
+  disabled: false,
+  manual_metrics_start_delay: :no_delay,
+  metrics_server: :disabled
 
 # Configures the mailer
 #
