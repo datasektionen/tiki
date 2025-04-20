@@ -33,6 +33,7 @@ job "tiki" {
           "traefik.enable=true",
           "traefik.http.routers.tiki-metrics.rule=Host(`tiki-metrics.nomad.dsekt.internal`)",
           "traefik.http.routers.tiki-metrics.entrypoints=web-internal",
+        ]
       }
 
       driver = "docker"
