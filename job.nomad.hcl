@@ -6,6 +6,7 @@ job "tiki" {
 
     network {
       port "tikihttp" {}
+      port "tikimetricshttp" {}
       port "imgproxyhttp" {}
     }
 
@@ -24,11 +25,21 @@ job "tiki" {
         ]
       }
 
+      service {
+        name     = "tiki-metrics"
+        port     = "tikimetricshttp"
+        provider = "nomad"
+        tags = [
+          "traefik.enable=true",
+          "traefik.http.routers.tiki-metrics.rule=Host(`tiki-metrics.nomad.dsekt.internal`)",
+          "traefik.http.routers.tiki-metrics.entrypoints=web-internal",
+      }
+
       driver = "docker"
 
       config {
         image = var.image_tag
-        ports = ["tikihttp"]
+        ports = ["tikihttp", "tikimetricshttp"]
       }
 
       template {
@@ -44,6 +55,7 @@ SWISH_CALLBACK_URL=https://tiki.datasektionen.se/swish/callback
 SECRET_KEY_BASE={{ .secret_key_base }}
 PHX_HOST=tiki.datasektionen.se
 PORT={{ env "NOMAD_PORT_tikihttp" }}
+METRICS_PORT={{ env "NOMAD_PORT_tikimetricshttp" }}
 SPAM_API_KEY={{ .spam_api_key }}
 STRIPE_API_KEY={{ .stripe_api_key }}
 STRIPE_PUBLIC_KEY={{ .stripe_public_key }}
