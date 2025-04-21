@@ -9,14 +9,17 @@ defmodule TikiWeb.OrderLive.Show do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="space-y-2 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0">
+    <div
+      class="space-y-2 sm:flex sm:items-baseline sm:justify-between sm:space-y-0 sm:px-0"
+      phx-mounted={JS.dispatch("embedded:order", detail: %{order: @order.id})}
+    >
       <div class="flex sm:items-baseline sm:space-x-4">
         <h1 class="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
           {gettext("Thank you for your order!")}
         </h1>
-        <!-- TODO: Receipt link -->
         <.link
-          href="#"
+          :if={@live_action in [:show, :receipt]}
+          navigate={~p"/orders/#{@order.id}/receipt"}
           class="text-secondary-foreground hidden text-sm font-medium hover:text-secondary-foreground/80 sm:block"
         >
           {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
@@ -30,8 +33,11 @@ defmodule TikiWeb.OrderLive.Show do
           {Tiki.Cldr.DateTime.to_string!(@order.updated_at, format: :short)}
         </time>
       </p>
-      <!-- TODO: Receipt link -->
-      <.link href="#" class="text-sm font-medium sm:hidden">
+      <.link
+        :if={@live_action in [:show, :receipt]}
+        navigate={~p"/orders/#{@order.id}/receipt"}
+        class="text-sm font-medium sm:hidden"
+      >
         {gettext("View receipt")} <span aria-hidden="true"> &rarr;</span>
       </.link>
     </div>
@@ -43,13 +49,13 @@ defmodule TikiWeb.OrderLive.Show do
         <.card :for={ticket <- @order.tickets}>
           <div class="px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
             <div class="flex lg:col-span-7">
-              <div class="size-24">
+              <.link class="size-24" navigate={ticket_path(ticket, @live_action)}>
                 <.svg_qr data={ticket.id} />
-              </div>
+              </.link>
               <div class="ml-6">
-                <.link navigate={~p"/tickets/#{ticket}"}>
+                <.link navigate={ticket_path(ticket, @live_action)}>
                   <h3 class="text-foreground text-base font-medium">
-                    {ticket.ticket_type.name} &rarr;
+                    {ticket.ticket_type.name} <span aria-hidden="true"> &rarr;</span>
                   </h3>
                 </.link>
                 <p class="text-foreground mt-2 text-sm font-medium">
@@ -68,7 +74,7 @@ defmodule TikiWeb.OrderLive.Show do
                   </dt>
                   <dd class="text-muted-foreground mt-3">
                     <span class="block">
-                      {find_in_response(ticket.form_response, ["namn", "name"])}
+                      {response_name(ticket.form_response)}
                     </span>
                   </dd>
                 </div>
@@ -78,7 +84,7 @@ defmodule TikiWeb.OrderLive.Show do
                   </dt>
                   <dd class="text-muted-foreground mt-3 space-y-3">
                     <p>
-                      {find_in_response(ticket.form_response, "email")}
+                      {response_email(ticket.form_response)}
                     </p>
                   </dd>
                 </div>
@@ -90,11 +96,12 @@ defmodule TikiWeb.OrderLive.Show do
             :if={!ticket.form_response}
             class="border-border flex flex-row items-center justify-between border-t px-4 py-6 sm:px-6 lg:gap-x-8 lg:p-8"
           >
-            <p class="text-sm font-medium">
+            <p class="text-error flex items-center gap-2 text-sm font-medium">
+              <.icon name="hero-exclamation-triangle" />
               {gettext("You need to fill in attendance information for this ticket")}
             </p>
 
-            <.link navigate={~p"/tickets/#{ticket.id}/form"}>
+            <.link navigate={ticket_path(ticket, @live_action)}>
               <.button variant="secondary">
                 {gettext("Fill in")}
               </.button>
@@ -168,6 +175,79 @@ defmodule TikiWeb.OrderLive.Show do
           </div>
         </.card>
       </div>
+
+      <.dialog
+        :if={@live_action == :receipt}
+        id="receipt-dialog"
+        show
+        on_cancel={JS.navigate(~p"/orders/#{@order.id}")}
+      >
+        <.header class="border-none">
+          {gettext("Receipt")}
+        </.header>
+
+        <div>
+          <p class="text-sm font-semibold">{gettext("Event")}</p>
+          <p class="text-muted-foreground text-sm">{@order.event.name}</p>
+        </div>
+
+        <div>
+          <p class="text-sm font-semibold">{gettext("Order reference")}</p>
+          <p class="text-muted-foreground text-sm">{@order.id}</p>
+        </div>
+
+        <div>
+          <p class="text-sm font-semibold">{gettext("Buyer")}</p>
+          <p class="text-muted-foreground text-sm">{@order.user.full_name}</p>
+          <p class="text-muted-foreground text-sm">{@order.user.email}</p>
+        </div>
+        <div>
+          <p class="text-sm font-semibold">{gettext("Seller")}</p>
+          <pre class="text-muted-foreground font-sans whitespace-pre text-sm">{gettext("Konglig Datasektionen (Org id. 802412-7709)
+    Fack vid THS
+    100 44 Stockholm")}
+    </pre>
+        </div>
+        <div>
+          <p class="text-sm font-semibold">{gettext("Purchase date")}</p>
+          <time datetime={@order.updated_at} class="text-muted-foreground text-sm">
+            {time_to_string(@order.updated_at, format: :short)}
+          </time>
+        </div>
+
+        <table class="w-full border-collapse border-spacing-0">
+          <tbody class="text-sm">
+            <tr :for={%{ticket_type: tt, count: count} <- @order_summary} class="border-t">
+              <th class="py-1 pr-2 text-left">{tt.name}</th>
+              <td class="whitespace-nowrap py-1 pr-2 text-right">
+                {"#{count} x #{tt.price} kr"}
+              </td>
+              <td class="whitespace-nowrap py-1 text-right">
+                {tt.price * count} kr
+              </td>
+            </tr>
+          </tbody>
+          <tr class="border-border border-t-2 text-sm font-semibold">
+            <th></th>
+            <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
+              {gettext("Total")}
+            </td>
+            <td class="whitespace-nowrap py-1 text-right">
+              {@order.price} kr
+            </td>
+          </tr>
+
+          <tr class="text-sm">
+            <th></th>
+            <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
+              {gettext("Incl. VAT")}
+            </td>
+            <td class="whitespace-nowrap py-1 text-right">
+              {@order.price} kr
+            </td>
+          </tr>
+        </table>
+      </.dialog>
     </div>
     """
   end
@@ -200,12 +280,30 @@ defmodule TikiWeb.OrderLive.Show do
      end)}
   end
 
-  defp find_in_response(response, question) when is_binary(question),
-    do: find_in_response(response, [question])
+  @impl Phoenix.LiveView
+  def handle_params(_params, _uri, socket)
+      when socket.assigns.live_action in [:receipt, :embedded_receipt] do
+    order_summary =
+      socket.assigns.order.tickets
+      |> Enum.group_by(fn t -> t.ticket_type end)
+      |> Enum.map(fn {tt, tickets} ->
+        %{ticket_type: tt, count: Enum.count(tickets)}
+      end)
 
-  defp find_in_response(response, questions) when is_list(questions) do
+    {:noreply, assign(socket, order_summary: order_summary)}
+  end
+
+  def handle_params(_, _, socket), do: {:noreply, socket}
+
+  defp response_name(response) do
     response.question_responses
-    |> Enum.find(%{}, fn qr -> String.downcase(qr.question.name) in questions end)
+    |> Enum.find(%{}, fn qr -> qr.question.type == :attendee_name end)
+    |> Map.get(:answer, "")
+  end
+
+  defp response_email(response) do
+    response.question_responses
+    |> Enum.find(%{}, fn qr -> qr.question.type == :email end)
     |> Map.get(:answer, "")
   end
 
@@ -249,5 +347,13 @@ defmodule TikiWeb.OrderLive.Show do
       </div>
     </dd>
     """
+  end
+
+  defp ticket_path(ticket, live_action) do
+    case live_action do
+      :embedded_show -> ~p"/embed/tickets/#{ticket}?return_to=/embed/orders/#{ticket.order_id}"
+      :show -> ~p"/tickets/#{ticket}?return_to=/orders/#{ticket.order_id}"
+      :receipt -> ~p"/tickets/#{ticket}?return_to=/orders/#{ticket.order_id}"
+    end
   end
 end

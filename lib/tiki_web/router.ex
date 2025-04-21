@@ -14,6 +14,16 @@ defmodule TikiWeb.Router do
     plug :fetch_locale
   end
 
+  pipeline :embedded do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {TikiWeb.Layouts, :embedded_root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug :allow_iframe
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -40,6 +50,35 @@ defmodule TikiWeb.Router do
     end
   end
 
+  ## Embedded routes
+
+  scope "/embed", TikiWeb do
+    pipe_through [:embedded]
+
+    get "/close", EmbeddedController, :close
+
+    live_session :embedded,
+      layout: {TikiWeb.Layouts, :embedded},
+      on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
+      live "/events/:event_id/tickets", EventLive.Show, :embedded
+      live "/events/:event_id/purchase/:order_id", EventLive.Show, :embedded_purchase
+
+      live "/orders/:id", OrderLive.Show, :embedded_show
+      live "/tickets/:id/form", OrderLive.TicketForm, :embedded_form
+      live "/tickets/:id", OrderLive.Ticket, :embedded_show
+    end
+  end
+
+  defp allow_iframe(conn, _opts) do
+    conn
+    |> delete_resp_header("x-frame-options")
+    |> put_resp_header(
+      "content-security-policy",
+      # Add your list of allowed domain(s) here.
+      "frame-ancestors 'self' #{Application.get_env(:tiki, :allowed_origins)}"
+    )
+  end
+
   ## Authentication routes
 
   scope "/", TikiWeb do
@@ -47,13 +86,12 @@ defmodule TikiWeb.Router do
 
     live_session :redirect_if_user_is_authenticated,
       on_mount: [{TikiWeb.UserAuth, :redirect_if_user_is_authenticated}] do
-      live "/users/register", UserRegistrationLive, :new
-      live "/account/log_in", UserLoginLive, :new
-      live "/users/reset_password", UserForgotPasswordLive, :new
-      live "/users/reset_password/:token", UserResetPasswordLive, :edit
+      live "/users/register", UserLive.Registration, :new
+      live "/users/log_in", UserLive.Login, :new
+      live "/users/log_in/:token", UserLive.Confirmation, :new
     end
 
-    post "/account/log_in", UserSessionController, :create
+    post "/users/log_in", UserSessionController, :create
   end
 
   scope "/", TikiWeb do
@@ -61,21 +99,26 @@ defmodule TikiWeb.Router do
 
     get "/", PageController, :home
     get "/about", PageController, :about
+    get "/terms", PageController, :terms
 
     delete "/account/log_out", UserSessionController, :delete
 
     live_session :current_user, on_mount: [{TikiWeb.UserAuth, :mount_current_user}] do
-      live "/users/confirm/:token", UserConfirmationLive, :edit
-      live "/users/confirm", UserConfirmationInstructionsLive, :new
-
       live "/events", EventLive.Index, :index
       live "/events/:event_id", EventLive.Show, :index
       live "/events/:event_id/purchase/:order_id", EventLive.Show, :purchase
 
       live "/orders/:id", OrderLive.Show, :show
+      live "/orders/:id/receipt", OrderLive.Show, :receipt
       live "/tickets/:id", OrderLive.Ticket, :show
       live "/tickets/:id/form", OrderLive.TicketForm, :edit
     end
+  end
+
+  scope "/admin/feature-flags" do
+    pipe_through [:browser, :require_admin]
+
+    forward "/", FunWithFlags.UI.Router, namespace: "admin/feature-flags"
   end
 
   scope "/", TikiWeb do
@@ -83,9 +126,9 @@ defmodule TikiWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{TikiWeb.UserAuth, :ensure_authenticated}] do
-      live "/account", UserSettingsLive, :edit
+      live "/account/settings", AccountLive.Settings, :edit
       live "/account/tickets", AccountLive.Tickets, :index
-      live "/account/confirm_email/:token", UserSettingsLive, :confirm_email
+      live "/account/settings/confirm_email/:token", AccountLive.Settings, :confirm_email
     end
 
     scope "/admin" do
@@ -162,6 +205,7 @@ defmodule TikiWeb.Router do
           live "/attendees", Attendees.Index, :index
           # live "/contact", Contact.Index, :index
           live "/attendees/:ticket_id", Attendees.Show, :show
+          live "/orders/:order_id", Orders.Show, :show
 
           # Check-in
           live "/check-in", Attendees.CheckIn, :index

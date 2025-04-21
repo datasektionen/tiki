@@ -275,6 +275,15 @@ defmodule TikiWeb.Component.Sidebar do
                 <.menu_shortcut>⌘N</.menu_shortcut>
               </.menu_item>
             </.link>
+
+            <.link
+              :if={Tiki.Policy.authorize?(:tiki_admin, @current_user)}
+              navigate={~p"/admin/clear_team"}
+            >
+              <.menu_item class="hover:cursor-pointer">
+                <span>Admin: Clear team</span>
+              </.menu_item>
+            </.link>
           </.menu_group>
         </.menu>
       </.dropdown_menu_content>

@@ -12,7 +12,8 @@ config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 config :tiki,
   ecto_repos: [Tiki.Repo],
   stripe_module: Stripe,
-  swish_module: Swish
+  swish_module: Swish,
+  metrics_port: 9001
 
 config :tiki, Tiki.Repo,
   migration_timestamps: [
@@ -29,6 +30,12 @@ config :tiki, TikiWeb.Endpoint,
   ],
   pubsub_server: Tiki.PubSub,
   live_view: [signing_salt: "FxCBFsEw"]
+
+# Configures metrics prometheus exporter
+config :tiki, Tiki.PromEx,
+  disabled: false,
+  manual_metrics_start_delay: :no_delay,
+  metrics_server: :disabled
 
 # Configures the mailer
 #
@@ -51,7 +58,7 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "4.0.0-beta.2",
+  version: "4.1.3",
   default: [
     args: ~w(
       --input=assets/css/app.css
@@ -101,6 +108,16 @@ config :tiki, Oban,
   engine: Oban.Engines.Basic,
   queues: [default: 10, mail: 10],
   repo: Tiki.Repo
+
+config :fun_with_flags, :persistence,
+  adapter: FunWithFlags.Store.Persistent.Ecto,
+  repo: Tiki.Repo,
+  ecto_table_name: "fun_with_flags_toggles"
+
+config :fun_with_flags, :cache_bust_notifications,
+  enabled: true,
+  adapter: FunWithFlags.Notifications.PhoenixPubSub,
+  client: Tiki.PubSub
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

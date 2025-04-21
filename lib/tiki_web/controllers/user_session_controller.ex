@@ -4,39 +4,32 @@ defmodule TikiWeb.UserSessionController do
   alias Tiki.Accounts
   alias TikiWeb.UserAuth
 
-  def create(conn, %{"_action" => "registered"} = params) do
-    create(conn, params, "Account created successfully!")
-  end
-
-  def create(conn, %{"_action" => "password_updated"} = params) do
-    conn
-    |> put_session(:user_return_to, ~p"/account")
-    |> create(params, "Password updated successfully!")
+  def create(conn, %{"_action" => "confirmed"} = params) do
+    create(conn, params, gettext("User confirmed successfully."))
   end
 
   def create(conn, params) do
-    create(conn, params, "Welcome back!")
+    create(conn, params, gettext("Welcome back!"))
   end
 
-  defp create(conn, %{"user" => user_params}, info) do
-    %{"email" => email, "password" => password} = user_params
+  # magic link login
+  defp create(conn, %{"user" => %{"token" => token} = user_params}, info) do
+    case Accounts.login_user_by_magic_link(token) do
+      {:ok, user, _} ->
+        conn
+        |> put_flash(:info, info)
+        |> UserAuth.log_in_user(user, user_params)
 
-    if user = Accounts.get_user_by_email_and_password(email, password) do
-      conn
-      |> put_flash(:info, info)
-      |> UserAuth.log_in_user(user, user_params)
-    else
-      # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
-      conn
-      |> put_flash(:error, "Invalid email or password")
-      |> put_flash(:email, String.slice(email, 0, 160))
-      |> redirect(to: ~p"/account/log_in")
+      _ ->
+        conn
+        |> put_flash(:error, gettext("The link is invalid or it has expired."))
+        |> redirect(to: ~p"/users/log_in")
     end
   end
 
   def delete(conn, _params) do
     conn
-    |> put_flash(:info, "Logged out successfully.")
+    |> put_flash(:info, gettext("Logged out successfully."))
     |> UserAuth.log_out_user()
   end
 

@@ -1,1 +1,202 @@
-{gettext("Some nice useful information about the site should go here.")}
+<svg
+  class="h-[64rem] stroke-border [mask-image:radial-gradient(32rem_32rem_at_center,var(--color-foreground),transparent)] absolute inset-x-0 top-0 -z-10 w-full"
+  aria-hidden="true"
+>
+  <defs>
+    <pattern
+      id="1f932ae7-37de-4c0a-a8b0-a6e3b4d44b84"
+      width="200"
+      height="200"
+      x="50%"
+      y="-1"
+      patternUnits="userSpaceOnUse"
+    >
+      <path d="M.5 200V.5H200" fill="none" />
+    </pattern>
+  </defs>
+  <svg x="50%" y="-1" class="fill-accent overflow-visible">
+    <path
+      d="M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z"
+      stroke-width="0"
+    />
+  </svg>
+  <rect
+    width="100%"
+    height="100%"
+    stroke-width="0"
+    fill="url(#1f932ae7-37de-4c0a-a8b0-a6e3b4d44b84)"
+  />
+</svg>
+<div
+  class="absolute top-0 right-0 left-1/2 -z-10 -ml-24 transform-gpu overflow-hidden blur-3xl lg:ml-24 xl:ml-48"
+  aria-hidden="true"
+>
+  <div
+    class="aspect-[801/1036] w-[50.0625rem] from-[#ff80b5] to-[#9089fc] bg-gradient-to-tr opacity-30"
+    style="clip-path: polygon(63.1% 29.5%, 100% 17.1%, 76.6% 3%, 48.4% 0%, 44.6% 4.7%, 54.5% 25.3%, 59.8% 49%, 55.2% 57.8%, 44.4% 57.2%, 27.8% 47.9%, 35.1% 81.5%, 0% 97.7%, 39.2% 100%, 35.2% 81.4%, 97.2% 52.8%, 63.1% 29.5%)"
+  >
+  </div>
+</div>
+<div class="mx-auto lg:mx-0">
+  <h1 class="text-pretty text-foreground mt-2 max-w-3xl text-2xl font-semibold tracking-tight sm:text-4xl">
+    {gettext("What is Tiki?")}
+  </h1>
+  <p class="text-xl/8 text-foreground mt-6">
+    {gettext(
+      "Tiki is an event management platform developed by the Computer Science Chapter at KTH. It is designed to
+      be used for both internal and public events, and is built from the ground up to be flexible and easy to use."
+    )}
+  </p>
+</div>
+
+<div class="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:mx-0 lg:mt-10 lg:max-w-none lg:grid-cols-12">
+  <div class="text-base/7 text-foreground max-w-2xl lg:col-span-12">
+    <p>
+      {gettext(
+        "The Computer Science Chapter at KTH has for a long time had issues with event management, and
+        particularly with ticket releases. None of the existing solutions on the market were flexible enough for
+        our needs, and we needed something that could be adapted to our own specific needs. So, we decided to
+        build our own event managment platform, with built-in ticket releases and direct payments using multiple
+        payment providers. The result from more than two years of development is Tiki, our own event management
+        platform. It has been developed from scratch by passionate KTH students, with the main efforts lead
+        by Adrian Salamon."
+      )}
+    </p>
+    <ul role="list" class="text-foreground mt-8 max-w-2xl space-y-8">
+      <li class="flex gap-x-3">
+        <.icon name="hero-beaker" class="size-5 mt-1 flex-none" />
+        <span>
+          <strong class="text-foreground font-semibold">{gettext("Flexible.")}</strong>
+          {gettext("Tiki is designed to be flexible and easy to use. It is built from the ground
+           based on the needs of the Computer Science Chapter.")}
+        </span>
+      </li>
+      <li class="flex gap-x-3">
+        <.icon name="hero-rocket-launch" class="size-5 mt-1 flex-none" />
+        <span>
+          <strong class="text-foreground font-semibold">{gettext("Scalable.")}</strong>
+          {gettext(
+            "Tiki is built from the ground up to be scalable and performant. By building on
+           the scalable Elixir/BEAM platform, we can use realtime features while remaining performant."
+          )}
+        </span>
+      </li>
+      <li class="flex gap-x-3">
+        <.icon name="hero-banknotes" class="size-5 mt-1 flex-none" />
+        <span>
+          <strong class="text-foreground font-semibold">{gettext("Cost effective.")}</strong>
+          {gettext(
+            "By integrating directly with payment providers, the chapter saves money by eliminating
+             needless fees."
+          )}
+        </span>
+      </li>
+      <li class="flex gap-x-3">
+        <.icon name="hero-lock-open" class="size-5 mt-1 flex-none" />
+        <span>
+          <strong class="text-foreground font-semibold">{gettext("Open.")}</strong>
+          {gettext(
+            "Tiki is source-available software, licensed under the Source First License. You can modify and use
+            the software for your own purposes."
+          )}
+          <.link href="https://github.com/datasektionen/tiki" class="font-semibold">
+            {gettext("Check it out at GitHub!")}
+          </.link>
+        </span>
+      </li>
+    </ul>
+    <p class="mt-8">
+      {gettext(
+        "Tiki is currently in the early stages of being deployed, and we would love your feedback. If you have any questions, suggestions or feedback, please don't hesitate to reach out to us at"
+      )}
+      <.link href="mailto:tiki@datasektionen.se">tiki@datasektionen.se</.link>.
+    </p>
+
+    <h2 class="mt-8 text-2xl font-semibold tracking-tight sm:text-4xl">
+      {gettext("Frequently asked questions")}
+    </h2>
+    <dl class="divide-foreground/10 mt-16 divide-y">
+      <div class="py-4 first:pt-0 last:pb-0">
+        <details class="group/accordion peer/accordion">
+          <summary class="flex w-full cursor-pointer items-start justify-between transition-all">
+            <span class="text-base/7 font-semibold">
+              {gettext("How are payments handled?")}
+            </span>
+
+            <.icon
+              name="hero-chevron-down"
+              class="transition-transform duration-100 group-open/accordion:rotate-180"
+            />
+          </summary>
+        </details>
+
+        <div class="grid-rows-[0fr] transition-[grid-template-rows] mt-2 grid overflow-hidden pr-12 text-sm duration-100 peer-open/accordion:grid-rows-[1fr]">
+          <div class="overflow-hidden">
+            <div class="text-base/7">
+              {gettext(
+                "Two payments methods are currently supported: Stripe and Swish. Both methods are securely handled by the
+                respective payment providers. In order to use Swish, you need to be connected to a swedish bank that supports BankId and Swish. We support Stripe
+                payments via credit/debit cards from all major card vendors. No money is handled internally by Tiki."
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="py-4 first:pt-0 last:pb-0">
+        <details class="group/accordion peer/accordion">
+          <summary class="flex w-full cursor-pointer items-start justify-between transition-all">
+            <span class="text-base/7 font-semibold">
+              {gettext("Do I need to have an account to use Tiki?")}
+            </span>
+
+            <.icon
+              name="hero-chevron-down"
+              class="transition-transform duration-100 group-open/accordion:rotate-180"
+            />
+          </summary>
+        </details>
+
+        <div class="grid-rows-[0fr] transition-[grid-template-rows] mt-2 grid overflow-hidden pr-12 text-sm duration-100 peer-open/accordion:grid-rows-[1fr]">
+          <div class="overflow-hidden">
+            <div class="text-base/7">
+              {gettext(
+                "No. You can purchase a ticket and recieve it on any valid email address. If you register for an account,
+                you can log in and see your previous purchases, but this is not required."
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="py-4 first:pt-0 last:pb-0">
+        <details class="group/accordion peer/accordion">
+          <summary class="flex w-full cursor-pointer items-start justify-between transition-all">
+            <span class="text-base/7 font-semibold">
+              {gettext("Do I need to bring a ticket to an event?")}
+            </span>
+
+            <.icon
+              name="hero-chevron-down"
+              class="transition-transform duration-100 group-open/accordion:rotate-180"
+            />
+          </summary>
+        </details>
+
+        <div class="grid-rows-[0fr] transition-[grid-template-rows] mt-2 grid overflow-hidden pr-12 text-sm duration-100 peer-open/accordion:grid-rows-[1fr]">
+          <div class="overflow-hidden">
+            <div class="text-base/7">
+              {gettext(
+                "No. You can show your digital ticket, including a QR code, when you show up to an event. You can find your ticket
+                either from your order confirmation confirmation email, or via the page containing your ticket on the
+                Tiki website."
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+<!-- TODO: More questions FAQ -->
+    </dl>
+  </div>
+</div>

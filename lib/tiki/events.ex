@@ -4,6 +4,7 @@ defmodule Tiki.Events do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
   alias Tiki.Repo
 
   alias Tiki.Events.Event
@@ -77,7 +78,34 @@ defmodule Tiki.Events do
   end
 
   @doc """
-  Creates a event.
+  Gets statistics for an event. Returns a map with stats. Current statistics:
+
+  * `:total_sales`, total sales in SEK
+  * `:tickets_sold` total tickets sold
+  """
+  def get_event_stats!(id) do
+    orders =
+      from o in Tiki.Orders.Order,
+        where: o.event_id == ^id and o.status == :paid,
+        join: t in assoc(o, :tickets),
+        group_by: o.id,
+        select: %{
+          order_price: o.price,
+          ticket_count: count(t.id)
+        }
+
+    query =
+      from o in subquery(orders),
+        select: %{
+          total_sales: coalesce(sum(o.order_price), 0),
+          tickets_sold: coalesce(sum(o.ticket_count), 0)
+        }
+
+    Repo.one!(query)
+  end
+
+  @doc """
+  Creates an event.
 
   ## Examples
 
@@ -89,9 +117,43 @@ defmodule Tiki.Events do
 
   """
   def create_event(attrs \\ %{}) do
-    %Event{}
-    |> Event.changeset(attrs)
-    |> Repo.insert(returning: [:id])
+    multi =
+      Multi.new()
+      |> Multi.insert(:event, Event.changeset(%Event{}, attrs), returning: [:id])
+      |> Multi.run(
+        :default_form,
+        fn _repo, %{event: event} ->
+          Tiki.Forms.create_form(%{
+            description: "We need some information to organize our event",
+            name: "Default form",
+            event_id: event.id,
+            questions: [
+              %{
+                name: "Name",
+                type: "attendee_name",
+                required: true
+              },
+              %{
+                name: "Email",
+                type: "email",
+                required: true
+              }
+            ]
+          })
+        end
+      )
+      |> Multi.update(:update_event_form, fn %{event: event, default_form: form} ->
+        Event.changeset(event, %{default_form_id: form.id})
+      end)
+      |> Repo.transaction()
+
+    case multi do
+      {:ok, %{update_event_form: event}} ->
+        {:ok, event}
+
+      {:error, :event, changeset, _} ->
+        {:error, changeset}
+    end
   end
 
   @doc """

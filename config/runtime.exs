@@ -30,8 +30,13 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  metrics_port =
+    System.get_env("METRICS_PORT") |> String.to_integer() || raise "METRICS_PORT is not set"
+
   config :tiki,
-    pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se")
+    pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se"),
+    allowed_origins: System.get_env("ALLOWED_ORIGINS", "https://metaspexet.se"),
+    metrics_port: metrics_port
 
   config :tiki, Tiki.Repo,
     # ssl: true,
@@ -86,12 +91,14 @@ if config_env() == :prod do
 
   # Stripe config
   stripe_api_key = System.get_env("STRIPE_API_KEY") || raise "STRIPE_API_KEY is not set"
+  stripe_public_key = System.get_env("STRIPE_PUBLIC_KEY") || raise "STRIPE_PUBLIC_KEY is not set"
 
   stripe_webhook_secret =
     System.get_env("STRIPE_WEBHOOK_SECRET") || raise "STRIPE_WEBHOOK_SECRET is not set"
 
   config :stripity_stripe,
     api_key: stripe_api_key,
+    public_key: stripe_public_key,
     webhook_secret: stripe_webhook_secret
 
   # Oidc login

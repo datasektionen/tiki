@@ -10,16 +10,16 @@ defmodule Tiki.Tickets.TicketType do
     field :promo_code, :string
 
     # TODO: implement release time and expire time
-    field :release_time, :utc_datetime
-    field :expire_time, :utc_datetime
+    field :release_time, Tiki.Types.DatetimeStockholm
+    field :expire_time, Tiki.Types.DatetimeStockholm
 
     # ticket limits in orders
     field :purchase_limit, :integer
     field :purchasable, :boolean, default: true
 
     # For events with different time slots for different ticket types, eg. spex showings on multiple days
-    field :start_time, :utc_datetime
-    field :end_time, :utc_datetime
+    field :start_time, Tiki.Types.DatetimeStockholm
+    field :end_time, Tiki.Types.DatetimeStockholm
 
     belongs_to :ticket_batch, Tiki.Tickets.TicketBatch
     belongs_to :form, Tiki.Forms.Form

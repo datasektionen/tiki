@@ -1,6 +1,9 @@
 defmodule Tiki.Checkouts do
   @moduledoc """
   The Checkouts context.
+
+  You probably don't want to interact with this module directly. Instead, use
+  the `Tiki.Orders` module with for example `Tiki.Orders.init_checkout/3`.
   """
 
   @stripe Application.compile_env(:tiki, :stripe_module)
@@ -15,95 +18,6 @@ defmodule Tiki.Checkouts do
   alias Tiki.Orders
   alias Tiki.Orders.Order
   alias Tiki.Tickets
-
-  @doc """
-  Returns the list of stripe_checkouts.
-
-  ## Examples
-
-      iex> list_stripe_checkouts()
-      [%StripeCheckout{}, ...]
-
-  """
-  def list_stripe_checkouts do
-    Repo.all(StripeCheckout)
-  end
-
-  @doc """
-  Gets a single stripe_checkout.
-
-  Raises `Ecto.NoResultsError` if the Stripe checkout does not exist.
-
-  ## Examples
-
-      iex> get_stripe_checkout!(123)
-      %StripeCheckout{}
-
-      iex> get_stripe_checkout!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_stripe_checkout!(id), do: Repo.get!(StripeCheckout, id)
-
-  @doc """
-  Creates a stripe_checkout.
-
-  ## Examples
-
-      iex> create_stripe_checkout(%{field: value})
-      {:ok, %StripeCheckout{}}
-
-      iex> create_stripe_checkout(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_stripe_checkout(attrs \\ %{}) do
-    %StripeCheckout{}
-    |> StripeCheckout.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a stripe_checkout.
-
-  ## Examples
-
-      iex> update_stripe_checkout(stripe_checkout, %{field: new_value})
-      {:ok, %StripeCheckout{}}
-
-      iex> update_stripe_checkout(stripe_checkout, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_stripe_checkout(%StripeCheckout{} = stripe_checkout, attrs) do
-    stripe_checkout
-    |> StripeCheckout.changeset(attrs)
-    |> Repo.update()
-  end
-
-  def create_swish_checkout(attrs \\ %{}) do
-    %SwishCheckout{}
-    |> SwishCheckout.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a swish_checkout.
-
-  ## Examples
-
-      iex> update_swish_checkout(stripe_checkout, %{field: new_value})
-      {:ok, %StripeCheckout{}}
-
-      iex> update_swish_checkout(stripe_checkout, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_swish_checkout(%SwishCheckout{} = swish_checkout, attrs) do
-    swish_checkout
-    |> SwishCheckout.changeset(attrs)
-    |> Repo.update()
-  end
 
   @doc """
   Creates a stripe payment intent with the stripe API,
@@ -126,16 +40,17 @@ defmodule Tiki.Checkouts do
          when not is_nil(secret) <-
            @stripe.PaymentIntent.create(%{
              amount: price * 100,
-             currency: "sek"
+             currency: "sek",
+             metadata: %{tiki_order_id: order.id}
            }),
-         {:ok, stripe_ceckout} <-
+         {:ok, stripe_checkout} <-
            create_stripe_checkout(%{
              user_id: user_id,
              order_id: order.id,
              price: price * 100,
              payment_intent_id: intent_id
            }) do
-      {:ok, Map.put(stripe_ceckout, :client_secret, secret)}
+      {:ok, Map.put(stripe_checkout, :client_secret, secret)}
     else
       {:error, err} -> {:error, err}
     end
@@ -143,18 +58,8 @@ defmodule Tiki.Checkouts do
 
   @doc """
   Confirms a stripe payment intent with the stripe API,
-  and updates the stripe checkout in the database. Returns the order.
-
-  ## Examples
-
-      iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
-      {:ok, %Order{}}
-
-      iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
-      {:error, "Order not found"}
-
-      iex> confirm_stripe_payment("pi_1H9Z2pJZ2Z2Z2Z2Z2Z2Z2Z2Z2")
-      {:error, "Payment intent status is not succeeded"}
+  and updates the stripe checkout in the database. Does not return the order, but
+  broadcasts it over PubSub.
   """
   def confirm_stripe_payment(%Stripe.PaymentIntent{} = intent) do
     query =
@@ -173,11 +78,10 @@ defmodule Tiki.Checkouts do
         end
       end)
       |> Multi.run(:status, fn _repo, %{order_checkout: {order, _}} ->
-        if order.status != :pending do
-          {:error, :already_finished}
-        else
-          # TODO: convert to status
+        if Order.valid_transition?(order.status, :paid) do
           {:ok, :paid}
+        else
+          {:error, :invalid_status}
         end
       end)
       |> Multi.run(:checkout, fn _repo, %{order_checkout: {_, checkout}} ->
@@ -202,7 +106,7 @@ defmodule Tiki.Checkouts do
 
         :ok
 
-      {:error, :status, :already_finished, _} ->
+      {:error, :status, :invalid_status, _} ->
         :ok
 
       {:error, _, msg, _} ->
@@ -226,6 +130,12 @@ defmodule Tiki.Checkouts do
     end
   end
 
+  @doc """
+  Confirms a Swish payment request with a given callback identifier that
+  should be recieved from the Swish API. Does not return the order, but
+  broadcasts it over PubSub.
+  """
+
   def confirm_swish_payment(callback_identifier, status) do
     query =
       from sc in SwishCheckout,
@@ -247,10 +157,12 @@ defmodule Tiki.Checkouts do
           {:error, "checkout not found"}
 
         _repo, %{order_checkout: {order, _}} ->
-          if order.status != :pending do
-            {:error, :already_finished}
+          to = swish_to_order_status(status)
+
+          if Order.valid_transition?(order.status, to) do
+            {:ok, to}
           else
-            {:ok, swish_to_order_status(status)}
+            {:error, :invalid_status}
           end
       end)
       |> Multi.run(:swish_checkout, fn _repo, %{order_checkout: {_, swish_checkout}} ->
@@ -271,12 +183,36 @@ defmodule Tiki.Checkouts do
 
         :ok
 
-      {:error, :status, :already_finished, _} ->
+      {:error, :status, :invalid_status, _} ->
         :ok
 
       {:error, _, msg, _} ->
         {:error, msg}
     end
+  end
+
+  defp create_stripe_checkout(attrs) do
+    %StripeCheckout{}
+    |> StripeCheckout.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp update_stripe_checkout(%StripeCheckout{} = stripe_checkout, attrs) do
+    stripe_checkout
+    |> StripeCheckout.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp create_swish_checkout(attrs) do
+    %SwishCheckout{}
+    |> SwishCheckout.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp update_swish_checkout(%SwishCheckout{} = swish_checkout, attrs) do
+    swish_checkout
+    |> SwishCheckout.changeset(attrs)
+    |> Repo.update()
   end
 
   defp swish_to_order_status("PAID"), do: :paid

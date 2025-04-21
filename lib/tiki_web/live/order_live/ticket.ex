@@ -7,7 +7,7 @@ defmodule TikiWeb.OrderLive.Ticket do
   def render(assigns) do
     ~H"""
     <div class="space-y-8">
-      <.back navigate={~p"/orders/#{@ticket.order_id}"}>
+      <.back navigate={@return_to}>
         {gettext("Back to order")}
       </.back>
 
@@ -24,18 +24,25 @@ defmodule TikiWeb.OrderLive.Ticket do
                   event: @ticket.ticket_type.ticket_batch.event.name
                 )}
               </h2>
-              <h3 class="text-foreground">
+              <h3 class="text-foreground mb-1">
                 {@ticket.ticket_type.name}
               </h3>
-              <p class="text-muted-foreground text-sm">
-                {@ticket.ticket_type.description}
+              <p class="text-muted-foreground flex flex-row items-center gap-1 text-sm">
+                <.icon name="hero-map-pin" class="text-muted-foreground size-4" />
+
+                {@ticket.ticket_type.ticket_batch.event.location}
+              </p>
+              <p
+                :if={@ticket.ticket_type.start_time}
+                class="text-muted-foreground flex flex-row items-center gap-1 text-sm"
+              >
+                <.icon name="hero-calendar" class="text-muted-foreground size-4" />
+                <time datetime={@ticket.ticket_type.start_time}>
+                  {time_to_string(@ticket.ticket_type.start_time, format: :short)}
+                </time>
               </p>
               <p class="text-muted-foreground text-sm">
-                {gettext("Purchased")}
-                <!-- TODO: have event date here instead of purchase date -->
-                <time datetime={@ticket.inserted_at}>
-                  {Tiki.Cldr.DateTime.to_string!(@ticket.inserted_at, format: :short)}
-                </time>
+                {@ticket.ticket_type.description}
               </p>
             </div>
           </div>
@@ -57,7 +64,7 @@ defmodule TikiWeb.OrderLive.Ticket do
         </dl>
       </div>
 
-      <.link navigate={~p"/tickets/#{@ticket}/form"}>
+      <.link navigate={@form_url}>
         <.button variant="secondary">
           {gettext("Edit details")}
         </.button>
@@ -67,7 +74,7 @@ defmodule TikiWeb.OrderLive.Ticket do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => ticket_id}, _session, socket) do
+  def mount(%{"id" => ticket_id} = _params, _session, socket) do
     # TODO: fix this preloading nonsense
     ticket =
       Orders.get_ticket!(ticket_id)
@@ -76,10 +83,37 @@ defmodule TikiWeb.OrderLive.Ticket do
         ticket_type: [ticket_batch: :event]
       )
 
+    order_url =
+      case socket.assigns.live_action do
+        :embedded_show -> ~p"/embed/orders/#{ticket.order_id}"
+        :show -> ~p"/orders/#{ticket.order_id}"
+      end
+
     if ticket.form_response do
-      {:ok, assign(socket, ticket: ticket)}
+      form_url =
+        case socket.assigns.live_action do
+          :embedded_show ->
+            ~p"/embed/tickets/#{ticket}/form?return_to=#{~p"/embed/tickets/#{ticket}"}"
+
+          :show ->
+            ~p"/tickets/#{ticket}/form?return_to=#{~p"/tickets/#{ticket}"}"
+        end
+
+      {:ok,
+       assign(socket, ticket: ticket)
+       |> assign(form_url: form_url)
+       |> assign(return_to: order_url)}
     else
-      {:ok, push_navigate(socket, to: ~p"/tickets/#{ticket}/form")}
+      form_url =
+        case socket.assigns.live_action do
+          :embedded_show ->
+            ~p"/embed/tickets/#{ticket}/form?return_to=#{~p"/embed/orders/#{ticket.order_id}"}"
+
+          :show ->
+            ~p"/tickets/#{ticket}/form?return_to=#{~p"/orders/#{ticket.order_id}"}"
+        end
+
+      {:ok, push_navigate(socket, to: form_url)}
     end
   end
 end

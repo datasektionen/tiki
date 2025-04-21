@@ -17,7 +17,9 @@ defmodule TikiWeb.AdminLive.Event.Show do
 
       if connected?(socket), do: Orders.subscribe(event_id, :purchases)
 
-      {:ok, assign(socket, event: event, online_count: initial_count)}
+      stats = Events.get_event_stats!(event_id)
+
+      {:ok, assign(socket, event: event, online_count: initial_count, stats: stats)}
     else
       {:error, :unauthorized} ->
         {:ok,
@@ -39,7 +41,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
   def handle_info({:order_confirmed, order}, socket) do
     tickets_in_order = Enum.map(order.tickets, fn ticket -> Map.put(ticket, :order, order) end)
 
-    {:noreply, stream(socket, :recent_tickets, tickets_in_order, at: -1)}
+    {:noreply, stream(socket, :recent_tickets, tickets_in_order, at: 0, limit: 10)}
   end
 
   @impl Phoenix.LiveView
@@ -68,7 +70,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
       {@event.name}
       <:subtitle>
         <span>
-          {Tiki.Cldr.DateTime.to_string!(@event.event_date, format: :yMMMEd) |> String.capitalize()}
+          {time_to_string(@event.event_date, format: :long) |> String.capitalize()}
         </span>·
         <span>
           {@event.location}
@@ -97,7 +99,9 @@ defmodule TikiWeb.AdminLive.Event.Show do
             <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
           </.card_header>
           <.card_content>
-            <div class="text-2xl font-bold">N/A</div>
+            <div class="text-2xl font-bold">
+              {@stats.tickets_sold}
+            </div>
           </.card_content>
         </.card>
         <.card>
@@ -108,7 +112,9 @@ defmodule TikiWeb.AdminLive.Event.Show do
             <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
           </.card_header>
           <.card_content>
-            <div class="text-2xl font-bold">N/A</div>
+            <div class="text-2xl font-bold">
+              {Tiki.Cldr.Number.to_string!(@stats.total_sales, format: "#,##0")} SEK
+            </div>
           </.card_content>
         </.card>
         <.card>
@@ -134,7 +140,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
           </.card_header>
           <.card_content>
             <.table
-              id="events"
+              id="recent_orders"
               rows={@streams.recent_tickets}
               row_click={
                 fn {_id, ticket} ->

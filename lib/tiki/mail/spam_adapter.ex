@@ -98,15 +98,16 @@ defmodule Tiki.Mail.SpamAdapter do
   end
 
   defp prepare_attachments(body, %{attachments: attachments}) do
-    attachments = Enum.filter(attachments, &(&1.type == :attachment))
-    Map.put(body, :files, Enum.map(attachments, &prepare_file(&1)))
+    attachments = Enum.filter(attachments, &(&1.type in [:attachment, "attachment"]))
+    Map.put(body, "attachments[]", Enum.map(attachments, &prepare_file(&1)))
   end
 
   defp prepare_file(attachment) do
     %{
-      "contentType" => attachment.content_type,
-      filename: attachment.filename,
-      content: Base.encode64(attachment.data)
+      mimetype: attachment.content_type,
+      originalname: attachment.filename,
+      buffer: Base.encode64(attachment.data),
+      encoding: "base64"
     }
   end
 

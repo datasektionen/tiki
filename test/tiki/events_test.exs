@@ -17,7 +17,7 @@ defmodule Tiki.EventsTest do
 
     test "list_public_events/0 returns all public events" do
       public_event = event_fixture(%{is_hidden: false})
-      private_event = event_fixture(%{is_hidden: true})
+      _private_event = event_fixture(%{is_hidden: true})
 
       assert Events.list_public_events() == [public_event]
     end
@@ -51,7 +51,7 @@ defmodule Tiki.EventsTest do
           end)
         end)
 
-      assert Events.get_event_ticket_types(event.id) == ticket_types
+      assert Events.get_event_ticket_types(event.id) |> Enum.sort() == ticket_types |> Enum.sort()
     end
 
     test "create_event/1 with valid data creates a event" do
@@ -68,6 +68,21 @@ defmodule Tiki.EventsTest do
       assert event.description == "some description"
       assert event.event_date == ~U[2023-03-25 16:55:00Z]
       assert event.name == "some name"
+
+      # Assert that we have a default form
+
+      assert event.default_form_id != nil
+
+      form = Tiki.Forms.get_form!(event.default_form_id)
+
+      assert form.event_id == event.id
+      assert form.name =~ "Default form"
+      assert form.description =~ "We need some information to organize our event"
+
+      assert [
+               %{name: "Name", required: true, type: :attendee_name},
+               %{name: "Email", required: true, type: :email}
+             ] = form.questions
     end
 
     test "create_event/1 with invalid data returns error changeset" do

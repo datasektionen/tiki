@@ -288,7 +288,7 @@ defmodule Tiki.Tickets do
 
   ## Examples
 
-      iex> put_available_ticket_meta([%{tichet_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...])
+      iex> put_available_ticket_meta([%{ticket_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...])
       [
         %TicketType{
           available: 10,
@@ -329,7 +329,7 @@ defmodule Tiki.Tickets do
         group_by: tt.id,
         select: %{ticket_type_id: tt.id, count: count(t.id)}
 
-    sub_pending = sub |> where([tt, tb, t, o], o.status == ^"pending")
+    sub_pending = sub |> where([tt, tb, t, o], o.status in ^["pending", "checkout"])
     sub_purchased = sub |> where([tt, tb, t, o], o.status == ^"paid")
 
     # Query for ticket types and their counts

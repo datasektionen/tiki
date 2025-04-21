@@ -27,22 +27,32 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
     end
   end
 
+  alias Tiki.PurchaseMonitor
   use TikiWeb, :live_component
 
   alias Tiki.Orders
   alias Tiki.Checkouts
-  alias Tiki.Accounts
 
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
     <div>
-      <.dialog id="purchase-modal" show on_cancel={JS.push("cancel", target: @myself)} safe>
-        <div :if={@order.status == :cancelled}>
-          {gettext("Ya messed up, order is cancelled")}
+      <.dialog
+        id="purchase-modal"
+        show
+        on_cancel={JS.push("cancel", target: @myself) |> JS.dispatch("embedded:close")}
+        safe
+      >
+        <div :if={@order.status == :cancelled} class="flex w-full flex-col gap-2">
+          <h2 class="text-2xl font-semibold leading-none tracking-tight">{gettext("Error")}</h2>
+          <p class="text-muted-foreground text-sm">
+            {gettext(
+              "Something went wrong. Your order was cancelled or has expired. Please try again."
+            )}
+          </p>
         </div>
 
-        <div :if={@order.status == :pending}>
+        <div :if={@order.status in [:pending, :checkout]}>
           <div>
             <.header class="border-none">
               {gettext("Payment")}
@@ -50,7 +60,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                 {gettext(
                   "Purchase tickets for %{event}. You have %{count} minutes to complete your order.",
                   event: @event.name,
-                  count: 2
+                  count: PurchaseMonitor.timeout_minutes()
                 )}
               </:subtitle>
             </.header>
@@ -66,7 +76,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                     {tt.price * count} kr
                   </td>
                 </tr>
-                <tr class="border-border border-t-2">
+                <tr class="border-border border-t-2 text-sm font-semibold">
                   <th></th>
                   <td class="whitespace-nowrap py-1 pr-2 text-right uppercase">
                     {gettext("Total")}
@@ -79,7 +89,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             </table>
           </div>
 
-          <div :if={!(@order.swish_checkout || @order.stripe_checkout)}>
+          <div :if={@order.status == :pending}>
             <.form
               for={@form}
               phx-target={@myself}
@@ -95,10 +105,18 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                   field={@form[:payment_method]}
                   class="text-bold mt-2 flex flex-row gap-10 text-sm"
                 >
-                  <:radio value="credit_card" class="flex flex-row-reverse items-center gap-3">
+                  <:radio
+                    :if={FunWithFlags.enabled?(:stripe_enabled)}
+                    value="credit_card"
+                    class="flex flex-row-reverse items-center gap-3"
+                  >
                     {gettext("Credit card")}
                   </:radio>
-                  <:radio value="swish" class="flex flex-row-reverse items-center gap-3">
+                  <:radio
+                    :if={FunWithFlags.enabled?(:swish_enabled)}
+                    value="swish"
+                    class="flex flex-row-reverse items-center gap-3"
+                  >
                     {gettext("Swish")}
                   </:radio>
 
@@ -109,24 +127,28 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                 field={@form[:name]}
                 label={gettext("Name")}
                 placeholder={gettext("Your name")}
+                default={@current_user && @current_user.full_name}
                 phx-debounce="300"
               />
               <.input
                 field={@form[:email]}
                 label={gettext("Email")}
                 placeholder={gettext("Your email")}
+                default={@current_user && @current_user.email}
                 phx-debounce="blur-sm"
               />
 
-              <.input
-                type="checkbox"
-                field={@form[:terms_of_service]}
-                label={
-                  gettext(
-                    "I have read the terms and conditions and agree to the sale of my personal information to the highest bidder."
-                  )
-                }
-              />
+              <.input type="checkbox" field={@form[:terms_of_service]}>
+                <:checkbox_label>
+                  <div>
+                    {gettext("I agree to")} <.link
+                      href={~p"/terms"}
+                      class="text-primary underline"
+                      target="_blank"
+                    >{gettext("the terms of service")}</.link>.
+                  </div>
+                </:checkbox_label>
+              </.input>
 
               <.button type="submit">
                 {gettext("Continue")}
@@ -134,7 +156,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             </.form>
           </div>
 
-          <div :if={@order.swish_checkout} class="flex flex-col">
+          <div :if={@order.status == :checkout && @order.swish_checkout} class="flex flex-col">
             <.label>
               {gettext("Pay using Swish")}
             </.label>
@@ -150,7 +172,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
           </div>
 
           <form
-            :if={@order.stripe_checkout}
+            :if={@order.status == :checkout && @order.stripe_checkout}
             id="payment-form"
             phx-hook="InitCheckout"
             data-secret={@order.stripe_checkout.client_secret}
@@ -217,15 +239,12 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
       |> Map.put(:action, :save)
 
     with {:ok, %Response{} = response} <- Ecto.Changeset.apply_action(changeset, :save),
-         {:ok, user} <- Accounts.upsert_user_email(response.email, response.name),
-         {:ok, order} <- Orders.update_order(socket.assigns.order, %{user_id: user.id}),
-         {:ok, checkout} = init_checkout(order, response.payment_method) do
-      order =
-        case checkout do
-          %Checkouts.SwishCheckout{} = checkout -> Map.put(order, :swish_checkout, checkout)
-          %Checkouts.StripeCheckout{} -> Map.put(order, :stripe_checkout, checkout)
-        end
-
+         {:ok, order} <-
+           Orders.init_checkout(socket.assigns.order, response.payment_method, %{
+             email: response.email,
+             name: response.name,
+             locale: Gettext.get_locale(TikiWeb.Gettext)
+           }) do
       {:noreply, assign(socket, order: order)}
     else
       {:error, changeset} ->
@@ -235,9 +254,10 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
 
   def handle_event("cancel", _params, socket) do
     Orders.maybe_cancel_order(socket.assigns.order.id)
-    {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
-  end
 
-  defp init_checkout(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)
-  defp init_checkout(order, "swish"), do: Checkouts.create_swish_payment_request(order)
+    case socket.assigns.action do
+      :embedded_purchase -> {:noreply, socket}
+      _ -> {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
+    end
+  end
 end

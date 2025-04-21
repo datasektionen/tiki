@@ -2,9 +2,18 @@ defmodule Tiki.Orders.Order do
   use Tiki.Schema
   import Ecto.Changeset
 
+  # Valid transitions for an order state machine
+  @transitions %{
+    pending: [:checkout, :cancelled],
+    checkout: [:paid, :cancelled],
+    paid: [],
+    cancelled: []
+  }
+
   @primary_key {:id, Ecto.UUID, autogenerate: false}
+  # @derive {Jason.Encoder, only: [:id, :status, :price, :user_id, :event_id, :tickets, :stripe_checkout, :swish_checkout]}
   schema "orders" do
-    field :status, Ecto.Enum, values: [:pending, :paid, :cancelled], default: :pending
+    field :status, Ecto.Enum, values: [:pending, :checkout, :paid, :cancelled], default: :pending
     field :price, :integer
 
     belongs_to :user, Tiki.Accounts.User
@@ -22,5 +31,9 @@ defmodule Tiki.Orders.Order do
     order
     |> cast(attrs, [:user_id, :event_id, :status, :price])
     |> validate_required([:event_id, :status, :price])
+  end
+
+  def valid_transition?(from, to) do
+    to in Map.get(@transitions, from, [])
   end
 end

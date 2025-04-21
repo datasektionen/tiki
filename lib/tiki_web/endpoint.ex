@@ -13,6 +13,9 @@ defmodule TikiWeb.Endpoint do
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
+  # Socket for embedded use in other apps
+  socket "/embed/live", Phoenix.LiveView.Socket, websocket: true, longpoll: true
+
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest
