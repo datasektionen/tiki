@@ -81,7 +81,8 @@ defmodule Tiki.MixProject do
       {:mjml, "~> 5.0"},
       {:oban, "~> 2.18"},
       {:fun_with_flags, "~> 1.0"},
-      {:fun_with_flags_ui, "~> 1.0"}
+      {:fun_with_flags_ui, "~> 1.0"},
+      {:nimble_csv, "~> 1.2"}
     ]
   end
 
