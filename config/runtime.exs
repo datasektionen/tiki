@@ -30,9 +30,13 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  metrics_port =
+    System.get_env("METRICS_PORT") |> String.to_integer() || raise "METRICS_PORT is not set"
+
   config :tiki,
     pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se"),
-    allowed_origins: System.get_env("ALLOWED_ORIGINS", "https://metaspexet.se")
+    allowed_origins: System.get_env("ALLOWED_ORIGINS", "https://metaspexet.se"),
+    metrics_port: metrics_port
 
   config :tiki, Tiki.Repo,
     # ssl: true,

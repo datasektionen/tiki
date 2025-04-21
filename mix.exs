@@ -82,7 +82,8 @@ defmodule Tiki.MixProject do
       {:oban, "~> 2.18"},
       {:fun_with_flags, "~> 1.0"},
       {:fun_with_flags_ui, "~> 1.0"},
-      {:nimble_csv, "~> 1.2"}
+      {:nimble_csv, "~> 1.2"},
+      {:prom_ex, "~> 1.0"}
     ]
   end
 
