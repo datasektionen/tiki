@@ -303,4 +303,59 @@ defmodule Tiki.Forms do
         {:error, reason}
     end
   end
+
+  @doc """
+  Returns a list of all rsponses for a form.
+  """
+  def list_responses!(form_id) do
+    form_responses_query()
+    |> where([f], f.id == ^form_id)
+    |> Repo.one!()
+  end
+
+  NimbleCSV.define(CsvParser, separator: ",", escape: "\"")
+
+  @doc """
+  Exports all form answers for an event to a zip of csv files. Returns a tuple of
+  the file name, and the binary of the zip file.
+  """
+  def export_event_forms(event_id) do
+    # TODO: Refactor this to stream/chunk the results if this is too slow/consumes too much memory
+
+    forms =
+      form_responses_query()
+      |> where([f], f.event_id == ^event_id)
+      |> Repo.all()
+      |> Enum.map(fn form ->
+        questions = Enum.map(form.questions, fn question -> question.name end)
+
+        responses =
+          Enum.map(form.responses, fn response ->
+            Enum.map(response.question_responses, fn response ->
+              response.answer || response.multi_answer
+            end)
+          end)
+
+        {~c"#{form.name}-responses.csv",
+         [questions | responses] |> CsvParser.dump_to_iodata() |> IO.iodata_to_binary()}
+      end)
+
+    :zip.create(
+      # just a name for internal bookkeeping
+      ~c"tiki-event-#{event_id}-export-#{DateTime.utc_now() |> DateTime.to_string()}.zip",
+      forms,
+      [:memory]
+    )
+  end
+
+  defp form_responses_query() do
+    from f in Form,
+      left_join: fr in assoc(f, :responses),
+      left_join: qr in assoc(fr, :question_responses),
+      left_join: q in assoc(f, :questions),
+      preload: [
+        responses: {fr, question_responses: qr},
+        questions: q
+      ]
+  end
 end
