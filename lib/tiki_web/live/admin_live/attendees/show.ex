@@ -253,6 +253,17 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
     """
   end
 
+  defp payment_details(%{order: %{price: 0}} = assigns) do
+    ~H"""
+    <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+      <dt class="text-muted-foreground text-sm font-medium">{gettext("Payment method")}</dt>
+      <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
+        {gettext("Free")}
+      </dd>
+    </div>
+    """
+  end
+
   defp get_payment_method(order) do
     payment_method =
       cond do

@@ -11,15 +11,29 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
       field :terms_of_service, :boolean
     end
 
-    def changeset(struct, params \\ %{}) do
+    def changeset(struct, params \\ %{}, order)
+
+    def changeset(struct, params, %Tiki.Orders.Order{price: 0}) do
+      free_changeset(struct, params)
+    end
+
+    def changeset(struct, params, %Tiki.Orders.Order{price: price})
+        when price > 0 do
       struct
-      |> cast(params, [:name, :email, :payment_method, :terms_of_service])
-      |> validate_required([:name, :email, :payment_method])
+      |> cast(params, [:payment_method])
+      |> validate_required([:payment_method])
+      |> validate_inclusion(:payment_method, ~w(credit_card swish))
+      |> free_changeset(params)
+    end
+
+    defp free_changeset(struct, params) do
+      struct
+      |> cast(params, [:name, :email, :terms_of_service])
+      |> validate_required([:name, :email])
       |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/,
         message: gettext("must have the @ sign and no spaces")
       )
       |> validate_length(:email, max: 160)
-      |> validate_inclusion(:payment_method, ~w(credit_card swish))
       |> validate_acceptance(
         :terms_of_service,
         message: gettext("You must accept the terms of service.")
@@ -97,7 +111,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
               phx-submit="submit"
               class="flex w-full flex-col gap-4"
             >
-              <div>
+              <div :if={@order.price > 0}>
                 <.label for={@form[:payment_method].id}>
                   {gettext("Payment method")}
                 </.label>
@@ -207,7 +221,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
     {:ok,
      assign(socket, assigns)
      |> assign(order: order)
-     |> assign(:form, to_form(Response.changeset(%Response{})))}
+     |> assign(:form, to_form(Response.changeset(%Response{}, %{}, order)))}
   end
 
   defp set_ticket_counts(%Orders.Order{} = order) do
@@ -226,16 +240,15 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   @impl Phoenix.LiveComponent
   def handle_event("validate", %{"response" => response_params}, socket) do
     changeset =
-      Response.changeset(%Response{}, response_params)
+      Response.changeset(%Response{}, response_params, socket.assigns.order)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, form: to_form(changeset))}
   end
 
-  @impl Phoenix.LiveComponent
   def handle_event("submit", %{"response" => response_params}, socket) do
     changeset =
-      Response.changeset(%Response{}, response_params)
+      Response.changeset(%Response{}, response_params, socket.assigns.order)
       |> Map.put(:action, :save)
 
     with {:ok, %Response{} = response} <- Ecto.Changeset.apply_action(changeset, :save),
@@ -247,8 +260,11 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
            }) do
       {:noreply, assign(socket, order: order)}
     else
-      {:error, changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
+
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, reason)}
     end
   end
 

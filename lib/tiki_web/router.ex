@@ -137,6 +137,8 @@ defmodule TikiWeb.Router do
       post "/set_team", UserSessionController, :set_team
       get "/set_team/:team_id", UserSessionController, :set_team
       get "/clear_team", UserSessionController, :clear_team
+
+      get "/events/:id/attendees/form-answers/export", EventController, :export_form_answers
     end
 
     scope "/admin", AdminLive do
@@ -203,6 +205,8 @@ defmodule TikiWeb.Router do
 
           # Registrations
           live "/attendees", Attendees.Index, :index
+          live "/attendees/form-answers", Attendees.FormAnswers, :index
+
           # live "/contact", Contact.Index, :index
           live "/attendees/:ticket_id", Attendees.Show, :show
           live "/orders/:order_id", Orders.Show, :show

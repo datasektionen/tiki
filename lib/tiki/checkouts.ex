@@ -17,7 +17,6 @@ defmodule Tiki.Checkouts do
   alias Tiki.Checkouts.SwishCheckout
   alias Tiki.Orders
   alias Tiki.Orders.Order
-  alias Tiki.Tickets
 
   @doc """
   Creates a stripe payment intent with the stripe API,
@@ -97,11 +96,6 @@ defmodule Tiki.Checkouts do
 
     case Repo.transaction(multi) do
       {:ok, %{order: order}} ->
-        Orders.broadcast(
-          order.event_id,
-          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
-        )
-
         Orders.confirm_order(order)
 
         :ok
@@ -174,11 +168,6 @@ defmodule Tiki.Checkouts do
 
     case Repo.transaction(multi) do
       {:ok, %{order: order}} ->
-        Orders.broadcast(
-          order.event_id,
-          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
-        )
-
         Orders.confirm_order(order)
 
         :ok
