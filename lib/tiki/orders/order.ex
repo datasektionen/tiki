@@ -4,7 +4,7 @@ defmodule Tiki.Orders.Order do
 
   # Valid transitions for an order state machine
   @transitions %{
-    pending: [:checkout, :cancelled],
+    pending: [:checkout, :cancelled, :paid],
     checkout: [:paid, :cancelled],
     paid: [],
     cancelled: []

@@ -271,6 +271,9 @@ defmodule TikiWeb.OrderLive.Show do
 
            order.swish_checkout ->
              Tiki.Checkouts.get_swish_payment_request(order.swish_checkout.swish_id)
+
+           true ->
+             {:ok, gettext("Free")}
          end
 
        case payment_method do
@@ -343,6 +346,18 @@ defmodule TikiWeb.OrderLive.Show do
       <div class="ml-4">
         <p class="text-foreground">
           <span>+{@payment_method["payerAlias"]}</span>
+        </p>
+      </div>
+    </dd>
+    """
+  end
+
+  defp payment_method(%{payment_method: method} = assigns) when is_binary(method) do
+    ~H"""
+    <dd class="flex flex-wrap">
+      <div>
+        <p class="text-foreground">
+          <span>{@payment_method}</span>
         </p>
       </div>
     </dd>
