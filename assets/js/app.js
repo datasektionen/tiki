@@ -22,7 +22,6 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { InitCheckout } from "./checkout";
-import Sortable from "sortablejs";
 import { SearchCombobox } from "./searchCombobox";
 import Scanner from "./scanner";
 
@@ -33,30 +32,6 @@ let Hooks = {
 };
 
 let Uploaders = {};
-
-Hooks.Sortable = {
-  mounted() {
-    let batch = this.el.dataset.batch;
-    new Sortable(this.el, {
-      animation: 150,
-      ghostClass: "bg-accent/50",
-      dragClass: "bg-accent/20",
-      fallbackOnBody: true,
-      invertSwap: true,
-      swapThreshold: 0.65,
-      group: "shared",
-      onEnd: (e) => {
-        let params = {
-          old: e.oldIndex,
-          new: e.newIndex,
-          to: e.to.dataset,
-          ...e.item.dataset,
-        };
-        this.pushEventTo(this.el, "drop", params);
-      },
-    });
-  },
-};
 
 let socketUrl = window.location.pathname.startsWith("/embed/")
   ? "/embed/live"

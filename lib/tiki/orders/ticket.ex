@@ -9,6 +9,9 @@ defmodule Tiki.Orders.Ticket do
 
     has_one :form_response, Tiki.Forms.Response
 
+    field :name, :string, virtual: true
+    field :email, :string, virtual: true
+
     belongs_to :ticket_type, Tiki.Tickets.TicketType, type: :binary_id
     belongs_to :order, Tiki.Orders.Order, type: :binary_id
 

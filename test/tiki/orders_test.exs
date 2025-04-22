@@ -120,6 +120,7 @@ defmodule Tiki.OrdersTest do
         end)
         |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Repo.preload(order: [:user], ticket_type: [])
+        |> Enum.map(fn ticket -> %{ticket | email: ticket.order.user.email} end)
 
       assert Orders.list_tickets_for_event(event.id) == tickets
     end
@@ -137,6 +138,7 @@ defmodule Tiki.OrdersTest do
         end)
         |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Repo.preload(order: [:user], ticket_type: [])
+        |> Enum.map(fn ticket -> %{ticket | email: ticket.order.user.email} end)
 
       assert Orders.list_tickets_for_event(event.id, limit: 3) == Enum.take(tickets, 3)
     end
