@@ -38,7 +38,6 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
         :terms_of_service,
         message: gettext("You must accept the terms of service.")
       )
-      |> dbg()
     end
   end
 
