@@ -94,24 +94,6 @@ defmodule Tiki.Orders do
   end
 
   @doc """
-  Creates a ticket.
-
-  ## Examples
-
-      iex> create_ticket(%{field: value})
-      {:ok, %Ticket{}}
-
-      iex> create_ticket(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_ticket(attrs \\ %{}) do
-    %Ticket{}
-    |> Ticket.changeset(attrs)
-    |> Repo.insert(returning: [:id])
-  end
-
-  @doc """
   Toggles check in on a ticket in a ticket. Returns the ticket. Sets the checked in time to the current time.
 
   Options:
