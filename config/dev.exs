@@ -101,12 +101,12 @@ config :salad_ui, components_path: Path.join(File.cwd!(), "lib/tiki_web/componen
 
 config :tiki, Oidcc,
   # issuer: "http://localhost:7005/op",
-  issuer: "https://sso.datasektionen.se/op",
+  issuer: System.get_env("OIDC_ISSUER_URL", "https://sso.datasektionen.se/op"),
   client_id: System.get_env("OIDC_CLIENT_ID"),
   client_secret: System.get_env("OIDC_CLIENT_SECRET")
 
 config :tiki, Oidcc.ProviderConfiguration,
-  issuer: "https://sso.datasektionen.se/op",
+  issuer: System.get_env("OIDC_ISSUER_URL", "https://sso.datasektionen.se/op"),
   provider_configuration_opts: %{
     quirks: %{
       allow_unsafe_http: true
