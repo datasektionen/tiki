@@ -89,9 +89,8 @@ services:
       - source: nyckeln.yaml
         target: /config.yaml
     ports:
-      - 7001:7001
-      - 7002:7002
-      - 7003:7003
+      - 7001:7001 # PLS API
+      - 7003:7003 # sso
 
   app:
     build:
@@ -125,7 +124,7 @@ services:
       OIDC_ISSUER_URL: "http://localhost:7003"
 
       # PLS stuff, see permissions below
-      PLS_URL: "http://nyckeln:7002"
+      PLS_URL: "http://nyckeln:7001"
     ports:
       - "4000:4000"
     configs:
