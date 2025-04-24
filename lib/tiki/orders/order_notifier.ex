@@ -189,7 +189,9 @@ defmodule Tiki.Orders.OrderNotifier do
     end
   end
 
-  defp format_date(datetime) do
-    Calendar.strftime(datetime, "%Y%m%dT%H%M%SZ")
+  defp format_date(%DateTime{} = datetime) do
+    datetime
+    |> DateTime.shift_zone!("Etc/UTC")
+    |> Calendar.strftime("%Y%m%dT%H%M%SZ")
   end
 end
