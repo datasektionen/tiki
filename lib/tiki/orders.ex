@@ -99,7 +99,7 @@ defmodule Tiki.Orders do
   Options:
     * `:check_out` - If true, removes the checked in time from the ticket if it was previously checked in. Defaults to true.
   """
-  def toggle_check_in(ticket_id, opts \\ []) do
+  def toggle_check_in(event_id, ticket_id, opts \\ []) do
     transaction =
       Repo.transaction(fn ->
         ticket =
@@ -109,6 +109,9 @@ defmodule Tiki.Orders do
             %Ticket{} = ticket -> ticket
             nil -> Repo.rollback(gettext("Ticket not found"))
           end
+
+        if ticket.order.event_id != event_id,
+          do: Repo.rollback(gettext("Ticket not valid for event"))
 
         case ticket.checked_in_at do
           nil ->

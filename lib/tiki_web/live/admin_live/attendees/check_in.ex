@@ -57,7 +57,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
     do: toggle_check_in(socket, ticket_id)
 
   defp toggle_check_in(socket, ticket_id, opts \\ []) do
-    case Orders.toggle_check_in(ticket_id, opts) do
+    case Orders.toggle_check_in(socket.assigns.event.id, ticket_id, opts) do
       {:ok, ticket} ->
         {:noreply,
          stream_insert(socket, :tickets, ticket)
