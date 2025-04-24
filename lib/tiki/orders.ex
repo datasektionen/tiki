@@ -3,6 +3,8 @@ defmodule Tiki.Orders do
   The Orders context.
   """
 
+  use Gettext, backend: TikiWeb.Gettext
+
   import Ecto.Query, warn: false
   alias Tiki.Accounts
   alias Tiki.Checkouts
@@ -89,6 +91,47 @@ defmodule Tiki.Orders do
         ]
 
     Repo.one!(query)
+  end
+
+  @doc """
+  Toggles check in on a ticket in a ticket. Returns the ticket. Sets the checked in time to the current time.
+
+  Options:
+    * `:check_out` - If true, removes the checked in time from the ticket if it was previously checked in. Defaults to true.
+  """
+  def toggle_check_in(event_id, ticket_id, opts \\ []) do
+    transaction =
+      Repo.transaction(fn ->
+        ticket =
+          case tickets_query()
+               |> where([t], t.id == ^ticket_id)
+               |> Repo.one() do
+            %Ticket{} = ticket -> ticket
+            nil -> Repo.rollback(gettext("Ticket not found"))
+          end
+
+        if ticket.order.event_id != event_id,
+          do: Repo.rollback(gettext("Ticket not valid for event"))
+
+        case ticket.checked_in_at do
+          nil ->
+            Repo.update!(Ticket.changeset(ticket, %{checked_in_at: DateTime.utc_now()}))
+
+          _ ->
+            if Keyword.get(opts, :check_out, true),
+              do: Repo.update!(Ticket.changeset(ticket, %{checked_in_at: nil})),
+              else: Repo.rollback(gettext("Ticket already checked in"))
+        end
+      end)
+
+    case transaction do
+      {:ok, ticket} ->
+        broadcast_ticket(ticket.order.event_id, ticket)
+        {:ok, ticket}
+
+      err ->
+        err
+    end
   end
 
   @doc """
@@ -334,28 +377,77 @@ defmodule Tiki.Orders do
 
   Options:
     * `:limit` - The maximum number of tickets to return.
+    * `:query` - Search query to filter the tickets by, by searching the ticket name or order name.
+    * `:ticket_type` - Filter the tickets by ticket type.
 
   ## Examples
 
       iex> list_tickets_for_event(event_id)
       [%Ticket{ticket_type: %TicketType{}}, %Order{user: %User{}}], ...]
+
+      iex> list_tickets_for_event(event_id, query: "John Doe", ticket_type: "asdfsadf-sadfsadf", limit: 10)
+      [%Ticket{ticket_type: %TicketType{}}, %Order{user: %User{}}], ...]
   """
   def list_tickets_for_event(event_id, opts \\ []) do
+    tickets_query()
+    |> where([_t, o], o.event_id == ^event_id)
+    |> if_not_empty(Keyword.get(opts, :query), fn query, search_term ->
+      query
+      |> where(
+        [..., u, r],
+        fragment(
+          "word_similarity(COALESCE(?, ?), ?) > 0.2",
+          r.name,
+          u.full_name,
+          ^search_term
+        )
+      )
+      |> order_by(
+        [..., u, r],
+        fragment("word_similarity(COALESCE(?, ?), ?)", r.name, u.full_name, ^search_term)
+      )
+    end)
+    |> if_not_empty(Keyword.get(opts, :ticket_type), fn query, type ->
+      where(query, [t], t.ticket_type_id == ^type)
+    end)
+    |> if_not_empty(Keyword.get(opts, :limit), fn query, limit -> limit(query, ^limit) end)
+    |> Repo.all()
+  end
+
+  defp if_not_empty(query, arg, fun) when is_function(fun, 2) do
+    case arg do
+      nil -> query
+      "" -> query
+      arg -> fun.(query, arg)
+    end
+  end
+
+  defp tickets_query() do
     from(t in Ticket,
       join: o in assoc(t, :order),
       join: tt in assoc(t, :ticket_type),
       join: u in assoc(o, :user),
+      left_join:
+        response in subquery(
+          from r in Tiki.Forms.Response,
+            join: qr in assoc(r, :question_responses),
+            join: q in assoc(qr, :question),
+            where: q.type == :attendee_name or q.type == :email,
+            select: %{
+              ticket_id: r.ticket_id,
+              name: fragment("MAX(CASE WHEN ? = 'attendee_name' THEN ? END)", q.type, qr.answer),
+              email: fragment("MAX(CASE WHEN ? = 'email' THEN ? END)", q.type, qr.answer)
+            },
+            group_by: r.ticket_id
+        ),
+      on: response.ticket_id == t.id,
       order_by: [desc: o.inserted_at],
-      where: o.event_id == ^event_id,
-      preload: [ticket_type: tt, order: {o, user: u}]
+      preload: [ticket_type: tt, order: {o, user: u}],
+      select_merge: %{
+        name: fragment("COALESCE(?, ?)", response.name, u.full_name),
+        email: fragment("COALESCE(?, ?)", response.email, u.email)
+      }
     )
-    |> then(fn query ->
-      case Keyword.get(opts, :limit) do
-        nil -> query
-        limit -> query |> limit(^limit)
-      end
-    end)
-    |> Repo.all()
   end
 
   @doc """
@@ -394,8 +486,16 @@ defmodule Tiki.Orders do
     PubSub.broadcast(Tiki.PubSub, "event:#{event_id}", message)
   end
 
+  def broadcast_ticket(event_id, ticket) do
+    PubSub.broadcast(Tiki.PubSub, "event:#{event_id}:tickets", {:ticket_updated, ticket})
+  end
+
   def subscribe(event_id, :purchases) do
     PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:purchases")
+  end
+
+  def subscribe(event_id, :tickets) do
+    PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:tickets")
   end
 
   def subscribe_to_order(order_id) do
