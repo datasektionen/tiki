@@ -52,16 +52,8 @@ defmodule TikiWeb.CoreComponents do
       {@rest}
     >
       <div class="flex flex-row items-start gap-2 leading-none tracking-tight">
-        <.icon
-          :if={@kind == :info}
-          name="hero-check-circle-mini"
-          class="text-success mask-no-repeat size-4 shrink-0"
-        />
-        <.icon
-          :if={@kind == :error}
-          name="hero-exclamation-triangle-mini"
-          class="text-error mask-no-repeat size-4 shrink-0"
-        />
+        <.icon :if={@kind == :info} name="hero-check-circle-mini" class="text-success size-4" />
+        <.icon :if={@kind == :error} name="hero-exclamation-triangle-mini" class="text-error size-4" />
 
         <div class="flex flex-col">
           <div :if={@title} class="mb-1 font-medium leading-none tracking-tight">{@title}</div>
