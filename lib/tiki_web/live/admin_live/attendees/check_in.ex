@@ -196,8 +196,14 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
             class="w-full"
             on_cancel={JS.push("clear_ticket")}
           >
-            <div :if={!@ticket} class="divide-accent mt-12 flex flex-col gap-2 divide-y">
-              <.skeleton :for={_ <- 1..4} class="h-18 w-full" />
+            <div :if={!@ticket} class="">
+              <h3 class="text-foreground text-lg font-semibold">{gettext("Ticket Details")}</h3>
+
+              <dl class="divide-accent border-accent mt-4 divide-y border-y">
+                <div :for={_ <- 1..6}>
+                  <.skeleton class="my-3 h-10 w-full" />
+                </div>
+              </dl>
             </div>
 
             <div :if={@ticket}>
