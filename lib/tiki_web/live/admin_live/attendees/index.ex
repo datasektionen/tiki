@@ -7,6 +7,8 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   import TikiWeb.Component.Card
   import TikiWeb.Component.Badge
 
+  @page_size 50
+
   def render(assigns) do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">
@@ -33,7 +35,13 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
       </.form>
 
       <.card class="sm:col-span-6">
-        <ul id="tickets" phx-update="stream" role="list" class="divide-accent divide-y">
+        <ul
+          id="tickets"
+          phx-update="stream"
+          role="list"
+          class="divide-accent divide-y"
+          phx-viewport-bottom={(!@query || @query == "") && JS.push("load_more")}
+        >
           <.ticket_item :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
         </ul>
       </.card>
@@ -45,8 +53,8 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     event = Events.get_event!(event_id)
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
-      tickets = Orders.list_tickets_for_event(event_id)
-      num_tickets = Enum.count(tickets)
+      %{entries: tickets, metadata: metadata} =
+        Orders.list_tickets_for_event(event_id, limit: @page_size, paginate: %{after: nil})
 
       if connected?(socket), do: Orders.subscribe(event_id, :purchases)
 
@@ -54,7 +62,8 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
        socket
        |> assign(event: event)
        |> assign(query: nil)
-       |> assign(num_tickets: num_tickets)
+       |> assign(num_tickets: metadata.total_count)
+       |> assign(metadata: metadata)
        |> stream(:tickets, tickets)
        |> assign(:empty?, Enum.empty?(tickets))}
     else
@@ -78,15 +87,29 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   end
 
   def handle_event("filter", %{"query" => query}, socket) do
-    tickets =
+    %{entries: tickets, metadata: metadata} =
       Orders.list_tickets_for_event(socket.assigns.event.id,
-        query: query
+        query: query,
+        limit: @page_size,
+        paginate: %{after: nil}
       )
 
     {:noreply,
      assign(socket, query: query)
      |> stream(:tickets, tickets, reset: true)
+     |> assign(:metadata, metadata)
      |> assign(:empty?, Enum.empty?(tickets))}
+  end
+
+  def handle_event("load_more", _, socket) do
+    %{entries: tickets, metadata: metadata} =
+      Orders.list_tickets_for_event(socket.assigns.event.id,
+        query: socket.assigns.query,
+        limit: @page_size,
+        paginate: %{after: socket.assigns.metadata.after}
+      )
+
+    {:noreply, assign(socket, metadata: metadata) |> stream(:tickets, tickets)}
   end
 
   def handle_info({:order_confirmed, order}, socket) do

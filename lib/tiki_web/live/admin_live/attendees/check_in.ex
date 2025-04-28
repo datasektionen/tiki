@@ -9,44 +9,63 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
   import TikiWeb.Component.Badge
   import TikiWeb.Component.Input
   import TikiWeb.Component.Tabs
+  import TikiWeb.Component.Sheet
+  import TikiWeb.Component.Skeleton
+
+  @page_size 50
 
   def mount(%{"id" => event_id}, _session, socket) do
     event = Events.get_event!(event_id)
-    tickets = Orders.list_tickets_for_event(event_id)
 
-    ticket_types =
-      Tickets.get_cached_available_ticket_types(event_id) |> Enum.map(&{&1.name, &1.id})
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      %{entries: tickets, metadata: metadata} =
+        Orders.list_tickets_for_event(event_id, limit: @page_size, paginate: %{after: nil})
 
-    if connected?(socket) do
-      Orders.subscribe(event_id, :tickets)
+      ticket_types =
+        Tickets.get_cached_available_ticket_types(event_id) |> Enum.map(&{&1.name, &1.id})
+
+      if connected?(socket) do
+        Orders.subscribe(event_id, :tickets)
+      end
+
+      {:ok,
+       socket
+       |> assign(event: event)
+       |> assign(page_title: gettext("Check-in"))
+       |> assign(query: nil, filtered_ticket_type: nil)
+       |> assign(:ticket_types, ticket_types)
+       |> assign(:empty?, Enum.empty?(tickets))
+       |> assign(:ticket, nil)
+       |> assign(:metadata, metadata)
+       |> stream(:tickets, tickets)
+       |> assign_breadcrumbs([
+         {"Dashboard", ~p"/admin/"},
+         {"Events", ~p"/admin/events"},
+         {event.name, ~p"/admin/events/#{event.id}"},
+         {"Check-in", ~p"/admin/events/#{event.id}/check-in"}
+       ])}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
     end
-
-    {:ok,
-     socket
-     |> assign(event: event)
-     |> assign(page_title: gettext("Check-in"))
-     |> assign(query: nil, filtered_ticket_type: nil)
-     |> stream(:tickets, tickets)
-     |> assign(:ticket_types, ticket_types)
-     |> assign(:empty?, Enum.empty?(tickets))
-     |> assign_breadcrumbs([
-       {"Dashboard", ~p"/admin/"},
-       {"Events", ~p"/admin/events"},
-       {event.name, ~p"/admin/events/#{event.id}"},
-       {"Check-in", ~p"/admin/events/#{event.id}/check-in"}
-     ])}
   end
 
   def handle_event("filter", %{"query" => query, "filter" => filter}, socket) do
-    tickets =
+    %{entries: tickets, metadata: metadata} =
       Orders.list_tickets_for_event(socket.assigns.event.id,
         query: query,
-        ticket_type: filter
+        ticket_type: filter,
+        limit: @page_size,
+        paginate: %{after: nil}
       )
 
     {:noreply,
      assign(socket, query: query, filtered_ticket_type: filter)
      |> stream(:tickets, tickets, reset: true)
+     |> assign(:metadata, metadata)
      |> assign(:empty?, Enum.empty?(tickets))}
   end
 
@@ -55,6 +74,27 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
 
   def handle_event("check_in", %{"ticket_id" => ticket_id}, socket),
     do: toggle_check_in(socket, ticket_id)
+
+  def handle_event("select_ticket", %{"ticket_id" => ticket_id}, socket) do
+    ticket = Orders.get_ticket!(ticket_id)
+
+    {:noreply, assign(socket, ticket: ticket)}
+  end
+
+  def handle_event("clear_ticket", _params, socket) do
+    {:noreply, assign(socket, ticket: nil)}
+  end
+
+  def handle_event("load_more", _, socket) do
+    %{entries: tickets, metadata: metadata} =
+      Orders.list_tickets_for_event(socket.assigns.event.id,
+        query: socket.assigns.query,
+        limit: @page_size,
+        paginate: %{after: socket.assigns.metadata.after}
+      )
+
+    {:noreply, assign(socket, metadata: metadata) |> stream(:tickets, tickets)}
+  end
 
   defp toggle_check_in(socket, ticket_id, opts \\ []) do
     case Orders.toggle_check_in(socket.assigns.event.id, ticket_id, opts) do
@@ -127,7 +167,13 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
                   {gettext("No tickets")}
                 </span>
               </li>
-              <ul id="tickets" role="list" phx-update="stream" class="divide-accent divide-y">
+              <ul
+                id="tickets"
+                role="list"
+                phx-update="stream"
+                class="divide-accent divide-y"
+                phx-viewport-bottom={(!@query || @query == "") && JS.push("load_more")}
+              >
                 <.ticket_item :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
               </ul>
             </.card>
@@ -142,6 +188,82 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
           </.button>
           <video id="video" phx-hook="Scanner" class="h-full w-full rounded-xl"></video>
         </.tabs_content>
+
+        <.sheet>
+          <.sheet_content
+            id="ticket-details"
+            side="right"
+            class="w-full"
+            on_cancel={JS.push("clear_ticket")}
+          >
+            <div :if={!@ticket} class="">
+              <h3 class="text-foreground text-lg font-semibold">{gettext("Ticket Details")}</h3>
+
+              <dl class="divide-accent border-accent mt-4 divide-y border-y">
+                <div :for={_ <- 1..6}>
+                  <.skeleton class="my-3 h-10 w-full" />
+                </div>
+              </dl>
+            </div>
+
+            <div :if={@ticket}>
+              <h3 class="text-foreground text-lg font-semibold">{gettext("Ticket Details")}</h3>
+
+              <dl class="divide-accent border-accent mt-4 divide-y border-y">
+                <.list_item name={gettext("Order name")}>
+                  {@ticket.order.user.full_name}
+                </.list_item>
+                <.list_item name={gettext("Order email")}>
+                  {@ticket.order.user.email}
+                </.list_item>
+                <.list_item name={gettext("Signed up at")}>
+                  {time_to_string(@ticket.order.updated_at, format: :short)}
+                </.list_item>
+                <.list_item name={gettext("Checked in at")}>
+                  <span :if={is_nil(@ticket.checked_in_at)}>
+                    {gettext("Not checked in")}
+                  </span>
+                  <span>
+                    {time_to_string(@ticket.checked_in_at, format: :short)}
+                  </span>
+                </.list_item>
+
+                <.list_item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</.list_item>
+                <div
+                  :if={!@ticket.form_response}
+                  class="flex flex-row items-center px-4 py-5 sm:gap-4 sm:px-6"
+                >
+                  <.icon name="hero-exclamation-triangle" class="text-destructive" />
+                  <dt class="text-foreground text-sm">
+                    {gettext("Attendeee has not filled in the required ticket information")}
+                  </dt>
+                </div>
+
+                <%= if @ticket.form_response do %>
+                  <.list_item
+                    :for={qr <- @ticket.form_response.question_responses}
+                    name={qr.question.name}
+                  >
+                    {qr}
+                  </.list_item>
+                <% end %>
+              </dl>
+
+              <.button
+                type="submit"
+                variant="outline"
+                class="mt-4 w-full"
+                phx-click={
+                  JS.exec("phx-hide-sheet", to: "#ticket-details")
+                  |> JS.push("clear_ticket")
+                  |> JS.push("check_in", value: %{ticket_id: @ticket.id})
+                }
+              >
+                {if @ticket.checked_in_at, do: gettext("Check out"), else: gettext("Check in")}
+              </.button>
+            </div>
+          </.sheet_content>
+        </.sheet>
       </.tabs>
     </div>
     """
@@ -167,9 +289,14 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
     >
       <div class="min-w-0">
         <div class="flex items-start gap-x-3">
-          <p :if={@ticket.name} class="text-foreground text-sm font-semibold leading-6">
+          <.sheet_trigger
+            :if={@ticket.name}
+            target="ticket-details"
+            class="text-foreground text-sm font-semibold leading-6 underline"
+            click={JS.push("select_ticket", value: %{ticket_id: @ticket.id})}
+          >
             {@ticket.name}
-          </p>
+          </.sheet_trigger>
           <.badge variant="outline">
             <.icon name="hero-ticket-mini" class="text-muted-foreground mr-1 inline-block h-2 w-2" />
             <span class="text-muted-foreground text-xs font-normal">{@ticket.ticket_type.name}</span>
@@ -180,6 +307,17 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
         <.input type="checkbox" name="ticket_id" value={@ticket.id} checked={@ticket.checked_in_at} />
       </div>
     </li>
+    """
+  end
+
+  defp list_item(assigns) do
+    ~H"""
+    <div class="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+      <dt class="text-muted-foreground text-sm font-medium">{@name}</dt>
+      <dd class="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
+        {render_slot(@inner_block)}
+      </dd>
+    </div>
     """
   end
 end

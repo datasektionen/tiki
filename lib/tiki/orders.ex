@@ -379,6 +379,9 @@ defmodule Tiki.Orders do
     * `:limit` - The maximum number of tickets to return.
     * `:query` - Search query to filter the tickets by, by searching the ticket name or order name.
     * `:ticket_type` - Filter the tickets by ticket type.
+    * `:paginate` - A map of pagination options, needs to contain an `after` key,
+       which is the cursor to use for pagination and may be `nil` to get the first page. Does not paginate if
+       using a search query.
 
   ## Examples
 
@@ -389,6 +392,56 @@ defmodule Tiki.Orders do
       [%Ticket{ticket_type: %TicketType{}}, %Order{user: %User{}}], ...]
   """
   def list_tickets_for_event(event_id, opts \\ []) do
+    list_tickets_for_event(event_id, Keyword.get(opts, :paginate, false), opts)
+  end
+
+  defp list_tickets_for_event(event_id, false, opts) do
+    tickets_query()
+    |> where([_t, o], o.event_id == ^event_id)
+    |> if_not_empty(Keyword.get(opts, :query), fn query, search_term ->
+      query
+      |> where(
+        [..., u, r],
+        fragment(
+          "word_similarity(COALESCE(?, ?), ?) > 0.2",
+          r.name,
+          u.full_name,
+          ^search_term
+        )
+      )
+      |> order_by(
+        [..., u, r],
+        fragment(
+          "word_similarity(COALESCE(?, ?), ?)",
+          r.name,
+          u.full_name,
+          ^search_term
+        )
+      )
+    end)
+    |> if_not_empty(Keyword.get(opts, :ticket_type), fn query, type ->
+      where(query, [t], t.ticket_type_id == ^type)
+    end)
+    |> if_not_empty(Keyword.get(opts, :limit), fn query, limit -> limit(query, ^limit) end)
+    |> Repo.all()
+  end
+
+  defp list_tickets_for_event(event_id, %{after: cursor}, opts) do
+    limit = Keyword.get(opts, :limit) || raise "limit is required for paginated query"
+
+    pagination_options =
+      [
+        cursor_fields: [{{:order, :inserted_at}, :desc}],
+        limit: limit
+      ]
+      |> then(fn options ->
+        if Keyword.get(opts, :query) in [nil, ""] do
+          Keyword.put(options, :after, cursor)
+        else
+          options
+        end
+      end)
+
     tickets_query()
     |> where([_t, o], o.event_id == ^event_id)
     |> if_not_empty(Keyword.get(opts, :query), fn query, search_term ->
@@ -410,8 +463,7 @@ defmodule Tiki.Orders do
     |> if_not_empty(Keyword.get(opts, :ticket_type), fn query, type ->
       where(query, [t], t.ticket_type_id == ^type)
     end)
-    |> if_not_empty(Keyword.get(opts, :limit), fn query, limit -> limit(query, ^limit) end)
-    |> Repo.all()
+    |> Repo.paginate(pagination_options)
   end
 
   defp if_not_empty(query, arg, fun) when is_function(fun, 2) do
@@ -425,6 +477,7 @@ defmodule Tiki.Orders do
   defp tickets_query() do
     from(t in Ticket,
       join: o in assoc(t, :order),
+      as: :order,
       join: tt in assoc(t, :ticket_type),
       join: u in assoc(o, :user),
       left_join:
