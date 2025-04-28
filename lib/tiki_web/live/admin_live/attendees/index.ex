@@ -122,9 +122,9 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     {:noreply, socket}
   end
 
-  attr(:id, :any)
-  attr(:ticket, :map)
-  attr(:rest, :global)
+  attr :id, :any
+  attr :ticket, :map
+  attr :rest, :global
 
   defp ticket_item(assigns) do
     ~H"""
