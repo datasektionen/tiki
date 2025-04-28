@@ -12,44 +12,60 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
   import TikiWeb.Component.Sheet
   import TikiWeb.Component.Skeleton
 
+  @page_size 50
+
   def mount(%{"id" => event_id}, _session, socket) do
     event = Events.get_event!(event_id)
-    tickets = Orders.list_tickets_for_event(event_id)
 
-    ticket_types =
-      Tickets.get_cached_available_ticket_types(event_id) |> Enum.map(&{&1.name, &1.id})
+    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+      %{entries: tickets, metadata: metadata} =
+        Orders.list_tickets_for_event(event_id, limit: @page_size, paginate: %{after: nil})
 
-    if connected?(socket) do
-      Orders.subscribe(event_id, :tickets)
+      ticket_types =
+        Tickets.get_cached_available_ticket_types(event_id) |> Enum.map(&{&1.name, &1.id})
+
+      if connected?(socket) do
+        Orders.subscribe(event_id, :tickets)
+      end
+
+      {:ok,
+       socket
+       |> assign(event: event)
+       |> assign(page_title: gettext("Check-in"))
+       |> assign(query: nil, filtered_ticket_type: nil)
+       |> assign(:ticket_types, ticket_types)
+       |> assign(:empty?, Enum.empty?(tickets))
+       |> assign(:ticket, nil)
+       |> assign(:metadata, metadata)
+       |> stream(:tickets, tickets)
+       |> assign_breadcrumbs([
+         {"Dashboard", ~p"/admin/"},
+         {"Events", ~p"/admin/events"},
+         {event.name, ~p"/admin/events/#{event.id}"},
+         {"Check-in", ~p"/admin/events/#{event.id}/check-in"}
+       ])}
+    else
+      {:error, :unauthorized} ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
     end
-
-    {:ok,
-     socket
-     |> assign(event: event)
-     |> assign(page_title: gettext("Check-in"))
-     |> assign(query: nil, filtered_ticket_type: nil)
-     |> assign(:ticket_types, ticket_types)
-     |> assign(:empty?, Enum.empty?(tickets))
-     |> assign(:ticket, nil)
-     |> stream(:tickets, tickets)
-     |> assign_breadcrumbs([
-       {"Dashboard", ~p"/admin/"},
-       {"Events", ~p"/admin/events"},
-       {event.name, ~p"/admin/events/#{event.id}"},
-       {"Check-in", ~p"/admin/events/#{event.id}/check-in"}
-     ])}
   end
 
   def handle_event("filter", %{"query" => query, "filter" => filter}, socket) do
-    tickets =
+    %{entries: tickets, metadata: metadata} =
       Orders.list_tickets_for_event(socket.assigns.event.id,
         query: query,
-        ticket_type: filter
+        ticket_type: filter,
+        limit: @page_size,
+        paginate: %{after: nil}
       )
 
     {:noreply,
      assign(socket, query: query, filtered_ticket_type: filter)
      |> stream(:tickets, tickets, reset: true)
+     |> assign(:metadata, metadata)
      |> assign(:empty?, Enum.empty?(tickets))}
   end
 
@@ -67,6 +83,17 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
 
   def handle_event("clear_ticket", _params, socket) do
     {:noreply, assign(socket, ticket: nil)}
+  end
+
+  def handle_event("load_more", _, socket) do
+    %{entries: tickets, metadata: metadata} =
+      Orders.list_tickets_for_event(socket.assigns.event.id,
+        query: socket.assigns.query,
+        limit: @page_size,
+        paginate: %{after: socket.assigns.metadata.after}
+      )
+
+    {:noreply, assign(socket, metadata: metadata) |> stream(:tickets, tickets)}
   end
 
   defp toggle_check_in(socket, ticket_id, opts \\ []) do
@@ -140,7 +167,13 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
                   {gettext("No tickets")}
                 </span>
               </li>
-              <ul id="tickets" role="list" phx-update="stream" class="divide-accent divide-y">
+              <ul
+                id="tickets"
+                role="list"
+                phx-update="stream"
+                class="divide-accent divide-y"
+                phx-viewport-bottom={(!@query || @query == "") && JS.push("load_more")}
+              >
                 <.ticket_item :for={{id, ticket} <- @streams.tickets} ticket={ticket} id={id} />
               </ul>
             </.card>

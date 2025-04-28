@@ -380,7 +380,8 @@ defmodule Tiki.Orders do
     * `:query` - Search query to filter the tickets by, by searching the ticket name or order name.
     * `:ticket_type` - Filter the tickets by ticket type.
     * `:paginate` - A map of pagination options, needs to contain an `after` key,
-       which is the cursor to use for pagination and may be `nil` to get the first page.
+       which is the cursor to use for pagination and may be `nil` to get the first page. Does not paginate if
+       using a search query.
 
   ## Examples
 
@@ -430,7 +431,6 @@ defmodule Tiki.Orders do
 
     pagination_options =
       [
-        include_total_count: true,
         cursor_fields: [{{:order, :inserted_at}, :desc}],
         limit: limit
       ]

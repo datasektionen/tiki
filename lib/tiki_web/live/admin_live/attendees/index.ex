@@ -7,6 +7,8 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   import TikiWeb.Component.Card
   import TikiWeb.Component.Badge
 
+  @page_size 50
+
   def render(assigns) do
     ~H"""
     <div class="grid gap-4 sm:grid-cols-6">
@@ -52,7 +54,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       %{entries: tickets, metadata: metadata} =
-        Orders.list_tickets_for_event(event_id, limit: 5, paginate: %{after: nil})
+        Orders.list_tickets_for_event(event_id, limit: @page_size, paginate: %{after: nil})
 
       if connected?(socket), do: Orders.subscribe(event_id, :purchases)
 
@@ -88,7 +90,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     %{entries: tickets, metadata: metadata} =
       Orders.list_tickets_for_event(socket.assigns.event.id,
         query: query,
-        limit: 10,
+        limit: @page_size,
         paginate: %{after: nil}
       )
 
@@ -103,7 +105,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     %{entries: tickets, metadata: metadata} =
       Orders.list_tickets_for_event(socket.assigns.event.id,
         query: socket.assigns.query,
-        limit: 5,
+        limit: @page_size,
         paginate: %{after: socket.assigns.metadata.after}
       )
 
