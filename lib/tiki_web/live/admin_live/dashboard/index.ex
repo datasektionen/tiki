@@ -14,6 +14,8 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
     with :ok <- Policy.authorize(:event_manage, user, team) do
       events = Events.list_team_events(team.id)
 
+      stats = Tiki.Teams.get_team_stats!(team.id)
+
       recent_tickets =
         Orders.list_team_orders(team.id, limit: 10, status: [:paid])
         |> Enum.flat_map(fn order ->
@@ -26,6 +28,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
        socket
        |> stream(:events, events)
        |> stream(:recent_tickets, recent_tickets)
+       |> assign(:stats, stats)
        |> assign(:page_title, gettext("Dashboard"))
        |> assign_breadcrumbs([
          {"Dashboard", ~p"/admin"}
@@ -52,9 +55,9 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
             <.icon name="hero-calendar" class="text-muted-foreground h-4 w-4" />
           </.card_header>
           <.card_content>
-            <div class="text-2xl font-bold">N/A</div>
+            <div class="text-2xl font-bold">{@stats.total_events}</div>
             <p class="text-muted-foreground text-xs">
-              +N/A {gettext("from last month")}
+              +{@stats.total_events - @stats.last_month.total_events} {gettext("from last month")}
             </p>
           </.card_content>
         </.card>
@@ -66,9 +69,11 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
             <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
           </.card_header>
           <.card_content>
-            <div class="text-2xl font-bold">N/A</div>
+            <div class="text-2xl font-bold">{@stats.tickets_sold}</div>
             <p class="text-muted-foreground text-xs">
-              +N/A {gettext("from last month")}
+              +{Decimal.sub(@stats.tickets_sold, @stats.last_month.tickets_sold)} {gettext(
+                "from last month"
+              )}
             </p>
           </.card_content>
         </.card>
@@ -80,9 +85,13 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
             <.icon name="hero-banknotes" class="text-muted-foreground h-4 w-4" />
           </.card_header>
           <.card_content>
-            <div class="text-2xl font-bold">N/A</div>
+            <div class="text-2xl font-bold">
+              {sold_per_event(@stats)}
+            </div>
             <p class="text-muted-foreground text-xs">
-              +N/A {gettext("from last month")}
+              +{sold_per_event(@stats)
+              |> Decimal.sub(sold_per_event(@stats.last_month))
+              |> Decimal.round(0, :down)} {gettext("from last month")}
             </p>
           </.card_content>
         </.card>
@@ -94,9 +103,11 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
             <.icon name="hero-ticket" class="text-muted-foreground h-4 w-4" />
           </.card_header>
           <.card_content>
-            <div class="text-2xl font-bold">N/A</div>
+            <div class="text-2xl font-bold">{format_sek(@stats.total_sales)}</div>
             <p class="text-muted-foreground text-xs">
-              +N/A {gettext("from last month")}
+              +{(@stats.total_sales - @stats.last_month.total_sales) |> format_sek()} {gettext(
+                "from last month"
+              )}
             </p>
           </.card_content>
         </.card>
@@ -165,5 +176,12 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
       </div>
     </div>
     """
+  end
+
+  defp sold_per_event(stats) do
+    case stats.total_events do
+      0 -> 0
+      _ -> Decimal.div_int(stats.tickets_sold, stats.total_events)
+    end
   end
 end
