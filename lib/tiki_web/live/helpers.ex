@@ -41,4 +41,8 @@ defmodule TikiWeb.LiveHelpers do
     |> Imgproxy.resize(width, height)
     |> to_string()
   end
+
+  def format_sek(amount) do
+    "#{Tiki.Cldr.Number.to_string!(amount, format: "#,##0")} SEK"
+  end
 end

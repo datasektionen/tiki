@@ -113,7 +113,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
           </.card_header>
           <.card_content>
             <div class="text-2xl font-bold">
-              {Tiki.Cldr.Number.to_string!(@stats.total_sales, format: "#,##0")} SEK
+              {format_sek(@stats.total_sales)}
             </div>
           </.card_content>
         </.card>
