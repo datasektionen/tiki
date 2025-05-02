@@ -48,7 +48,7 @@ defmodule Swish do
   """
   @callback create_payment_request(float()) ::
               {:ok, success_response()} | {:error, [map()] | String.t()}
-  def create_payment_request(amount) do
+  def create_payment_request(amount, options \\ %{}) do
     _ = :crypto.rand_seed()
     id = for _ <- 1..32, into: "", do: <<Enum.at(@alphabet, :rand.uniform(@alph_len) - 1)>>
 
@@ -56,13 +56,16 @@ defmodule Swish do
       for _ <- 1..36, into: "", do: <<Enum.at(@full_alphabet, :rand.uniform(@full_alph_len) - 1)>>
 
     payment_request =
-      %{
-        "amount" => amount,
-        "payeeAlias" => Application.get_env(:tiki, Swish)[:merchant_number],
-        "currency" => "SEK",
-        "callbackUrl" => Application.get_env(:tiki, Swish)[:callback_url],
-        "callbackIdentifier" => callback_identifier
-      }
+      Map.merge(
+        options,
+        %{
+          "amount" => amount,
+          "payeeAlias" => Application.get_env(:tiki, Swish)[:merchant_number],
+          "currency" => "SEK",
+          "callbackUrl" => Application.get_env(:tiki, Swish)[:callback_url],
+          "callbackIdentifier" => callback_identifier
+        }
+      )
 
     res =
       Req.put(base_request(),

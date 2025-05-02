@@ -113,7 +113,11 @@ defmodule Tiki.Checkouts do
   and creates a Swish checkout in the database. Returns the request.
   """
   def create_swish_payment_request(%Order{user_id: user_id, price: price} = order) do
-    with {:ok, swish_request} <- @swish.create_payment_request(price),
+    with {:ok, swish_request} <-
+           @swish.create_payment_request(price, %{
+             "message" => order.event.name |> String.slice(0, 50),
+             "payeePaymentReference" => order.id |> String.replace("-", "")
+           }),
          {:ok, checkout} <-
            create_swish_checkout(
              Map.merge(swish_request, %{user_id: user_id, order_id: order.id})
