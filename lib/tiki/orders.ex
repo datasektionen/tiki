@@ -294,7 +294,10 @@ defmodule Tiki.Orders do
   end
 
   defp create_payment(order, "credit_card"), do: Checkouts.create_stripe_payment_intent(order)
-  defp create_payment(order, "swish"), do: Checkouts.create_swish_payment_request(order)
+
+  defp create_payment(%Order{event: %Tiki.Events.Event{}} = order, "swish"),
+    do: Checkouts.create_swish_payment_request(order)
+
   defp create_payment(_order, _), do: {:error, "not a valid payment method"}
 
   defp put_checkout(order, %Checkouts.SwishCheckout{} = checkout),

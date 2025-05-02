@@ -48,7 +48,7 @@ job "tiki" {
         data        = <<EOF
 {{ with nomadVar "nomad/jobs/tiki" }}
 DATABASE_URL=postgres://tiki:{{ .database_password }}@postgres.dsekt.internal:5432/tiki
-SWISH_API_URL=https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api
+SWISH_API_URL=https://cpc.getswish.net/swish-cpcapi/api
 SWISH_CERT={{ .swish_cert }}
 SWISH_KEY={{ .swish_key }}
 SWISH_MERCHANT_NUMBER={{ .swish_merchant_number }}
