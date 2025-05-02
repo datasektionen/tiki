@@ -506,6 +506,17 @@ defmodule Tiki.Orders do
     )
   end
 
+  def order_stats_query() do
+    from o in Order,
+      where: o.status == :paid,
+      join: t in assoc(o, :tickets),
+      group_by: o.id,
+      select: %{
+        order_price: o.price,
+        ticket_count: count(t.id)
+      }
+  end
+
   @doc """
   Lists all orders for a user. Options:
 
