@@ -83,6 +83,15 @@ services:
     ports:
       - "8080:8080"
 
+  nyckeln:
+    image: ghcr.io/datasektionen/nyckeln-under-dorrmattan:latest
+    configs:
+      - source: nyckeln.yaml
+        target: /config.yaml
+    ports:
+      - 7001:7001 # PLS API
+      - 7003:7003 # sso
+
   app:
     build:
       context: .
@@ -108,8 +117,19 @@ services:
       AWS_FRONTEND_ENDPOINT_URL_S3: "http://localhost:9000"
       AWS_ACCESS_KEY_ID: IPGAGmgxUBwvZoHowCez
       AWS_SECRET_ACCESS_KEY: RNHuldJLrZSB0RxmpCEYzLOwN0HRIz9RnC2I4qQG
+
+      # OIDC login stuff
+      OIDC_CLIENT_ID: "client-id"
+      OIDC_CLIENT_SECRET: "client-secret"
+      OIDC_ISSUER_URL: "http://localhost:7003"
+
+      # PLS stuff, see permissions below
+      PLS_URL: "http://nyckeln:7001"
     ports:
       - "4000:4000"
+    configs:
+      - source: nginx.conf
+        target: /etc/nginx/nginx.conf
     volumes:
       - .:/app
       - _elixir_build:/app/_build # So that we can have separate build files for the host and the container
@@ -120,3 +140,38 @@ volumes:
   _postgres:
   _elixir_build:
   _minio:
+
+configs:
+  nyckeln.yaml:
+    content: |
+      clients:
+        - id: "client-id"
+          secret: "client-secret"
+          redirect_uris:
+            - "http://localhost:4000/oidcc/callback"
+            - "http://localhost:4000/oidcc/authorize"
+
+      users:
+        - kth_id: turetek
+          email: turetek@kth.se
+          first_name: Ture
+          family_name: Teknolog
+          pls_permissions:
+            tiki:
+              - admin
+  # This is very cursed, but we proxy localhost:7003 to the nyckeln service, so
+  # that we can use the same http://localhost:7003 url for the oidc provider worker
+  # and the browser when logging in via oidc.
+  nginx.conf:
+    content: |
+      events {}
+
+      http {
+        server {
+          listen 7003;
+
+          location / {
+            proxy_pass http://nyckeln:7003;
+          }
+        }
+      }

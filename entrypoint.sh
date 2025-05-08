@@ -16,6 +16,9 @@ if [[ -f assets/package.json ]]; then
   cd ..
 fi
 
+echo "Starting nginx for OIDC proxy..."
+nginx &
+
 echo
 
 # Wait until Postgres is ready
