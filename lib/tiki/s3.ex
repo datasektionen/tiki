@@ -5,7 +5,7 @@ defmodule Tiki.S3 do
   end
 
   def presign_form(entry) do
-    options = Keyword.merge(get_options(entry.client_name), content_type: entry.client_type)
+    options = Keyword.merge(get_options(entry.uuid), content_type: entry.client_type)
     ReqS3.presign_form(options)
   end
 
