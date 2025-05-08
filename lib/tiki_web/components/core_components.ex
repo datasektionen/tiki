@@ -373,7 +373,7 @@ defmodule TikiWeb.CoreComponents do
           <span class="text-foreground text-sm font-semibold">{entry.client_name}</span>
           <div class="text-muted-foreground text-sm">
             {entry.progress}%
-            <.link :if={entry.done?} href={Tiki.S3.presign_url(entry.client_name)}>
+            <.link :if={entry.done?} href={Tiki.S3.presign_url(entry.uuid)}>
               {gettext("uploaded")}
             </.link>
           </div>

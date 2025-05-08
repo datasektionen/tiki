@@ -152,7 +152,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
     case completed do
       [] -> params
-      [image | _] -> Map.put(params, "image_url", "uploads/#{image.client_name}")
+      [image | _] -> Map.put(params, "image_url", "uploads/#{image.uuid}")
     end
   end
 
@@ -171,7 +171,7 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
 
     meta = %{
       uploader: "S3",
-      key: "uploads/#{entry.client_name}",
+      key: "uploads/#{entry.uuid}",
       url: form.url,
       fields: Map.new(form.fields)
     }
