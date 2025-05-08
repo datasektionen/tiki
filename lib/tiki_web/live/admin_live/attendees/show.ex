@@ -51,7 +51,15 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
         description={gettext("Information about ticket.")}
       >
         <:item name={gettext("Signed up at")}>
-          {Calendar.strftime(@ticket.order.updated_at, "%x %H:%M")}
+          {time_to_string(@ticket.order.updated_at, format: :short)}
+        </:item>
+        <:item name={gettext("Checked in at")}>
+          <span :if={is_nil(@ticket.checked_in_at)}>
+            {gettext("Not checked in")}
+          </span>
+          <span>
+            {time_to_string(@ticket.checked_in_at, format: :short)}
+          </span>
         </:item>
         <:item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</:item>
 
@@ -79,7 +87,15 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
           </.link>
         </:actions>
         <:item name={gettext("Signed up at")}>
-          {Calendar.strftime(@ticket.order.updated_at, "%x %H:%M")}
+          {time_to_string(@ticket.order.updated_at, format: :short)}
+        </:item>
+        <:item name={gettext("Checked in at")}>
+          <span :if={is_nil(@ticket.checked_in_at)}>
+            {gettext("Not checked in")}
+          </span>
+          <span>
+            {time_to_string(@ticket.checked_in_at, format: :short)}
+          </span>
         </:item>
         <:item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</:item>
         <:item :for={qr <- @ticket.form_response.question_responses} name={qr.question.name}>

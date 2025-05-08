@@ -85,14 +85,8 @@ defmodule Tiki.Events do
   """
   def get_event_stats!(id) do
     orders =
-      from o in Tiki.Orders.Order,
-        where: o.event_id == ^id and o.status == :paid,
-        join: t in assoc(o, :tickets),
-        group_by: o.id,
-        select: %{
-          order_price: o.price,
-          ticket_count: count(t.id)
-        }
+      Tiki.Orders.order_stats_query()
+      |> where([o], o.event_id == ^id)
 
     query =
       from o in subquery(orders),

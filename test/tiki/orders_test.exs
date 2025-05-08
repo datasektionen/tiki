@@ -1,4 +1,5 @@
 defmodule Tiki.OrdersTest do
+  alias Tiki.Checkouts
   alias Tiki.OrdersFixtures
   use Tiki.DataCase
 
@@ -120,6 +121,7 @@ defmodule Tiki.OrdersTest do
         end)
         |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Repo.preload(order: [:user], ticket_type: [])
+        |> Enum.map(fn ticket -> %{ticket | email: ticket.order.user.email} end)
 
       assert Orders.list_tickets_for_event(event.id) == tickets
     end
@@ -137,6 +139,7 @@ defmodule Tiki.OrdersTest do
         end)
         |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Repo.preload(order: [:user], ticket_type: [])
+        |> Enum.map(fn ticket -> %{ticket | email: ticket.order.user.email} end)
 
       assert Orders.list_tickets_for_event(event.id, limit: 3) == Enum.take(tickets, 3)
     end
@@ -485,6 +488,199 @@ defmodule Tiki.OrdersTest do
       assert user.locale == "sv"
       assert user.full_name == "John Doe"
       assert user.email == "john@doe.com"
+    end
+  end
+
+  describe "full order process" do
+    import Tiki.OrdersFixtures
+    import Tiki.TicketsFixtures
+
+    alias Tiki.Orders.Order
+
+    test "full order process of free ticket" do
+      ticket_type =
+        ticket_type_fixture(%{
+          price: 0,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 21:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+      cost = ticket_type.price * 2
+
+      result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
+
+      assert {:ok, %Order{status: :paid, id: ^id}} =
+               Orders.init_checkout(order, nil, %{
+                 name: "John Doe",
+                 email: "john@doe.com",
+                 locale: "en"
+               })
+
+      mail = get_order_email()
+
+      assert mail.to == [{"", "john@doe.com"}]
+      assert mail.subject =~ "Your order"
+      # Start time in "Europe/Stockholm" timezone
+      assert mail.html_body =~ "4/24/20, 8:00 pm"
+
+      assert [%Swoosh.Attachment{data: data, filename: "invite.ics"}] = mail.attachments
+
+      assert data =~ "BEGIN:VCALENDAR"
+      assert data =~ "DTSTART:20200424T180000Z"
+      assert data =~ "DTEND:20200424T210000Z"
+      assert data =~ "END:VCALENDAR"
+    end
+
+    test "full order process with swedish locale" do
+      ticket_type =
+        ticket_type_fixture(%{
+          price: 0,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 20:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+      cost = ticket_type.price * 2
+
+      result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
+
+      assert {:ok, %Order{status: :paid, id: ^id}} =
+               Orders.init_checkout(order, nil, %{
+                 name: "John Doe",
+                 email: "john@doe.com",
+                 locale: "sv"
+               })
+
+      mail = get_order_email()
+
+      assert mail.to == [{"", "john@doe.com"}]
+      assert mail.subject =~ "Din order"
+      # Start time in "Europe/Stockholm" timezone
+      assert mail.html_body =~ "2020-04-24 20:00"
+
+      assert [%Swoosh.Attachment{data: data, filename: "invite.ics"}] = mail.attachments
+
+      assert data =~ "BEGIN:VCALENDAR"
+      assert data =~ "DTSTART:20200424T180000Z"
+      assert data =~ "DTEND:20200424T200000Z"
+      assert data =~ "END:VCALENDAR"
+    end
+
+    test "full order process with swish" do
+      ticket_type =
+        ticket_type_fixture(%{
+          price: 50,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 20:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+      cost = ticket_type.price * 2
+
+      result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
+
+      Orders.subscribe_to_order(id)
+
+      assert {:ok, %Order{status: :checkout, id: ^id, swish_checkout: swish_checkout}} =
+               Orders.init_checkout(order, "swish", %{
+                 name: "John Doe",
+                 email: "john@doe.com"
+               })
+
+      Checkouts.confirm_swish_payment(swish_checkout.callback_identifier, "PAID")
+
+      assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
+
+      assert order.status == :paid
+
+      assert order.swish_checkout.status == "PAID"
+      assert order.swish_checkout.id == swish_checkout.id
+
+      mail = get_order_email()
+
+      assert mail.to == [{"", "john@doe.com"}]
+      assert mail.subject =~ "Your order for"
+
+      assert [%Swoosh.Attachment{data: data, filename: "invite.ics"}] = mail.attachments
+
+      assert data =~ "BEGIN:VCALENDAR"
+      assert data =~ "DTSTART:20200424T180000Z"
+      assert data =~ "DTEND:20200424T200000Z"
+      assert data =~ "END:VCALENDAR"
+
+      log = Tiki.Orders.get_order_logs(id)
+
+      # TODO: assert more stuff about the order log here
+      assert [
+               %Tiki.Orders.AuditLog{event_type: "order.paid"},
+               %Tiki.Orders.AuditLog{event_type: "order.checkout.swish"},
+               %Tiki.Orders.AuditLog{event_type: "order.created"}
+             ] = log
+    end
+
+    test "full order process with stripe" do
+      ticket_type =
+        ticket_type_fixture(%{
+          price: 50,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 20:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+      cost = ticket_type.price * 2
+
+      result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
+
+      Orders.subscribe_to_order(id)
+
+      assert {:ok, %Order{status: :checkout, id: ^id, stripe_checkout: stripe_checkout}} =
+               Orders.init_checkout(order, "credit_card", %{
+                 name: "John Doe",
+                 email: "john@doe.com"
+               })
+
+      Checkouts.confirm_stripe_payment(%Stripe.PaymentIntent{
+        id: stripe_checkout.payment_intent_id,
+        status: "succeeded"
+      })
+
+      assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
+
+      assert order.status == :paid
+
+      mail = get_order_email()
+
+      assert mail.to == [{"", "john@doe.com"}]
+      assert mail.subject =~ "Your order for"
+
+      assert [%Swoosh.Attachment{data: data, filename: "invite.ics"}] = mail.attachments
+
+      assert data =~ "BEGIN:VCALENDAR"
+      assert data =~ "DTSTART:20200424T180000Z"
+      assert data =~ "DTEND:20200424T200000Z"
+      assert data =~ "END:VCALENDAR"
+
+      log = Tiki.Orders.get_order_logs(id)
+
+      # TODO: assert more stuff about the order log here
+      assert [
+               %Tiki.Orders.AuditLog{event_type: "order.paid"},
+               %Tiki.Orders.AuditLog{event_type: "order.checkout.credit_card"},
+               %Tiki.Orders.AuditLog{event_type: "order.created"}
+             ] = log
     end
   end
 end

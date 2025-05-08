@@ -40,6 +40,49 @@ defmodule Tiki.Teams do
   def get_team!(id), do: Repo.get!(Team, id)
 
   @doc """
+  Gets statistics for an event. Returns a map with stats. Current statistics:
+
+  * `:total_sales`, total sales in SEK
+  * `:tickets_sold` total tickets sold
+  """
+  def get_team_stats!(id) do
+    orders =
+      Tiki.Orders.order_stats_query()
+      |> join(:inner, [o], e in assoc(o, :event))
+      |> where([..., e], e.team_id == ^id)
+
+    query =
+      from o in subquery(orders),
+        select: %{
+          total_sales: coalesce(sum(o.order_price), 0),
+          tickets_sold: coalesce(sum(o.ticket_count), 0),
+          total_events:
+            subquery(from e in Tiki.Events.Event, where: e.team_id == ^id, select: count(e.id))
+        }
+
+    old_orders = where(orders, [o], o.inserted_at <= fragment("now() - interval '1 month'"))
+
+    last_month_query =
+      from o in subquery(old_orders),
+        select: %{
+          total_sales: coalesce(sum(o.order_price), 0),
+          tickets_sold: coalesce(sum(o.ticket_count), 0),
+          total_events:
+            subquery(
+              from e in Tiki.Events.Event,
+                where:
+                  e.team_id == ^id and e.inserted_at >= fragment("now() - interval '1 month'"),
+                select: count(e.id)
+            )
+        }
+
+    last_month = Repo.one!(last_month_query)
+    current = Repo.one!(query)
+
+    Map.put(current, :last_month, last_month)
+  end
+
+  @doc """
   Gets a single team. Returns either team or nil if not found.
 
   ## Examples

@@ -52,11 +52,12 @@ defmodule TikiWeb.Component.Sheet do
 
   attr :class, :string, default: "inner-block"
   attr :target, :string, required: true, doc: "The id of the sheet to open"
+  attr :click, :any, default: %JS{}
   slot :inner_block, required: true
 
   def sheet_trigger(assigns) do
     ~H"""
-    <div class={classes([@class])} phx-click={JS.exec("phx-show-sheet", to: "#" <> @target)}>
+    <div class={classes([@class])} phx-click={@click |> JS.exec("phx-show-sheet", to: "#" <> @target)}>
       {render_slot(@inner_block)}
     </div>
     """

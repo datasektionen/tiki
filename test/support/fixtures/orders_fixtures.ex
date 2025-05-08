@@ -21,7 +21,7 @@ defmodule Tiki.OrdersFixtures do
       |> Enum.into(%{user_id: user.id, event_id: event.id, price: 100})
       |> create_order()
 
-    order
+    order |> Tiki.Repo.preload([:event, :user])
   end
 
   @doc """
@@ -43,12 +43,23 @@ defmodule Tiki.OrdersFixtures do
     ticket
   end
 
+  def get_order_email() do
+    %{failure: 0} = Oban.drain_queue(queue: :email)
+
+    [captured_email] = Swoosh.X.TestAssertions.flush_emails()
+
+    captured_email
+  end
+
   alias Tiki.Orders.Order
 
   def create_order(attrs \\ %{}) do
-    %Order{}
-    |> Order.changeset(attrs)
-    |> Tiki.Repo.insert(returning: [:id])
+    case %Order{}
+         |> Order.changeset(attrs)
+         |> Tiki.Repo.insert(returning: [:id]) do
+      {:ok, order} -> {:ok, Tiki.Repo.preload(order, [:event, :user])}
+      other -> other
+    end
   end
 
   alias Tiki.Orders.Ticket

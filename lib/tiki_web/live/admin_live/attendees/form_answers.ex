@@ -73,18 +73,18 @@ defmodule TikiWeb.AdminLive.Attendees.FormAnswers do
           <%= if @response_counts[question.id] do %>
             <div
               :for={{answer, count} <- @response_counts[question.id]}
-              class="flex flex-row gap-2 py-2 last:pb-0"
+              class="flex flex-row items-center gap-2 py-2 last:pb-0"
             >
-              <div class="min-w-6 flex items-center justify-center rounded-full bg-gray-100 font-medium">
+              <div class="min-w-6 min-h-6 bg-accent flex items-center justify-center rounded-full font-medium">
                 {count}
               </div>
-              <div>
+              <span>
                 {answer}
-              </div>
+              </span>
             </div>
           <% else %>
-            <div class="pt-2">
-              Inga svar
+            <div class="flex flex-row items-center gap-2 pt-2">
+              <span class="min-h-6">{gettext("No answers")}</span>
             </div>
           <% end %>
         </div>

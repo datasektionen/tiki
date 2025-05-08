@@ -18,11 +18,11 @@ defmodule Tiki.Support.SwishMock do
     "status" => "PAID"
   }
 
-  def create_payment_request(0) do
+  def create_payment_request(0, _options \\ %{}) do
     {:error, "Price must be greater than 0"}
   end
 
-  def create_payment_request(_price) do
+  def create_payment_request(_price, _options) do
     {:ok,
      %{
        swish_id: Ecto.UUID.generate(),

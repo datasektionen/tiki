@@ -185,8 +185,8 @@ defmodule Tiki.OrderHandler.Worker do
       |> Repo.transaction()
 
     case result do
-      {:ok, %{preloaded_order: order, ticket_types_available: ticket_types}} ->
-        {:reply, {:ok, order, ticket_types}, state, @timeout}
+      {:ok, %{preloaded_order: order, ticket_types_available: ticket_types, event: event}} ->
+        {:reply, {:ok, Map.put(order, :event, event), ticket_types}, state, @timeout}
 
       {:error, status, message, _}
       when status in [:positive_tickets, :ticket_limits, :check_availability, :all_purchasable] ->
