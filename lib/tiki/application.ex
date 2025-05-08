@@ -52,7 +52,7 @@ defmodule Tiki.Application do
   end
 
   defp stripe_webhook_listener do
-    if Mix.env() == :dev do
+    if Application.get_env(:tiki, :dev_routes) do
       port = Application.fetch_env!(:tiki, TikiWeb.Endpoint)[:http][:port]
       [{Tiki.Stripe.WebhookListener, forward_to: "http://localhost:#{port}/stripe/webhook"}]
     else
