@@ -6,14 +6,18 @@ defmodule Tiki.Orders.Order do
   @transitions %{
     pending: [:checkout, :cancelled, :paid],
     checkout: [:paid, :cancelled],
-    paid: [],
-    cancelled: []
+    paid: [:refunded],
+    cancelled: [],
+    refunded: []
   }
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   # @derive {Jason.Encoder, only: [:id, :status, :price, :user_id, :event_id, :tickets, :stripe_checkout, :swish_checkout]}
   schema "orders" do
-    field :status, Ecto.Enum, values: [:pending, :checkout, :paid, :cancelled], default: :pending
+    field :status, Ecto.Enum,
+      values: [:pending, :checkout, :paid, :cancelled, :refunded],
+      default: :pending
+
     field :price, :integer
 
     belongs_to :user, Tiki.Accounts.User

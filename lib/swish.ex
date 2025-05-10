@@ -153,6 +153,85 @@ defmodule Swish do
     end
   end
 
+  @doc """
+  Refunds a payment request. The payment request must already be in the
+  status "PAID".
+
+  https://developer.swish.nu/api/refunds/v2#create-refund
+
+  Required options are `originalPaymentReference` and `amount`.
+  """
+  def refund(id, amount, options \\ %{}) do
+    _ = :crypto.rand_seed()
+
+    callback_identifier =
+      for _ <- 1..36, into: "", do: <<Enum.at(@full_alphabet, :rand.uniform(@full_alph_len) - 1)>>
+
+    case get_payment_request(id) do
+      {:ok, %{"paymentReference" => ref}} ->
+        refund_request =
+          Map.merge(
+            options,
+            %{
+              "amount" => amount,
+              "originalPaymentReference" => ref,
+              "payerAlias" => Application.get_env(:tiki, Swish)[:merchant_number],
+              "currency" => "SEK",
+              "callbackUrl" => "#{Application.get_env(:tiki, Swish)[:callback_url]}/refunds",
+              "callbackIdentifier" => callback_identifier
+            }
+          )
+
+        res =
+          Req.put(base_request(),
+            url: api_url() <> "/v2/refunds/#{id}",
+            json: refund_request
+          )
+
+        case res do
+          {:ok,
+           %Req.Response{
+             status: 201,
+             headers: %{"location" => [location]}
+           }} ->
+            # Location is ln the form "https://staging.getswish.pub.tds.tieto.com/cpc-swish/api/v1/refunds/0333384F33868FC6304631F767C045D8"
+            refund_id = location |> String.split("/") |> List.last()
+
+            {:ok,
+             %{
+               status: "CREATED",
+               refund_id: refund_id,
+               callback_identifier: callback_identifier
+             }}
+
+          {:ok, %Req.Response{status: 401}} ->
+            {:error, "Unauthorized"}
+
+          {:ok, %Req.Response{status: 403}} ->
+            {:error,
+             "The payerAlias in the refund object is not the same as merchant’s Swish number."}
+
+          {:ok, %Req.Response{status: 415}} ->
+            {:error, "Unsupported media type, use application/json-patch+json"}
+
+          {:ok, %Req.Response{status: 422, body: body}} ->
+            {:error, body}
+
+          {:ok, %Req.Response{status: 429}} ->
+            {:error, "Too many requests"}
+
+          {:ok, %Req.Response{status: 500}} ->
+            {:error, "Internal server error"}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+
+      {:error, reason} ->
+        {:error, "could not find payment request: #{reason}"}
+    end
+  end
+
   @callback get_svg_qr_code!(String.t()) :: String.t()
   def get_svg_qr_code!(token) do
     case get_svg_qr_code(token) do

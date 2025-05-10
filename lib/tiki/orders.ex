@@ -328,6 +328,64 @@ defmodule Tiki.Orders do
   end
 
   @doc """
+  Refunds an order and marks the oder as refunded. Returns the order.
+
+  Note that this will most likely work, but it may be that the
+  account/bank of the customer will not accept the refund. In that
+  case there is not much we can do about it. We can only try to
+  do our best.
+  """
+
+  def refund_order(id) do
+    multi =
+      Multi.new()
+      |> Multi.one(:order, order_query() |> where([o], o.id == ^id))
+      |> Multi.run(:transition_valid, fn _repo, %{order: order} ->
+        Order.valid_transition?(order.status, :refunded) |> wrap_bool("invalid transition")
+      end)
+      |> Multi.update(:refunded_order, fn %{order: order} ->
+        Order.changeset(order, %{status: :refunded})
+      end)
+      |> Multi.delete_all(:tickets, fn %{order: order} ->
+        from(t in Ticket, where: t.order_id == ^order.id)
+      end)
+      |> Multi.run(:refund, fn _repo, %{order: order} ->
+        case {order.stripe_checkout, order.swish_checkout} do
+          {%Checkouts.StripeCheckout{} = checkout, nil} ->
+            Stripe.Refund.create(%{
+              payment_intent: checkout.payment_intent_id,
+              amount: max(order.price - 5, 5) * 100
+            })
+
+          {nil, %Checkouts.SwishCheckout{} = checkout} ->
+            Checkouts.refund_swish_checkout(checkout, max(order.price - 5, 5))
+        end
+      end)
+      |> Multi.run(:audit, fn _repo, %{refund: refund, refunded_order: order} ->
+        AuditLog.log(id, "order.refund", %{refund: refund, order: order})
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{refunded_order: order}} ->
+        broadcast(
+          order.event_id,
+          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
+        )
+
+        {:ok, order}
+
+      {:error, :transition_valid, _, _} ->
+        {:error, "order is not refundable"}
+
+      {:error, :refund, error, _} ->
+        {:error, error}
+
+      _ ->
+        {:error, "could not refund order"}
+    end
+  end
+
+  @doc """
   Returns the orders for an event, ordered by most recent first.
 
   Options:

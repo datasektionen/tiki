@@ -10,6 +10,7 @@ defmodule Tiki.Checkouts do
   @swish Application.compile_env(:tiki, :swish_module)
 
   import Ecto.Query, warn: false
+  alias Tiki.Checkouts.SwishRefund
   alias Ecto.Multi
   alias Tiki.Repo
 
@@ -134,10 +135,10 @@ defmodule Tiki.Checkouts do
   broadcasts it over PubSub.
   """
 
-  def confirm_swish_payment(callback_identifier, status) do
+  def confirm_swish_payment(id, callback_identifier, status) do
     query =
       from sc in SwishCheckout,
-        where: sc.callback_identifier == ^callback_identifier,
+        where: sc.swish_id == ^id and sc.callback_identifier == ^callback_identifier,
         join: o in assoc(sc, :order),
         select: {o, sc}
 
@@ -178,6 +179,52 @@ defmodule Tiki.Checkouts do
 
       {:error, :status, :invalid_status, _} ->
         :ok
+
+      {:error, _, msg, _} ->
+        {:error, msg}
+    end
+  end
+
+  @doc """
+  Refunds a Swish payment request. Returns the Swish refund.
+  """
+  def refund_swish_checkout(%SwishCheckout{} = swish_checkout, amount) do
+    case @swish.refund(swish_checkout.swish_id, amount) do
+      {:ok, refund} ->
+        SwishRefund.changeset(%SwishRefund{swish_checkout_id: swish_checkout.id}, refund)
+        |> Repo.insert()
+
+      {:error, resason} ->
+        {:error, resason}
+    end
+  end
+
+  def update_swish_refund(id, callback_identifier, status) do
+    multi =
+      Multi.new()
+      |> Multi.one(
+        :data,
+        from(sr in SwishRefund,
+          where: sr.refund_id == ^id and sr.callback_identifier == ^callback_identifier,
+          join: sc in assoc(sr, :swish_checkout),
+          join: o in assoc(sc, :order),
+          select: %{order: o, refund: sr}
+        )
+      )
+      |> Multi.update(:refund, fn
+        %{data: %{refund: refund}} -> SwishRefund.changeset(refund, %{status: status})
+        %{data: nil} -> {:error, "could not find refund"}
+      end)
+      |> Multi.run(:audit, fn _repo, %{data: %{order: order, refund: refund}} ->
+        Orders.AuditLog.log(order.id, "order.swish_refund.update", refund)
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, _} ->
+        :ok
+
+      {:error, :data, :not_found, _} ->
+        {:error, "Swish refund not found"}
 
       {:error, _, msg, _} ->
         {:error, msg}

@@ -1,24 +1,13 @@
-defmodule TikiWeb.SwishController do
+defmodule TikiWeb.QrController do
   use TikiWeb, :controller
-  alias Tiki.Checkouts
 
-  require Logger
+  def create(conn, %{"code" => code}) do
+    qr =
+      QRCodeEx.encode(code)
+      |> QRCodeEx.png()
 
-  def callback(
-        conn,
-        %{"status" => status}
-      ) do
-    [callback_identifier] = get_req_header(conn, "callbackidentifier")
-
-    # TODO: Handle the case where status is "CANCELLED" or "ERROR" separately
-
-    case Checkouts.confirm_swish_payment(callback_identifier, status) do
-      :ok ->
-        send_resp(conn, 200, "OK")
-
-      {:error, reason} ->
-        Logger.error("Confirming Swish payment failed: #{reason}")
-        send_resp(conn, 500, "Internal server error")
-    end
+    conn
+    |> put_resp_content_type("image/png")
+    |> send_resp(200, qr)
   end
 end

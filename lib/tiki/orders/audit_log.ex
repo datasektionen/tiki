@@ -77,6 +77,24 @@ defmodule Tiki.Orders.AuditLog do
     }
   end
 
+  defp encode_metadata(%Stripe.Refund{} = refund) do
+    %{
+      amount: refund.amount,
+      charge: refund.charge,
+      id: refund.id,
+      payment_intent: refund.payment_intent,
+      status: refund.status
+    }
+  end
+
+  defp encode_metadata(%Tiki.Checkouts.SwishRefund{} = refund) do
+    %{
+      refund_id: refund.refund_id,
+      callback_identifier: refund.callback_identifier,
+      status: refund.status
+    }
+  end
+
   defp encode_metadata(data) when is_list(data), do: Enum.map(data, &encode_metadata/1)
 
   defp encode_metadata(data) when is_map(data) do

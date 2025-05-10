@@ -233,6 +233,7 @@ defmodule TikiWeb.Router do
   scope "/swish", TikiWeb do
     pipe_through :api
     post "/callback", SwishController, :callback
+    post "/callback/refunds", SwishController, :refund
   end
 
   scope "/api", TikiWeb do

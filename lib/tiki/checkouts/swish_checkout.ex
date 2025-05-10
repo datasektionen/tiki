@@ -12,6 +12,8 @@ defmodule Tiki.Checkouts.SwishCheckout do
     belongs_to :user, Tiki.Accounts.User
     belongs_to :order, Tiki.Orders.Order, type: :binary_id
 
+    has_one :swish_refund, Tiki.Checkouts.SwishRefund
+
     timestamps()
   end
 
