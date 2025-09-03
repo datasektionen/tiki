@@ -331,8 +331,14 @@ defmodule Tiki.Forms do
 
         responses =
           Enum.map(form.responses, fn response ->
-            Enum.map(response.question_responses, fn response ->
-              response.answer || response.multi_answer
+            response_map =
+              Enum.reduce(response.question_responses, %{}, fn qr, acc ->
+                Map.put(acc, qr.question_id, qr.answer || qr.multi_answer)
+              end)
+
+            # Ensure all questions have a response
+            Enum.map(form.questions, fn question ->
+              Map.get(response_map, question.id, "")
             end)
           end)
 
