@@ -8,7 +8,13 @@ defmodule Tiki.EventsTest do
 
     import Tiki.EventsFixtures
 
-    @invalid_attrs %{description: nil, event_date: nil, name: nil}
+    @invalid_attrs %{
+      description: nil,
+      description_sv: nil,
+      event_date: nil,
+      name: nil,
+      name_sv: nil
+    }
 
     test "list_events/0 returns all events" do
       event = event_fixture()
@@ -59,8 +65,10 @@ defmodule Tiki.EventsTest do
 
       valid_attrs = %{
         description: "some description",
+        description_sv: "någon beskrivning",
         event_date: ~U[2023-03-25 16:55:00Z],
         name: "some name",
+        name_sv: "något namn",
         team_id: team.id
       }
 
@@ -68,6 +76,8 @@ defmodule Tiki.EventsTest do
       assert event.description == "some description"
       assert event.event_date == ~U[2023-03-25 16:55:00Z]
       assert event.name == "some name"
+      assert event.name_sv == "något namn"
+      assert event.description_sv == "någon beskrivning"
 
       # Assert that we have a default form
 
@@ -94,14 +104,18 @@ defmodule Tiki.EventsTest do
 
       update_attrs = %{
         description: "some updated description",
+        description_sv: "någon uppdaterad beskrivning",
         event_date: ~U[2023-03-26 16:55:00Z],
-        name: "some updated name"
+        name: "some updated name",
+        name_sv: "något uppdaterat namn"
       }
 
       assert {:ok, %Event{} = event} = Events.update_event(event, update_attrs)
       assert event.description == "some updated description"
+      assert event.description_sv == "någon uppdaterad beskrivning"
       assert event.event_date == ~U[2023-03-26 16:55:00Z]
       assert event.name == "some updated name"
+      assert event.name_sv == "något uppdaterat namn"
     end
 
     test "update_event/2 with invalid data returns error changeset" do

@@ -19,8 +19,22 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label={gettext("Name")} />
-        <.input field={@form[:description]} type="textarea" label={gettext("Description")} />
+        <.bilingual_input
+          field_en={@form[:name]}
+          field_sv={@form[:name_sv]}
+          type="text"
+          label={gettext("Name")}
+          type_context="event title"
+          target={@myself}
+        />
+        <.bilingual_input
+          field_en={@form[:description]}
+          field_sv={@form[:description_sv]}
+          type="textarea"
+          label={gettext("Description")}
+          type_context="event description"
+          target={@myself}
+        />
 
         <.input
           field={@form[:is_hidden]}
@@ -115,6 +129,45 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
       |> put_image_url(socket)
 
     save_event(socket, socket.assigns.action, event_params)
+  end
+
+  def handle_event(
+        "generate_translation",
+        %{"from_field" => from, "to_field" => to, "to_lang" => to_lang, "type_context" => type},
+        socket
+      ) do
+    source_text = socket.assigns.form[String.to_atom(from)].value
+    target_text = socket.assigns.form[String.to_atom(to)].value
+
+    form_params =
+      socket.assigns.form.source.params
+      |> Map.put_new(from, source_text)
+      |> Map.put_new(to, target_text)
+      |> Map.delete("_unused_#{to}")
+
+    with {:ok, translation} <-
+           Tiki.Translations.generate_translation(source_text, to_lang, type) do
+      form_params = Map.put(form_params, to, translation)
+
+      changeset =
+        socket.assigns.event
+        |> Events.change_event(form_params)
+        |> Map.put(:action, :validate)
+
+      {:noreply, assign_form(socket, changeset)}
+    else
+      {:error, reason} ->
+        changeset =
+          socket.assigns.event
+          |> Events.change_event(form_params)
+          |> Ecto.Changeset.add_error(
+            String.to_atom(to),
+            gettext("Failed to generate translation: %{reason}", reason: reason)
+          )
+          |> Map.put(:action, :validate)
+
+        {:noreply, assign_form(socket, changeset)}
+    end
   end
 
   defp save_event(socket, :edit, event_params) do

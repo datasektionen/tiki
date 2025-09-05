@@ -5,6 +5,7 @@ defmodule Tiki.Forms.Form do
   schema "forms" do
     field :name, :string
     field :description, :string
+    field :description_sv, :string
 
     belongs_to :event, Tiki.Events.Event, type: :binary_id
     has_many :questions, Tiki.Forms.Question, on_replace: :delete
@@ -17,7 +18,7 @@ defmodule Tiki.Forms.Form do
   @doc false
   def changeset(form, attrs) do
     form
-    |> cast(attrs, [:name, :description, :event_id])
+    |> cast(attrs, [:name, :description, :description_sv, :event_id])
     |> validate_required([:name, :description, :event_id])
     |> cast_assoc(:questions, sort_param: :questions_sort, drop_param: :questions_drop)
   end

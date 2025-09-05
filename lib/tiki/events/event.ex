@@ -5,8 +5,10 @@ defmodule Tiki.Events.Event do
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "events" do
     field :description, :string
+    field :description_sv, :string
     field :event_date, Tiki.Types.DatetimeStockholm
     field :name, :string
+    field :name_sv, :string
     field :location, :string
     field :image_url, :string
     field :is_hidden, :boolean
@@ -30,7 +32,9 @@ defmodule Tiki.Events.Event do
     event
     |> cast(attrs, [
       :name,
+      :name_sv,
       :description,
+      :description_sv,
       :event_date,
       :location,
       :image_url,
@@ -39,7 +43,7 @@ defmodule Tiki.Events.Event do
       :default_form_id,
       :max_order_size
     ])
-    |> validate_required([:name, :description, :event_date, :team_id])
+    |> validate_required([:name, :name_sv, :description, :description_sv, :event_date, :team_id])
     |> foreign_key_constraint(:team_id)
   end
 end
