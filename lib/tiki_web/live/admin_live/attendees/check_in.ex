@@ -4,6 +4,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
   alias Tiki.Events
   alias Tiki.Orders
   alias Tiki.Tickets
+  alias Tiki.Localizer
 
   import TikiWeb.Component.Card
   import TikiWeb.Component.Badge
@@ -15,14 +16,18 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
   @page_size 50
 
   def mount(%{"id" => event_id}, _session, socket) do
-    event = Events.get_event!(event_id)
+    event =
+      Events.get_event!(event_id)
+      |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       %{entries: tickets, metadata: metadata} =
         Orders.list_tickets_for_event(event_id, limit: @page_size, paginate: %{after: nil})
 
       ticket_types =
-        Tickets.get_cached_available_ticket_types(event_id) |> Enum.map(&{&1.name, &1.id})
+        Tickets.get_cached_available_ticket_types(event_id)
+        |> Localizer.localize()
+        |> Enum.map(&{&1.name, &1.id})
 
       if connected?(socket) do
         Orders.subscribe(event_id, :tickets)
@@ -242,7 +247,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
                 <%= if @ticket.form_response do %>
                   <.list_item
                     :for={qr <- @ticket.form_response.question_responses}
-                    name={qr.question.name}
+                    name={Localizer.localize(qr.question).name}
                   >
                     {qr}
                   </.list_item>
@@ -299,7 +304,9 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
           </.sheet_trigger>
           <.badge variant="outline">
             <.icon name="hero-ticket-mini" class="text-muted-foreground mr-1 inline-block h-2 w-2" />
-            <span class="text-muted-foreground text-xs font-normal">{@ticket.ticket_type.name}</span>
+            <span class="text-muted-foreground text-xs font-normal">
+              {Localizer.localize(@ticket.ticket_type).name}
+            </span>
           </.badge>
         </div>
       </div>

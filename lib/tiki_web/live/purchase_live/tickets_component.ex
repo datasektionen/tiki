@@ -3,6 +3,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
   alias Tiki.Tickets
   alias Tiki.Orders
+  alias Tiki.Localizer
 
   @impl Phoenix.LiveComponent
   def render(assigns) do
@@ -42,7 +43,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
             <div class="flex flex-row justify-between px-4 py-4">
               <div class="flex flex-col">
-                <h3 class="text-md pb-1 font-semibold">{ticket_type.name}</h3>
+                <h3 class="text-md pb-1 font-semibold">{Localizer.localize(ticket_type).name}</h3>
                 <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
               </div>
 

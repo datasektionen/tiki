@@ -96,6 +96,41 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
      )}
   end
 
+  @impl true
+  def update(%{translate_result: result, from: from, to: to}, socket) do
+    source_text = socket.assigns.form[String.to_atom(from)].value
+    target_text = socket.assigns.form[String.to_atom(to)].value
+
+    form_params =
+      socket.assigns.form.source.params
+      |> Map.put_new(from, source_text)
+      |> Map.put_new(to, target_text)
+      |> Map.delete("_unused_#{to}")
+
+    with {:ok, translation} <- result do
+      form_params = Map.put(form_params, to, translation)
+
+      changeset =
+        socket.assigns.event
+        |> Events.change_event(form_params)
+        |> Map.put(:action, :validate)
+
+      {:ok, assign_form(socket, changeset)}
+    else
+      {:error, reason} ->
+        changeset =
+          socket.assigns.event
+          |> Events.change_event(form_params)
+          |> Ecto.Changeset.add_error(
+            String.to_atom(to),
+            gettext("Failed to generate translation: %{reason}", reason: reason)
+          )
+          |> Map.put(:action, :validate)
+
+        {:ok, assign_form(socket, changeset)}
+    end
+  end
+
   defp apply_action(socket, :new, event) do
     changeset = Events.change_event(event)
 
@@ -137,37 +172,21 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         socket
       ) do
     source_text = socket.assigns.form[String.to_atom(from)].value
-    target_text = socket.assigns.form[String.to_atom(to)].value
+
+    Task.async(fn ->
+      {Tiki.Translations.generate_translation(source_text, to_lang, type), from, to}
+    end)
 
     form_params =
       socket.assigns.form.source.params
-      |> Map.put_new(from, source_text)
-      |> Map.put_new(to, target_text)
-      |> Map.delete("_unused_#{to}")
+      |> Map.put(to, gettext("Generating translation..."))
 
-    with {:ok, translation} <-
-           Tiki.Translations.generate_translation(source_text, to_lang, type) do
-      form_params = Map.put(form_params, to, translation)
+    changeset =
+      socket.assigns.event
+      |> Events.change_event(form_params)
+      |> Map.put(:action, :validate)
 
-      changeset =
-        socket.assigns.event
-        |> Events.change_event(form_params)
-        |> Map.put(:action, :validate)
-
-      {:noreply, assign_form(socket, changeset)}
-    else
-      {:error, reason} ->
-        changeset =
-          socket.assigns.event
-          |> Events.change_event(form_params)
-          |> Ecto.Changeset.add_error(
-            String.to_atom(to),
-            gettext("Failed to generate translation: %{reason}", reason: reason)
-          )
-          |> Map.put(:action, :validate)
-
-        {:noreply, assign_form(socket, changeset)}
-    end
+    {:noreply, assign_form(socket, changeset)}
   end
 
   defp save_event(socket, :edit, event_params) do

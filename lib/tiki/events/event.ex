@@ -47,3 +47,11 @@ defmodule Tiki.Events.Event do
     |> foreign_key_constraint(:team_id)
   end
 end
+
+defimpl Tiki.Localization, for: Tiki.Events.Event do
+  def localize(event, "sv") do
+    %Tiki.Events.Event{event | name: event.name_sv, description: event.description_sv}
+  end
+
+  def localize(event, "en"), do: event
+end

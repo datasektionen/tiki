@@ -2,6 +2,7 @@ defmodule TikiWeb.OrderLive.Show do
   use TikiWeb, :live_view
 
   alias Tiki.Orders
+  alias Tiki.Localizer
 
   import TikiWeb.Component.Card
   import TikiWeb.Component.Skeleton
@@ -55,14 +56,15 @@ defmodule TikiWeb.OrderLive.Show do
               <div class="ml-6">
                 <.link navigate={ticket_path(ticket, @live_action)}>
                   <h3 class="text-foreground text-base font-medium">
-                    {ticket.ticket_type.name} <span aria-hidden="true"> &rarr;</span>
+                    {Localizer.localize(ticket.ticket_type).name}
+                    <span aria-hidden="true"> &rarr;</span>
                   </h3>
                 </.link>
                 <p class="text-foreground mt-2 text-sm font-medium">
                   {ticket.ticket_type.price} SEK
                 </p>
                 <p class="text-muted-foreground mt-3 text-sm">
-                  {ticket.ticket_type.description}
+                  {Localizer.localize(ticket.ticket_type).description}
                 </p>
               </div>
             </div>

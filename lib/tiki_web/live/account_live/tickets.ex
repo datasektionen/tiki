@@ -3,6 +3,7 @@ defmodule TikiWeb.AccountLive.Tickets do
 
   alias Tiki.Orders
   import TikiWeb.Component.Card
+  alias Tiki.Localizer
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -43,14 +44,14 @@ defmodule TikiWeb.AccountLive.Tickets do
         >
           <img
             src={image_url(order.event.image_url, width: 200, height: 200)}
-            alt={order.event.name}
+            alt={Localizer.localize(order.event).name}
             class="h-16 w-16 rounded-lg object-cover"
           />
           <%!-- <.svg_qr data={ticket.id} class="size-18 rounded-lg object-cover" /> --%>
           <div class="flex flex-col gap-1">
-            <span class="font-medium">{order.event.name}</span>
+            <span class="font-medium">{Localizer.localize(order.event).name}</span>
             <span class="text-muted-foreground text-sm">
-              {ticket.ticket_type.name}
+              {Localizer.localize(ticket.ticket_type).name}
             </span>
             <span class="text-muted-foreground text-sm">
               {time_to_string(order.event.event_date)}

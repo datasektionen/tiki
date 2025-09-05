@@ -2,6 +2,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   use TikiWeb, :live_view
 
   alias Tiki.Forms
+  alias Tiki.Localizer
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -171,7 +172,9 @@ defmodule TikiWeb.AdminLive.Forms.Form do
 
   @impl Phoenix.LiveView
   def mount(%{"id" => event_id} = params, _session, socket) do
-    event = Tiki.Events.get_event!(event_id)
+    event =
+      Tiki.Events.get_event!(event_id)
+      |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       {:ok,
@@ -229,6 +232,21 @@ defmodule TikiWeb.AdminLive.Forms.Form do
     ])
   end
 
+  @impl Phoenix.LiveView
+  def handle_event("validate", %{"form" => params}, socket) do
+    params = merge_options(params)
+
+    changeset =
+      Forms.change_form(socket.assigns.form, params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign_form(socket, changeset)}
+  end
+
+  def handle_event("save", %{"form" => params}, socket) do
+    save_form(socket, socket.assigns.live_action, params)
+  end
+
   def handle_event(
         "generate_translation",
         %{
@@ -240,72 +258,41 @@ defmodule TikiWeb.AdminLive.Forms.Form do
         },
         socket
       ) do
-    {form_params, source_text} =
+    form_params = prepare_form_params(socket, from, to, index)
+    source_text = get_source_text(form_params, from, index)
+
+    Task.async(fn ->
+      {Tiki.Translations.generate_translation(source_text, to_lang, type), from, to, index}
+    end)
+
+    form_params =
       case index do
         nil ->
-          source_text = socket.assigns.client_form[String.to_atom(from)].value
-          target_text = socket.assigns.client_form[String.to_atom(to)].value
+          Map.put(form_params, to, gettext("Generating translation..."))
 
-          prams =
-            socket.assigns.client_form.source.params
-            |> Map.put_new(from, source_text)
-            |> Map.put_new(to, target_text)
-            |> Map.put_new_lazy(
-              "questions",
-              fn ->
-                Enum.map(socket.assigns.client_form[:questions].value, fn question ->
-                  %{
-                    "description" => question.description,
-                    "description_sv" => question.description_sv,
-                    "id" => question.id,
-                    "name" => question.name,
-                    "name_sv" => question.name_sv,
-                    "options" => question.options,
-                    "options_sv" => question.options_sv,
-                    "required" => question.required,
-                    "type" => question.type
-                  }
-                end)
-              end
-            )
-            |> Map.delete("_unused_#{to}")
-
-          {prams, source_text}
-
-        number when is_integer(number) ->
-          params =
-            socket.assigns.client_form.source.params
-            |> Map.put_new_lazy(
-              "questions",
-              fn ->
-                Enum.map(socket.assigns.client_form[:questions].value, fn question ->
-                  %{
-                    "description" => question.description,
-                    "description_sv" => question.description_sv,
-                    "id" => question.id,
-                    "name" => question.name,
-                    "name_sv" => question.name_sv,
-                    "options" => question.options,
-                    "options_sv" => question.options_sv,
-                    "required" => question.required,
-                    "type" => question.type
-                  }
-                end)
-                |> Enum.with_index(fn el, index -> {"#{index}", el} end)
-                |> Map.new()
-              end
-            )
-            |> Map.update!("questions", fn questions ->
-              Map.update!(questions, "#{number}", fn question ->
-                Map.delete(question, "_unused_#{to}")
-              end)
+        number ->
+          Map.update!(form_params, "questions", fn questions ->
+            Map.update!(questions, "#{number}", fn question ->
+              Map.put(question, to, gettext("Generating translation..."))
             end)
-
-          {params, Map.get(params, "questions") |> Map.get("#{number}") |> Map.get(from)}
+          end)
       end
 
-    with {:ok, translation} <-
-           Tiki.Translations.generate_translation(source_text, to_lang, type) do
+    changeset =
+      socket.assigns.form
+      |> Forms.change_form(form_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign_form(socket, changeset)}
+  end
+
+  @impl true
+  def handle_info({ref, {result, from, to, index}}, socket) do
+    Process.demonitor(ref, [:flush])
+
+    form_params = prepare_form_params(socket, from, to, index)
+
+    with {:ok, translation} <- result do
       form_params =
         case index do
           nil ->
@@ -364,19 +351,76 @@ defmodule TikiWeb.AdminLive.Forms.Form do
     end
   end
 
-  @impl Phoenix.LiveView
-  def handle_event("validate", %{"form" => params}, socket) do
-    params = merge_options(params)
+  defp prepare_form_params(socket, from, to, index) do
+    case index do
+      nil ->
+        source_text = socket.assigns.client_form[String.to_atom(from)].value
+        target_text = socket.assigns.client_form[String.to_atom(to)].value
 
-    changeset =
-      Forms.change_form(socket.assigns.form, params)
-      |> Map.put(:action, :validate)
+        socket.assigns.client_form.source.params
+        |> Map.put_new(from, source_text)
+        |> Map.put_new(to, target_text)
+        |> Map.put_new_lazy(
+          "questions",
+          fn ->
+            Enum.map(socket.assigns.client_form[:questions].value, fn question ->
+              %{
+                "description" => question.description,
+                "description_sv" => question.description_sv,
+                "id" => question.id,
+                "name" => question.name,
+                "name_sv" => question.name_sv,
+                "options" => question.options,
+                "options_sv" => question.options_sv,
+                "required" => question.required,
+                "type" => question.type
+              }
+            end)
+            |> Enum.with_index(fn el, index -> {"#{index}", el} end)
+            |> Map.new()
+          end
+        )
+        |> Map.delete("_unused_#{to}")
 
-    {:noreply, assign_form(socket, changeset)}
+      number when is_integer(number) ->
+        socket.assigns.client_form.source.params
+        |> Map.put_new_lazy(
+          "questions",
+          fn ->
+            Enum.map(socket.assigns.client_form[:questions].value, fn question ->
+              %{
+                "description" => question.description,
+                "description_sv" => question.description_sv,
+                "id" => question.id,
+                "name" => question.name,
+                "name_sv" => question.name_sv,
+                "options" => question.options,
+                "options_sv" => question.options_sv,
+                "required" => question.required,
+                "type" => question.type
+              }
+            end)
+            |> Enum.with_index(fn el, index -> {"#{index}", el} end)
+            |> Map.new()
+          end
+        )
+        |> Map.update!("questions", fn questions ->
+          Map.update!(questions, "#{number}", fn question ->
+            Map.delete(question, "_unused_#{to}")
+          end)
+        end)
+    end
   end
 
-  def handle_event("save", %{"form" => params}, socket) do
-    save_form(socket, socket.assigns.live_action, params)
+  defp get_source_text(params, from, index) do
+    case index do
+      nil ->
+        Map.get(params, from)
+
+      number when is_integer(number) ->
+        questions = Map.get(params, "questions")
+        Map.get(questions, "#{number}") |> Map.get(from)
+    end
   end
 
   defp save_form(socket, :new, form_params) do

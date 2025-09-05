@@ -41,6 +41,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
     end
   end
 
+  alias Tiki.Localizer
   alias Tiki.PurchaseMonitor
   use TikiWeb, :live_component
 
@@ -82,7 +83,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             <table class="w-full border-collapse border-spacing-0">
               <tbody class="text-sm">
                 <tr :for={{_id, %{ticket_type: tt, count: count}} <- @order.tickets} class="border-t">
-                  <th class="py-1 pr-2 text-left">{tt.name}</th>
+                  <th class="py-1 pr-2 text-left">{Localizer.localize(tt).name}</th>
                   <td class="whitespace-nowrap py-1 pr-2 text-right">
                     {"#{count} x #{tt.price} kr"}
                   </td>

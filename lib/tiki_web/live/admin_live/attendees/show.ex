@@ -3,12 +3,15 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
 
   alias Tiki.Events
   alias Tiki.Orders
+  alias Tiki.Localizer
 
   import TikiWeb.Component.Card
   import TikiWeb.Component.Badge
 
   def mount(%{"id" => event_id, "ticket_id" => ticket_id}, _session, socket) do
-    event = Events.get_event!(event_id)
+    event =
+      Events.get_event!(event_id)
+      |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event),
          ticket <- Orders.get_ticket!(ticket_id),
@@ -98,7 +101,10 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
           </span>
         </:item>
         <:item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</:item>
-        <:item :for={qr <- @ticket.form_response.question_responses} name={qr.question.name}>
+        <:item
+          :for={qr <- @ticket.form_response.question_responses}
+          name={Localizer.localize(qr.question).name}
+        >
           {qr}
         </:item>
       </.information_card>
@@ -120,7 +126,7 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
             <.link navigate={~p"/admin/events/#{@event.id}/attendees/#{tt.id}"}>
               <.badge variant="outline">
                 <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
-                {tt.ticket_type.name}
+                {Localizer.localize(tt.ticket_type).name}
               </.badge>
             </.link>
           </span>

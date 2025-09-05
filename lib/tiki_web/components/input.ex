@@ -186,31 +186,6 @@ defmodule TikiWeb.Component.Input do
   def bilingual_input(assigns) do
     ~H"""
     <div class={classes(["flex flex-col gap-2", @class])}>
-      <.input field={@field_en} type={@type} label={gettext("%{label} (English)", label: @label)}>
-        <:label_button>
-          <TikiWeb.Component.Button.button
-            variant="outline"
-            size="sm"
-            class="h-7 gap-1 text-sm"
-            type="button"
-            phx-click={
-              JS.push("generate_translation",
-                value: %{
-                  from_field: @field_sv.field,
-                  to_field: @field_en.field,
-                  to_lang: :en,
-                  type_context: @type_context,
-                  index: @index
-                }
-              )
-            }
-            phx-target={@target}
-          >
-            <.icon name="hero-sparkles-mini" class="text-muted-foreground h-3.5 w-3.5" />
-            {gettext("Generate translation")}
-          </TikiWeb.Component.Button.button>
-        </:label_button>
-      </.input>
       <.input field={@field_sv} type={@type} label={gettext("%{label} (Swedish)", label: @label)}>
         <:label_button>
           <TikiWeb.Component.Button.button
@@ -224,6 +199,31 @@ defmodule TikiWeb.Component.Input do
                   from_field: @field_en.field,
                   to_field: @field_sv.field,
                   to_lang: :sv,
+                  type_context: @type_context,
+                  index: @index
+                }
+              )
+            }
+            phx-target={@target}
+          >
+            <.icon name="hero-sparkles-mini" class="text-muted-foreground h-3.5 w-3.5" />
+            {gettext("Generate translation")}
+          </TikiWeb.Component.Button.button>
+        </:label_button>
+      </.input>
+      <.input field={@field_en} type={@type} label={gettext("%{label} (English)", label: @label)}>
+        <:label_button>
+          <TikiWeb.Component.Button.button
+            variant="outline"
+            size="sm"
+            class="h-7 gap-1 text-sm"
+            type="button"
+            phx-click={
+              JS.push("generate_translation",
+                value: %{
+                  from_field: @field_sv.field,
+                  to_field: @field_en.field,
+                  to_lang: :en,
                   type_context: @type_context,
                   index: @index
                 }

@@ -1,6 +1,6 @@
 defmodule Tiki.Translations do
   alias LangChain.Chains.LLMChain
-  alias LangChain.ChatModels.ChatGoogleAI
+  alias LangChain.ChatModels.ChatOpenAI
   alias LangChain.Message
 
   use Gettext, backend: TikiWeb.Gettext
@@ -32,10 +32,11 @@ defmodule Tiki.Translations do
 
   def generate_translation(text, language, type_context) do
     model =
-      ChatGoogleAI.new!(%{
-        temperature: 0,
-        stream: false,
-        model: "gemini-2.0-flash-lite"
+      ChatOpenAI.new!(%{
+        reasoning: false,
+        reasoning_effort: "minimal",
+        model: "gpt-4o-mini-2024-07-18",
+        stream: false
       })
 
     with {:ok, chain} <-

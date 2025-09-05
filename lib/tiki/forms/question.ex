@@ -71,3 +71,16 @@ defmodule Tiki.Forms.Question do
     end
   end
 end
+
+defimpl Tiki.Localization, for: Tiki.Forms.Question do
+  def localize(question, "sv") do
+    %Tiki.Forms.Question{
+      question
+      | name: question.name_sv,
+        description: question.description_sv,
+        options: question.options_sv
+    }
+  end
+
+  def localize(question, "en"), do: question
+end

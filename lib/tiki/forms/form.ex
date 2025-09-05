@@ -23,3 +23,19 @@ defmodule Tiki.Forms.Form do
     |> cast_assoc(:questions, sort_param: :questions_sort, drop_param: :questions_drop)
   end
 end
+
+defimpl Tiki.Localization, for: Tiki.Forms.Form do
+  def localize(form, "sv") do
+    form = %Tiki.Forms.Form{form | description: form.description_sv}
+
+    case form.questions do
+      questions when is_list(questions) ->
+        %Tiki.Forms.Form{form | questions: Tiki.Localizer.localize(questions)}
+
+      _ ->
+        form
+    end
+  end
+
+  def localize(form, "en"), do: form
+end

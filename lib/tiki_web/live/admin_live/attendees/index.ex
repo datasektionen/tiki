@@ -3,6 +3,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
 
   alias Tiki.Events
   alias Tiki.Orders
+  alias Tiki.Localizer
 
   import TikiWeb.Component.Card
   import TikiWeb.Component.Badge
@@ -50,7 +51,9 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
   end
 
   def mount(%{"id" => event_id}, _sesison, socket) do
-    event = Events.get_event!(event_id)
+    event =
+      Events.get_event!(event_id)
+      |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       %{entries: tickets, metadata: metadata} =
@@ -142,7 +145,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
           </.link>
           <.badge variant="outline">
             <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
-            <span class="text-xs">{@ticket.ticket_type.name}</span>
+            <span class="text-xs">{Localizer.localize(@ticket.ticket_type).name}</span>
           </.badge>
         </div>
         <div class="text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5">

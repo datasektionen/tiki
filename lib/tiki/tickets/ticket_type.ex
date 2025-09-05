@@ -63,3 +63,15 @@ defmodule Tiki.Tickets.TicketType do
     |> validate_number(:price, greater_than_or_equal_to: 0)
   end
 end
+
+defimpl Tiki.Localization, for: Tiki.Tickets.TicketType do
+  def localize(ticket_type, "sv") do
+    %Tiki.Tickets.TicketType{
+      ticket_type
+      | name: ticket_type.name_sv,
+        description: ticket_type.description_sv
+    }
+  end
+
+  def localize(ticket_type, "en"), do: ticket_type
+end

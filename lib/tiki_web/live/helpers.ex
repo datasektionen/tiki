@@ -4,7 +4,7 @@ defmodule TikiWeb.LiveHelpers do
   def assign_breadcrumbs(socket, crumbs) do
     # Translate the crumbs
     crumbs =
-      Enum.map(crumbs, fn {label, url} -> {Gettext.gettext(TikiWeb.Gettext, label), url} end)
+      Enum.map(crumbs, fn {label, url} -> {Gettext.gettext(TikiWeb.Gettext, label || ""), url} end)
 
     assign(socket, breadcrumbs: crumbs)
   end
