@@ -34,7 +34,9 @@ defmodule Tiki.TicketsFixtures do
       attrs
       |> Enum.into(%{
         description: "some description",
+        description_sv: "någon beskrivning",
         name: "some name",
+        name_sv: "något namn",
         price: 42,
         purchasable: true,
         ticket_batch_id: batch.id,

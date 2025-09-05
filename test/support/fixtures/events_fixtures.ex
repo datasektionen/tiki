@@ -57,24 +57,36 @@ defmodule Tiki.EventsFixtures do
     Tiki.Tickets.create_ticket_type(%{
       ticket_batch_id: external.id,
       name: "Styrelser",
+      name_sv: "Styrelser",
+      description: "External ticket for board members",
+      description_sv: "Extern biljett för styrelser",
       price: 600
     })
 
     Tiki.Tickets.create_ticket_type(%{
       ticket_batch_id: external.id,
       name: "Inbjudna",
+      name_sv: "Inbjudna",
+      description: "External ticket for invited guests",
+      description_sv: "Extern biljett för inbjudna gäster",
       price: 600
     })
 
     Tiki.Tickets.create_ticket_type(%{
       ticket_batch_id: students.id,
       name: "Studentbiljett",
+      name_sv: "Studentbiljett",
+      description: "Student ticket",
+      description_sv: "Biljett för studenter",
       price: 400
     })
 
     Tiki.Tickets.create_ticket_type(%{
       ticket_batch_id: alumns.id,
       name: "Alumnbiljett",
+      name_sv: "Alumnbiljett",
+      description: "Alumni ticket",
+      description_sv: "Biljett för alumner",
       price: 600
     })
 

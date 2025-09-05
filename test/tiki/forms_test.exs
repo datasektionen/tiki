@@ -30,6 +30,7 @@ defmodule Tiki.FormsTest do
         questions: [
           %{
             name: "Quesiton name",
+            name_sv: "Frågans namn",
             type: "text"
           }
         ]
@@ -41,6 +42,28 @@ defmodule Tiki.FormsTest do
 
     test "create_form/1 with invalid data returns an invalid changeset" do
       assert {:error, %Ecto.Changeset{valid?: false}} = Tiki.Forms.create_form()
+    end
+
+    test "create_form/1 with different number of options in English and Swedish returns an invalid changeset" do
+      event = Tiki.EventsFixtures.event_fixture()
+
+      attrs = %{
+        description: "some description",
+        name: "some name",
+        event_id: event.id,
+        questions: [
+          %{
+            name: "Quesiton name",
+            name_sv: "Frågans namn",
+            type: "select",
+            options: ["option 1", "option 2"],
+            options_sv: ["alternativ 1"]
+          }
+        ]
+      }
+
+      assert {:error, %Ecto.Changeset{valid?: false}} =
+               Tiki.Forms.create_form(attrs)
     end
 
     test "update_form/2 with valid data updates the form" do
@@ -68,19 +91,24 @@ defmodule Tiki.FormsTest do
         questions: [
           %{
             name: "Quesiton name",
+            name_sv: "Frågans namn",
             type: "text",
             required: true
           },
           %{
             name: "Quesiton 2",
+            name_sv: "Fråga 2",
             type: "select",
-            options: ["option 1", "option 2"]
+            options: ["option 1", "option 2"],
+            options_sv: ["alternativ 1", "alternativ 2"]
           },
           %{
             name: "Quesiton 3",
+            name_sv: "Fråga 3",
             type: "multi_select",
             required: true,
-            options: ["alternative 1", "alternative 2"]
+            options: ["alternative 1", "alternative 2"],
+            options_sv: ["alternativ 1", "alternativ 2"]
           }
         ]
       }
@@ -102,14 +130,53 @@ defmodule Tiki.FormsTest do
       assert %Ecto.Changeset{valid?: true} = Tiki.Forms.get_form_changeset!(form.id, response)
     end
 
+    test "get_form_changeset!/2 with valid bilingual data returns a valid changeset" do
+      attrs = %{
+        questions: [
+          %{
+            name: "Quesiton 2",
+            name_sv: "Fråga 2",
+            type: "select",
+            options: ["option 1", "option 2"],
+            options_sv: ["alternativ 1", "alternativ 2"]
+          },
+          %{
+            name: "Quesiton 3",
+            name_sv: "Fråga 3",
+            type: "multi_select",
+            required: true,
+            options: ["alternative 1", "alternative 2"],
+            options_sv: ["svarsalternativ 1", "svarsalternativ 2"]
+          }
+        ]
+      }
+
+      form = form_fixture(attrs)
+      question_ids = Enum.map(form.questions, & &1.id)
+
+      response = %Tiki.Forms.Response{
+        question_responses: [
+          %{question_id: Enum.at(question_ids, 0), answer: "alternativ 1"},
+          %{
+            question_id: Enum.at(question_ids, 1),
+            answer: ["svarsalternativ 1", "svarsalternativ 2"]
+          }
+        ]
+      }
+
+      assert %Ecto.Changeset{valid?: true} = Tiki.Forms.get_form_changeset!(form.id, response)
+    end
+
     test "get_form_changeset!/2 without required data returns an invalid changeset" do
       attrs = %{
         questions: [
           %{
             name: "Quesiton 3",
+            name_sv: "Fråga 3",
             type: "multi_select",
             required: true,
-            options: ["option 1", "option 2"]
+            options: ["option 1", "option 2"],
+            options_sv: ["alternativ 1", "alternativ 2"]
           }
         ]
       }
@@ -134,8 +201,10 @@ defmodule Tiki.FormsTest do
         questions: [
           %{
             name: "Quesiton 3",
+            name_sv: "Fråga 3",
             type: "select",
-            options: ["option 1", "option 2"]
+            options: ["option 1", "option 2"],
+            options_sv: ["alternativ 1", "alternativ 2"]
           }
         ]
       }
@@ -163,8 +232,10 @@ defmodule Tiki.FormsTest do
         questions: [
           %{
             name: "Quesiton 3",
+            name_sv: "Fråga 3",
             type: "multi_select",
             options: ["option 1", "option 2"],
+            options_sv: ["alternativ 1", "alternativ 2"],
             required: true
           }
         ]
@@ -193,8 +264,10 @@ defmodule Tiki.FormsTest do
         questions: [
           %{
             name: "Quesiton 3",
+            name_sv: "Fråga 3",
             type: "multi_select",
             options: ["option 1", "option 2"],
+            options_sv: ["alternativ 1", "alternativ 2"],
             required: true
           }
         ]
@@ -220,14 +293,16 @@ defmodule Tiki.FormsTest do
         questions: [
           %{
             name: "Quesiton name",
+            name_sv: "Frågans namn",
             type: "text",
             required: true
           },
           %{
-            name: "Quesiton name",
+            name: "Quesiton name 2",
+            name_sv: "Frågans namn 2",
             type: "multi_select",
             options: ["option 1", "option 2"],
-            required: true
+            options_sv: ["alternativ 1", "alternativ 2"]
           }
         ]
       }
@@ -259,6 +334,7 @@ defmodule Tiki.FormsTest do
         questions: [
           %{
             name: "Quesiton name",
+            name_sv: "Frågans namn",
             type: "text",
             required: true
           }
@@ -288,6 +364,7 @@ defmodule Tiki.FormsTest do
           questions: [
             %{
               name: "Quesiton name",
+              name_sv: "Frågans namn",
               type: "text",
               required: true
             }
@@ -319,6 +396,7 @@ defmodule Tiki.FormsTest do
           questions: [
             %{
               name: "Quesiton name",
+              name_sv: "Frågans namn",
               type: "text",
               required: true
             }
