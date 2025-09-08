@@ -2,11 +2,14 @@ defmodule Tiki.Events.Event do
   use Tiki.Schema
   import Ecto.Changeset
 
+  use Gettext, backend: TikiWeb.Gettext
+
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "events" do
     field :description, :string
     field :description_sv, :string
-    field :event_date, Tiki.Types.DatetimeStockholm
+    field :start_time, Tiki.Types.DatetimeStockholm
+    field :end_time, Tiki.Types.DatetimeStockholm
     field :name, :string
     field :name_sv, :string
     field :location, :string
@@ -35,7 +38,8 @@ defmodule Tiki.Events.Event do
       :name_sv,
       :description,
       :description_sv,
-      :event_date,
+      :start_time,
+      :end_time,
       :location,
       :image_url,
       :is_hidden,
@@ -43,8 +47,19 @@ defmodule Tiki.Events.Event do
       :default_form_id,
       :max_order_size
     ])
-    |> validate_required([:name, :name_sv, :description, :description_sv, :event_date, :team_id])
+    |> validate_required([:name, :name_sv, :description, :description_sv, :start_time, :team_id])
+    |> validate_greater_than(:end_time, :start_time)
     |> foreign_key_constraint(:team_id)
+  end
+
+  defp validate_greater_than(changeset, field, other_field) do
+    validate_change(changeset, field, fn _, value ->
+      if value && DateTime.compare(value, get_field(changeset, other_field)) != :gt do
+        [{field, gettext("must be greater than %{other_field}", other_field: other_field)}]
+      else
+        []
+      end
+    end)
   end
 end
 

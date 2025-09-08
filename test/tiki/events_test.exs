@@ -11,7 +11,7 @@ defmodule Tiki.EventsTest do
     @invalid_attrs %{
       description: nil,
       description_sv: nil,
-      event_date: nil,
+      start_time: nil,
       name: nil,
       name_sv: nil
     }
@@ -66,7 +66,7 @@ defmodule Tiki.EventsTest do
       valid_attrs = %{
         description: "some description",
         description_sv: "någon beskrivning",
-        event_date: ~U[2023-03-25 16:55:00Z],
+        start_time: ~U[2023-03-25 16:55:00Z],
         name: "some name",
         name_sv: "något namn",
         team_id: team.id
@@ -74,7 +74,7 @@ defmodule Tiki.EventsTest do
 
       assert {:ok, %Event{} = event} = Events.create_event(valid_attrs)
       assert event.description == "some description"
-      assert event.event_date == ~U[2023-03-25 16:55:00Z]
+      assert event.start_time == ~U[2023-03-25 16:55:00Z]
       assert event.name == "some name"
       assert event.name_sv == "något namn"
       assert event.description_sv == "någon beskrivning"
@@ -105,15 +105,16 @@ defmodule Tiki.EventsTest do
       update_attrs = %{
         description: "some updated description",
         description_sv: "någon uppdaterad beskrivning",
-        event_date: ~U[2023-03-26 16:55:00Z],
         name: "some updated name",
         name_sv: "något uppdaterat namn"
+        start_time: ~U[2023-03-26 16:55:00Z],
+        name: "some updated name"
       }
 
       assert {:ok, %Event{} = event} = Events.update_event(event, update_attrs)
       assert event.description == "some updated description"
       assert event.description_sv == "någon uppdaterad beskrivning"
-      assert event.event_date == ~U[2023-03-26 16:55:00Z]
+      assert event.start_time == ~U[2023-03-26 16:55:00Z]
       assert event.name == "some updated name"
       assert event.name_sv == "något uppdaterat namn"
     end

@@ -25,8 +25,52 @@ defmodule Tiki.Events do
   @doc """
   Returns all publically visible events.
   """
-  def list_public_events do
-    Repo.all(from e in Event, where: e.is_hidden != true)
+  def list_public_events(opts \\ []) do
+    filters = Keyword.get(opts, :filters, {})
+    sort_by = Keyword.get(opts, :sort_by, :id)
+
+    query =
+      from(e in Event,
+        left_join: o in assoc(e, :orders),
+        where: e.is_hidden != true,
+        group_by: e.id
+      )
+      |> where(^filter_where(filters))
+
+    query =
+      if sort_by == :popularity do
+        order_by(query, [e, o], desc: count(o.id) |> filter(o.status == :paid))
+      else
+        order_by(query, ^sort_by)
+      end
+
+    query
+    |> Repo.all()
+  end
+
+  defp filter_where(filter) do
+    case filter do
+      {:and, filters1, filters2} ->
+        dynamic([t], ^filter_where(filters1) and ^filter_where(filters2))
+
+      {:or, filters1, filters2} ->
+        dynamic([t], ^filter_where(filters1) or ^filter_where(filters2))
+
+      {key, value, operator} ->
+        case operator do
+          :eq -> dynamic([t], field(t, ^key) == ^value)
+          :lt -> dynamic([t], field(t, ^key) < ^value)
+          :gt -> dynamic([t], field(t, ^key) > ^value)
+        end
+
+      {key, operator} ->
+        case operator do
+          :is_nil -> dynamic([t], is_nil(field(t, ^key)))
+        end
+
+      {} ->
+        dynamic(true)
+    end
   end
 
   @doc """

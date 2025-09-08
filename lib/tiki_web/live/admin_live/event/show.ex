@@ -73,7 +73,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
       {@event.name}
       <:subtitle>
         <span>
-          {time_to_string(@event.event_date, format: :long) |> String.capitalize()}
+          {time_to_string(@event.start_time, format: :long) |> String.capitalize()}
         </span>·
         <span>
           {@event.location}

@@ -25,7 +25,7 @@ defmodule TikiWeb.EventLive.Show do
           <div class="text-muted-foreground flex flex-col gap-1">
             <div class="inline-flex items-center gap-2">
               <.icon name="hero-calendar" />
-              {time_to_string(@event.event_date)}
+              {event_time(@event)}
             </div>
             <div class="inline-flex items-center gap-2">
               <.icon name="hero-map-pin" />
@@ -187,5 +187,16 @@ defmodule TikiWeb.EventLive.Show do
       ) do
     online_count = count + map_size(joins) - map_size(leaves)
     {:noreply, assign(socket, :online_count, online_count)}
+  end
+
+  defp event_time(event) do
+    case event do
+      %Tiki.Events.Event{start_time: start_time, end_time: nil} ->
+        time_to_string(start_time)
+
+      %Tiki.Events.Event{start_time: start_time, end_time: end_time} ->
+        Tiki.Cldr.Date.Interval.to_string!(start_time, end_time, format: :long)
+        |> String.capitalize()
+    end
   end
 end
