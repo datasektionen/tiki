@@ -21,5 +21,15 @@ defmodule Tiki.Repo.Migrations.DynamicTranslations do
       add :name_sv, :string
       add :description_sv, :text
     end
+
+    execute("UPDATE events SET name_sv = name, description_sv = description", "")
+    execute("UPDATE forms SET description_sv = description;", "")
+
+    execute(
+      "UPDATE form_questions SET name_sv = name, description_sv = description, options_sv = options;",
+      ""
+    )
+
+    execute("UPDATE ticket_types SET name_sv = name, description_sv = description;", "")
   end
 end

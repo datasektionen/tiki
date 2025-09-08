@@ -138,9 +138,9 @@ msgid "Date"
 msgstr "Datum"
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:144
-#: lib/tiki_web/live/admin_live/event/form_component.ex:63
+#: lib/tiki_web/live/admin_live/event/form_component.ex:70
 #: lib/tiki_web/live/admin_live/event/index.ex:93
-#: lib/tiki_web/live/event_live/index.ex:37
+#: lib/tiki_web/live/event_live/index.ex:111
 #, elixir-autogen, elixir-format
 msgid "Location"
 msgstr "Plats"
@@ -222,11 +222,6 @@ msgstr "Hem"
 msgid "Description"
 msgstr "Beskrivning"
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:59
-#, elixir-autogen, elixir-format, fuzzy
-msgid "Event date"
-msgstr "Evenemangsdatum"
-
 #: lib/tiki_web/live/admin_live/event/edit.ex:21
 #: lib/tiki_web/live/admin_live/event/index.ex:35
 #: lib/tiki_web/live/admin_live/event/show.ex:91
@@ -234,7 +229,7 @@ msgstr "Evenemangsdatum"
 msgid "Edit event"
 msgstr "Redigera evenemang"
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:69
+#: lib/tiki_web/live/admin_live/event/form_component.ex:76
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Save event"
 msgstr "Spara evenemang"
@@ -257,7 +252,7 @@ msgstr "Sålda biljetter"
 
 #: lib/tiki_web/live/admin_live/event/edit.ex:39
 #: lib/tiki_web/live/admin_live/event/edit.ex:119
-#: lib/tiki_web/live/admin_live/event/form_component.ex:75
+#: lib/tiki_web/live/admin_live/event/form_component.ex:82
 #, elixir-autogen, elixir-format
 msgid "Delete event"
 msgstr "Radera evenemang"
@@ -272,17 +267,17 @@ msgstr "Radera evenemang?"
 msgid "Deleted event"
 msgstr "Evenemang togs bort"
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:214
+#: lib/tiki_web/live/admin_live/event/form_component.ex:221
 #, elixir-autogen, elixir-format
 msgid "Event created successfully"
 msgstr "Evenemang skapades"
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:199
+#: lib/tiki_web/live/admin_live/event/form_component.ex:206
 #, elixir-autogen, elixir-format
 msgid "Event updated successfully"
 msgstr "Evenemang uppdaterades"
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:69
+#: lib/tiki_web/live/admin_live/event/form_component.ex:76
 #: lib/tiki_web/live/admin_live/forms/form.ex:165
 #: lib/tiki_web/live/admin_live/team/form.ex:22
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
@@ -1232,7 +1227,7 @@ msgstr "Tillåter"
 msgid "Edit team"
 msgstr "Redigera team"
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:65
+#: lib/tiki_web/live/admin_live/event/form_component.ex:72
 #, elixir-autogen, elixir-format
 msgid "Event cover image"
 msgstr "Omslagsbild"
@@ -1487,7 +1482,7 @@ msgstr "Nej. Du kan visa din digitala biljett som inehåller en QR-kod när du a
 msgid "Open."
 msgstr "Öppna."
 
-#: lib/tiki_web/live/event_live/index.ex:8
+#: lib/tiki_web/live/event_live/index.ex:11
 #, elixir-autogen, elixir-format
 msgid "Public events"
 msgstr "Publika evenemang"
@@ -1866,6 +1861,7 @@ msgid "Events and logs"
 msgstr "Event och loggar"
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:60
+#: lib/tiki_web/live/admin_live/event/form_component.ex:67
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:47
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:53
 #, elixir-autogen, elixir-format
@@ -2051,7 +2047,7 @@ msgstr "Biljetten hittades inte"
 msgid "Ticket not valid for event"
 msgstr "Biljetten är inte giltig för evenemanget"
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:126
+#: lib/tiki_web/live/admin_live/event/form_component.ex:133
 #: lib/tiki_web/live/admin_live/forms/form.ex:324
 #: lib/tiki_web/live/admin_live/forms/form.ex:340
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:168
@@ -2081,10 +2077,75 @@ msgstr "Antalet alternativ måste vara lika"
 msgid "Please provide an input text to translate first."
 msgstr "Vänligen fyll i en text att översätta först."
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:182
+#: lib/tiki_web/live/admin_live/event/form_component.ex:189
 #: lib/tiki_web/live/admin_live/forms/form.ex:271
 #: lib/tiki_web/live/admin_live/forms/form.ex:276
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:189
 #, elixir-autogen, elixir-format
 msgid "Generating translation..."
 msgstr "Översätter..."
+#: lib/tiki_web/live/event_live/index.ex:70
+#, elixir-autogen, elixir-format
+msgid "Date (newest first)"
+msgstr "Datum (nyast först)"
+
+#: lib/tiki_web/live/event_live/index.ex:64
+#, elixir-autogen, elixir-format
+msgid "Date (oldest first)"
+msgstr "Datum (äldst först)"
+
+#: lib/tiki_web/live/event_live/index.ex:18
+#, elixir-autogen, elixir-format
+msgid "Dates"
+msgstr "Datum"
+
+#: lib/tiki_web/live/event_live/index.ex:25
+#, elixir-autogen, elixir-format
+msgid "Event dates"
+msgstr "Evenemangsdatum"
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:66
+#, elixir-autogen, elixir-format
+msgid "Event end time"
+msgstr "Evenemangets sluttid"
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:59
+#, elixir-autogen, elixir-format
+msgid "Event start time"
+msgstr "Evenemangets starttid"
+
+#: lib/tiki_web/live/event_live/index.ex:123
+#, elixir-autogen, elixir-format
+msgid "No events found"
+msgstr "Inga evenemang hittades"
+
+#: lib/tiki_web/live/event_live/index.ex:39
+#, elixir-autogen, elixir-format
+msgid "Past"
+msgstr "Tidigare"
+
+#: lib/tiki_web/live/event_live/index.ex:76
+#, elixir-autogen, elixir-format
+msgid "Popularity"
+msgstr "Popularitet"
+
+#: lib/tiki_web/live/event_live/index.ex:49
+#: lib/tiki_web/live/event_live/index.ex:56
+#, elixir-autogen, elixir-format
+msgid "Sort by"
+msgstr "Sortera efter"
+
+#: lib/tiki_web/live/event_live/index.ex:126
+#, elixir-autogen, elixir-format
+msgid "Try adjusting your filters or check back later."
+msgstr "Prova att justera dina filter eller kom tillbaka senare."
+
+#: lib/tiki_web/live/event_live/index.ex:33
+#, elixir-autogen, elixir-format
+msgid "Upcoming"
+msgstr "Kommande"
+
+#: lib/tiki/events/event.ex:58
+#, elixir-autogen, elixir-format
+msgid "must be greater than %{other_field}"
+msgstr "måste vara större än %{other_field}"

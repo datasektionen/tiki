@@ -4,6 +4,7 @@ defmodule TikiWeb.EventLive.Index do
   alias Tiki.Events
   import TikiWeb.Component.DropdownMenu
   import TikiWeb.Component.Menu
+  alias Tiki.Localizer
 
   def render(assigns) do
     ~H"""

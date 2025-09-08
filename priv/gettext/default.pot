@@ -138,9 +138,9 @@ msgid "Date"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:144
-#: lib/tiki_web/live/admin_live/event/form_component.ex:63
+#: lib/tiki_web/live/admin_live/event/form_component.ex:70
 #: lib/tiki_web/live/admin_live/event/index.ex:93
-#: lib/tiki_web/live/event_live/index.ex:37
+#: lib/tiki_web/live/event_live/index.ex:111
 #, elixir-autogen, elixir-format
 msgid "Location"
 msgstr ""
@@ -222,11 +222,6 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:59
-#, elixir-autogen, elixir-format
-msgid "Event date"
-msgstr ""
-
 #: lib/tiki_web/live/admin_live/event/edit.ex:21
 #: lib/tiki_web/live/admin_live/event/index.ex:35
 #: lib/tiki_web/live/admin_live/event/show.ex:91
@@ -234,7 +229,7 @@ msgstr ""
 msgid "Edit event"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:69
+#: lib/tiki_web/live/admin_live/event/form_component.ex:76
 #, elixir-autogen, elixir-format
 msgid "Save event"
 msgstr ""
@@ -257,7 +252,7 @@ msgstr ""
 
 #: lib/tiki_web/live/admin_live/event/edit.ex:39
 #: lib/tiki_web/live/admin_live/event/edit.ex:119
-#: lib/tiki_web/live/admin_live/event/form_component.ex:75
+#: lib/tiki_web/live/admin_live/event/form_component.ex:82
 #, elixir-autogen, elixir-format
 msgid "Delete event"
 msgstr ""
@@ -272,17 +267,17 @@ msgstr ""
 msgid "Deleted event"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:214
+#: lib/tiki_web/live/admin_live/event/form_component.ex:221
 #, elixir-autogen, elixir-format
 msgid "Event created successfully"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:199
+#: lib/tiki_web/live/admin_live/event/form_component.ex:206
 #, elixir-autogen, elixir-format
 msgid "Event updated successfully"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:69
+#: lib/tiki_web/live/admin_live/event/form_component.ex:76
 #: lib/tiki_web/live/admin_live/forms/form.ex:165
 #: lib/tiki_web/live/admin_live/team/form.ex:22
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
@@ -1232,7 +1227,7 @@ msgstr ""
 msgid "Edit team"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:65
+#: lib/tiki_web/live/admin_live/event/form_component.ex:72
 #, elixir-autogen, elixir-format
 msgid "Event cover image"
 msgstr ""
@@ -1487,7 +1482,7 @@ msgstr ""
 msgid "Open."
 msgstr ""
 
-#: lib/tiki_web/live/event_live/index.ex:8
+#: lib/tiki_web/live/event_live/index.ex:11
 #, elixir-autogen, elixir-format
 msgid "Public events"
 msgstr ""
@@ -1866,6 +1861,7 @@ msgid "Events and logs"
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/event/form_component.ex:60
+#: lib/tiki_web/live/admin_live/event/form_component.ex:67
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:47
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:53
 #, elixir-autogen, elixir-format
@@ -2051,7 +2047,7 @@ msgstr ""
 msgid "Ticket not valid for event"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:126
+#: lib/tiki_web/live/admin_live/event/form_component.ex:133
 #: lib/tiki_web/live/admin_live/forms/form.ex:324
 #: lib/tiki_web/live/admin_live/forms/form.ex:340
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:168
@@ -2081,10 +2077,76 @@ msgstr ""
 msgid "Please provide an input text to translate first."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/event/form_component.ex:182
+#: lib/tiki_web/live/admin_live/event/form_component.ex:189
 #: lib/tiki_web/live/admin_live/forms/form.ex:271
 #: lib/tiki_web/live/admin_live/forms/form.ex:276
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:189
 #, elixir-autogen, elixir-format
 msgid "Generating translation..."
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:70
+#, elixir-autogen, elixir-format
+msgid "Date (newest first)"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:64
+#, elixir-autogen, elixir-format
+msgid "Date (oldest first)"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:18
+#, elixir-autogen, elixir-format
+msgid "Dates"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:25
+#, elixir-autogen, elixir-format
+msgid "Event dates"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:66
+#, elixir-autogen, elixir-format
+msgid "Event end time"
+msgstr ""
+
+#: lib/tiki_web/live/admin_live/event/form_component.ex:59
+#, elixir-autogen, elixir-format
+msgid "Event start time"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:123
+#, elixir-autogen, elixir-format
+msgid "No events found"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:39
+#, elixir-autogen, elixir-format
+msgid "Past"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:76
+#, elixir-autogen, elixir-format
+msgid "Popularity"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:49
+#: lib/tiki_web/live/event_live/index.ex:56
+#, elixir-autogen, elixir-format
+msgid "Sort by"
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:126
+#, elixir-autogen, elixir-format
+msgid "Try adjusting your filters or check back later."
+msgstr ""
+
+#: lib/tiki_web/live/event_live/index.ex:33
+#, elixir-autogen, elixir-format
+msgid "Upcoming"
+msgstr ""
+
+#: lib/tiki/events/event.ex:58
+#, elixir-autogen, elixir-format
+msgid "must be greater than %{other_field}"
 msgstr ""

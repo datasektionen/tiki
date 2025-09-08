@@ -106,7 +106,7 @@ defmodule Tiki.EventsTest do
         description: "some updated description",
         description_sv: "någon uppdaterad beskrivning",
         name: "some updated name",
-        name_sv: "något uppdaterat namn"
+        name_sv: "något uppdaterat namn",
         start_time: ~U[2023-03-26 16:55:00Z],
         name: "some updated name"
       }
