@@ -58,6 +58,7 @@ defmodule TikiWeb.EventLive.Show do
             current_user={@current_user}
             event={@event}
             order={@order}
+            promo_codes={@promo_codes}
           />
         </div>
       </div>
@@ -121,7 +122,15 @@ defmodule TikiWeb.EventLive.Show do
 
   @impl true
   def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+    promo_codes =
+      case Map.get(params, "promo_codes", []) do
+        codes when is_list(codes) -> codes
+        _ -> []
+      end
+
+    {:noreply,
+     apply_action(socket, socket.assigns.live_action, params)
+     |> assign(promo_codes: promo_codes)}
   end
 
   def apply_action(socket, :index, _params) do
