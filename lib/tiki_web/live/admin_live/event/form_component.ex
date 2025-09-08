@@ -40,9 +40,16 @@ defmodule TikiWeb.AdminLive.Event.FormComponent do
         <.input field={@form[:max_order_size]} type="number" label={gettext("Max tickets per order")} />
 
         <.input
-          field={@form[:event_date]}
+          field={@form[:start_time]}
           type="datetime-local"
-          label={gettext("Event date")}
+          label={gettext("Event start time")}
+          description={gettext("In 'Europe/Stockholm' timezone")}
+        />
+
+        <.input
+          field={@form[:end_time]}
+          type="datetime-local"
+          label={gettext("Event end time")}
           description={gettext("In 'Europe/Stockholm' timezone")}
         />
 
