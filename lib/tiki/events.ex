@@ -163,16 +163,20 @@ defmodule Tiki.Events do
         fn _repo, %{event: event} ->
           Tiki.Forms.create_form(%{
             description: "We need some information to organize our event",
+            description_sv: "Vi behöver några information för att organisera vårt evenemang",
             name: "Default form",
+            name_sv: "Standardformulär",
             event_id: event.id,
             questions: [
               %{
                 name: "Name",
+                name_sv: "Namn",
                 type: "attendee_name",
                 required: true
               },
               %{
                 name: "Email",
+                name_sv: "E-post",
                 type: "email",
                 required: true
               }

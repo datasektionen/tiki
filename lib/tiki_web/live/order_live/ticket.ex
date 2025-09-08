@@ -2,6 +2,7 @@ defmodule TikiWeb.OrderLive.Ticket do
   use TikiWeb, :live_view
 
   alias Tiki.Orders
+  alias Tiki.Localizer
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -21,11 +22,11 @@ defmodule TikiWeb.OrderLive.Ticket do
             <div class="flex flex-col gap-2">
               <h2 class="text-foreground text-xl font-semibold tracking-tight">
                 {gettext("Your ticket to %{event}",
-                  event: @ticket.ticket_type.ticket_batch.event.name
+                  event: Localizer.localize(@ticket.ticket_type.ticket_batch.event).name
                 )}
               </h2>
               <h3 class="text-foreground mb-1">
-                {@ticket.ticket_type.name}
+                {Localizer.localize(@ticket.ticket_type).name}
               </h3>
               <p class="text-muted-foreground flex flex-row items-center gap-1 text-sm">
                 <.icon name="hero-map-pin" class="text-muted-foreground size-4" />
@@ -42,7 +43,7 @@ defmodule TikiWeb.OrderLive.Ticket do
                 </time>
               </p>
               <p class="text-muted-foreground text-sm">
-                {@ticket.ticket_type.description}
+                {Localizer.localize(@ticket.ticket_type).description}
               </p>
             </div>
           </div>
@@ -55,7 +56,7 @@ defmodule TikiWeb.OrderLive.Ticket do
         <dl class="text-sm/6 grid grid-cols-1 sm:grid-cols-[min(50%,theme(spacing.80))_auto] sm:text-sm/6">
           <%= for qr <- @ticket.form_response.question_responses do %>
             <dt class="border-border text-muted-foreground col-start-1 border-t pt-3 first:border-none sm:py-3">
-              {qr.question.name}
+              {Localizer.localize(qr.question).name}
             </dt>
             <dd class="text-foreground pt-1 pb-3 sm:border-border sm:[&amp;:nth-child(2)]:border-none sm:border-t sm:py-3">
               {qr}

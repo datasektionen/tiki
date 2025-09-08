@@ -71,6 +71,7 @@ AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
 IMAGE_FRONTEND_URL=https://dnok4ulql7gij.cloudfront.net
+OPENAI_KEY={{ .openai_key }}
 {{ end }}
 EOF
         destination = "local/.env"

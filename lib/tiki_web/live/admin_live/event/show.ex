@@ -4,12 +4,15 @@ defmodule TikiWeb.AdminLive.Event.Show do
   alias Tiki.Events
   alias Tiki.Orders
   alias Tiki.Presence
+  alias Tiki.Localizer
 
   import TikiWeb.Component.Card
 
   @impl Phoenix.LiveView
   def mount(%{"id" => event_id}, _session, socket) do
-    event = Events.get_event!(event_id, preload_ticket_types: true)
+    event =
+      Events.get_event!(event_id, preload_ticket_types: true)
+      |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       initial_count = Presence.list("presence:event:#{event_id}") |> map_size

@@ -7,9 +7,11 @@ defmodule Tiki.Events.Event do
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "events" do
     field :description, :string
+    field :description_sv, :string
     field :start_time, Tiki.Types.DatetimeStockholm
     field :end_time, Tiki.Types.DatetimeStockholm
     field :name, :string
+    field :name_sv, :string
     field :location, :string
     field :image_url, :string
     field :is_hidden, :boolean
@@ -33,7 +35,9 @@ defmodule Tiki.Events.Event do
     event
     |> cast(attrs, [
       :name,
+      :name_sv,
       :description,
+      :description_sv,
       :start_time,
       :end_time,
       :location,
@@ -43,7 +47,7 @@ defmodule Tiki.Events.Event do
       :default_form_id,
       :max_order_size
     ])
-    |> validate_required([:name, :description, :start_time, :team_id])
+    |> validate_required([:name, :name_sv, :description, :description_sv, :start_time, :team_id])
     |> validate_greater_than(:end_time, :start_time)
     |> foreign_key_constraint(:team_id)
   end
@@ -57,4 +61,12 @@ defmodule Tiki.Events.Event do
       end
     end)
   end
+end
+
+defimpl Tiki.Localization, for: Tiki.Events.Event do
+  def localize(event, "sv") do
+    %Tiki.Events.Event{event | name: event.name_sv, description: event.description_sv}
+  end
+
+  def localize(event, "en"), do: event
 end

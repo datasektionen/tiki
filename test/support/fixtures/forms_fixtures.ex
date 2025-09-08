@@ -6,6 +6,7 @@ defmodule Tiki.FormsFixtures do
       attrs
       |> Enum.into(%{
         description: "some description",
+        description_sv: "någon beskrivning",
         name: "some name",
         event_id: event.id
       })

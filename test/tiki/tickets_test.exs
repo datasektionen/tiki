@@ -102,8 +102,10 @@ defmodule Tiki.TicketsTest do
 
       valid_attrs = %{
         description: "some description",
+        description_sv: "någon beskrivning",
         expire_time: ~U[2023-03-25 18:01:00Z],
         name: "some name",
+        name_sv: "något namn",
         price: 42,
         purchasable: true,
         release_time: ~U[2023-03-25 18:01:00Z],
@@ -133,8 +135,10 @@ defmodule Tiki.TicketsTest do
 
       update_attrs = %{
         description: "some updated description",
+        description_sv: "någon uppdaterad beskrivning",
         expire_time: ~U[2023-03-26 18:01:00Z],
         name: "some updated name",
+        name_sv: "något uppdaterat namn",
         price: 43,
         purchasable: false,
         release_time: ~U[2023-03-26 18:01:00Z]

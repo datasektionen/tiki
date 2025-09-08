@@ -83,7 +83,8 @@ defmodule Tiki.MixProject do
       {:fun_with_flags, "~> 1.0"},
       {:fun_with_flags_ui, "~> 1.0"},
       {:nimble_csv, "~> 1.2"},
-      {:prom_ex, "~> 1.0"}
+      {:prom_ex, "~> 1.0"},
+      {:langchain, "0.4.0-rc.2"}
     ]
   end
 

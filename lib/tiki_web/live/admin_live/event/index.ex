@@ -4,13 +4,17 @@ defmodule TikiWeb.AdminLive.Event.Index do
   alias Tiki.Events
   alias Tiki.Events.Event
   import TikiWeb.Component.Card
+  alias Tiki.Localizer
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     %{current_user: user, current_team: team} = socket.assigns
 
     with :ok <- Tiki.Policy.authorize(:event_manage, user, team) do
-      events = Tiki.Events.list_team_events(socket.assigns.current_team.id)
+      events =
+        Tiki.Events.list_team_events(socket.assigns.current_team.id)
+        |> Localizer.localize()
+
       {:ok, stream(socket, :events, events)}
     else
       {:error, :unauthorized} ->
@@ -50,7 +54,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
 
   @impl true
   def handle_info({TikiWeb.AdminLive.Event.FormComponent, {:saved, event}}, socket) do
-    {:noreply, stream_insert(socket, :events, event)}
+    {:noreply, stream_insert(socket, :events, event |> Localizer.localize())}
   end
 
   @impl Phoenix.LiveView

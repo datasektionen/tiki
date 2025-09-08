@@ -4,6 +4,7 @@ defmodule TikiWeb.EventLive.Index do
   alias Tiki.Events
   import TikiWeb.Component.DropdownMenu
   import TikiWeb.Component.Menu
+  alias Tiki.Localizer
 
   def render(assigns) do
     ~H"""
@@ -102,7 +103,7 @@ defmodule TikiWeb.EventLive.Index do
             <div class="grow space-y-2">
               <p class="text-foreground font-medium leading-none">
                 <span aria-hidden="true">
-                  {event.name}
+                  {Localizer.localize(event).name}
                 </span>
               </p>
               <div class="text-muted-foreground flex items-center gap-1 text-sm">

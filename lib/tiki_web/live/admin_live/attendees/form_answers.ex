@@ -1,6 +1,8 @@
 defmodule TikiWeb.AdminLive.Attendees.FormAnswers do
   use TikiWeb, :live_view
 
+  alias Tiki.Localizer
+
   import TikiWeb.Component.Card
   import TikiWeb.Component.Select
 
@@ -94,10 +96,14 @@ defmodule TikiWeb.AdminLive.Attendees.FormAnswers do
   end
 
   def mount(%{"id" => event_id}, _session, socket) do
-    event = Tiki.Events.get_event!(event_id)
+    event =
+      Tiki.Events.get_event!(event_id)
+      |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
-      forms = Tiki.Forms.list_forms_for_event(event_id)
+      forms =
+        Tiki.Forms.list_forms_for_event(event_id)
+        |> Localizer.localize()
 
       {:ok,
        assign(socket, forms: forms, event: event)
@@ -117,7 +123,9 @@ defmodule TikiWeb.AdminLive.Attendees.FormAnswers do
   end
 
   def handle_params(%{"form" => form_id}, _uri, socket) do
-    form = Tiki.Forms.list_responses!(form_id)
+    form =
+      Tiki.Forms.list_responses!(form_id)
+      |> Localizer.localize()
 
     if form.event_id != socket.assigns.event.id do
       {:noreply,

@@ -3,6 +3,7 @@ defmodule TikiWeb.OrderLive.TicketForm do
 
   alias Tiki.Orders
   alias Tiki.Forms
+  alias Tiki.Localizer
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -52,8 +53,11 @@ defmodule TikiWeb.OrderLive.TicketForm do
   def mount(%{"id" => id} = params, _session, socket) do
     ticket =
       Orders.get_ticket!(id)
+      |> Map.update!(:ticket_type, &Localizer.localize/1)
 
-    form = Forms.get_form!(ticket.ticket_type.form_id)
+    form =
+      Forms.get_form!(ticket.ticket_type.form_id)
+      |> Tiki.Localizer.localize()
 
     changeset =
       Forms.get_form_changeset!(

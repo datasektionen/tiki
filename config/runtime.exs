@@ -156,4 +156,11 @@ if config_env() == :prod do
     api_key: spam_api_key
 
   config :swoosh, :api_client, Swoosh.ApiClient.Req
+
+  # Langchain config
+
+  openai_key = System.get_env("OPENAI_KEY") || raise "OPENAI_KEY is not set"
+
+  config :langchain,
+    openai_key: openai_key
 end

@@ -1,4 +1,5 @@
 defmodule TikiWeb.AdminLive.Ticket.Index do
+  alias Tiki.Localizer
   use TikiWeb, :live_view
 
   alias Tiki.Events
@@ -98,7 +99,9 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
 
   @impl Phoenix.LiveView
   def mount(%{"id" => event_id}, _session, socket) do
-    event = Events.get_event!(event_id, preload_ticket_types: true)
+    event =
+      Events.get_event!(event_id, preload_ticket_types: true)
+      |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       {:ok, assign(socket, event: event)}
@@ -216,7 +219,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
             <div class="text-foreground inline-flex items-center gap-2 rounded-md p-4 hover:bg-accent">
               <div class="inline-flex items-center gap-2">
                 <.icon name="hero-ticket h-4 w-4" />
-                {ticket_type.name}
+                {Localizer.localize(ticket_type).name}
               </div>
               <div class="text-muted-foreground">
                 {ticket_type.price} kr
@@ -299,5 +302,19 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
     {^node, label} = :digraph.vertex(graph, node)
 
     Map.put(label, :children, children)
+  end
+
+  @impl true
+  def handle_info({ref, {result, from, to}}, socket) do
+    Process.demonitor(ref, [:flush])
+
+    send_update(TikiWeb.AdminLive.Ticket.TicketTypeFormComponent,
+      id: "batch-form-component",
+      translate_result: result,
+      from: from,
+      to: to
+    )
+
+    {:noreply, socket}
   end
 end

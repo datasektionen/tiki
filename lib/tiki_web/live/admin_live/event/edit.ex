@@ -3,6 +3,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
 
   alias Tiki.Events
   alias Tiki.Events.Event
+  alias Tiki.Localizer
 
   def mount(_params, _session, socket) do
     {:ok, socket}
@@ -21,7 +22,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
       |> assign_breadcrumbs([
         {"Dashboard", ~p"/admin"},
         {"Events", ~p"/admin/events"},
-        {event.name, ~p"/admin/events/#{id}"},
+        {Localizer.localize(event).name, ~p"/admin/events/#{id}"},
         {"Edit event", ~p"/admin/events/#{id}/edit"}
       ])
       |> assign(:event, event)
@@ -122,5 +123,18 @@ defmodule TikiWeb.AdminLive.Event.Edit do
       </.dialog_header>
     </.dialog>
     """
+  end
+
+  def handle_info({ref, {result, from, to}}, socket) do
+    Process.demonitor(ref, [:flush])
+
+    send_update(TikiWeb.AdminLive.Event.FormComponent,
+      id: socket.assigns.event.id || "new",
+      translate_result: result,
+      from: from,
+      to: to
+    )
+
+    {:noreply, socket}
   end
 end

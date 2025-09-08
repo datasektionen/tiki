@@ -2,6 +2,7 @@ defmodule TikiWeb.AdminLive.Forms.Index do
   use TikiWeb, :live_view
 
   alias Tiki.Forms
+  alias Tiki.Localizer
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -51,7 +52,7 @@ defmodule TikiWeb.AdminLive.Forms.Index do
        |> assign_breadcrumbs([
          {"Dashboard", ~p"/admin"},
          {"Events", ~p"/admin/events"},
-         {event.name, ~p"/admin/events/#{event}"},
+         {Localizer.localize(event).name, ~p"/admin/events/#{event}"},
          {"Forms", ~p"/admin/events/#{event}/forms"}
        ])}
     else

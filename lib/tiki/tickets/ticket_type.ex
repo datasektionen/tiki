@@ -5,7 +5,9 @@ defmodule Tiki.Tickets.TicketType do
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "ticket_types" do
     field :name, :string
+    field :name_sv, :string
     field :description, :string
+    field :description_sv, :string
     field :price, :integer
     field :promo_code, :string
 
@@ -34,7 +36,9 @@ defmodule Tiki.Tickets.TicketType do
     ticket_types
     |> cast(attrs, [
       :name,
+      :name_sv,
       :description,
+      :description_sv,
       :purchasable,
       :price,
       :release_time,
@@ -46,7 +50,28 @@ defmodule Tiki.Tickets.TicketType do
       :form_id,
       :purchase_limit
     ])
-    |> validate_required([:name, :description, :purchasable, :price, :ticket_batch_id, :form_id])
+    |> validate_required([
+      :name,
+      :name_sv,
+      :description,
+      :description_sv,
+      :purchasable,
+      :price,
+      :ticket_batch_id,
+      :form_id
+    ])
     |> validate_number(:price, greater_than_or_equal_to: 0)
   end
+end
+
+defimpl Tiki.Localization, for: Tiki.Tickets.TicketType do
+  def localize(ticket_type, "sv") do
+    %Tiki.Tickets.TicketType{
+      ticket_type
+      | name: ticket_type.name_sv,
+        description: ticket_type.description_sv
+    }
+  end
+
+  def localize(ticket_type, "en"), do: ticket_type
 end

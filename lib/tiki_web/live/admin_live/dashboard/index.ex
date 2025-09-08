@@ -4,6 +4,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
   alias Tiki.Events
   alias Tiki.Orders
   alias Tiki.Policy
+  alias Tiki.Localizer
 
   import TikiWeb.Component.Card
 
@@ -12,7 +13,9 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
     %{current_user: user, current_team: team} = socket.assigns
 
     with :ok <- Policy.authorize(:event_manage, user, team) do
-      events = Events.list_team_events(team.id)
+      events =
+        Events.list_team_events(team.id)
+        |> Localizer.localize()
 
       stats = Tiki.Teams.get_team_stats!(team.id)
 
@@ -165,7 +168,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
                 {ticket.order.user.full_name}
               </:col>
               <:col :let={{_id, ticket}} label={gettext("Event")}>
-                {ticket.order.event.name}
+                {Localizer.localize(ticket.order.event).name}
               </:col>
               <:col :let={{_id, ticket}} label={gettext("Date")}>
                 {Calendar.strftime(ticket.inserted_at, "%Y-%m-%d")}

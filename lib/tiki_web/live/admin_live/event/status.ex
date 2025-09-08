@@ -5,12 +5,15 @@ defmodule TikiWeb.AdminLive.Event.Status do
   alias Tiki.Orders
   alias Tiki.Tickets
   alias Tiki.Presence
+  alias Tiki.Localizer
 
   def mount(%{"id" => event_id}, _session, socket) do
-    event = Events.get_event!(event_id)
+    event = Events.get_event!(event_id) |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
-      ticket_types = Tickets.get_cached_available_ticket_types(event_id)
+      ticket_types =
+        Tickets.get_cached_available_ticket_types(event_id)
+        |> Localizer.localize()
 
       Orders.subscribe(event_id)
 
@@ -39,7 +42,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
   end
 
   def handle_info({:tickets_updated, ticket_types}, socket) do
-    {:noreply, assign(socket, ticket_types: ticket_types)}
+    {:noreply, assign(socket, ticket_types: ticket_types |> Localizer.localize())}
   end
 
   def handle_info(
