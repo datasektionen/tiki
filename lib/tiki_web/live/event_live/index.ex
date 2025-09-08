@@ -14,14 +14,14 @@ defmodule TikiWeb.EventLive.Index do
           <.button variant="outline" size="sm" class="h-8 gap-1">
             <.icon name="hero-calendar-date-range" class="h-3.5 w-3.5" />
             <span class="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              {gettext("Datum")}
+              {gettext("Dates")}
             </span>
           </.button>
         </.dropdown_menu_trigger>
         <.dropdown_menu_content>
           <.menu class="">
             <.menu_label>
-              {gettext("Dates")}
+              {gettext("Event dates")}
             </.menu_label>
 
             <.menu_separator />
