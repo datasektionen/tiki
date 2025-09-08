@@ -4,6 +4,7 @@ defmodule Tiki.Forms do
   """
 
   import Ecto.Query, warn: false
+  alias Tiki.Orders
   alias Tiki.Repo
   alias Ecto.Multi
 
@@ -325,9 +326,22 @@ defmodule Tiki.Forms do
     forms =
       form_responses_query()
       |> where([f], f.event_id == ^event_id)
+      |> join(:left, [_, fr], t in assoc(fr, :ticket))
+      |> join(:left, [..., t], tt in assoc(t, :ticket_type))
+      |> join(:left, [..., t, _], o in assoc(t, :order))
+      |> join(:left, [..., o], u in assoc(o, :user))
+      |> preload([_, fr, _, _, t, tt, o, u],
+        responses: {fr, ticket: {t, ticket_type: tt, order: {o, user: u}}}
+      )
       |> Repo.all()
       |> Enum.map(fn form ->
-        questions = Enum.map(form.questions, fn question -> question.name end)
+        questions = [
+          "Order id",
+          "Order name",
+          "Order email",
+          "Ticket type"
+          | Enum.map(form.questions, fn question -> question.name end)
+        ]
 
         responses =
           Enum.map(form.responses, fn response ->
@@ -337,14 +351,59 @@ defmodule Tiki.Forms do
               end)
 
             # Ensure all questions have a response
-            Enum.map(form.questions, fn question ->
-              Map.get(response_map, question.id, "")
-            end)
+            [
+              response.ticket.order.id,
+              response.ticket.order.user.full_name,
+              response.ticket.order.user.email,
+              response.ticket.ticket_type.name
+              | Enum.map(form.questions, fn question ->
+                  Map.get(response_map, question.id, "")
+                end)
+            ]
           end)
 
         {~c"#{form.name}-responses.csv",
          [questions | responses] |> CsvParser.dump_to_iodata() |> IO.iodata_to_binary()}
       end)
+
+    # Also export all tickets that have not gotten a form response
+
+    non_answered_query =
+      from t in Orders.Ticket,
+        join: o in assoc(t, :order),
+        join: u in assoc(o, :user),
+        join: tt in assoc(t, :ticket_type),
+        left_join: fr in assoc(t, :form_response),
+        where: o.event_id == ^event_id and is_nil(fr),
+        preload: [order: {o, user: u}, ticket_type: tt]
+
+    non_answered_responses =
+      Repo.all(non_answered_query)
+      |> Enum.map(fn t ->
+        [
+          t.order.id,
+          t.id,
+          t.order.user.full_name,
+          t.order.user.email,
+          t.ticket_type.name
+        ]
+      end)
+
+    non_answered =
+      [
+        [
+          "Order id",
+          "Ticket id",
+          "Order name",
+          "Order email",
+          "Ticket type"
+        ]
+        | non_answered_responses
+      ]
+      |> CsvParser.dump_to_iodata()
+      |> IO.iodata_to_binary()
+
+    forms = forms ++ [{~c"non-answered.csv", non_answered}]
 
     :zip.create(
       # just a name for internal bookkeeping

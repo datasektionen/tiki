@@ -4,7 +4,7 @@ defmodule Tiki.Forms.Response do
 
   schema "form_responses" do
     belongs_to :form, Tiki.Forms.Form
-    belongs_to :ticket, Tiki.Tickets.Ticket, type: :binary_id
+    belongs_to :ticket, Tiki.Orders.Ticket, type: :binary_id
 
     has_many :question_responses, Tiki.Forms.QuestionResponse
 
