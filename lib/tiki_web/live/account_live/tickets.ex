@@ -53,7 +53,7 @@ defmodule TikiWeb.AccountLive.Tickets do
               {ticket.ticket_type.name}
             </span>
             <span class="text-muted-foreground text-sm">
-              {time_to_string(order.event.event_date)}
+              {time_to_string(order.event.start_time)}
             </span>
           </div>
         </.link>

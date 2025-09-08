@@ -163,7 +163,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   end
 
   def apply_action(socket, :new_ticket_type, params) do
-    start_time = socket.assigns.event.event_date
+    start_time = socket.assigns.event.start_time
 
     ticket_type =
       case params do

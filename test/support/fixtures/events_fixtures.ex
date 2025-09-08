@@ -14,7 +14,7 @@ defmodule Tiki.EventsFixtures do
       attrs
       |> Enum.into(%{
         description: "some description",
-        event_date: ~U[2023-03-25 16:55:00Z] |> DateTime.shift_zone!("Europe/Stockholm"),
+        start_time: ~U[2023-03-25 16:55:00Z] |> DateTime.shift_zone!("Europe/Stockholm"),
         name: "some name",
         team_id: team.id,
         is_hidden: false

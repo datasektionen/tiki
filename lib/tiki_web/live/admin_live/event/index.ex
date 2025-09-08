@@ -88,7 +88,7 @@ defmodule TikiWeb.AdminLive.Event.Index do
           <:col :let={{_id, event}} label={gettext("Name")}>{event.name}</:col>
           <:col :let={{_id, event}} label={gettext("Location")}>{event.location}</:col>
           <:col :let={{_id, event}} label={gettext("Date")}>
-            {Calendar.strftime(event.event_date, "%Y-%m-%d")}
+            {Calendar.strftime(event.start_time, "%Y-%m-%d")}
           </:col>
         </.table>
       </.card>
