@@ -173,7 +173,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
      |> assign(assigns)
      |> assign(
        promo_code: "",
-       promo_codes: [],
+       promo_codes: Map.get(assigns, :promo_codes, []),
        error: nil
      )
      |> assign_ticket_types(get_available_ticket_types(event.id))}
@@ -237,8 +237,11 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase) do
       to =
         case socket.assigns[:embedded] do
-          nil -> ~p"/events/#{event_id}/purchase/#{order}"
-          true -> ~p"/embed/events/#{event_id}/purchase/#{order}"
+          nil ->
+            ~p"/events/#{event_id}/purchase/#{order}?#{%{"promo_codes" => socket.assigns.promo_codes}}"
+
+          true ->
+            ~p"/embed/events/#{event_id}/purchase/#{order}"
         end
 
       {:noreply, push_navigate(socket, to: to)}
