@@ -18,7 +18,9 @@ defmodule Tiki.Support.SwishMock do
     "status" => "PAID"
   }
 
-  def create_payment_request(0, _options \\ %{}) do
+  def create_payment_request(price, options \\ %{})
+
+  def create_payment_request(0, _options) do
     {:error, "Price must be greater than 0"}
   end
 

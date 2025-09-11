@@ -1,7 +1,6 @@
 defmodule TikiWeb.EventLive.ShowTest do
   use TikiWeb.ConnCase
 
-  import Phoenix.LiveViewTest
   import Tiki.EventsFixtures
   import Tiki.AccountsFixtures
 

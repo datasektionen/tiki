@@ -107,8 +107,7 @@ defmodule Tiki.EventsTest do
         description_sv: "någon uppdaterad beskrivning",
         name: "some updated name",
         name_sv: "något uppdaterat namn",
-        start_time: ~U[2023-03-26 16:55:00Z],
-        name: "some updated name"
+        start_time: ~U[2023-03-26 16:55:00Z]
       }
 
       assert {:ok, %Event{} = event} = Events.update_event(event, update_attrs)

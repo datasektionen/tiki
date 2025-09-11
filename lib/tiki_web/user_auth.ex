@@ -336,8 +336,6 @@ defmodule TikiWeb.UserAuth do
   end
 
   def fetch_current_path(conn, _opts) do
-    dbg(current_path(conn))
-
     conn
     |> put_session(:current_path, current_path(conn))
     |> assign(:current_path, current_path(conn))
