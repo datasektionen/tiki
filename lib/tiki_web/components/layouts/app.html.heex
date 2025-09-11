@@ -1,4 +1,4 @@
-<.nav current_user={assigns[:current_user]} />
+<.nav current_user={assigns[:current_user]} current_path={assigns[:current_path]} />
 <main class="min-h-[calc(100vh-9rem)] overflow-none pt-22 mx-auto max-w-7xl p-6 pb-32 md:pt-26 lg:px-8">
   <.flash_group flash={@flash} />
   {@inner_content}

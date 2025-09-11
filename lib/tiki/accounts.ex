@@ -8,6 +8,8 @@ defmodule Tiki.Accounts do
 
   alias Tiki.Accounts.{User, UserToken, UserNotifier}
 
+  use Gettext, backend: TikiWeb.Gettext
+
   @doc """
   Lists all users.
 
@@ -101,6 +103,29 @@ defmodule Tiki.Accounts do
 
       user ->
         {:ok, user}
+    end
+  end
+
+  @doc """
+  Links a user with a given KTH ID, if it not already taken.
+  """
+  def link_user_with_userinfo(user, %{"kth_id" => id}) do
+    case Repo.get_by(User, kth_id: id) do
+      nil ->
+        User.oidcc_changeset(
+          user,
+          %{"kth_id" => id}
+        )
+        |> Repo.update()
+
+      found_user when found_user.id == user.id ->
+        {:ok, found_user}
+
+      found_user when found_user.id != user.id ->
+        {:error,
+         gettext(
+           "A user with this KTH-id already exists. Try signing out and logging in directly with your KTH account."
+         )}
     end
   end
 

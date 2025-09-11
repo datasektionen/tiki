@@ -27,6 +27,29 @@ defmodule TikiWeb.AccountLive.Settings do
       </.simple_form>
     </div>
     <div>
+      <.simple_form for={%{}} id="kth_link_form">
+        <.input
+          field={@user_form[:kth_id]}
+          type="text"
+          label={gettext("KTH-id")}
+          description={
+            gettext("Use your KTH-id to link your account to your KTH profile. Do this to verify your
+              chapter and class membership.")
+          }
+          disabled
+        />
+
+        <:actions>
+          <.link navigate={~p"/oidcc/authorize/return?return_to=#{~p"/account/settings"}&link=true"}>
+            <.button phx-disable-with={gettext("Linking...")}>
+              {gettext("Link KTH-id")}
+              <.icon name="hero-arrow-top-right-on-square" class="size-4 ml-1.5" />
+            </.button>
+          </.link>
+        </:actions>
+      </.simple_form>
+    </div>
+    <div>
       <.simple_form
         for={@user_form}
         class="flex flex-col gap-2 pt-6"
@@ -35,6 +58,7 @@ defmodule TikiWeb.AccountLive.Settings do
       >
         <.input field={@user_form[:first_name]} label={gettext("First name")} />
         <.input field={@user_form[:last_name]} label={gettext("Last name")} />
+
         <.input
           field={@user_form[:locale]}
           label={gettext("Prefered language")}
