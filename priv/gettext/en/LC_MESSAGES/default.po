@@ -172,24 +172,24 @@ msgstr ""
 msgid "Search events"
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:36
+#: lib/tiki_web/live/account_live/settings.ex:60
 #: lib/tiki_web/live/admin_live/user/settings.ex:53
 #, elixir-autogen, elixir-format
 msgid "First name"
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:37
+#: lib/tiki_web/live/account_live/settings.ex:61
 #: lib/tiki_web/live/admin_live/user/settings.ex:54
 #, elixir-autogen, elixir-format
 msgid "Last name"
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:40
+#: lib/tiki_web/live/account_live/settings.ex:65
 #, elixir-autogen, elixir-format
 msgid "Prefered language"
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:46
+#: lib/tiki_web/live/account_live/settings.ex:71
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/user/settings.ex:63
 #: lib/tiki_web/live/order_live/ticket_form.ex:44
@@ -331,19 +331,19 @@ msgstr ""
 msgid "Teams"
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:209
-#: lib/tiki_web/user_auth.ex:301
+#: lib/tiki_web/user_auth.ex:208
+#: lib/tiki_web/user_auth.ex:303
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:239
+#: lib/tiki_web/user_auth.ex:238
 #, elixir-autogen, elixir-format
 msgid "You must select a team to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:315
-#: lib/tiki_web/user_auth.ex:329
+#: lib/tiki_web/user_auth.ex:317
+#: lib/tiki_web/user_auth.ex:331
 #, elixir-autogen, elixir-format
 msgid "You need to be an admin to access this page."
 msgstr ""
@@ -719,7 +719,7 @@ msgstr ""
 msgid "All events for %{team}"
 msgstr ""
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:58
+#: lib/tiki_web/controllers/page_html/home.html.heex:59
 #, elixir-autogen, elixir-format
 msgid "Browse events"
 msgstr ""
@@ -759,7 +759,7 @@ msgstr ""
 msgid "Payment method"
 msgstr ""
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:63
+#: lib/tiki_web/controllers/page_html/home.html.heex:64
 #, elixir-autogen, elixir-format
 msgid "Read more"
 msgstr ""
@@ -769,7 +769,7 @@ msgstr ""
 msgid "Swish"
 msgstr ""
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:48
+#: lib/tiki_web/controllers/page_html/home.html.heex:49
 #, elixir-autogen, elixir-format
 msgid "The last event platform you'll need"
 msgstr ""
@@ -967,7 +967,7 @@ msgstr ""
 msgid "Order number"
 msgstr ""
 
-#: lib/tiki_web/live/event_live/show.ex:177
+#: lib/tiki_web/live/event_live/show.ex:186
 #, elixir-autogen, elixir-format
 msgid "Order paid!"
 msgstr ""
@@ -1072,7 +1072,7 @@ msgstr ""
 msgid "View ticket"
 msgstr ""
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:51
+#: lib/tiki_web/controllers/page_html/home.html.heex:52
 #, elixir-autogen, elixir-format
 msgid "Welcome to Tiki - Datasektionen's latest and greatest event platform. We are transforming the way events are run."
 msgstr ""
@@ -1305,7 +1305,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/ticket/index.ex:112
 #: lib/tiki_web/live/admin_live/ticket/index.ex:143
 #: lib/tiki_web/live/admin_live/ticket/index.ex:163
-#: lib/tiki_web/user_auth.ex:224
+#: lib/tiki_web/user_auth.ex:223
 #, elixir-autogen, elixir-format
 msgid "You are not authorized to do that."
 msgstr ""
@@ -1532,7 +1532,7 @@ msgstr ""
 msgid "What is Tiki?"
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:130
+#: lib/tiki_web/live/account_live/settings.ex:155
 #, elixir-autogen, elixir-format
 msgid "A link to confirm your email change has been sent to the new address."
 msgstr ""
@@ -1577,12 +1577,12 @@ msgstr ""
 msgid "Creating account.."
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:61
+#: lib/tiki_web/live/account_live/settings.ex:86
 #, elixir-autogen, elixir-format
 msgid "Email change link is invalid or it has expired."
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:58
+#: lib/tiki_web/live/account_live/settings.ex:83
 #, elixir-autogen, elixir-format
 msgid "Email changed successfully."
 msgstr ""
@@ -1799,7 +1799,7 @@ msgstr ""
 msgid "If your email is in our system, you will receive instructions for logging in shortly."
 msgstr ""
 
-#: lib/tiki_web/live/account_live/settings.ex:96
+#: lib/tiki_web/live/account_live/settings.ex:121
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Profile updated successfully"
 msgstr ""
@@ -2149,4 +2149,34 @@ msgstr ""
 #: lib/tiki/events/event.ex:58
 #, elixir-autogen, elixir-format
 msgid "must be greater than %{other_field}"
+msgstr ""
+
+#: lib/tiki/accounts.ex:126
+#, elixir-autogen, elixir-format
+msgid "A user with this KTH-id already exists. Try signing out and logging in directly with your KTH account."
+msgstr ""
+
+#: lib/tiki_web/live/account_live/settings.ex:34
+#, elixir-autogen, elixir-format
+msgid "KTH-id"
+msgstr ""
+
+#: lib/tiki_web/live/account_live/settings.ex:46
+#, elixir-autogen, elixir-format
+msgid "Link KTH-id"
+msgstr ""
+
+#: lib/tiki_web/live/account_live/settings.ex:45
+#, elixir-autogen, elixir-format
+msgid "Linking..."
+msgstr ""
+
+#: lib/tiki_web/controllers/oidcc_controller.ex:64
+#, elixir-autogen, elixir-format
+msgid "Sucessfully linked KTH account."
+msgstr ""
+
+#: lib/tiki_web/live/account_live/settings.ex:36
+#, elixir-autogen, elixir-format
+msgid "Use your KTH-id to link your account to your KTH profile. Do this to verify your chapter and class membership."
 msgstr ""

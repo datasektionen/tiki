@@ -33,8 +33,9 @@ defmodule TikiWeb.AccountLive.Settings do
           type="text"
           label={gettext("KTH-id")}
           description={
-            gettext("Use your KTH-id to link your account to your KTH profile. Do this to verify your
-              chapter and class membership.")
+            gettext(
+              "Use your KTH-id to link your account to your KTH profile. Do this to verify your chapter and class membership."
+            )
           }
           disabled
         />
