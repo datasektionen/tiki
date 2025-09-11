@@ -118,7 +118,8 @@ defmodule Tiki.Events do
     from e in query,
       left_join: tb in assoc(e, :ticket_batches),
       left_join: tt in assoc(tb, :ticket_types),
-      preload: [ticket_batches: {tb, ticket_types: tt}]
+      left_join: r in assoc(tb, :release),
+      preload: [ticket_batches: {tb, ticket_types: tt, release: r}]
   end
 
   @doc """

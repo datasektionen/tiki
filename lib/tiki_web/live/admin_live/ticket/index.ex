@@ -12,7 +12,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <div class="my-8">
+    <div>
       <.header>
         {gettext("Tickets")}
         <:subtitle>

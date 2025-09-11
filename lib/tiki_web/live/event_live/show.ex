@@ -5,6 +5,7 @@ defmodule TikiWeb.EventLive.Show do
   alias Tiki.Presence
   alias Tiki.Orders
   alias TikiWeb.PurchaseLive.TicketsComponent
+  alias Tiki.Localizer
   import TikiWeb.Component.Card
   import TikiWeb.Component.Avatar
 
@@ -51,7 +52,41 @@ defmodule TikiWeb.EventLive.Show do
           </div>
         </div>
 
-        <div class="w-full lg:sticky lg:top-4" id="tickets">
+        <div class="flex w-full flex-col gap-6 lg:sticky lg:top-4" id="tickets">
+          <div :if={@releases != []}>
+            <div class="flex flex-col gap-4">
+              <h2 class="text-xl/6 font-semibold">{gettext("Ticket releases")}</h2>
+
+              <div class="flex flex-col gap-3">
+                <div
+                  :for={release <- @releases}
+                  class="bg-accent flex flex-col overflow-hidden rounded-xl"
+                >
+                  <div class="flex flex-row justify-between px-4 py-4">
+                    <div class="flex flex-col">
+                      <h3 class="text-md pb-1 font-semibold">{Localizer.localize(release).name}</h3>
+                      <div class="text-sm">
+                        <span class="font-semibold">
+                          {time_to_string(release.starts_at, format: :MMMEd)}
+                        </span>
+                        ·
+                        <span class="text-muted-foreground">
+                          {time_to_string(release.starts_at, format: :Hm)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <.link
+                    navigate={~p"/events/#{@event}/releases/#{release}"}
+                    class="text-background bg-foreground py-2 text-center text-sm hover:bg-muted-foreground hover:cursor-pointer"
+                  >
+                    {gettext("Join release")}
+                  </.link>
+                </div>
+              </div>
+            </div>
+          </div>
           <.live_component
             module={TicketsComponent}
             id="tickets-component"
@@ -94,8 +129,17 @@ defmodule TikiWeb.EventLive.Show do
   @impl true
   def mount(%{"event_id" => event_id}, _session, socket) do
     event =
-      Events.get_event!(event_id)
+      Events.get_event!(event_id, preload_ticket_types: true)
       |> Tiki.Localizer.localize()
+
+    releases =
+      Enum.map(event.ticket_batches, & &1.release)
+      |> Enum.filter(& &1)
+      |> Enum.sort_by(& &1.starts_at)
+      |> Enum.filter(fn release ->
+        DateTime.compare(release.starts_at, DateTime.utc_now()) == :gt ||
+          DateTime.compare(release.ends_at, DateTime.utc_now()) == :gt
+      end)
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
 
@@ -116,7 +160,8 @@ defmodule TikiWeb.EventLive.Show do
      assign(socket,
        event: event,
        online_count: initial_count,
-       order: nil
+       order: nil,
+       releases: releases
      ), layout: {TikiWeb.Layouts, layout}}
   end
 
