@@ -47,7 +47,7 @@ defmodule TikiWeb.UserLive.Login do
 
         <div class="mt-6 grid grid-cols-2 gap-4">
           <.link
-            navigate={~p"/oidcc/authorize"}
+            navigate={~p"/oidcc/authorize/return?#{@return}"}
             class="ring-foreground shadow-xs col-span-2 flex w-full items-center justify-center gap-3 rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset hover:bg-accent focus-visible:ring-transparent"
           >
             <img src="/images/dskold.svg" alt="Datasektionen" class="h-5 w-5 aria-hidden:hidden" />
@@ -88,6 +88,14 @@ defmodule TikiWeb.UserLive.Login do
      socket
      |> put_flash(:info, info)
      |> push_navigate(to: ~p"/users/log_in")}
+  end
+
+  def handle_params(%{"return_to" => uri}, _uri, socket) do
+    {:noreply, assign(socket, :return, %{"return_to" => uri})}
+  end
+
+  def handle_params(_params, _uri, socket) do
+    {:noreply, assign(socket, return: %{})}
   end
 
   defp local_mail_adapter? do

@@ -19,7 +19,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
       assert {:error, redirect} = live(conn, ~p"/account/settings")
 
       assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/log_in"
+      assert path == ~p"/users/log_in?return_to=#{~p"/account/settings"}"
       assert %{"error" => "You must log in to access this page."} = flash
     end
   end
@@ -123,7 +123,7 @@ defmodule TikiWeb.UserSettingsLiveTest do
       conn = build_conn()
       {:error, redirect} = live(conn, ~p"/account/settings/confirm_email/#{token}")
       assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == ~p"/users/log_in"
+      assert path =~ ~p"/users/log_in"
       assert %{"error" => message} = flash
       assert message == "You must log in to access this page."
     end

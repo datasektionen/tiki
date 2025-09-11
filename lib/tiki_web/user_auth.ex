@@ -105,7 +105,6 @@ defmodule TikiWeb.UserAuth do
 
     assign(conn, :current_user, user)
     |> assign(:current_team, team)
-    |> assign(:testthing, %{foo: "bar"})
   end
 
   @doc """
@@ -272,6 +271,9 @@ defmodule TikiWeb.UserAuth do
         team
       end
     end)
+    |> Phoenix.Component.assign_new(:current_path, fn ->
+      session["current_path"]
+    end)
   end
 
   @doc """
@@ -300,7 +302,7 @@ defmodule TikiWeb.UserAuth do
       conn
       |> put_flash(:error, gettext("You must log in to access this page."))
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log_in")
+      |> redirect(to: ~p"/users/log_in?return_to=#{current_path(conn)}")
       |> halt()
     end
   end
@@ -314,7 +316,7 @@ defmodule TikiWeb.UserAuth do
       conn
       |> put_flash(:error, gettext("You need to be an admin to access this page."))
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log_in")
+      |> redirect(to: ~p"/users/log_in?return_to=#{current_path(conn)}")
       |> halt()
     end
   end
@@ -328,9 +330,15 @@ defmodule TikiWeb.UserAuth do
       conn
       |> put_flash(:error, gettext("You need to be an admin to access this page."))
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log_in")
+      |> redirect(to: ~p"/users/log_in?return_to=#{current_path(conn)}")
       |> halt()
     end
+  end
+
+  def fetch_current_path(conn, _opts) do
+    conn
+    |> put_session(:current_path, current_path(conn))
+    |> assign(:current_path, current_path(conn))
   end
 
   defp put_token_in_session(conn, token) do

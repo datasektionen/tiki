@@ -172,24 +172,24 @@ msgstr "Namn"
 msgid "Search events"
 msgstr "Sök efter evenemang"
 
-#: lib/tiki_web/live/account_live/settings.ex:36
+#: lib/tiki_web/live/account_live/settings.ex:60
 #: lib/tiki_web/live/admin_live/user/settings.ex:53
 #, elixir-autogen, elixir-format
 msgid "First name"
 msgstr "Förnamn"
 
-#: lib/tiki_web/live/account_live/settings.ex:37
+#: lib/tiki_web/live/account_live/settings.ex:61
 #: lib/tiki_web/live/admin_live/user/settings.ex:54
 #, elixir-autogen, elixir-format
 msgid "Last name"
 msgstr "Efternamn"
 
-#: lib/tiki_web/live/account_live/settings.ex:40
+#: lib/tiki_web/live/account_live/settings.ex:65
 #, elixir-autogen, elixir-format
 msgid "Prefered language"
 msgstr "Föredraget språk"
 
-#: lib/tiki_web/live/account_live/settings.ex:46
+#: lib/tiki_web/live/account_live/settings.ex:71
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:33
 #: lib/tiki_web/live/admin_live/user/settings.ex:63
 #: lib/tiki_web/live/order_live/ticket_form.ex:44
@@ -331,19 +331,19 @@ msgstr "Inget team"
 msgid "Teams"
 msgstr "Teams"
 
-#: lib/tiki_web/user_auth.ex:209
-#: lib/tiki_web/user_auth.ex:301
+#: lib/tiki_web/user_auth.ex:208
+#: lib/tiki_web/user_auth.ex:303
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr "Du måste logga in för att komma åt denna sida."
 
-#: lib/tiki_web/user_auth.ex:239
+#: lib/tiki_web/user_auth.ex:238
 #, elixir-autogen, elixir-format
 msgid "You must select a team to access this page."
 msgstr "Du måste välja ett team för att komma åt denna sida."
 
-#: lib/tiki_web/user_auth.ex:315
-#: lib/tiki_web/user_auth.ex:329
+#: lib/tiki_web/user_auth.ex:317
+#: lib/tiki_web/user_auth.ex:331
 #, elixir-autogen, elixir-format
 msgid "You need to be an admin to access this page."
 msgstr "Du måste vara admin för att komma åt denna sida."
@@ -719,7 +719,7 @@ msgstr "Om"
 msgid "All events for %{team}"
 msgstr "Alla evenemang för %{team}"
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:58
+#: lib/tiki_web/controllers/page_html/home.html.heex:59
 #, elixir-autogen, elixir-format
 msgid "Browse events"
 msgstr "Bläddra bland events"
@@ -759,7 +759,7 @@ msgstr "Betala med Swish"
 msgid "Payment method"
 msgstr "Betalningsmetod"
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:63
+#: lib/tiki_web/controllers/page_html/home.html.heex:64
 #, elixir-autogen, elixir-format
 msgid "Read more"
 msgstr "Läs mer"
@@ -769,7 +769,7 @@ msgstr "Läs mer"
 msgid "Swish"
 msgstr "Swish"
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:48
+#: lib/tiki_web/controllers/page_html/home.html.heex:49
 #, elixir-autogen, elixir-format
 msgid "The last event platform you'll need"
 msgstr "Den sista eventplattformen du behöver"
@@ -967,7 +967,7 @@ msgstr "Beställningsinformation"
 msgid "Order number"
 msgstr "Ordernummer"
 
-#: lib/tiki_web/live/event_live/show.ex:177
+#: lib/tiki_web/live/event_live/show.ex:186
 #, elixir-autogen, elixir-format
 msgid "Order paid!"
 msgstr "Beställningen är betald!"
@@ -1072,7 +1072,7 @@ msgstr "Din biljett till %{event}"
 msgid "View ticket"
 msgstr "Visa biljett"
 
-#: lib/tiki_web/controllers/page_html/home.html.heex:51
+#: lib/tiki_web/controllers/page_html/home.html.heex:52
 #, elixir-autogen, elixir-format
 msgid "Welcome to Tiki - Datasektionen's latest and greatest event platform. We are transforming the way events are run."
 msgstr "Välkommen till Tiki - Datasektionens senaste och bästa eventplattform. Vi skapar nya sätt att organisera evenemang."
@@ -1305,7 +1305,7 @@ msgstr "Ladda upp en fil"
 #: lib/tiki_web/live/admin_live/ticket/index.ex:112
 #: lib/tiki_web/live/admin_live/ticket/index.ex:143
 #: lib/tiki_web/live/admin_live/ticket/index.ex:163
-#: lib/tiki_web/user_auth.ex:224
+#: lib/tiki_web/user_auth.ex:223
 #, elixir-autogen, elixir-format
 msgid "You are not authorized to do that."
 msgstr "Du är inte behörig."
@@ -1532,7 +1532,7 @@ msgstr "För närvarande stöds två betalningsmetoder: Stripe och Swish. Båda 
 msgid "What is Tiki?"
 msgstr "Vad är Tiki?"
 
-#: lib/tiki_web/live/account_live/settings.ex:130
+#: lib/tiki_web/live/account_live/settings.ex:155
 #, elixir-autogen, elixir-format
 msgid "A link to confirm your email change has been sent to the new address."
 msgstr "En länk för att bekräfta din e-postadress har skickats till den nya adressen."
@@ -1577,12 +1577,12 @@ msgstr "Skapa ett konto"
 msgid "Creating account.."
 msgstr "Skapar konto..."
 
-#: lib/tiki_web/live/account_live/settings.ex:61
+#: lib/tiki_web/live/account_live/settings.ex:86
 #, elixir-autogen, elixir-format
 msgid "Email change link is invalid or it has expired."
 msgstr "Länken för att ändra e-postadressen är ogiltig eller har gått ut."
 
-#: lib/tiki_web/live/account_live/settings.ex:58
+#: lib/tiki_web/live/account_live/settings.ex:83
 #, elixir-autogen, elixir-format
 msgid "Email changed successfully."
 msgstr "E-postadressen har ändrats."
@@ -1799,7 +1799,7 @@ msgstr "Dina biljetter till %{event}"
 msgid "If your email is in our system, you will receive instructions for logging in shortly."
 msgstr "Om adressen finns i systemet så skickas instruktioner för att logga in."
 
-#: lib/tiki_web/live/account_live/settings.ex:96
+#: lib/tiki_web/live/account_live/settings.ex:121
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Profile updated successfully"
 msgstr "Profil uppdaterades"
@@ -2084,6 +2084,7 @@ msgstr "Vänligen fyll i en text att översätta först."
 #, elixir-autogen, elixir-format
 msgid "Generating translation..."
 msgstr "Översätter..."
+
 #: lib/tiki_web/live/event_live/index.ex:70
 #, elixir-autogen, elixir-format
 msgid "Date (newest first)"
@@ -2149,3 +2150,33 @@ msgstr "Kommande"
 #, elixir-autogen, elixir-format
 msgid "must be greater than %{other_field}"
 msgstr "måste vara större än %{other_field}"
+
+#: lib/tiki/accounts.ex:126
+#, elixir-autogen, elixir-format
+msgid "A user with this KTH-id already exists. Try signing out and logging in directly with your KTH account."
+msgstr "En användare med ditt KTH-id finns redan. Vänligen testa att logga ut och logga in direkt med ditt KTH-konto."
+
+#: lib/tiki_web/live/account_live/settings.ex:34
+#, elixir-autogen, elixir-format
+msgid "KTH-id"
+msgstr "KTH-id"
+
+#: lib/tiki_web/live/account_live/settings.ex:46
+#, elixir-autogen, elixir-format
+msgid "Link KTH-id"
+msgstr "Koppla KTH-id"
+
+#: lib/tiki_web/live/account_live/settings.ex:45
+#, elixir-autogen, elixir-format
+msgid "Linking..."
+msgstr "Kopplar..."
+
+#: lib/tiki_web/controllers/oidcc_controller.ex:64
+#, elixir-autogen, elixir-format
+msgid "Sucessfully linked KTH account."
+msgstr "KTH-konto kopplat."
+
+#: lib/tiki_web/live/account_live/settings.ex:36
+#, elixir-autogen, elixir-format
+msgid "Use your KTH-id to link your account to your KTH profile. Do this to verify your chapter and class membership."
+msgstr "Använd ditt KTH-id för att koppla ditt konto till din KTH-profil. Detta krävs för att verifiera ditt sektionsmedlemskap samt vilken klass/årskurs du tillhör."

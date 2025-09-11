@@ -33,8 +33,18 @@ defmodule TikiWeb.OidccController do
     when action in [:callback]
   )
 
-  def authorize(conn, _params) do
-    conn
+  def authorize_return(conn, params) do
+    return_to = params["return_to"]
+
+    link =
+      case params["link"] do
+        "true" -> true
+        _ -> false
+      end
+
+    put_session(conn, :user_return_to, return_to)
+    |> put_session(:link_account, link)
+    |> redirect(to: ~p"/oidcc/authorize")
   end
 
   def callback(
@@ -48,9 +58,23 @@ defmodule TikiWeb.OidccController do
         {key, v}
       end)
 
-    case Accounts.upsert_user_with_userinfo(userinfo) do
-      {:ok, user} -> UserAuth.log_in_user(conn, user)
-      {:error, changeset} -> conn |> put_status(400) |> render(:error, reason: changeset)
+    if get_session(conn, :link_account) && conn.assigns[:current_user] do
+      case Accounts.link_user_with_userinfo(conn.assigns.current_user, userinfo) do
+        {:ok, _user} ->
+          put_flash(conn, :info, gettext("Sucessfully linked KTH account."))
+          |> redirect(to: ~p"/account/settings")
+
+        {:error, error} when is_binary(error) ->
+          conn |> put_flash(:error, error) |> redirect(to: ~p"/account/settings")
+
+        {:error, changeset} ->
+          conn |> put_status(400) |> render(:error, reason: changeset)
+      end
+    else
+      case Accounts.upsert_user_with_userinfo(userinfo) do
+        {:ok, user} -> UserAuth.log_in_user(conn, user)
+        {:error, changeset} -> conn |> put_status(400) |> render(:error, reason: changeset)
+      end
     end
   end
 

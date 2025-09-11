@@ -21,7 +21,7 @@ defmodule Tiki.Accounts.User do
   def oidcc_changeset(user, attrs) do
     user
     |> cast(attrs, [:kth_id, :email, :first_name, :last_name])
-    |> validate_required([:kth_id, :email, :first_name, :last_name])
+    |> validate_required([:kth_id, :email])
     |> unique_constraint(:kth_id)
   end
 

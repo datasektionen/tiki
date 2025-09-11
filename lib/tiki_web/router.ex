@@ -12,6 +12,7 @@ defmodule TikiWeb.Router do
     plug :put_secure_browser_headers
     plug :fetch_current_user
     plug :fetch_locale
+    plug :fetch_current_path
   end
 
   pipeline :embedded do
@@ -226,6 +227,7 @@ defmodule TikiWeb.Router do
   scope "/oidcc", TikiWeb do
     pipe_through :browser
     get "/authorize", OidccController, :authorize
+    get "/authorize/return", OidccController, :authorize_return
     get "/callback", OidccController, :callback
     post "/callback", OidccController, :callback
   end
