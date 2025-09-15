@@ -37,7 +37,15 @@ defmodule TikiWeb.AdminLive.Releases.Index do
       </:col>
 
       <:action :let={{_id, release}}>
-        <.link navigate={~p"/admin/events/#{@event}/releases/#{release.id}/edit"}>Edit</.link>
+        <.link navigate={~p"/admin/events/#{@event}/releases/#{release}"}>
+          {gettext("Manage")}
+        </.link>
+      </:action>
+
+      <:action :let={{_id, release}}>
+        <.link navigate={~p"/admin/events/#{@event}/releases/#{release.id}/edit"}>
+          {gettext("Edit")}
+        </.link>
       </:action>
     </.table>
 

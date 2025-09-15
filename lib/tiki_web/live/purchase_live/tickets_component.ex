@@ -3,6 +3,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
   alias Tiki.Tickets
   alias Tiki.Orders
+  alias Tiki.Releases
   alias Tiki.Localizer
 
   @impl Phoenix.LiveComponent
@@ -146,6 +147,9 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         tt.available == 0 ->
           assign(assigns, label: gettext("Sold out"))
 
+        active_release?(tt) ->
+          assign(assigns, label: gettext("Ticket is part of an active release."))
+
         true ->
           assign(assigns, label: nil)
       end
@@ -192,6 +196,16 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         tt.promo_code == nil || tt.promo_code in socket.assigns.promo_codes
       end)
       |> Enum.sort_by(fn tt -> tt.price end)
+
+    ticket_types =
+      case socket.assigns[:release] do
+        nil ->
+          ticket_types
+
+        %Releases.Release{} = release ->
+          Enum.filter(ticket_types, fn tt -> tt.release && tt.release.id == release.id end)
+          |> Enum.map(fn tt -> %{tt | release: nil} end)
+      end
       |> Enum.group_by(fn tt -> tt.start_time end)
       |> Enum.sort(fn {start_a, _}, {start_b, _} ->
         case {start_a, start_b} do
@@ -258,6 +272,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
       !ticket_type.purchasable -> false
       ticket_type.expire_time && DateTime.compare(now, ticket_type.expire_time) == :gt -> false
       ticket_type.release_time && DateTime.compare(now, ticket_type.release_time) == :lt -> false
+      active_release?(ticket_type) -> false
       true -> true
     end
   end
@@ -284,5 +299,12 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
   defp get_available_ticket_types(event_id) do
     Tickets.get_cached_available_ticket_types(event_id)
+  end
+
+  defp active_release?(ticket_type) do
+    case ticket_type.release do
+      nil -> false
+      %Releases.Release{} = release -> Releases.is_active?(release)
+    end
   end
 end

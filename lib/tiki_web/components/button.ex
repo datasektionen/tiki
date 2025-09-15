@@ -19,7 +19,7 @@ defmodule TikiWeb.Component.Button do
     doc: "the button variant style"
 
   attr :size, :string, values: ~w(default sm lg icon), default: "default"
-  attr :rest, :global, include: ~w(disabled form name value)
+  attr :rest, :global, include: ~w(disabled form name value title)
   attr :navigate, :any, default: nil
 
   slot :inner_block, required: true

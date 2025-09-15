@@ -305,6 +305,7 @@ defmodule Tiki.Tickets do
       |> Map.put(:available, tt.available)
       |> Map.put(:purchased, tt.purchased)
       |> Map.put(:pending, tt.pending)
+      |> Map.put(:release, tt.release)
     end)
   end
 
@@ -336,12 +337,13 @@ defmodule Tiki.Tickets do
     query =
       from tt in TicketType,
         join: tb in assoc(tt, :ticket_batch),
+        left_join: r in assoc(tb, :release),
         left_join: pt in subquery(sub_pending),
         on: tt.id == pt.ticket_type_id,
         left_join: pt2 in subquery(sub_purchased),
         on: tt.id == pt2.ticket_type_id,
         where: tb.event_id == ^event_id,
-        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count}
+        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count, release: r}
 
     multi
     |> get_batch_tree_multi(event_id)
@@ -365,6 +367,7 @@ defmodule Tiki.Tickets do
           Map.put(tt, :purchased, tt.purchased || 0)
           |> Map.put(:pending, tt.pending || 0)
           |> Map.put(:available, available[tt.ticket_type.ticket_batch_id])
+          |> Map.put(:release, tt.release || nil)
         end)
 
       {:ok, ticket_types}

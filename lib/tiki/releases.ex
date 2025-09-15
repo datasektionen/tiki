@@ -6,6 +6,8 @@ defmodule Tiki.Releases do
   import Ecto.Query, warn: false
   alias Tiki.Repo
 
+  use Gettext, backend: TikiWeb.Gettext
+
   alias Tiki.Releases.Release
   alias Tiki.Releases.Signup
 
@@ -36,7 +38,10 @@ defmodule Tiki.Releases do
       ** (Ecto.NoResultsError)
 
   """
-  def get_release!(id), do: Repo.get!(Release, id)
+  def get_release!(id) do
+    query = from r in Release, join: b in assoc(r, :ticket_batch), preload: [ticket_batch: b]
+    Repo.one!(query)
+  end
 
   @doc """
   Creates a release.
@@ -131,5 +136,127 @@ defmodule Tiki.Releases do
       })
       |> Repo.insert!()
     end)
+  end
+
+  def get_release_sign_ups(release_id) do
+    query =
+      from s in Signup,
+        where: s.release_id == ^release_id,
+        left_join: u in assoc(s, :user),
+        order_by: s.position,
+        preload: [user: u]
+
+    Repo.all(query)
+  end
+
+  def shuffle_sign_ups(release_id) do
+    sub_query =
+      from s in Signup,
+        where: s.release_id == ^release_id,
+        select: %{id: s.id, position: fragment("ROW_NUMBER() OVER (ORDER BY RANDOM())")}
+
+    query =
+      from s in Signup,
+        join: ss in subquery(sub_query),
+        on: s.id == ss.id,
+        update: [set: [position: ss.position]]
+
+    Repo.transaction(fn ->
+      accepted =
+        Repo.one(
+          from s in Signup, where: s.release_id == ^release_id and s.status == :accepted, limit: 1
+        )
+
+      if is_nil(accepted) do
+        Repo.query!("SET CONSTRAINTS release_signups_release_id_position_unique DEFERRED")
+
+        Repo.update_all(query, [])
+
+        get_release_sign_ups(release_id)
+      else
+        Repo.rollback(gettext("Release is already allocated."))
+      end
+    end)
+  end
+
+  def update_sort_order(release_id, from, to) do
+    Repo.transaction(fn ->
+      accepted =
+        Repo.one(
+          from s in Signup, where: s.release_id == ^release_id and s.status == :accepted, limit: 1
+        )
+
+      if is_nil(accepted) do
+        Repo.query!("SET CONSTRAINTS release_signups_release_id_position_unique DEFERRED")
+
+        moved =
+          Repo.one!(from(s in Signup, where: s.release_id == ^release_id and s.position == ^from))
+
+        if from < to do
+          from(s in Signup,
+            where: s.release_id == ^release_id and s.position > ^from and s.position <= ^to,
+            update: [inc: [position: -1]]
+          )
+          |> Repo.update_all([])
+        else
+          from(s in Signup,
+            where: s.release_id == ^release_id and s.position >= ^to and s.position < ^from,
+            update: [inc: [position: 1]]
+          )
+          |> Repo.update_all([])
+        end
+
+        moved
+        |> Signup.changeset(%{position: to})
+        |> Repo.update!()
+
+        get_release_sign_ups(release_id)
+      else
+        Repo.rollback(gettext("Release is already allocated."))
+      end
+    end)
+  end
+
+  def allocate_sign_ups(release_id) do
+    Repo.transaction(fn ->
+      accepted =
+        Repo.one(
+          from s in Signup, where: s.release_id == ^release_id and s.status == :accepted, limit: 1
+        )
+
+      if is_nil(accepted) do
+        release =
+          Repo.one!(
+            from r in Release,
+              where: r.id == ^release_id,
+              join: b in assoc(r, :ticket_batch),
+              preload: [ticket_batch: b]
+          )
+
+        allocated =
+          from s in Signup,
+            where: s.release_id == ^release_id,
+            where: s.position <= ^release.ticket_batch.max_size,
+            update: [set: [status: :accepted]]
+
+        non_allocated =
+          from s in Signup,
+            where: s.release_id == ^release_id,
+            where: s.position > ^release.ticket_batch.max_size,
+            update: [set: [status: :rejected]]
+
+        Repo.update_all(allocated, [])
+        Repo.update_all(non_allocated, [])
+
+        get_release_sign_ups(release_id)
+      else
+        Repo.rollback(gettext("Release is already allocated."))
+      end
+    end)
+  end
+
+  def is_active?(%Release{} = release) do
+    DateTime.compare(DateTime.utc_now(), release.ends_at) == :lt &&
+      DateTime.compare(DateTime.utc_now(), release.starts_at) == :gt
   end
 end

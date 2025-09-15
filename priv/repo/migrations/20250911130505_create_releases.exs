@@ -36,7 +36,20 @@ defmodule Tiki.Repo.Migrations.CreateReleases do
     create index(:release_signups, [:user_id])
     create index(:release_signups, [:release_id])
 
-    create unique_index(:release_signups, [:release_id, :user_id])
-    create unique_index(:release_signups, [:release_id, :position])
+    execute(
+      """
+        ALTER TABLE release_signups
+        ADD CONSTRAINT release_signups_release_id_user_id_unique UNIQUE (release_id, user_id) DEFERRABLE INITIALLY DEFERRED;
+      """,
+      ""
+    )
+
+    execute(
+      """
+        ALTER TABLE release_signups
+        ADD CONSTRAINT release_signups_release_id_position_unique UNIQUE (release_id, position) DEFERRABLE INITIALLY DEFERRED;
+      """,
+      ""
+    )
   end
 end

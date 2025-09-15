@@ -210,6 +210,7 @@ defmodule TikiWeb.Router do
           live "/releases", Releases.Index, :index
           live "/releases/new", Releases.Index, :new
           live "/releases/:release_id/edit", Releases.Index, :edit
+          live "/releases/:release_id", Releases.Show, :show
 
           # Registrations
           live "/attendees", Attendees.Index, :index

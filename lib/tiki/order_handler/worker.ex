@@ -77,6 +77,8 @@ defmodule Tiki.OrderHandler.Worker do
   end
 
   def handle_call({:reserve_tickets, ticket_types}, _from, %{event_id: event_id} = state) do
+    # TODO: Handle releases properly, ie. check that if there is an active release,
+    # that the user has an :accepted release sign up.
     result =
       Multi.new()
       |> Multi.run(:requested_types, fn repo, _ ->
