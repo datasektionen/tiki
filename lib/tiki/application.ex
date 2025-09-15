@@ -36,7 +36,7 @@ defmodule Tiki.Application do
         # Start processes required for order handling
         Tiki.OrderHandler.Supervisor,
         Tiki.PurchaseMonitor,
-        Tiki.Pls
+        Tiki.Hive
       ] ++ stripe_webhook_listener()
 
     opts = [strategy: :one_for_one, name: Tiki.Supervisor]

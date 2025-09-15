@@ -33,8 +33,11 @@ if config_env() == :prod do
   metrics_port =
     System.get_env("METRICS_PORT") |> String.to_integer() || raise "METRICS_PORT is not set"
 
+  hive_api_token = System.get_env("HIVE_API_TOKEN") || raise "HIVE_API_TOKEN is not set"
+
   config :tiki,
-    pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se"),
+    hive_url: System.get_env("HIVE_URL", "https://hive.datasektionen.se/api/v1"),
+    hive_api_token: hive_api_token,
     allowed_origins: System.get_env("ALLOWED_ORIGINS", "https://metaspexet.se"),
     metrics_port: metrics_port
 

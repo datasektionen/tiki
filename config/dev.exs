@@ -72,8 +72,9 @@ config :tiki, TikiWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :tiki,
   dev_routes: true,
-  # Url to PLS, use different url for development
-  pls_url: System.get_env("PLS_URL", "https://pls.datasektionen.se"),
+  # Url to Hive, use different url for development
+  hive_url: System.get_env("HIVE_URL", "https://hive.datasektionen.se/api/v1"),
+  hive_api_token: System.get_env("HIVE_API_TOKEN"),
   # Allowed origins for embedded iframes. If you want more, add them here, separated by spaces.
   allowed_origins: System.get_env("ALLOWED_ORIGINS", "http://localhost:4001")
 
