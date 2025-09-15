@@ -5,6 +5,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
   alias Tiki.Events
   alias Tiki.Localizer
 
+  import TikiWeb.Component.Badge
   import TikiWeb.Component.Card
 
   def render(assigns) do
@@ -137,6 +138,9 @@ defmodule TikiWeb.AdminLive.Releases.Show do
       <div class="flex w-full items-start gap-x-3">
         <span>#{@sign_up.position}</span>
         <span>{@sign_up.user.full_name}</span>
+        <.badge :if={@sign_up.user.year_tag} variant="outline">
+          <span class="text-xs">{@sign_up.user.year_tag}</span>
+        </.badge>
       </div>
     </li>
     """

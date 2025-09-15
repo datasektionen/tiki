@@ -51,13 +51,13 @@ defmodule TikiWeb.AdminLive.Releases.FormComponent do
         <:actions>
           <div class="flex flex-row gap-2">
             <.button phx-disable-with={gettext("Saving...")}>{gettext("Save release")}</.button>
-            <.button
+            <%!-- <.button
               :if={@action == :edit}
               variant="destructive"
               navigate={~p"/admin/events/#{@release.event_id}/releases/#{@release}/delete"}
             >
               {gettext("Delete release")}
-            </.button>
+            </.button> --%>
           </div>
         </:actions>
       </.simple_form>

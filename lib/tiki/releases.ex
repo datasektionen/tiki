@@ -39,7 +39,12 @@ defmodule Tiki.Releases do
 
   """
   def get_release!(id) do
-    query = from r in Release, join: b in assoc(r, :ticket_batch), preload: [ticket_batch: b]
+    query =
+      from r in Release,
+        where: r.id == ^id,
+        join: b in assoc(r, :ticket_batch),
+        preload: [ticket_batch: b]
+
     Repo.one!(query)
   end
 
@@ -121,7 +126,10 @@ defmodule Tiki.Releases do
     Repo.transaction(fn ->
       last_signup =
         Repo.one(
-          from s in Signup, where: s.release_id == ^release_id, order_by: s.position, limit: 1
+          from s in Signup,
+            where: s.release_id == ^release_id,
+            order_by: [desc: s.position],
+            limit: 1
         )
 
       position = if last_signup, do: last_signup.position + 1, else: 1
