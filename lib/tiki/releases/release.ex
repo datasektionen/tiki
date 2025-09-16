@@ -12,6 +12,8 @@ defmodule Tiki.Releases.Release do
     belongs_to :event, Tiki.Events.Event, type: :binary_id
     belongs_to :ticket_batch, Tiki.Tickets.TicketBatch
 
+    has_many :release_signups, Tiki.Releases.Signup
+
     timestamps()
   end
 

@@ -4,7 +4,8 @@ defmodule Tiki.OrderHandler.Worker do
   use GenServer, restart: :transient
   require Logger
 
-  import Ecto.Query, only: [from: 2]
+  import Ecto.Query, warn: false
+  alias Tiki.Releases
   alias Ecto.Multi
 
   alias Tiki.Repo
@@ -21,10 +22,13 @@ defmodule Tiki.OrderHandler.Worker do
     GenServer.start_link(__MODULE__, event_id, name: via_tuple(event_id))
   end
 
-  def reserve_tickets(event_id, ticket_types) do
+  def reserve_tickets(event_id, ticket_types, user_id) do
     case ensure_started(event_id) do
-      {:ok, _pid} -> GenServer.call(via_tuple(event_id), {:reserve_tickets, ticket_types})
-      {:error, reason} -> {:error, reason}
+      {:ok, _pid} ->
+        GenServer.call(via_tuple(event_id), {:reserve_tickets, ticket_types, user_id})
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -76,7 +80,7 @@ defmodule Tiki.OrderHandler.Worker do
     {:reply, ticket_types, state, @timeout}
   end
 
-  def handle_call({:reserve_tickets, ticket_types}, _from, %{event_id: event_id} = state) do
+  def handle_call({:reserve_tickets, ticket_types, user_id}, _from, %{event_id: event_id} = state) do
     # TODO: Handle releases properly, ie. check that if there is an active release,
     # that the user has an :accepted release sign up.
     result =
@@ -107,6 +111,44 @@ defmodule Tiki.OrderHandler.Worker do
         case Enum.all?(tts, &purchaseable?/1) do
           true -> {:ok, :ok}
           false -> {:error, "not all ticket types are purchasable"}
+        end
+      end)
+      |> Multi.run(:valid_release, fn repo, %{requested_types: tts} ->
+        releases_query =
+          from(r in Releases.Release,
+            join: tb in assoc(r, :ticket_batch),
+            join: tt in assoc(tb, :ticket_types),
+            where: tt.id in ^Map.keys(tts)
+          )
+
+        releases_query =
+          if user_id do
+            join(releases_query, :left, [r, ...], rs in Releases.Signup,
+              on: rs.release_id == r.id and rs.user_id == ^user_id
+            )
+            |> preload([..., rs], release_signups: rs)
+          else
+            join(releases_query, :left, [r, ...], rs in Releases.Signup,
+              on: rs.release_id == r.id and is_nil(rs.user_id)
+            )
+            |> preload([..., rs], release_signups: rs)
+          end
+
+        releases =
+          repo.all(releases_query)
+          |> Enum.filter(&Releases.is_active?/1)
+
+        all_valid =
+          Enum.all?(releases, fn release ->
+            Enum.any?(release.release_signups, fn signup -> signup.status == :accepted end)
+          end)
+
+        case all_valid do
+          true ->
+            {:ok, :ok}
+
+          false ->
+            {:error, "tickets are part of an active release, which you are not accepted to"}
         end
       end)
       |> Multi.run(:ticket_limits, fn _repo, %{requested_types: tts, event: event} ->
@@ -191,7 +233,13 @@ defmodule Tiki.OrderHandler.Worker do
         {:reply, {:ok, Map.put(order, :event, event), ticket_types}, state, @timeout}
 
       {:error, status, message, _}
-      when status in [:positive_tickets, :ticket_limits, :check_availability, :all_purchasable] ->
+      when status in [
+             :positive_tickets,
+             :ticket_limits,
+             :check_availability,
+             :all_purchasable,
+             :valid_release
+           ] ->
         {:reply, {:error, message}, state, @timeout}
     end
   end

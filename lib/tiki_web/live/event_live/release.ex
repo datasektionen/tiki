@@ -6,6 +6,7 @@ defmodule TikiWeb.EventLive.Release do
   alias Tiki.Presence
   alias TikiWeb.PurchaseLive.TicketsComponent
   alias Tiki.Releases
+  alias Tiki.Orders
 
   @impl true
   def render(assigns) do
@@ -140,22 +141,22 @@ defmodule TikiWeb.EventLive.Release do
 
         initial_count = Presence.list("presence:event:#{event_id}") |> map_size
 
-        # TODO: Make this actually live!!!
-
         if connected?(socket) do
           Presence.track(self(), "presence:release:#{release_id}", socket.id, %{})
           Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
           TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
+
+          Orders.subscribe(event.id)
+          Releases.subscribe(release_id)
         end
 
         {:ok,
          assign(socket,
            event: event,
-           release: release,
            sign_up: sign_up,
-           online_count: initial_count,
-           page_title: Localizer.localize(release).name
-         )}
+           online_count: initial_count
+         )
+         |> assign_release(release)}
     end
   end
 
@@ -179,8 +180,39 @@ defmodule TikiWeb.EventLive.Release do
     {:noreply, assign(socket, :online_count, online_count)}
   end
 
+  @impl true
+  def handle_info({:release_changed, release}, socket) do
+    {:noreply, assign_release(socket, release)}
+  end
+
+  @impl true
+  def handle_info({:signups_updated, sign_ups}, socket) do
+    sign_up =
+      Enum.find(
+        sign_ups,
+        socket.assigns[:sign_up],
+        fn sign_up -> sign_up.user_id == socket.assigns.current_user.id end
+      )
+
+    {:noreply, assign(socket, sign_up: sign_up)}
+  end
+
+  @impl true
+  def handle_info({:tickets_updated, _} = msg, socket) do
+    send_update(TicketsComponent, id: "tickets-component", action: msg)
+    {:noreply, socket}
+  end
+
   defp open?(release) do
     DateTime.compare(DateTime.utc_now(), release.starts_at) == :gt &&
       DateTime.compare(DateTime.utc_now(), release.ends_at) == :lt
+  end
+
+  defp assign_release(socket, release) do
+    assign(socket,
+      release: release,
+      page_title: Localizer.localize(release).name,
+      release_status: if(Releases.is_active?(release), do: :opened, else: :closed)
+    )
   end
 end

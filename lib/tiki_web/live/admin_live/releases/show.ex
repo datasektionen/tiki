@@ -72,6 +72,10 @@ defmodule TikiWeb.AdminLive.Releases.Show do
          release <- Releases.get_release!(release_id),
          sign_ups <- Releases.get_release_sign_ups(release_id),
          true <- release.event_id == event.id do
+      if connected?(socket) do
+        Releases.subscribe(release_id, sign_ups: true)
+      end
+
       {:ok, assign(socket, event: event, release: release) |> stream_sign_ups(sign_ups)}
     else
       _ ->
@@ -117,6 +121,16 @@ defmodule TikiWeb.AdminLive.Releases.Show do
       {:error, reason} ->
         {:noreply, socket |> put_flash(:error, reason)}
     end
+  end
+
+  @impl true
+  def handle_info({:release_changed, release}, socket) do
+    {:noreply, assign(socket, release: release)}
+  end
+
+  @impl true
+  def handle_info({:signups_updated, sign_ups}, socket) do
+    {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
   end
 
   attr :id, :any
