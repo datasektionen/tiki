@@ -16,12 +16,21 @@ defmodule Tiki.ReleasesTest do
     end
 
     test "get_release!/1 returns the release with given id" do
-      release = release_fixture()
+      release = release_fixture() |> Repo.preload(:ticket_batch)
       assert Releases.get_release!(release.id) == release
     end
 
     test "create_release/1 with valid data creates a release" do
-      valid_attrs = %{name: "some name", name_sv: "some name_sv", starts_at: ~U[2025-09-10 13:05:00Z], ends_at: ~U[2025-09-10 13:05:00Z]}
+      ticket_batch = Tiki.TicketsFixtures.ticket_batch_fixture()
+
+      valid_attrs = %{
+        name: "some name",
+        name_sv: "some name_sv",
+        starts_at: ~U[2025-09-10 13:05:00Z],
+        ends_at: ~U[2025-09-10 13:05:00Z],
+        ticket_batch_id: ticket_batch.id,
+        event_id: ticket_batch.event_id
+      }
 
       assert {:ok, %Release{} = release} = Releases.create_release(valid_attrs)
       assert release.name == "some name"
@@ -36,7 +45,13 @@ defmodule Tiki.ReleasesTest do
 
     test "update_release/2 with valid data updates the release" do
       release = release_fixture()
-      update_attrs = %{name: "some updated name", name_sv: "some updated name_sv", starts_at: ~U[2025-09-11 13:05:00Z], ends_at: ~U[2025-09-11 13:05:00Z]}
+
+      update_attrs = %{
+        name: "some updated name",
+        name_sv: "some updated name_sv",
+        starts_at: ~U[2025-09-11 13:05:00Z],
+        ends_at: ~U[2025-09-11 13:05:00Z]
+      }
 
       assert {:ok, %Release{} = release} = Releases.update_release(release, update_attrs)
       assert release.name == "some updated name"
@@ -46,7 +61,7 @@ defmodule Tiki.ReleasesTest do
     end
 
     test "update_release/2 with invalid data returns error changeset" do
-      release = release_fixture()
+      release = release_fixture() |> Repo.preload(:ticket_batch)
       assert {:error, %Ecto.Changeset{}} = Releases.update_release(release, @invalid_attrs)
       assert release == Releases.get_release!(release.id)
     end

@@ -8,6 +8,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
   import TikiWeb.Component.Badge
   import TikiWeb.Component.Card
 
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <div class="grid gap-4">
@@ -61,8 +62,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
     """
   end
 
-  # TODO: Make this live!!!
-
+  @impl Phoenix.LiveView
   def mount(%{"id" => event_id, "release_id" => release_id}, _session, socket) do
     event =
       Events.get_event!(event_id)
@@ -86,6 +86,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_params(_params, _uri, socket) do
     %{event: event, release: release} = socket.assigns
 
@@ -99,6 +100,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
      ])}
   end
 
+  @impl Phoenix.LiveView
   def handle_event("shuffle", _, socket) do
     case Releases.shuffle_sign_ups(socket.assigns.release.id) do
       {:ok, sign_ups} -> {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
@@ -106,6 +108,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_event("allocate", _, socket) do
     case Releases.allocate_sign_ups(socket.assigns.release.id) do
       {:ok, sign_ups} -> {:noreply, stream_sign_ups(socket, sign_ups)}
@@ -113,6 +116,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
     end
   end
 
+  @impl Phoenix.LiveView
   def handle_event("update-sort-order", %{"from" => from, "to" => to}, socket) do
     case Releases.update_sort_order(socket.assigns.release.id, from + 1, to + 1) do
       {:ok, sign_ups} ->

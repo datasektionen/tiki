@@ -66,9 +66,8 @@ defmodule Tiki.Releases do
     with {:ok, release} <-
            %Release{}
            |> Release.changeset(attrs)
-           |> Repo.insert() do
+           |> Repo.insert(returning: [:id]) do
       ReleaseStatusWorker.schedule_release_jobs(release)
-      invalidate_order_worker_cache(release.id)
 
       broadcast_release_change(release)
       {:ok, release}
@@ -332,24 +331,15 @@ defmodule Tiki.Releases do
   Broadcasts a release status change event (opened/closed).
   """
   def broadcast_release_change(release) do
-    invalidate_order_worker_cache(release.id)
+    invalidate_order_worker_cache(release)
 
     PubSub.broadcast(Tiki.PubSub, "release:#{release.id}", {:release_changed, release})
   end
 
-  defp invalidate_order_worker_cache(release_id) do
+  defp invalidate_order_worker_cache(release) do
     # We need to invalidate order worker cache, because there might be a change
     # in if the there is an active release for the event.
-
-    event_id =
-      Repo.one!(
-        from r in Release,
-          where: r.id == ^release_id,
-          join: tb in assoc(r, :ticket_batch),
-          select: tb.event_id
-      )
-
-    OrderHandler.Worker.invalidate_cache(event_id)
+    OrderHandler.Worker.invalidate_cache(release.event_id)
   end
 
   def subscribe(release_id, opt \\ []) do
