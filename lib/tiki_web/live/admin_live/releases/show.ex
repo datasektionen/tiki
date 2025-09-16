@@ -137,6 +137,11 @@ defmodule TikiWeb.AdminLive.Releases.Show do
     {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
   end
 
+  @impl true
+  def handle_info({:signup_added, sign_up}, socket) do
+    {:noreply, stream_insert(socket, :sign_ups, sign_up)}
+  end
+
   attr :id, :any
   attr :sign_up, :map
   attr :cutoff, :integer

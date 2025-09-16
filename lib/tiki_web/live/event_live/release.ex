@@ -60,7 +60,7 @@ defmodule TikiWeb.EventLive.Release do
                 <div class="mt-2 sm:flex sm:items-start sm:justify-between">
                   <div class="max-w-xl text-sm text-gray-500 dark:text-gray-400">
                     <p>
-                      {gettext("Please sign up for this release to get tickets.")}
+                      {gettext("Sign up for this release for a chance to get tickets.")}
                     </p>
                   </div>
                   <div class="mt-5 sm:mt-0 sm:ml-6 sm:flex sm:shrink-0 sm:items-center">

@@ -161,6 +161,7 @@ defmodule Tiki.Releases do
           signed_up_at: DateTime.utc_now()
         })
         |> Repo.insert!()
+        |> Repo.preload(:user)
 
       broadcast_signup(signup, release_id)
     end)
