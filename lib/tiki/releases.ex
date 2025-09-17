@@ -14,7 +14,7 @@ defmodule Tiki.Releases do
   alias Tiki.Workers.EventSchedulerWorker
 
   @doc """
-  Returns the list of releases.
+  Returns a list of releases.
 
   ## Examples
 
@@ -24,6 +24,13 @@ defmodule Tiki.Releases do
   """
   def list_releases do
     Repo.all(Release)
+  end
+
+  @doc """
+  Returns a list of releases for an event.
+  """
+  def list_releases_for_event(event_id) do
+    Repo.all(from r in Release, where: r.event_id == ^event_id)
   end
 
   @doc """

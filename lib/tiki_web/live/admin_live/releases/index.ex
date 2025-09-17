@@ -74,7 +74,7 @@ defmodule TikiWeb.AdminLive.Releases.Index do
     event = Events.get_event!(event_id, preload_ticket_types: true)
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
-      releases = Releases.list_releases()
+      releases = Releases.list_releases_for_event(event_id)
 
       {:ok,
        assign(socket, event: event)
