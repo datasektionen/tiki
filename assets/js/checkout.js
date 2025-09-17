@@ -12,7 +12,11 @@ export const InitCheckout = {
 
 const init = (form) => {
   const clientSecret = form.dataset.secret;
-  const appearance = { theme: "stripe" };
+  const appearance = {
+    theme: window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "night"
+      : "stripe",
+  };
 
   elements = stripe.elements({ appearance, clientSecret });
 
@@ -22,6 +26,13 @@ const init = (form) => {
 
   const paymentElement = elements.create("payment", paymentElementOptions);
   paymentElement.mount("#payment-element");
+
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", (event) => {
+      let theme = event.matches ? "night" : "stripe";
+      elements.update({ appearance: { theme } });
+    });
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
