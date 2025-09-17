@@ -11,7 +11,7 @@ defmodule Tiki.Releases do
 
   alias Tiki.Releases.Release
   alias Tiki.Releases.Signup
-  alias Tiki.Releases.ReleaseStatusWorker
+  alias Tiki.Workers.EventSchedulerWorker
 
   @doc """
   Returns the list of releases.
@@ -67,7 +67,7 @@ defmodule Tiki.Releases do
            %Release{}
            |> Release.changeset(attrs)
            |> Repo.insert(returning: [:id]) do
-      ReleaseStatusWorker.schedule_release_jobs(release)
+      EventSchedulerWorker.schedule_release_jobs(release)
 
       broadcast_release_change(release)
       {:ok, release}
@@ -92,29 +92,13 @@ defmodule Tiki.Releases do
            |> Release.changeset(attrs)
            |> Repo.update() do
       if timing_changed?(release, updated_release) do
-        ReleaseStatusWorker.reschedule_release_jobs(updated_release)
+        EventSchedulerWorker.reschedule_release_jobs(updated_release)
       end
 
       broadcast_release_change(updated_release)
 
       {:ok, updated_release}
     end
-  end
-
-  @doc """
-  Deletes a release.
-
-  ## Examples
-
-      iex> delete_release(release)
-      {:ok, %Release{}}
-
-      iex> delete_release(release)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_release(%Release{} = release) do
-    Repo.delete(release)
   end
 
   @doc """
@@ -335,6 +319,16 @@ defmodule Tiki.Releases do
     invalidate_order_worker_cache(release)
 
     PubSub.broadcast(Tiki.PubSub, "release:#{release.id}", {:release_changed, release})
+
+    # Broadcast to all releases for event
+    releases = Repo.all(from r in Release, where: r.event_id == ^release.event_id)
+    PubSub.broadcast(Tiki.PubSub, "releases:#{release.event_id}", {:releases_updated, releases})
+
+    # Broadcast ticket types for event
+    Tiki.Orders.broadcast(
+      release.event_id,
+      {:tickets_updated, Tiki.Tickets.get_available_ticket_types(release.event_id)}
+    )
   end
 
   defp invalidate_order_worker_cache(release) do
@@ -353,5 +347,9 @@ defmodule Tiki.Releases do
     if sign_ups do
       PubSub.subscribe(Tiki.PubSub, "release:#{release_id}:signups")
     end
+  end
+
+  def subscribe_to_event(event_id) do
+    PubSub.subscribe(Tiki.PubSub, "releases:#{event_id}")
   end
 end

@@ -66,12 +66,6 @@ defmodule Tiki.ReleasesTest do
       assert release == Releases.get_release!(release.id)
     end
 
-    test "delete_release/1 deletes the release" do
-      release = release_fixture()
-      assert {:ok, %Release{}} = Releases.delete_release(release)
-      assert_raise Ecto.NoResultsError, fn -> Releases.get_release!(release.id) end
-    end
-
     test "change_release/1 returns a release changeset" do
       release = release_fixture()
       assert %Ecto.Changeset{} = Releases.change_release(release)

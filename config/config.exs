@@ -106,7 +106,7 @@ config :tails,
 
 config :tiki, Oban,
   engine: Oban.Engines.Basic,
-  queues: [default: 10, mail: 10, release_status: 5],
+  queues: [default: 10, mail: 10, event_schedule: 10],
   repo: Tiki.Repo
 
 config :fun_with_flags, :persistence,

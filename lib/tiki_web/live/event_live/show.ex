@@ -6,6 +6,8 @@ defmodule TikiWeb.EventLive.Show do
   alias Tiki.Orders
   alias TikiWeb.PurchaseLive.TicketsComponent
   alias Tiki.Localizer
+  alias Tiki.Releases
+
   import TikiWeb.Component.Card
   import TikiWeb.Component.Avatar
 
@@ -135,17 +137,13 @@ defmodule TikiWeb.EventLive.Show do
     releases =
       Enum.map(event.ticket_batches, & &1.release)
       |> Enum.filter(& &1)
-      |> Enum.sort_by(& &1.starts_at)
-      |> Enum.filter(fn release ->
-        DateTime.compare(release.starts_at, DateTime.utc_now()) == :gt ||
-          DateTime.compare(release.ends_at, DateTime.utc_now()) == :gt
-      end)
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
 
     if connected?(socket) do
       TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
       Orders.subscribe(event.id)
+      Releases.subscribe_to_event(event.id)
       Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
     end
 
@@ -160,9 +158,9 @@ defmodule TikiWeb.EventLive.Show do
      assign(socket,
        event: event,
        online_count: initial_count,
-       order: nil,
-       releases: releases
-     ), layout: {TikiWeb.Layouts, layout}}
+       order: nil
+     )
+     |> assign_releases(releases), layout: {TikiWeb.Layouts, layout}}
   end
 
   @impl true
@@ -211,6 +209,11 @@ defmodule TikiWeb.EventLive.Show do
   end
 
   @impl true
+  def handle_info({:releases_updated, releases}, socket) do
+    {:noreply, assign_releases(socket, releases)}
+  end
+
+  @impl true
   def handle_info({:tickets_updated, _} = msg, socket) do
     send_update(TicketsComponent, id: "tickets-component", action: msg)
     {:noreply, socket}
@@ -252,5 +255,14 @@ defmodule TikiWeb.EventLive.Show do
         Tiki.Cldr.Date.Interval.to_string!(start_time, end_time, format: :long)
         |> String.capitalize()
     end
+  end
+
+  defp assign_releases(socket, releases) do
+    releases =
+      releases
+      |> Enum.sort_by(& &1.starts_at)
+      |> Enum.filter(&Releases.is_active?/1)
+
+    assign(socket, releases: releases)
   end
 end
