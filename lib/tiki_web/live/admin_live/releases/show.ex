@@ -28,13 +28,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
         <.button variant="outline" phx-click="shuffle">
           {gettext("Shuffle")}
         </.button>
-        <.button
-          class="ml-auto"
-          variant="default"
-          phx-click="allocate"
-          disabled={@accepted?}
-          title={@accepted? && gettext("Sign ups are already accepted.")}
-        >
+        <.button class="ml-auto" variant="default" phx-click="allocate" disabled={@accepted?}>
           {gettext("Allocate")}
         </.button>
         <%!-- <.button navigate={~p"/admin/events/#{@event}/attendees/new"} class="ml-auto">
