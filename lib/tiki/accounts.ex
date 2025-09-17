@@ -109,12 +109,12 @@ defmodule Tiki.Accounts do
   @doc """
   Links a user with a given KTH ID, if it not already taken.
   """
-  def link_user_with_userinfo(user, %{"kth_id" => id}) do
+  def link_user_with_userinfo(user, %{"kth_id" => id, "year_tag" => year_tag}) do
     case Repo.get_by(User, kth_id: id) do
       nil ->
         User.oidcc_changeset(
           user,
-          %{"kth_id" => id}
+          %{"kth_id" => id, "year_tag" => year_tag}
         )
         |> Repo.update()
 

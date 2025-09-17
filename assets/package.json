@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "@stripe/stripe-js": "^5.2.0",
-    "qr-scanner": "^1.4.2"
+    "qr-scanner": "^1.4.2",
+    "sortablejs": "^1.15.6"
   },
   "devDependencies": {
     "tailwindcss-animate": "^1.0.7"

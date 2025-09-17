@@ -9,6 +9,8 @@ defmodule Tiki.Accounts.User do
     field :email, :string
 
     field :kth_id, :string
+    field :year_tag, :string
+
     field :confirmed_at, :naive_datetime
 
     field :locale, :string, default: "en"
@@ -20,7 +22,7 @@ defmodule Tiki.Accounts.User do
 
   def oidcc_changeset(user, attrs) do
     user
-    |> cast(attrs, [:kth_id, :email, :first_name, :last_name])
+    |> cast(attrs, [:kth_id, :year_tag, :email, :first_name, :last_name])
     |> validate_required([:kth_id, :email])
     |> unique_constraint(:kth_id)
   end

@@ -13,6 +13,8 @@ defmodule Tiki.Tickets.TicketBatch do
 
     has_many :sub_batches, TicketBatch
     has_many :ticket_types, Tiki.Tickets.TicketType
+    has_one :release, Tiki.Releases.Release
+
     belongs_to :parent_batch, TicketBatch
 
     timestamps()

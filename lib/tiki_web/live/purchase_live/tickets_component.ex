@@ -3,6 +3,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
   alias Tiki.Tickets
   alias Tiki.Orders
+  alias Tiki.Releases
   alias Tiki.Localizer
 
   @impl Phoenix.LiveComponent
@@ -47,7 +48,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
                 <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
               </div>
 
-              <div :if={purchasable(ticket_type)} class="flex flex-row items-center gap-2">
+              <div :if={purchasable(@now, ticket_type)} class="flex flex-row items-center gap-2">
                 <button
                   :if={@counts[ticket_type.id] > 0}
                   class="bg-background flex h-8 w-8 items-center justify-center rounded-full text-2xl shadow-md hover:bg-accent hover:cursor-pointer"
@@ -80,7 +81,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
               </div>
             </div>
 
-            <.not_available_label ticket_type={ticket_type} />
+            <.not_available_label ticket_type={ticket_type} now={@now} />
           </div>
         </div>
       </div>
@@ -125,10 +126,9 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
   end
 
   attr :ticket_type, :any, required: true
+  attr :now, :any, required: true
 
-  defp not_available_label(%{ticket_type: tt} = assigns) do
-    now = DateTime.utc_now()
-
+  defp not_available_label(%{ticket_type: tt, now: now} = assigns) do
     assigns =
       cond do
         !tt.purchasable ->
@@ -145,6 +145,9 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
         tt.available == 0 ->
           assign(assigns, label: gettext("Sold out"))
+
+        active_release?(tt) ->
+          assign(assigns, label: gettext("Ticket is part of an active release."))
 
         true ->
           assign(assigns, label: nil)
@@ -164,7 +167,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
   def update(%{action: {:tickets_updated, ticket_types}}, socket) do
     # TODO: make sure that this is automatically updated when a ticket type is released, eg. via Oban
 
-    {:ok, assign_ticket_types(socket, ticket_types)}
+    {:ok, assign_ticket_types(socket, ticket_types) |> update_time()}
   end
 
   def update(%{event: event} = assigns, socket) do
@@ -176,6 +179,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
        promo_codes: Map.get(assigns, :promo_codes, []),
        error: nil
      )
+     |> update_time()
      |> assign_ticket_types(get_available_ticket_types(event.id))}
   end
 
@@ -192,6 +196,16 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         tt.promo_code == nil || tt.promo_code in socket.assigns.promo_codes
       end)
       |> Enum.sort_by(fn tt -> tt.price end)
+
+    ticket_types =
+      case socket.assigns[:release] do
+        nil ->
+          ticket_types
+
+        %Releases.Release{} = release ->
+          Enum.filter(ticket_types, fn tt -> tt.release && tt.release.id == release.id end)
+          |> Enum.map(fn tt -> %{tt | release: nil} end)
+      end
       |> Enum.group_by(fn tt -> tt.start_time end)
       |> Enum.sort(fn {start_a, _}, {start_b, _} ->
         case {start_a, start_b} do
@@ -207,16 +221,16 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
   @impl Phoenix.LiveComponent
   def handle_event("inc", %{"id" => id}, socket) do
     counts = Map.update(socket.assigns.counts, id, 0, &(&1 + 1))
-    {:noreply, assign(socket, counts: counts)}
+    {:noreply, assign(socket, counts: counts) |> update_time()}
   end
 
   def handle_event("dec", %{"id" => id}, socket) do
     counts = Map.update(socket.assigns.counts, id, 0, &(&1 - 1))
-    {:noreply, assign(socket, counts: counts)}
+    {:noreply, assign(socket, counts: counts) |> update_time()}
   end
 
   def handle_event("update_promo", %{"code" => code}, socket) do
-    {:noreply, assign(socket, promo_code: code)}
+    {:noreply, assign(socket, promo_code: code) |> update_time()}
   end
 
   def handle_event("activate_promo", %{"code" => code}, socket) do
@@ -224,6 +238,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
     {:noreply,
      assign(socket, promo_code: "", promo_codes: [code | codes])
+     |> update_time()
      |> assign_ticket_types(get_available_ticket_types(event_id))}
   end
 
@@ -234,7 +249,14 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
     %{event: %{id: event_id}} = socket.assigns
 
-    with {:ok, order} <- Orders.reserve_tickets(event_id, to_purchase) do
+    user_id =
+      case socket.assigns[:current_user] do
+        nil -> nil
+        user -> user.id
+      end
+
+    with {:ok, order} <-
+           Orders.reserve_tickets(event_id, to_purchase, user_id) do
       to =
         case socket.assigns[:embedded] do
           nil ->
@@ -247,17 +269,16 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
       {:noreply, push_navigate(socket, to: to)}
     else
       {:error, reason} ->
-        {:noreply, assign(socket, error: reason)}
+        {:noreply, assign(socket, error: reason) |> update_time()}
     end
   end
 
-  defp purchasable(ticket_type) do
-    now = DateTime.utc_now()
-
+  defp purchasable(now, ticket_type) do
     cond do
       !ticket_type.purchasable -> false
       ticket_type.expire_time && DateTime.compare(now, ticket_type.expire_time) == :gt -> false
       ticket_type.release_time && DateTime.compare(now, ticket_type.release_time) == :lt -> false
+      active_release?(ticket_type) -> false
       true -> true
     end
   end
@@ -284,5 +305,16 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
   defp get_available_ticket_types(event_id) do
     Tickets.get_cached_available_ticket_types(event_id)
+  end
+
+  defp active_release?(ticket_type) do
+    case ticket_type.release do
+      nil -> false
+      %Releases.Release{} = release -> Releases.is_active?(release)
+    end
+  end
+
+  defp update_time(socket) do
+    assign(socket, now: DateTime.utc_now())
   end
 end
