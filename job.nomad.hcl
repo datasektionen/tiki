@@ -72,6 +72,8 @@ IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
 IMAGE_FRONTEND_URL=https://dnok4ulql7gij.cloudfront.net
 OPENAI_KEY={{ .openai_key }}
+HIVE_URL=https://hive.datasektionen.se/api/v1
+HIVE_API_TOKEN={{ .hive_api_token }}
 {{ end }}
 EOF
         destination = "local/.env"
