@@ -17,7 +17,7 @@ defmodule TikiWeb.OidccController do
       client_id: &__MODULE__.client_id/0,
       client_secret: &__MODULE__.client_secret/0,
       redirect_uri: &__MODULE__.callback_uri/0,
-      scopes: ["openid", "profile", "email"]
+      scopes: ["openid", "profile", "email", "year_tag"]
     ]
     when action in [:authorize]
   )

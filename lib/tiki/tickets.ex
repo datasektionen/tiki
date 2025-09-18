@@ -9,6 +9,7 @@ defmodule Tiki.Tickets do
 
   alias Tiki.Tickets.TreeBuilder
   alias Tiki.Tickets.TicketBatch
+  alias Tiki.Workers.EventSchedulerWorker
 
   @doc """
   Returns the list of ticket_batch.
@@ -170,10 +171,14 @@ defmodule Tiki.Tickets do
 
   """
   def create_ticket_type(attrs \\ %{}) do
-    %TicketType{}
-    |> TicketType.changeset(attrs)
-    |> Repo.insert(returning: [:id])
-    |> broadcast_updated()
+    with {:ok, ticket_type} <-
+           %TicketType{}
+           |> TicketType.changeset(attrs)
+           |> Repo.insert(returning: [:id]) do
+      EventSchedulerWorker.schedule_ticket_job(ticket_type)
+
+      broadcast_updated(ticket_type)
+    end
   end
 
   @doc """
@@ -188,11 +193,17 @@ defmodule Tiki.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_ticket_type(%TicketType{} = ticket_types, attrs) do
-    ticket_types
-    |> TicketType.changeset(attrs)
-    |> Repo.update()
-    |> broadcast_updated()
+  def update_ticket_type(%TicketType{} = ticket_type, attrs) do
+    with {:ok, updated_ticket_type} <-
+           ticket_type
+           |> TicketType.changeset(attrs)
+           |> Repo.update() do
+      if timing_changed?(ticket_type, updated_ticket_type) do
+        EventSchedulerWorker.schedule_ticket_job(updated_ticket_type)
+      end
+
+      broadcast_updated(updated_ticket_type)
+    end
   end
 
   @doc """
@@ -207,12 +218,14 @@ defmodule Tiki.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_ticket_type(%TicketType{} = ticket_types) do
-    Repo.delete(ticket_types)
-    |> broadcast_updated()
+  def delete_ticket_type(%TicketType{} = ticket_type) do
+    with {:ok, deleted_ticket_type} <- Repo.delete(ticket_type) do
+      EventSchedulerWorker.cancel_ticket_job(ticket_type.id)
+      broadcast_updated(deleted_ticket_type)
+    end
   end
 
-  defp broadcast_updated({:ok, %TicketType{} = ticket_type}) do
+  defp broadcast_updated(%TicketType{} = ticket_type) do
     event_id_query =
       from tb in TicketBatch,
         where: tb.id == ^ticket_type.ticket_batch_id,
@@ -227,8 +240,6 @@ defmodule Tiki.Tickets do
 
     {:ok, ticket_type}
   end
-
-  defp broadcast_updated({:error, _} = error), do: error
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking ticket_types changes.
@@ -305,6 +316,7 @@ defmodule Tiki.Tickets do
       |> Map.put(:available, tt.available)
       |> Map.put(:purchased, tt.purchased)
       |> Map.put(:pending, tt.pending)
+      |> Map.put(:release, tt.release)
     end)
   end
 
@@ -336,12 +348,13 @@ defmodule Tiki.Tickets do
     query =
       from tt in TicketType,
         join: tb in assoc(tt, :ticket_batch),
+        left_join: r in assoc(tb, :release),
         left_join: pt in subquery(sub_pending),
         on: tt.id == pt.ticket_type_id,
         left_join: pt2 in subquery(sub_purchased),
         on: tt.id == pt2.ticket_type_id,
         where: tb.event_id == ^event_id,
-        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count}
+        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count, release: r}
 
     multi
     |> get_batch_tree_multi(event_id)
@@ -365,6 +378,7 @@ defmodule Tiki.Tickets do
           Map.put(tt, :purchased, tt.purchased || 0)
           |> Map.put(:pending, tt.pending || 0)
           |> Map.put(:available, available[tt.ticket_type.ticket_batch_id])
+          |> Map.put(:release, tt.release || nil)
         end)
 
       {:ok, ticket_types}
@@ -415,5 +429,13 @@ defmodule Tiki.Tickets do
 
       {:ok, {graph, fake_root.batch.id}}
     end)
+  end
+
+  # Helper function to check if timing fields changed for ticket types
+  defp timing_changed?(old_ticket_type, new_ticket_type) do
+    DateTime.compare(
+      old_ticket_type.release_time || ~U[1970-01-01 00:00:00Z],
+      new_ticket_type.release_time || ~U[1970-01-01 00:00:00Z]
+    ) != :eq
   end
 end

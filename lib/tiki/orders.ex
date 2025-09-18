@@ -144,8 +144,9 @@ defmodule Tiki.Orders do
       iex> reserve_tickets(232, %{12 => 0}, 456)
       {:error, "order must contain at least one ticket"}
   """
-  def reserve_tickets(event_id, ticket_types) do
-    with {:ok, order, ticket_types} <- OrderHandler.Worker.reserve_tickets(event_id, ticket_types) do
+  def reserve_tickets(event_id, ticket_types, user_id \\ nil) do
+    with {:ok, order, ticket_types} <-
+           OrderHandler.Worker.reserve_tickets(event_id, ticket_types, user_id) do
       # Monitor the order, automatically cancels it if it's not paid in time
       Tiki.PurchaseMonitor.monitor(order)
 
