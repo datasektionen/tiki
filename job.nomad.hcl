@@ -30,6 +30,7 @@ job "tiki" {
         port     = "tikimetricshttp"
         provider = "nomad"
         tags = [
+          "prometheus.scrape=true",
           "traefik.enable=true",
           "traefik.http.routers.tiki-metrics.rule=Host(`tiki-metrics.nomad.dsekt.internal`)",
           "traefik.http.routers.tiki-metrics.entrypoints=web-internal",
