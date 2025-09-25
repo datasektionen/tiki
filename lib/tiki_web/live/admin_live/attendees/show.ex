@@ -13,7 +13,7 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
       Events.get_event!(event_id)
       |> Localizer.localize()
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event),
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event),
          ticket <- Orders.get_ticket!(ticket_id),
          order <- Orders.get_order!(ticket.order_id),
          true <- order.event_id == event.id do

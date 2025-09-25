@@ -38,7 +38,7 @@ defmodule TikiWeb.AdminLive.Team.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    with :ok <- Tiki.Policy.authorize(:team_admin, socket.assigns.current_user) do
+    with :ok <- Tiki.Policy.authorize(:team_view_all, socket.assigns.current_user) do
       {:ok,
        socket
        |> assign(:page_title, gettext("All teams"))
@@ -58,8 +58,13 @@ defmodule TikiWeb.AdminLive.Team.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     team = Teams.get_team!(id)
-    {:ok, _} = Teams.delete_team(team)
 
-    {:noreply, stream_delete(socket, :teams, team)}
+    with :ok <- Tiki.Policy.authorize(:team_admin, socket.assigns.current_user, team),
+         {:ok, _} = Teams.delete_team(team) do
+      {:noreply, stream_delete(socket, :teams, team)}
+    else
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, gettext("You are not authorized to do that."))}
+    end
   end
 end

@@ -22,16 +22,9 @@ defmodule TikiWeb.OidccController do
     when action in [:authorize]
   )
 
-  plug(
-    Oidcc.Plug.AuthorizationCallback,
-    [
-      provider: Tiki.OpenIdConfigurationProvider,
-      client_id: &__MODULE__.client_id/0,
-      client_secret: &__MODULE__.client_secret/0,
-      redirect_uri: &__MODULE__.callback_uri/0
-    ]
-    when action in [:callback]
-  )
+  def authorize(conn, _params) do
+    conn
+  end
 
   def authorize_return(conn, params) do
     return_to = params["return_to"]
@@ -46,6 +39,17 @@ defmodule TikiWeb.OidccController do
     |> put_session(:link_account, link)
     |> redirect(to: ~p"/oidcc/authorize")
   end
+
+  plug(
+    Oidcc.Plug.AuthorizationCallback,
+    [
+      provider: Tiki.OpenIdConfigurationProvider,
+      client_id: &__MODULE__.client_id/0,
+      client_secret: &__MODULE__.client_secret/0,
+      redirect_uri: &__MODULE__.callback_uri/0
+    ]
+    when action in [:callback]
+  )
 
   def callback(
         %Plug.Conn{private: %{Oidcc.Plug.AuthorizationCallback => {:ok, {_token, userinfo}}}} =

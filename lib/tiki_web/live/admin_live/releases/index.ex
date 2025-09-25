@@ -73,7 +73,7 @@ defmodule TikiWeb.AdminLive.Releases.Index do
   def mount(%{"id" => event_id}, _session, socket) do
     event = Events.get_event!(event_id, preload_ticket_types: true)
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       releases = Releases.list_releases_for_event(event_id)
 
       {:ok,
@@ -98,8 +98,17 @@ defmodule TikiWeb.AdminLive.Releases.Index do
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
        {"Releases", ~p"/admin/events/#{socket.assigns.event.id}/releases"}
      ])
+     |> restrict_access(socket.assigns.live_action)
      |> apply_action(socket.assigns.live_action, params)}
   end
+
+  defp restrict_access(socket, action)
+       when action in [:new, :edit] do
+    put_flash(socket, :error, gettext("You are not authorized to do that."))
+    |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/releases")
+  end
+
+  defp restrict_access(socket, _action), do: socket
 
   def apply_action(socket, :index, _params), do: assign(socket, :page_title, gettext("Releases"))
 

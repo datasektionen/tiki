@@ -119,7 +119,7 @@ defmodule TikiWeb.Router do
   end
 
   scope "/admin/feature-flags" do
-    pipe_through [:browser, :require_admin]
+    pipe_through [:browser, :require_flags_permission]
 
     forward "/", FunWithFlags.UI.Router, namespace: "admin/feature-flags"
   end

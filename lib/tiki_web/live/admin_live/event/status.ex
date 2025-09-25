@@ -10,7 +10,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
   def mount(%{"id" => event_id}, _session, socket) do
     event = Events.get_event!(event_id) |> Localizer.localize()
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       ticket_types =
         Tickets.get_cached_available_ticket_types(event_id)
         |> Localizer.localize()

@@ -152,7 +152,7 @@ defmodule TikiWeb.AdminLive.Orders.Show do
 
     order_log = Orders.get_order_logs(order_id)
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       {:ok,
        assign(socket,
          order: order,

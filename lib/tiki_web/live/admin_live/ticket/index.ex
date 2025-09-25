@@ -103,7 +103,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
       Events.get_event!(event_id, preload_ticket_types: true)
       |> Localizer.localize()
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       {:ok, assign(socket, event: event)}
     else
       {:error, :unauthorized} ->
@@ -126,8 +126,17 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
        {socket.assigns.event.name, ~p"/admin/events/#{socket.assigns.event.id}"},
        {"Tickets", ~p"/admin/events/#{socket.assigns.event.id}/tickets"}
      ])
+     |> restrict_access(socket.assigns.live_action)
      |> apply_action(socket.assigns.live_action, params)}
   end
+
+  defp restrict_access(socket, action)
+       when action in [:edit_batch, :new_batch, :edit_ticket_type, :new_ticket_type] do
+    put_flash(socket, :error, gettext("You are not authorized to do that."))
+    |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/tickets")
+  end
+
+  defp restrict_access(socket, _action), do: socket
 
   def apply_action(socket, :index, _params), do: assign(socket, :page_title, gettext("Tickets"))
 

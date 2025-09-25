@@ -12,7 +12,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
   def mount(_params, _session, socket) do
     %{current_user: user, current_team: team} = socket.assigns
 
-    with :ok <- Policy.authorize(:event_manage, user, team) do
+    with :ok <- Policy.authorize(:event_view, user, team) do
       events =
         Events.list_team_events(team.id)
         |> Localizer.localize()

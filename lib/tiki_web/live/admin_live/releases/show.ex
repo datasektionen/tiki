@@ -62,7 +62,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
       Events.get_event!(event_id)
       |> Localizer.localize()
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event),
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event),
          release <- Releases.get_release!(release_id),
          sign_ups <- Releases.get_release_sign_ups(release_id),
          true <- release.event_id == event.id do
@@ -96,25 +96,44 @@ defmodule TikiWeb.AdminLive.Releases.Show do
 
   @impl Phoenix.LiveView
   def handle_event("shuffle", _, socket) do
-    case Releases.shuffle_sign_ups(socket.assigns.release.id) do
-      {:ok, sign_ups} -> {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
-      {:error, reason} -> {:noreply, socket |> put_flash(:error, reason)}
+    with :ok <-
+           Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, socket.assigns.event),
+         {:ok, sign_ups} <- Releases.shuffle_sign_ups(socket.assigns.release.id) do
+      {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
+    else
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, gettext("You are not authorized to do that."))}
+
+      {:error, reason} ->
+        {:noreply, socket |> put_flash(:error, reason)}
     end
   end
 
   @impl Phoenix.LiveView
   def handle_event("allocate", _, socket) do
-    case Releases.allocate_sign_ups(socket.assigns.release.id) do
-      {:ok, sign_ups} -> {:noreply, stream_sign_ups(socket, sign_ups)}
-      {:error, reason} -> {:noreply, socket |> put_flash(:error, reason)}
+    with :ok <-
+           Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, socket.assigns.event),
+         {:ok, sign_ups} <- Releases.allocate_sign_ups(socket.assigns.release.id) do
+      {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
+    else
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, gettext("You are not authorized to do that."))}
+
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, reason)}
     end
   end
 
   @impl Phoenix.LiveView
   def handle_event("update-sort-order", %{"from" => from, "to" => to}, socket) do
-    case Releases.update_sort_order(socket.assigns.release.id, from + 1, to + 1) do
-      {:ok, sign_ups} ->
-        {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
+    with :ok <-
+           Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, socket.assigns.event),
+         {:ok, sign_ups} <-
+           Releases.update_sort_order(socket.assigns.release.id, from + 1, to + 1) do
+      {:noreply, stream_sign_ups(socket, sign_ups, reset: true)}
+    else
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, gettext("You are not authorized to do that."))}
 
       {:error, reason} ->
         {:noreply, socket |> put_flash(:error, reason)}
