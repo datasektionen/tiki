@@ -20,7 +20,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
       Events.get_event!(event_id)
       |> Localizer.localize()
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       %{entries: tickets, metadata: metadata} =
         Orders.list_tickets_for_event(event_id, limit: @page_size, paginate: %{after: nil})
 
@@ -102,15 +102,19 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
   end
 
   defp toggle_check_in(socket, ticket_id, opts \\ []) do
-    case Orders.toggle_check_in(socket.assigns.event.id, ticket_id, opts) do
-      {:ok, ticket} ->
-        {:noreply,
-         stream_insert(socket, :tickets, ticket)
-         |> then(fn socket ->
-           if Keyword.get(opts, :check_out, true),
-             do: socket,
-             else: put_flash(socket, :info, gettext("Checked in: %{name}", name: ticket.name))
-         end)}
+    with :ok <-
+           Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, socket.assigns.event),
+         {:ok, ticket} <- Orders.toggle_check_in(socket.assigns.event.id, ticket_id, opts) do
+      {:noreply,
+       stream_insert(socket, :tickets, ticket)
+       |> then(fn socket ->
+         if Keyword.get(opts, :check_out, true),
+           do: socket,
+           else: put_flash(socket, :info, gettext("Checked in: %{name}", name: ticket.name))
+       end)}
+    else
+      {:error, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, gettext("You are not authorized to do that."))}
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, reason)}

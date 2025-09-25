@@ -186,7 +186,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
         {:ok,
          socket
          |> put_flash(:error, gettext("You are not authorized to do that."))
-         |> redirect(to: ~p"/admin")}
+         |> redirect(to: ~p"/admin/events/#{event}/forms")}
     end
   end
 

@@ -30,7 +30,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
       {:error, :unauthorized} ->
         socket
         |> put_flash(:error, gettext("You are not authorized to do that."))
-        |> redirect(to: ~p"/admin")
+        |> redirect(to: ~p"/admin/events/#{id}")
     end
   end
 
@@ -57,7 +57,7 @@ defmodule TikiWeb.AdminLive.Event.Edit do
       {:error, :unauthorized} ->
         socket
         |> put_flash(:error, gettext("You are not authorized to do that."))
-        |> redirect(to: ~p"/admin")
+        |> redirect(to: ~p"/admin/events")
     end
   end
 

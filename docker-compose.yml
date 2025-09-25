@@ -157,6 +157,10 @@ configs:
           email: turetek@kth.se
           first_name: Ture
           family_name: Teknolog
+        - kth_id: money
+          email: money@kth.se
+          first_name: Lucas
+          family_name: Kassör
 
       hive:
         groups:
@@ -165,6 +169,12 @@ configs:
               - turetek
             permissions:
               - id: admin
+          - id: kassör
+            members:
+              - money
+            permissions:
+              - id: audit
+
   # This is very cursed, but we proxy localhost:7003 to the nyckeln service, so
   # that we can use the same http://localhost:7003 url for the oidc provider worker
   # and the browser when logging in via oidc.

@@ -43,7 +43,7 @@ defmodule TikiWeb.AdminLive.Forms.Index do
   def mount(%{"id" => event_id}, _session, socket) do
     event = Tiki.Events.get_event!(event_id)
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       forms = Forms.list_forms_for_event(event_id)
 
       {:ok,
@@ -68,8 +68,13 @@ defmodule TikiWeb.AdminLive.Forms.Index do
   def handle_event("delete", %{"id" => id}, socket) do
     form = Forms.get_form!(id)
 
-    {:ok, _} = Forms.delete_form(form)
-
-    {:noreply, stream_delete(socket, :forms, form)}
+    with :ok <-
+           Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, socket.assigns.event),
+         {:ok, _} = Forms.delete_form(form) do
+      {:noreply, stream_delete(socket, :forms, form)}
+    else
+      {:errorm, :unauthorized} ->
+        {:noreply, put_flash(socket, :error, gettext("You are not authorized to do that."))}
+    end
   end
 end

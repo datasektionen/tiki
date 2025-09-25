@@ -14,7 +14,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
       Events.get_event!(event_id, preload_ticket_types: true)
       |> Localizer.localize()
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       initial_count = Presence.list("presence:event:#{event_id}") |> map_size
       TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 

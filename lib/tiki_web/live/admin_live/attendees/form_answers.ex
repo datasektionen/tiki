@@ -100,7 +100,7 @@ defmodule TikiWeb.AdminLive.Attendees.FormAnswers do
       Tiki.Events.get_event!(event_id)
       |> Localizer.localize()
 
-    with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
       forms =
         Tiki.Forms.list_forms_for_event(event_id)
         |> Localizer.localize()

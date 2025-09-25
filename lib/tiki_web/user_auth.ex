@@ -321,17 +321,18 @@ defmodule TikiWeb.UserAuth do
     end
   end
 
-  def require_admin(conn, opts) do
+  def require_flags_permission(conn, opts) do
     conn = require_authenticated_user(conn, opts)
 
-    if Tiki.Policy.authorize?(:tiki_admin, conn.assigns.current_user) do
+    with :ok <- Tiki.Policy.authorize(:flags_admin, conn.assigns.current_user) do
       conn
     else
-      conn
-      |> put_flash(:error, gettext("You need to be an admin to access this page."))
-      |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log_in?return_to=#{current_path(conn)}")
-      |> halt()
+      _ ->
+        conn
+        |> put_flash(:error, gettext("You need to be an admin to access this page."))
+        |> maybe_store_return_to()
+        |> redirect(to: ~p"/users/log_in?return_to=#{current_path(conn)}")
+        |> halt()
     end
   end
 
