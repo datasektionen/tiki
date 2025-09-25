@@ -11,7 +11,7 @@ defmodule Tiki.Tickets.TicketBatch do
 
     belongs_to :event, Tiki.Events.Event, type: :binary_id
 
-    has_many :sub_batches, TicketBatch
+    has_many :sub_batches, TicketBatch, foreign_key: :parent_batch_id
     has_many :ticket_types, Tiki.Tickets.TicketType
     has_one :release, Tiki.Releases.Release
 

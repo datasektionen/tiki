@@ -23,7 +23,7 @@ defmodule TikiWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :tiki,
-    gzip: false,
+    gzip: not code_reloading?,
     only: TikiWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the

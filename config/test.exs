@@ -18,7 +18,7 @@ config :tiki, Tiki.Repo,
   hostname: "localhost",
   database: "tiki_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 10
+  pool_size: System.schedulers_online() * 2
 
 config :tiki, Swish,
   api_url: "https://staging.getswish.pub.tds.tieto.com/swish-cpcapi/api",
@@ -61,5 +61,8 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :phoenix_live_view,
+  enable_expensive_runtime_checks: true
 
 config :tiki, Oban, testing: :inline

@@ -89,8 +89,8 @@ services:
       - source: nyckeln.yaml
         target: /config.yaml
     ports:
-      - 7001:7001 # PLS API
       - 7003:7003 # sso
+      - 7004:7004 # hive
 
   app:
     build:
@@ -123,8 +123,9 @@ services:
       OIDC_CLIENT_SECRET: "client-secret"
       OIDC_ISSUER_URL: "http://localhost:7003"
 
-      # PLS stuff, see permissions below
-      PLS_URL: "http://nyckeln:7001"
+      # Hive stuff, see permissions below
+      HIVE_URL: "http://nyckeln:7004/api/v1"
+      HIVE_API_TOKEN: "totally-a-real-token"
     ports:
       - "4000:4000"
     configs:
@@ -156,9 +157,14 @@ configs:
           email: turetek@kth.se
           first_name: Ture
           family_name: Teknolog
-          pls_permissions:
-            tiki:
-              - admin
+
+      hive:
+        groups:
+          - id: tiki
+            members:
+              - turetek
+            permissions:
+              - id: admin
   # This is very cursed, but we proxy localhost:7003 to the nyckeln service, so
   # that we can use the same http://localhost:7003 url for the oidc provider worker
   # and the browser when logging in via oidc.

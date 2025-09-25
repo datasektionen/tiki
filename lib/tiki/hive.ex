@@ -13,7 +13,7 @@ defmodule Tiki.Hive do
   Gets a list of hive permissions for tiki for the given user.
   """
   def get_permissions(user) do
-    GenServer.call(__MODULE__, {:get_permissions, user})
+    GenServer.call(__MODULE__, {:get_permissions, user}, 10_000)
   end
 
   @doc """
