@@ -132,8 +132,12 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
 
   defp restrict_access(socket, action)
        when action in [:edit_batch, :new_batch, :edit_ticket_type, :new_ticket_type] do
-    put_flash(socket, :error, gettext("You are not authorized to do that."))
-    |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/tickets")
+    if Tiki.Policy.authorize?(:event_manage, socket.assigns.current_user, socket.assigns.event) do
+      socket
+    else
+      put_flash(socket, :error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/tickets")
+    end
   end
 
   defp restrict_access(socket, _action), do: socket

@@ -190,6 +190,14 @@ defmodule TikiWeb.Component.Sidebar do
       <:item text={gettext("All teams")} to={~p"/admin/teams"} active={@active_tab == :all_teams} />
       <:item text={gettext("New team")} to={~p"/admin/teams/new"} active={@active_tab == :new_team} />
     </.sidebar_group>
+    <.sidebar_group>
+      <:header>
+        <.icon name="hero-users" class="h-4 w-4" />
+        <span>{gettext("Users")}</span>
+      </:header>
+      <:item text={gettext("All users")} to={~p"/admin/users"} active={@active_tab == :users} />
+      <:item text={gettext("New user")} to={~p"/admin/users/new"} active={@active_tab == :new_user} />
+    </.sidebar_group>
     """
   end
 

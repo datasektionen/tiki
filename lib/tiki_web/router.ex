@@ -127,6 +127,8 @@ defmodule TikiWeb.Router do
   scope "/", TikiWeb do
     pipe_through [:browser, :require_authenticated_user]
 
+    post "/users/hijack", UserSessionController, :hijack
+
     live_session :require_authenticated_user,
       on_mount: [{TikiWeb.UserAuth, :ensure_authenticated}] do
       live "/account/settings", AccountLive.Settings, :edit
@@ -173,6 +175,11 @@ defmodule TikiWeb.Router do
         ],
         layout: {TikiWeb.Layouts, :admin} do
         live "/", Dashboard.Index, :index
+
+        # User management
+        live "/users", Users.Index, :index
+        live "/users/new", Users.Index, :new
+        live "/users/:id/edit", Users.Index, :edit
 
         # General event stuff
         live "/events", Event.Index, :index

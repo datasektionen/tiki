@@ -13,7 +13,7 @@ defmodule TikiWeb.Component.Badge do
   attr :class, :string, default: nil
 
   attr :variant, :string,
-    values: ~w(default secondary destructive outline),
+    values: ~w(default secondary destructive outline success warning),
     default: "default",
     doc: "the badge variant style"
 
@@ -42,10 +42,12 @@ defmodule TikiWeb.Component.Badge do
   @variants %{
     variant: %{
       "default" => "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+      "success" => "border-transparent bg-success-background text-success",
       "secondary" =>
         "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
       "destructive" =>
         "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+      "warning" => "border-transparent bg-yellow-100 text-yellow-900 hover:text-yellow-900/80",
       "outline" => "text-foreground"
     }
   }

@@ -85,6 +85,10 @@ defmodule TikiWeb.Nav do
   tab AdminLive.Team.MembershipForm, :edit, :team_members
   tab AdminLive.Team.Form, :manager_edit, :team_edit
 
+  tab AdminLive.Users.Index, :index, :users
+  tab AdminLive.Users.Index, :new, :new_user
+  tab AdminLive.Users.Index, :edit, :users
+
   defp set_nav(_params, url, socket) do
     active_tab = active_tab(socket.view, socket.assigns.live_action)
 

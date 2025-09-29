@@ -15,24 +15,44 @@ defmodule Tiki.Accounts do
 
   Options:
     * `:limit` - The maximum number of users to return.
+    * `:order_by` - Field to order by (default: :inserted_at)
+    * `:order_direction` - Direction to order (:asc or :desc, default: :desc)
+    * `:preload` - List of associations to preload
   """
   def list_users(opts \\ []) do
     limit = Keyword.get(opts, :limit, nil)
-    Repo.all(from u in User, limit: ^limit)
+    order_by = Keyword.get(opts, :order_by, :inserted_at)
+    order_direction = Keyword.get(opts, :order_direction, :desc)
+    preload = Keyword.get(opts, :preload, [])
+
+    User
+    |> order_by([u], [{^order_direction, field(u, ^order_by)}])
+    |> limit(^limit)
+    |> preload(^preload)
+    |> Repo.all()
   end
 
   @doc """
-  Searches users by email.
+  Searches users by email, first name, or last name.
 
   ## Examples
 
       iex> search_users("adrian")
       [%User{}, %User{}]
+
+      iex> search_users("john", preload: [:memberships])
+      [%User{memberships: [...]}, %User{memberships: [...]}]
   """
-  def search_users(search_term) do
+  def search_users(search_term, opts \\ []) do
+    preload = Keyword.get(opts, :preload, [])
+
     query =
       from u in User,
-        where: ilike(u.email, ^"%#{search_term}%")
+        where:
+          ilike(u.email, ^"%#{search_term}%") or
+            ilike(u.first_name, ^"%#{search_term}%") or
+            ilike(u.last_name, ^"%#{search_term}%"),
+        preload: ^preload
 
     Repo.all(query)
   end
@@ -341,6 +361,33 @@ defmodule Tiki.Accounts do
   end
 
   ## Token helper
+
+  @doc """
+  Updates user account by an administrator.
+  This function should only be used by administrators.
+  """
+  def admin_update_user(user, attrs) do
+    user
+    |> Ecto.Changeset.cast(attrs, [
+      :email,
+      :first_name,
+      :last_name,
+      :kth_id,
+      :year_tag,
+      :confirmed_at,
+      :locale
+    ])
+    |> Ecto.Changeset.validate_required([:email])
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a user account.
+  This function should only be used by administrators.
+  """
+  def delete_user(user) do
+    Repo.delete(user)
+  end
 
   defp update_user_and_delete_all_tokens(changeset) do
     %{data: %User{} = user} = changeset
