@@ -306,3 +306,63 @@ And **never** do this:
 - **Never** use `<.form let={f} ...>` in the template, instead **always use `<.form for={@form} ...>`**, then drive all form references from the form assign as in `@form[:field]`. The UI should **always** be driven by a `to_form/2` assigned in the LiveView module that is derived from a changeset
   <!-- phoenix:liveview-end -->
   <!-- usage-rules-end -->
+
+## Tailwind guidelines
+
+- Tailwind is a utility-first CSS framework, so **always** use utility classes for styling, and **never** use classes like `bg-red-500` or `text-red-500`. Instead, use these colors defined for this project.
+
+```
+--color-background: #fff;
+--color-foreground: oklch(14.1% 0.004 285.8);
+--color-card: #fff;
+--color-card-foreground: oklch(14.1% 0.004 285.8);
+--color-popover: #fff;
+--color-popover-foreground: oklch(14.1% 0.004 285.8);
+--color-primary: oklch(21% 0.006 285.9);
+--color-primary-foreground: oklch(98.48% 0 0);
+--color-secondary: oklch(96.8% 0.001 286.4);
+--color-secondary-foreground: oklch(21% 0.006 285.9);
+--color-muted: oklch(96.8% 0.001 286.4);
+--color-muted-foreground: oklch(55.2% 0.014 285.9);
+--color-accent: oklch(96.8% 0.001 286.4);
+--color-accent-foreground: oklch(21% 0.006 285.9);
+--color-destructive: oklch(63.7% 0.208 25.3);
+--color-destructive-foreground: oklch(98.48% 0 0);
+--color-border: oklch(92% 0.004 286.3);
+--color-input: oklch(92% 0.004 286.3);
+--color-ring: oklch(21% 0.006 285.9);
+--color-radius: 0.3rem;
+--color-chart-1: oklch(52.9% 0.193 262.1);
+--color-chart-2: oklch(69.8% 0.134 165.5);
+--color-chart-3: oklch(72.3% 0.15 60.6);
+--color-chart-4: oklch(61.9% 0.204 312.7);
+--color-chart-5: oklch(61.2% 0.209 6.4);
+--color-success: oklch(0.527 0.154 150.069);
+--color-success-background: oklch(0.979 0.021 166.113);
+--color-error: oklch(0.577 0.245 27.325);
+--color-error-background: oklch(0.969 0.015 12.422);
+```
+
+For example, to style a muted text color, use `text-muted-foreground`. To style a background color, use `bg-background`.
+
+## Translation guidelines
+
+**All** hard coded strings that are user-facing should have translations in both English and Swedish. Translations are provided by the `Gettext` library. So, for example, if you have a `heex` template, use:
+
+```
+<p>{gettext("Hello")}</p>
+```
+
+and **never** use
+
+```
+<p>Hello</p>
+```
+
+Translations are provided in the `priv/gettext` directory. This can be generated using the command:
+
+```
+mix gettext.extract --merge --no-fuzzy
+```
+
+After extracting the translations, please fill in the missing translations in the `prib/gettext/sv/LC_MESSAGES` file.

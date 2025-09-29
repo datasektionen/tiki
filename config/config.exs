@@ -75,7 +75,8 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-# SaladUI use tails to properly merge Tailwind CSS classes
+# SaladUI use tails to properly merge Tailwind CSS classes, must be kept in
+# sync with app.css
 config :tails,
   color_classes: [
     "background",
@@ -101,7 +102,11 @@ config :tails,
     "chart-2",
     "chart-3",
     "chart-4",
-    "chart-5"
+    "chart-5",
+    "success",
+    "success-background",
+    "error",
+    "error-background"
   ]
 
 config :tiki, Oban,
