@@ -2,8 +2,6 @@ defmodule TikiWeb.AdminLive.Users.Index do
   use TikiWeb, :live_view
 
   alias Tiki.Accounts
-  alias Tiki.Accounts.User
-  alias Tiki.Localizer
 
   import TikiWeb.Component.Sheet
   import TikiWeb.Component.Badge
@@ -38,39 +36,37 @@ defmodule TikiWeb.AdminLive.Users.Index do
     </div>
 
     <div class="overflow-x-auto">
-    <.table
-      id="users"
-      rows={@streams.users}
-      row_click={fn {_id, user} -> JS.navigate(~p"/admin/users/#{user.id}/edit") end}
-    >
-      <:col :let={{_id, user}} label={gettext("Email")}>{user.email}</:col>
-      <:col :let={{_id, user}} label={gettext("Name")}>
-        <%= if user.first_name || user.last_name do %>
-          {[user.first_name, user.last_name] |> Enum.reject(&is_nil/1) |> Enum.join(" ")}
-        <% end %>
-      </:col>
-      <:col :let={{_id, user}} label={gettext("KTH ID")}>{user.kth_id}</:col>
-      <:col :let={{_id, user}} label={gettext("Status")}>
-        <.badge :if={user.confirmed_at} variant="success">
-          {gettext("Confirmed")}
-        </.badge>
-        <.badge :if={!user.confirmed_at} variant="warning">
-          {gettext("Unconfirmed")}
-        </.badge>
-      </:col>
-      <:col :let={{_id, user}} label={gettext("Created")}>
-        {Calendar.strftime(user.inserted_at, "%Y-%m-%d")}
-      </:col>
+      <.table
+        id="users"
+        rows={@streams.users}
+        row_click={fn {_id, user} -> JS.navigate(~p"/admin/users/#{user.id}/edit") end}
+      >
+        <:col :let={{_id, user}} label={gettext("Email")}>{user.email}</:col>
+        <:col :let={{_id, user}} label={gettext("Name")}>
+          <%= if user.first_name || user.last_name do %>
+            {[user.first_name, user.last_name] |> Enum.reject(&is_nil/1) |> Enum.join(" ")}
+          <% end %>
+        </:col>
+        <:col :let={{_id, user}} label={gettext("KTH ID")}>{user.kth_id}</:col>
+        <:col :let={{_id, user}} label={gettext("Status")}>
+          <.badge :if={user.confirmed_at} variant="success">
+            {gettext("Confirmed")}
+          </.badge>
+          <.badge :if={!user.confirmed_at} variant="warning">
+            {gettext("Unconfirmed")}
+          </.badge>
+        </:col>
+        <:col :let={{_id, user}} label={gettext("Created")}>
+          {Calendar.strftime(user.inserted_at, "%Y-%m-%d")}
+        </:col>
 
-      <:action :let={{_id, user}}>
-        <.link navigate={~p"/admin/users/#{user.id}/edit"}>
-          {gettext("Edit")}
-        </.link>
-      </:action>
-    </.table>
-
+        <:action :let={{_id, user}}>
+          <.link navigate={~p"/admin/users/#{user.id}/edit"}>
+            {gettext("Edit")}
+          </.link>
+        </:action>
+      </.table>
     </div>
-
 
     <.sheet :if={@live_action in [:edit, :new]} class="">
       <.sheet_content
@@ -127,7 +123,7 @@ defmodule TikiWeb.AdminLive.Users.Index do
   def apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, gettext("New User"))
-    |> assign(:user, %User{})
+    |> assign(:user, %Tiki.Accounts.User{})
   end
 
   def apply_action(socket, :edit, %{"id" => id}) do

@@ -2,7 +2,6 @@ defmodule TikiWeb.AdminLive.Users.FormComponent do
   use TikiWeb, :live_component
 
   alias Tiki.Accounts
-  alias Phoenix.LiveView.Socket
   require Logger
 
   @impl true
@@ -42,39 +41,37 @@ defmodule TikiWeb.AdminLive.Users.FormComponent do
           ]}
         />
         <.input
-          :if={@action == :edit}
           field={@form[:confirmed_at]}
-          type="datetime-local"
+          type="naive-datetime-utc"
           label={gettext("Confirmed At")}
           description={gettext("Leave empty for unconfirmed accounts")}
         />
 
         <div :if={is_list(@user.memberships)} class="mt-4">
           <div class="mt-4">
-            <label class="font-medium leading-none text-sm">
+            <label class="text-sm font-medium leading-none">
               {gettext("Teams")}
             </label>
             <div class="mt-1">
               <div :for={membership <- @user.memberships || []} class="mt-2 flex items-center gap-2">
                 <span class="text-sm">{membership.team.name}</span>
-                <span class="text-xs text-muted-foreground">({membership.role})</span>
+                <span class="text-muted-foreground text-xs">({membership.role})</span>
               </div>
               <div
                 :if={@user.memberships == [] || @user.memberships == nil}
-                class="mt-1 text-sm text-muted-foreground"
+                class="text-muted-foreground mt-1 text-sm"
               >
                 {gettext("No team memberships")}
               </div>
-              <p class="mt-1 text-xs text-muted-foreground">
+              <p class="text-muted-foreground mt-1 text-xs">
                 {gettext("Team memberships must be managed from the Teams section")}
               </p>
             </div>
           </div>
         </div>
 
-
         <div class="flex flex-row gap-4">
-        <div :if={@action == :edit} >
+          <div :if={@action == :edit}>
             <.button
               type="button"
               phx-click="delete_user"
@@ -86,35 +83,32 @@ defmodule TikiWeb.AdminLive.Users.FormComponent do
             >
               {gettext("Delete User")}
             </.button>
-        </div>
+          </div>
           <.button phx-disable-with={gettext("Saving...")}>
             {gettext("Save User")}
           </.button>
         </div>
       </.simple_form>
 
-      <div class="flex flex-col gap-2 mt-4">
-      <p class="font-medium leading-none text-sm">{gettext("Admin Tools")}</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <p class="text-sm font-medium leading-none">{gettext("Admin Tools")}</p>
 
-      <.form
-        :if={@user.id}
-        for={%{}}
-        id="assume-user-form"
-        action={~p"/users/hijack"}
-        method="post"
-      >
-        <.input name="user_id" value={@user.id} type="hidden" />
-        <.button phx-disable-with={gettext("Confirming...")} >
-          {gettext("Assume User Identity")}
-        </.button>
-        <p class="mt-2 text-xs text-muted-foreground">
-          {gettext(
-            "This will log you in as this user for debugging purposes."
-          )}
-        </p>
-      </.form>
+        <.form
+          :if={@user.id}
+          for={%{}}
+          id="assume-user-form"
+          action={~p"/users/hijack"}
+          method="post"
+        >
+          <.input name="user_id" value={@user.id} type="hidden" />
+          <.button phx-disable-with={gettext("Confirming...")}>
+            {gettext("Assume User Identity")}
+          </.button>
+          <p class="text-muted-foreground mt-2 text-xs">
+            {gettext("This will log you in as this user for debugging purposes.")}
+          </p>
+        </.form>
       </div>
-
     </div>
     """
   end
@@ -176,46 +170,7 @@ defmodule TikiWeb.AdminLive.Users.FormComponent do
     {:noreply, push_navigate(socket, to: ~p"/users/hijack?#{params}")}
   end
 
-  defp save_user(socket, :edit, user_params) do
-    # Convert the confirmed_at datetime string to NaiveDateTime if present
-    user_params = maybe_convert_confirmed_at(user_params)
-
-    case Accounts.admin_update_user(socket.assigns.user, user_params) do
-      {:ok, user} ->
-        # Reload the user with associations
-        user = Tiki.Repo.preload(user, memberships: :team)
-        notify_parent({:saved, user})
-
-        {:noreply,
-         socket
-         |> put_flash(:info, gettext("User updated successfully"))
-         |> push_navigate(to: ~p"/admin/users")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset))}
-    end
-  end
-
-  defp maybe_convert_confirmed_at(%{"confirmed_at" => ""} = params) do
-    # Handle empty string by setting confirmed_at to nil (unconfirmed account)
-    Map.put(params, "confirmed_at", nil)
-  end
-
-  defp maybe_convert_confirmed_at(%{"confirmed_at" => confirmed_at} = params)
-       when is_binary(confirmed_at) do
-    # Convert from string to NaiveDateTime
-    case NaiveDateTime.from_iso8601(confirmed_at) do
-      {:ok, dt} -> Map.put(params, "confirmed_at", dt)
-      _ -> params
-    end
-  end
-
-  defp maybe_convert_confirmed_at(params), do: params
-
   defp save_user(socket, :new, user_params) do
-    # Convert the confirmed_at datetime string to NaiveDateTime if present
-    user_params = maybe_convert_confirmed_at(user_params)
-
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         # Automatically confirm the user if confirmed_at is provided
@@ -243,13 +198,29 @@ defmodule TikiWeb.AdminLive.Users.FormComponent do
     end
   end
 
+  defp save_user(socket, :edit, user_params) do
+    case Accounts.admin_update_user(socket.assigns.user, user_params) do
+      {:ok, user} ->
+        # Reload the user with associations
+        user = Tiki.Repo.preload(user, memberships: :team)
+        notify_parent({:saved, user})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("User updated successfully"))
+         |> push_navigate(to: ~p"/admin/users")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :form, to_form(changeset))}
+    end
+  end
+
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 
   defp user_changeset(user, attrs \\ %{}) do
     changeset =
       case user.id do
         nil ->
-          # For new users
           Accounts.change_user_email(user, attrs)
 
         _ ->
