@@ -6,6 +6,8 @@ defmodule TikiWeb.AdminLive.Users.Index do
   import TikiWeb.Component.Sheet
   import TikiWeb.Component.Badge
 
+  @list_limit 50
+
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
@@ -91,7 +93,7 @@ defmodule TikiWeb.AdminLive.Users.Index do
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     with :ok <- Tiki.Policy.authorize(:tiki_admin, socket.assigns.current_user) do
-      users = Accounts.list_users()
+      users = Accounts.list_users(limit: @list_limit)
       search_form = to_form(%{"query" => ""})
 
       {:ok,
@@ -146,7 +148,7 @@ defmodule TikiWeb.AdminLive.Users.Index do
       if query && query != "" do
         Accounts.search_users(query)
       else
-        Accounts.list_users()
+        Accounts.list_users(limit: @list_limit)
       end
 
     {:noreply,

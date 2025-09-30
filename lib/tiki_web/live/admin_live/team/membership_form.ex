@@ -46,11 +46,8 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
     team = Tiki.Teams.get_team!(id)
 
     with :ok <- Tiki.Policy.authorize(:team_update, user, team) do
-      users = Tiki.Accounts.list_users()
-
       {:ok,
        socket
-       |> assign(:users, users)
        |> assign(:team, team)
        |> assign(:return_to, return_to(params["return_to"]))
        |> apply_action(socket.assigns.live_action, params)}
@@ -67,11 +64,8 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
     %{current_user: user, current_team: team} = socket.assigns
 
     with :ok <- Tiki.Policy.authorize(:team_update, user, team) do
-      users = Tiki.Accounts.list_users()
-
       {:ok,
        socket
-       |> assign(:users, users)
        |> assign(:team, team)
        |> assign(:return_to, return_to(params["return_to"]))
        |> apply_action(socket.assigns.live_action, params)}
