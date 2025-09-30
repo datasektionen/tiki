@@ -49,9 +49,9 @@ defmodule Tiki.Accounts do
     query =
       from u in User,
         where:
-          ilike(u.email, ^"%#{search_term}%") or
-            ilike(u.first_name, ^"%#{search_term}%") or
-            ilike(u.last_name, ^"%#{search_term}%"),
+          fragment("? <% ?", ^search_term, u.full_name) or
+            fragment("? <% ?", ^search_term, u.email) or
+            fragment("? <% ?", ^search_term, u.kth_id),
         preload: ^preload
 
     Repo.all(query)
@@ -360,8 +360,6 @@ defmodule Tiki.Accounts do
     end
   end
 
-  ## Token helper
-
   @doc """
   Updates user account by an administrator.
   This function should only be used by administrators.
@@ -388,6 +386,8 @@ defmodule Tiki.Accounts do
   def delete_user(user) do
     Repo.delete(user)
   end
+
+  ## Token helper
 
   defp update_user_and_delete_all_tokens(changeset) do
     %{data: %User{} = user} = changeset
