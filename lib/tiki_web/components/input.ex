@@ -39,7 +39,8 @@ defmodule TikiWeb.Component.Input do
 
   attr :type, :string,
     default: "text",
-    values: ~w(checkbox color date datetime-local email file month number password
+    values:
+      ~w(checkbox color date datetime-local naive-datetime-utc email file month number password
                range search select tel text textarea time url week hidden)
 
   attr :field, Phoenix.HTML.FormField,
@@ -137,6 +138,15 @@ defmodule TikiWeb.Component.Input do
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
+  end
+
+  # Display in UTC
+  def input(%{type: "naive-datetime-utc", value: %NaiveDateTime{} = datetime} = assigns) do
+    datetime = DateTime.from_naive!(datetime, "Europe/Stockholm")
+
+    assign(assigns, type: "datetime-local")
+    |> assign(:value, datetime)
+    |> input()
   end
 
   # All other inputs text, datetime-local, url, password, etc. are handled here...

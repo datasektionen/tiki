@@ -104,8 +104,12 @@ defmodule TikiWeb.AdminLive.Releases.Index do
 
   defp restrict_access(socket, action)
        when action in [:new, :edit] do
-    put_flash(socket, :error, gettext("You are not authorized to do that."))
-    |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/releases")
+    if Tiki.Policy.authorize?(:event_manage, socket.assigns.current_user, socket.assigns.event) do
+      socket
+    else
+      put_flash(socket, :error, gettext("You are not authorized to do that."))
+      |> redirect(to: ~p"/admin/events/#{socket.assigns.event.id}/releases")
+    end
   end
 
   defp restrict_access(socket, _action), do: socket

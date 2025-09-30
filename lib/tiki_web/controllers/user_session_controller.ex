@@ -12,6 +12,26 @@ defmodule TikiWeb.UserSessionController do
     create(conn, params, gettext("Welcome back!"))
   end
 
+  # admin override login
+  def hijack(conn, %{"user_id" => user_id}) do
+    user =
+      get_session(conn, :user_token)
+      |> Accounts.get_user_by_session_token()
+
+    with %Accounts.User{} = user <- user,
+         :ok <- Tiki.Policy.authorize(:tiki_admin, user),
+         %Accounts.User{} = hijack_user <- Accounts.get_user!(user_id) do
+      conn
+      |> put_flash(:info, gettext("You are now logged in as %{user}", user: hijack_user.email))
+      |> UserAuth.log_in_user(hijack_user)
+    else
+      _ ->
+        conn
+        |> put_flash(:error, gettext("You are not authorized to do this."))
+        |> redirect(to: ~p"/users/log_in")
+    end
+  end
+
   # magic link login
   defp create(conn, %{"user" => %{"token" => token} = user_params}, info) do
     case Accounts.login_user_by_magic_link(token) do
