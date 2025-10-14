@@ -15,7 +15,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
 
   @page_size 50
 
-  def mount(%{"id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, _session, socket) do
     event =
       Events.get_event!(event_id)
       |> Localizer.localize()

@@ -30,10 +30,10 @@ defmodule TikiWeb.AdminLive.Event.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
+  defp apply_action(socket, :edit, %{"event_id" => event_id}) do
     socket
     |> assign(:page_title, gettext("Edit event"))
-    |> assign(:event, Events.get_event!(id))
+    |> assign(:event, Events.get_event!(event_id))
   end
 
   defp apply_action(socket, :new, _params) do

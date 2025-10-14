@@ -98,7 +98,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, _session, socket) do
     event =
       Events.get_event!(event_id, preload_ticket_types: true)
       |> Localizer.localize()

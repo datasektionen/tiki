@@ -146,7 +146,7 @@ defmodule TikiWeb.AdminLive.Orders.Show do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id, "order_id" => order_id}, _session, socket) do
+  def mount(%{"event_id" => event_id, "order_id" => order_id}, _session, socket) do
     order = Orders.get_order!(order_id)
     event = Tiki.Events.get_event!(event_id)
 

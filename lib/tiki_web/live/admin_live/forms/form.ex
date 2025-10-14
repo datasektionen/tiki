@@ -169,7 +169,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id} = params, _session, socket) do
+  def mount(%{"event_id" => event_id} = params, _session, socket) do
     event =
       Tiki.Events.get_event!(event_id)
       |> Localizer.localize()

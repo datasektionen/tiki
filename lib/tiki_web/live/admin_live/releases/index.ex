@@ -70,7 +70,7 @@ defmodule TikiWeb.AdminLive.Releases.Index do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, _session, socket) do
     event = Events.get_event!(event_id, preload_ticket_types: true)
 
     with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do

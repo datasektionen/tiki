@@ -2,60 +2,70 @@ defmodule Tiki.Accounts.Scope do
   @moduledoc """
   Represents the authentication and authorization context for the current request.
 
-  The scope contains information about who the user is and what team context
-  they're operating in. It does NOT contain specific resources like events or
-  orders - those are stored in assigns.
-
-  ## Examples
-
-      # Create a scope for a user without a team
-      iex> Scope.for_user(user)
-      %Scope{user: user, team: nil}
-
-      # Create a scope for a user with a team
-      iex> Scope.for_user_and_team(user, team)
-      %Scope{user: user, team: team}
-
+  The scope contains information about who the user is, what team and event
+  context they're operating in
   """
 
   alias Tiki.Accounts.User
   alias Tiki.Teams.Team
+  alias Tiki.Events.Event
 
-  defstruct [:user, :team]
+  defstruct user: nil, team: nil, event: nil
 
-  @type t :: %__MODULE__{
-          user: User.t() | nil,
-          team: Team.t() | nil
-        }
+  @funs %{
+    user: &Tiki.Accounts.get_user!/1,
+    team: &Tiki.Teams.get_team!/1,
+    event: &Tiki.Events.get_event!/1
+  }
 
   @doc """
   Creates a scope for the given user.
 
   Returns nil if no user is given.
   """
-  @spec for_user(User.t()) :: t()
-  @spec for_user(nil) :: nil
   def for_user(%User{} = user) do
-    %__MODULE__{user: user, team: nil}
+    %__MODULE__{user: user}
   end
 
   def for_user(nil), do: nil
 
+  def put_team(%__MODULE__{} = scope, %Team{} = team) do
+    %{scope | team: team}
+  end
+
+  def put_team(%__MODULE__{} = scope, nil), do: scope
+  def put_team(nil, _), do: nil
+
+  def put_event(%__MODULE__{} = scope, %Event{} = event) do
+    %{scope | event: event}
+  end
+
+  def put_event(nil, _), do: nil
+
   @doc """
-  Creates a scope for the given user and team.
+  Helper to create a scope from a keyword list
 
-  Returns a scope with just the user if no team is given.
-  Returns nil if no user is given.
+  ## Examples
+
+    iex> Tiki.Accounts.Scope.for(user: 1, team: 1, event: "1aa6a96c-658b-41b0-a4db-ae8116bac3d9")
+    %Tiki.Accounts.Scope{
+      user: %Tiki.Accounts.User{
+        id: 1,
+        ...
+      },
+      team: %Tiki.Teams.Team{
+        id: 1,
+        ...
+      },
+      event: %Tiki.Events.Event{
+        id: "1aa6a96c-658b-41b0-a4db-ae8116bac3d9",
+        ...
+      }
+    }
   """
-  @spec for_user_and_team(User.t(), Team.t() | nil) :: t()
-  @spec for_user_and_team(nil, any()) :: nil
-  def for_user_and_team(%User{} = user, %Team{} = team) do
-    %__MODULE__{user: user, team: team}
+  def for(opts) when is_list(opts) do
+    Enum.reduce(opts, %__MODULE__{}, fn {name, value}, scope ->
+      Map.put(scope, name, apply(@funs[name], [value]))
+    end)
   end
-
-  def for_user_and_team(%User{} = user, nil) do
-    for_user(user)
-  end
-
-  def for_user_and_team(nil, _team), do: nil
 end

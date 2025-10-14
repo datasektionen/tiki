@@ -103,11 +103,27 @@ defmodule TikiWeb.UserAuth do
         team_id -> Teams.get_team(team_id)
       end
 
-    scope = Accounts.Scope.for_user_and_team(user, team)
+    scope =
+      Accounts.Scope.for_user(user)
+      |> Accounts.Scope.put_team(team)
 
     assign(conn, :current_user, user)
     |> assign(:current_team, team)
     |> assign(:current_scope, scope)
+  end
+
+  @doc """
+  Assign event to scope.
+  """
+  def assign_event_to_scope(conn, _opts) do
+    current_scope = conn.assigns.current_scope
+
+    if event_id = conn.params["event_id"] do
+      event = Tiki.Events.get_event!(event_id)
+      assign(conn, :current_scopoe, Tiki.Accounts.Scope.put_event(current_scope, event))
+    else
+      conn
+    end
   end
 
   @doc """
@@ -246,6 +262,28 @@ defmodule TikiWeb.UserAuth do
     end
   end
 
+  def on_mount(:assign_event_to_scope, %{"event_id" => event_id}, _session, socket) do
+    socket =
+      case socket.assigns.current_scope do
+        %{event: nil} = scope ->
+          event = Tiki.Events.get_event!(event_id)
+
+          Phoenix.Component.assign(
+            socket,
+            :current_scope,
+            Tiki.Accounts.Scope.put_event(scope, event)
+          )
+
+        _ ->
+          socket
+      end
+
+    {:cont, socket}
+  end
+
+  # No event id
+  def on_mount(:assign_event_to_scope, _, _session, socket), do: {:cont, socket}
+
   def on_mount(:redirect_if_user_is_authenticated, _params, session, socket) do
     socket = mount_current_user(session, socket)
 
@@ -274,10 +312,8 @@ defmodule TikiWeb.UserAuth do
         team
       end
     end)
-    |> Phoenix.Component.assign_new(:current_scope, fn ->
-      user = socket.assigns[:current_user]
-      team = socket.assigns[:current_team]
-      Accounts.Scope.for_user_and_team(user, team)
+    |> Phoenix.Component.assign_new(:current_scope, fn %{current_user: user, current_team: team} ->
+      Accounts.Scope.for_user(user) |> Accounts.Scope.put_team(team)
     end)
     |> Phoenix.Component.assign_new(:current_path, fn ->
       session["current_path"]

@@ -36,7 +36,7 @@ defmodule Tiki.TeamsFixtures do
       |> Tiki.Repo.insert!()
 
     # Now we can use the scoped function since user is an admin of the team
-    scope = Tiki.Accounts.Scope.for_user_and_team(user, team)
+    scope = Tiki.Accounts.Scope.for(user: user.id, team: team.id)
 
     # If creating a new membership (different user), use scoped function
     requested_user_id = attrs[:user_id]

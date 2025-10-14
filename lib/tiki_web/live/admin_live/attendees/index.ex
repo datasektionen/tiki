@@ -50,7 +50,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     """
   end
 
-  def mount(%{"id" => event_id}, _sesison, socket) do
+  def mount(%{"event_id" => event_id}, _sesison, socket) do
     event =
       Events.get_event!(event_id)
       |> Localizer.localize()
