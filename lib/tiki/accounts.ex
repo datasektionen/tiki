@@ -111,14 +111,15 @@ defmodule Tiki.Accounts do
 
   @doc """
   Either creates a new user, or returns an existing user with the same KTH ID.
+
+  Returns `{:ok, user}` if successful, or `{:error, changeset}` on failure.
   """
-  def upsert_user_with_userinfo(%{"kth_id" => id} = attrs) do
+  def upsert_user_with_userinfo(%{"kth_id" => id, "email" => email} = attrs)
+      when is_binary(email) do
     case Repo.get_by(User, kth_id: id) do
       nil ->
-        User.oidcc_changeset(
-          %User{confirmed_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)},
-          attrs
-        )
+        %User{confirmed_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)}
+        |> User.oidcc_changeset(attrs)
         |> Repo.insert()
 
       user ->
@@ -128,18 +129,24 @@ defmodule Tiki.Accounts do
 
   @doc """
   Links a user with a given KTH ID, if it not already taken.
+
+  Year tag is optional.
   """
-  def link_user_with_userinfo(user, %{"kth_id" => id, "year_tag" => year_tag}) do
+  def link_user_with_userinfo(user, %{"kth_id" => id} = attrs) do
     case Repo.get_by(User, kth_id: id) do
       nil ->
-        User.oidcc_changeset(
-          user,
-          %{"kth_id" => id, "year_tag" => year_tag}
-        )
+        # Include kth_id and year_tag if present
+        link_attrs = Map.take(attrs, ["kth_id", "year_tag"])
+
+        User.oidcc_changeset(user, link_attrs)
         |> Repo.update()
 
       found_user when found_user.id == user.id ->
-        {:ok, found_user}
+        # User already has this kth_id, update year_tag if provided
+        link_attrs = Map.take(attrs, ["kth_id", "year_tag"])
+
+        User.oidcc_changeset(found_user, link_attrs)
+        |> Repo.update()
 
       found_user when found_user.id != user.id ->
         {:error,

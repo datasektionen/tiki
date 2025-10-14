@@ -63,6 +63,7 @@ defmodule TikiWeb.OidccController do
       end)
 
     if get_session(conn, :link_account) && conn.assigns[:current_user] do
+      # User is logged in and wants to link their KTH account
       case Accounts.link_user_with_userinfo(conn.assigns.current_user, userinfo) do
         {:ok, _user} ->
           put_flash(conn, :info, gettext("Sucessfully linked KTH account."))
@@ -75,9 +76,26 @@ defmodule TikiWeb.OidccController do
           conn |> put_status(400) |> render(:error, reason: changeset)
       end
     else
+      # User is logging in via OIDC
       case Accounts.upsert_user_with_userinfo(userinfo) do
-        {:ok, user} -> UserAuth.log_in_user(conn, user)
-        {:error, changeset} -> conn |> put_status(400) |> render(:error, reason: changeset)
+        {:ok, user} ->
+          UserAuth.log_in_user(conn, user)
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          # Check if this is an email uniqueness error
+          if Keyword.has_key?(changeset.errors, :email) do
+            {message, _opts} = changeset.errors[:email]
+
+            conn
+            |> put_flash(
+              :error,
+              "Email #{message}. Sign in with your email address and link to your KTH account instead."
+            )
+            |> redirect(to: ~p"/users/log_in")
+          else
+            # Other validation errors
+            conn |> put_status(400) |> render(:error, reason: changeset)
+          end
       end
     end
   end

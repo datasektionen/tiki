@@ -63,4 +63,23 @@ defmodule Tiki.AccountsFixtures do
     Tiki.Repo.insert!(user_token)
     {encoded_token, user_token.token}
   end
+
+  @doc """
+  Creates a user via OIDC (with kth_id and confirmed).
+  """
+  def oidc_user_fixture(attrs \\ %{}) do
+    kth_id = Keyword.get(attrs, :kth_id, "kthid#{System.unique_integer([:positive])}")
+    email = Keyword.get(attrs, :email, "#{kth_id}@kth.se")
+
+    userinfo = %{
+      "kth_id" => kth_id,
+      "email" => email,
+      "first_name" => Keyword.get(attrs, :first_name, "Test"),
+      "last_name" => Keyword.get(attrs, :last_name, "User"),
+      "year_tag" => Keyword.get(attrs, :year_tag, "D-23")
+    }
+
+    {:ok, user} = Accounts.upsert_user_with_userinfo(userinfo)
+    user
+  end
 end

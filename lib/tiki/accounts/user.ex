@@ -24,6 +24,8 @@ defmodule Tiki.Accounts.User do
     user
     |> cast(attrs, [:kth_id, :year_tag, :email, :first_name, :last_name])
     |> validate_required([:kth_id, :email])
+    |> unsafe_validate_unique(:email, Tiki.Repo)
+    |> unique_constraint(:email)
     |> unique_constraint(:kth_id)
   end
 
