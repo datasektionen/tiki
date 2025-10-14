@@ -50,7 +50,7 @@ defmodule Tiki.EventsTest do
 
       ticket_types =
         Enum.flat_map(1..3, fn _ ->
-          batch = Tiki.TicketsFixtures.ticket_batch_fixture(%{event_id: event.id})
+          batch = Tiki.TicketsFixtures.ticket_batch_fixture(%{event: event})
 
           Enum.map(1..3, fn _ ->
             Tiki.TicketsFixtures.ticket_type_fixture(%{ticket_batch_id: batch.id})

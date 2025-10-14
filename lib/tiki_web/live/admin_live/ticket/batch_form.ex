@@ -102,9 +102,7 @@ defmodule TikiWeb.AdminLive.Ticket.BatchFormComponent do
   end
 
   defp save_batch(socket, :new_batch, batch_params) do
-    batch_params = Map.put(batch_params, "event_id", socket.assigns.event.id)
-
-    case Tickets.create_ticket_batch(batch_params) do
+    case Tickets.create_ticket_batch(socket.assigns.event.id, batch_params) do
       {:ok, _batch} ->
         {:noreply,
          socket

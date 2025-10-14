@@ -206,10 +206,10 @@ defmodule Tiki.OrdersTest do
 
     test "reserve_tickets/3 works with events with release and expire times" do
       ticket_type =
-        ticket_type_fixture(
+        ticket_type_fixture(%{
           release_time: DateTime.utc_now() |> DateTime.add(-60, :second),
           expire_time: DateTime.utc_now() |> DateTime.add(60, :second)
-        )
+        })
         |> Tiki.Repo.preload(ticket_batch: [event: []])
 
       to_purchase = Map.put(%{}, ticket_type.id, 2)
@@ -247,7 +247,7 @@ defmodule Tiki.OrdersTest do
 
     test "reserve_tickets/3 fails if reserving too many tickets of a single type" do
       ticket_type =
-        ticket_type_fixture(purchase_limit: 2) |> Tiki.Repo.preload(ticket_batch: [event: []])
+        ticket_type_fixture(%{purchase_limit: 2}) |> Tiki.Repo.preload(ticket_batch: [event: []])
 
       to_purchase = Map.put(%{}, ticket_type.id, 3)
 
@@ -259,10 +259,10 @@ defmodule Tiki.OrdersTest do
 
     test "reserve_tickets/3 fails if reserving too many tickets for an event" do
       event = Tiki.EventsFixtures.event_fixture(max_order_size: 2)
-      batch = ticket_batch_fixture(%{event_id: event.id})
+      batch = ticket_batch_fixture(%{event: event})
 
       ticket_type =
-        ticket_type_fixture(purchase_limit: 10, ticket_batch_id: batch.id)
+        ticket_type_fixture(%{purchase_limit: 10, ticket_batch_id: batch.id})
         |> Tiki.Repo.preload(ticket_batch: [event: []])
 
       to_purchase = Map.put(%{}, ticket_type.id, 3)
@@ -275,7 +275,7 @@ defmodule Tiki.OrdersTest do
 
     test "reserve_tickets/3 fails if reserving tickets that are not purchasable" do
       ticket_type =
-        ticket_type_fixture(purchasable: false) |> Tiki.Repo.preload(ticket_batch: [event: []])
+        ticket_type_fixture(%{purchasable: false}) |> Tiki.Repo.preload(ticket_batch: [event: []])
 
       to_purchase = Map.put(%{}, ticket_type.id, 3)
 
@@ -308,7 +308,7 @@ defmodule Tiki.OrdersTest do
 
     test "reserve_tickets/3 fails if reserving tickets that are not released yet" do
       ticket_type =
-        ticket_type_fixture(release_time: DateTime.utc_now() |> DateTime.add(60, :second))
+        ticket_type_fixture(%{release_time: DateTime.utc_now() |> DateTime.add(60, :second)})
         |> Tiki.Repo.preload(ticket_batch: [event: []])
 
       to_purchase = Map.put(%{}, ticket_type.id, 1)
@@ -321,7 +321,7 @@ defmodule Tiki.OrdersTest do
 
     test "reserve_tickets/3 fails if reserving tickets that have expired" do
       ticket_type =
-        ticket_type_fixture(expire_time: DateTime.utc_now() |> DateTime.add(-60, :second))
+        ticket_type_fixture(%{expire_time: DateTime.utc_now() |> DateTime.add(-60, :second)})
         |> Tiki.Repo.preload(ticket_batch: [event: []])
 
       to_purchase = Map.put(%{}, ticket_type.id, 1)

@@ -100,14 +100,14 @@ defmodule Tiki.TeamsTest do
       team = team_fixture()
       user = Tiki.AccountsFixtures.user_fixture()
 
-      valid_attrs = %{role: :admin, user_id: user.id, team_id: team.id}
+      valid_attrs = %{role: :admin, user_id: user.id}
 
-      assert {:ok, %Membership{} = membership} = Teams.create_membership(valid_attrs)
+      assert {:ok, %Membership{} = membership} = Teams.create_membership(team.id, valid_attrs)
       assert membership.role == :admin
     end
 
     test "create_membership/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Teams.create_membership(@invalid_attrs)
+      assert {:error, %Ecto.Changeset{}} = Teams.create_membership(0, @invalid_attrs)
     end
 
     test "update_membership/2 with valid data updates the membership" do

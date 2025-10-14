@@ -8,17 +8,16 @@ defmodule Tiki.TicketsFixtures do
   Generate a ticket_batch.
   """
   def ticket_batch_fixture(attrs \\ %{}) do
-    event = Tiki.EventsFixtures.event_fixture()
+    event = Map.get(attrs, :event, Tiki.EventsFixtures.event_fixture())
 
     {:ok, ticket_batch} =
       attrs
       |> Enum.into(%{
         max_size: 42,
         min_size: 42,
-        name: "some name",
-        event_id: event.id
+        name: "some name"
       })
-      |> Tiki.Tickets.create_ticket_batch()
+      |> then(&Tiki.Tickets.create_ticket_batch(event.id, &1))
 
     ticket_batch
   end
@@ -27,8 +26,10 @@ defmodule Tiki.TicketsFixtures do
   Generate a ticket_types.
   """
   def ticket_type_fixture(attrs \\ %{}) do
-    batch = ticket_batch_fixture()
+    batch_id = Map.get(attrs, :ticket_batch_id, ticket_batch_fixture().id)
     form = Tiki.FormsFixtures.form_fixture()
+
+    batch = Tiki.Tickets.get_ticket_batch!(batch_id)
 
     {:ok, ticket_types} =
       attrs
@@ -39,11 +40,11 @@ defmodule Tiki.TicketsFixtures do
         name_sv: "något namn",
         price: 42,
         purchasable: true,
-        ticket_batch_id: batch.id,
+        ticket_batch_id: batch_id,
         form_id: form.id,
         purchase_limit: nil
       })
-      |> Tiki.Tickets.create_ticket_type()
+      |> then(&Tiki.Tickets.create_ticket_type(batch.event_id, &1))
 
     ticket_types
   end

@@ -47,3 +47,7 @@ swish_certs/
 .lexical/
 .elixir_ls/
 .cloudflared/
+.expert/
+
+CLAUDE.md
+.claude

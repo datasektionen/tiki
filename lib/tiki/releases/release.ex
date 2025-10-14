@@ -20,8 +20,9 @@ defmodule Tiki.Releases.Release do
   @doc false
   def changeset(release, attrs) do
     release
-    |> cast(attrs, [:name, :name_sv, :starts_at, :ends_at, :event_id, :ticket_batch_id])
+    |> cast(attrs, [:name, :name_sv, :starts_at, :ends_at, :ticket_batch_id])
     |> validate_required([:name, :name_sv, :starts_at, :ends_at, :event_id, :ticket_batch_id])
+    |> foreign_key_constraint(:event_id)
   end
 end
 

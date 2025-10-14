@@ -142,7 +142,7 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
   end
 
   defp save_membership(socket, :new, membership_params) do
-    case Teams.create_membership(membership_params) do
+    case Teams.create_membership(socket.assigns.team.id, membership_params) do
       {:ok, membership} ->
         {:noreply,
          socket

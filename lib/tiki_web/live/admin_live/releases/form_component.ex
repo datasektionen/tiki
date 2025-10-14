@@ -177,9 +177,7 @@ defmodule TikiWeb.AdminLive.Releases.FormComponent do
   end
 
   defp save_release(socket, :new, release_params) do
-    release_params = Map.put(release_params, "event_id", socket.assigns.event.id)
-
-    case Releases.create_release(release_params) do
+    case Releases.create_release(socket.assigns.event.id, release_params) do
       {:ok, release} ->
         notify_parent({:saved, release})
 

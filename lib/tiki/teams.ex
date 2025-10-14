@@ -117,8 +117,8 @@ defmodule Tiki.Teams do
     result =
       Enum.reduce(member_ids, multi, fn id, multi ->
         Multi.insert(multi, "membership_#{id}", fn %{team: team} ->
-          Membership.changeset(%Membership{}, %{team_id: team.id, user_id: id, role: :admin})
-          |> Ecto.Changeset.foreign_key_constraint(:user_id)
+          %Membership{team_id: team.id}
+          |> Membership.changeset(%{user_id: id, role: :admin})
         end)
       end)
       |> Repo.transaction()
@@ -235,8 +235,8 @@ defmodule Tiki.Teams do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_membership(attrs \\ %{}) do
-    %Membership{}
+  def create_membership(team_id, attrs \\ %{}) when is_integer(team_id) do
+    %Membership{team_id: team_id}
     |> Membership.changeset(attrs)
     |> Repo.insert()
   end

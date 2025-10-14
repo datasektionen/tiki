@@ -22,16 +22,19 @@ defmodule Tiki.TicketsTest do
 
     test "create_ticket_batch/1 with valid data creates a ticket_batch" do
       event = Tiki.EventsFixtures.event_fixture()
-      valid_attrs = %{max_size: 42, min_size: 42, name: "some name", event_id: event.id}
+      valid_attrs = %{max_size: 42, min_size: 42, name: "some name"}
 
-      assert {:ok, %TicketBatch{} = ticket_batch} = Tickets.create_ticket_batch(valid_attrs)
+      assert {:ok, %TicketBatch{} = ticket_batch} =
+               Tickets.create_ticket_batch(event.id, valid_attrs)
+
       assert ticket_batch.max_size == 42
       assert ticket_batch.min_size == 42
       assert ticket_batch.name == "some name"
     end
 
     test "create_ticket_batch/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket_batch(@invalid_attrs)
+      assert {:error, %Ecto.Changeset{}} =
+               Tickets.create_ticket_batch(Tiki.EventsFixtures.event_fixture().id, @invalid_attrs)
     end
 
     test "update_ticket_batch/2 with valid data updates the ticket_batch" do
@@ -113,7 +116,9 @@ defmodule Tiki.TicketsTest do
         form_id: form.id
       }
 
-      assert {:ok, %TicketType{} = ticket_types} = Tickets.create_ticket_type(valid_attrs)
+      assert {:ok, %TicketType{} = ticket_types} =
+               Tickets.create_ticket_type(batch.event_id, valid_attrs)
+
       assert ticket_types.description == "some description"
       assert ticket_types.expire_time == ~U[2023-03-25 18:01:00Z]
       assert ticket_types.name == "some name"
@@ -125,7 +130,7 @@ defmodule Tiki.TicketsTest do
     end
 
     test "create_ticket_type/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket_type(@invalid_attrs)
+      assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket_type("", @invalid_attrs)
     end
 
     test "update_ticket_type/2 with valid data updates the ticket_types" do
@@ -145,7 +150,7 @@ defmodule Tiki.TicketsTest do
       }
 
       assert {:ok, %TicketType{} = ticket_types} =
-               Tickets.update_ticket_type(ticket_types, update_attrs)
+               Tickets.update_ticket_type(batch.event_id, ticket_types, update_attrs)
 
       assert ticket_types.description == "some updated description"
       assert ticket_types.expire_time == ~U[2023-03-26 18:01:00Z]
@@ -158,12 +163,16 @@ defmodule Tiki.TicketsTest do
     end
 
     test "update_ticket_type/2 with invalid data returns error changeset" do
-      ticket_types = ticket_type_fixture() |> Repo.preload(:ticket_batch)
+      ticket_type = ticket_type_fixture() |> Repo.preload(:ticket_batch)
 
       assert {:error, %Ecto.Changeset{}} =
-               Tickets.update_ticket_type(ticket_types, @invalid_attrs)
+               Tickets.update_ticket_type(
+                 ticket_type.ticket_batch.event_id,
+                 ticket_type,
+                 @invalid_attrs
+               )
 
-      assert ticket_types == Tickets.get_ticket_type!(ticket_types.id)
+      assert ticket_type == Tickets.get_ticket_type!(ticket_type.id)
     end
 
     test "delete_ticket_type/1 deletes the ticket_types" do

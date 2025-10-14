@@ -54,7 +54,7 @@ defmodule Tiki.EventsFixtures do
         parent_batch_id: regular.id
       })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(event.id, %{
       ticket_batch_id: external.id,
       name: "Styrelser",
       name_sv: "Styrelser",
@@ -63,7 +63,7 @@ defmodule Tiki.EventsFixtures do
       price: 600
     })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(event.id, %{
       ticket_batch_id: external.id,
       name: "Inbjudna",
       name_sv: "Inbjudna",
@@ -72,7 +72,7 @@ defmodule Tiki.EventsFixtures do
       price: 600
     })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(event.id, %{
       ticket_batch_id: students.id,
       name: "Studentbiljett",
       name_sv: "Studentbiljett",
@@ -81,7 +81,7 @@ defmodule Tiki.EventsFixtures do
       price: 400
     })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(event.id, %{
       ticket_batch_id: alumns.id,
       name: "Alumnbiljett",
       name_sv: "Alumnbiljett",

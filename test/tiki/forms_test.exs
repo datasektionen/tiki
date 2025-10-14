@@ -13,10 +13,9 @@ defmodule Tiki.FormsTest do
       event = Tiki.EventsFixtures.event_fixture()
 
       assert {:ok, %Tiki.Forms.Form{}} =
-               Tiki.Forms.create_form(%{
+               Tiki.Forms.create_form(event.id, %{
                  description: "some description",
-                 name: "some name",
-                 event_id: event.id
+                 name: "some name"
                })
     end
 
@@ -26,7 +25,6 @@ defmodule Tiki.FormsTest do
       attrs = %{
         description: "some description",
         name: "some name",
-        event_id: event.id,
         questions: [
           %{
             name: "Quesiton name",
@@ -37,11 +35,12 @@ defmodule Tiki.FormsTest do
       }
 
       assert {:ok, %Tiki.Forms.Form{questions: [%Tiki.Forms.Question{type: :text}]}} =
-               Tiki.Forms.create_form(attrs)
+               Tiki.Forms.create_form(event.id, attrs)
     end
 
     test "create_form/1 with invalid data returns an invalid changeset" do
-      assert {:error, %Ecto.Changeset{valid?: false}} = Tiki.Forms.create_form()
+      event = Tiki.EventsFixtures.event_fixture()
+      assert {:error, %Ecto.Changeset{valid?: false}} = Tiki.Forms.create_form(event.id, %{})
     end
 
     test "create_form/1 with different number of options in English and Swedish returns an invalid changeset" do
@@ -50,7 +49,6 @@ defmodule Tiki.FormsTest do
       attrs = %{
         description: "some description",
         name: "some name",
-        event_id: event.id,
         questions: [
           %{
             name: "Quesiton name",
@@ -63,7 +61,7 @@ defmodule Tiki.FormsTest do
       }
 
       assert {:error, %Ecto.Changeset{valid?: false}} =
-               Tiki.Forms.create_form(attrs)
+               Tiki.Forms.create_form(event.id, attrs)
     end
 
     test "update_form/2 with valid data updates the form" do

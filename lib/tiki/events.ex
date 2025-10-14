@@ -162,12 +162,11 @@ defmodule Tiki.Events do
       |> Multi.run(
         :default_form,
         fn _repo, %{event: event} ->
-          Tiki.Forms.create_form(%{
+          Tiki.Forms.create_form(event.id, %{
             description: "We need some information to organize our event",
             description_sv: "Vi behöver några information för att organisera vårt evenemang",
             name: "Default form",
             name_sv: "Standardformulär",
-            event_id: event.id,
             questions: [
               %{
                 name: "Name",

@@ -18,8 +18,9 @@ defmodule Tiki.Forms.Form do
   @doc false
   def changeset(form, attrs) do
     form
-    |> cast(attrs, [:name, :description, :description_sv, :event_id])
+    |> cast(attrs, [:name, :description, :description_sv])
     |> validate_required([:name, :description, :event_id])
+    |> foreign_key_constraint(:event_id)
     |> cast_assoc(:questions, sort_param: :questions_sort, drop_param: :questions_drop)
   end
 end

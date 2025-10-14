@@ -52,8 +52,8 @@ defmodule Tiki.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_ticket_batch(attrs \\ %{}) do
-    %TicketBatch{}
+  def create_ticket_batch(event_id, attrs \\ %{}) when is_binary(event_id) do
+    %TicketBatch{event_id: event_id}
     |> TicketBatch.changeset(attrs)
     |> Repo.insert()
   end
@@ -163,17 +163,18 @@ defmodule Tiki.Tickets do
 
   ## Examples
 
-      iex> create_ticket_type(%{field: value})
+      iex> create_ticket_type(event_id, %{field: value})
       {:ok, %TicketType{}}
 
-      iex> create_ticket_type(%{field: bad_value})
+      iex> create_ticket_type(event_id, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_ticket_type(attrs \\ %{}) do
+  def create_ticket_type(event_id, attrs \\ %{}) when is_binary(event_id) do
     with {:ok, ticket_type} <-
            %TicketType{}
            |> TicketType.changeset(attrs)
+           |> validate_ticket_type_belongs_to_event(event_id)
            |> Repo.insert(returning: [:id]) do
       EventSchedulerWorker.schedule_ticket_job(ticket_type)
 
@@ -186,17 +187,18 @@ defmodule Tiki.Tickets do
 
   ## Examples
 
-      iex> update_ticket_type(ticket_types, %{field: new_value})
+      iex> update_ticket_type(event_id, ticket_types, %{field: new_value})
       {:ok, %TicketType{}}
 
-      iex> update_ticket_type(ticket_types, %{field: bad_value})
+      iex> update_ticket_type(event_id, ticket_types, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_ticket_type(%TicketType{} = ticket_type, attrs) do
+  def update_ticket_type(event_id, %TicketType{} = ticket_type, attrs) when is_binary(event_id) do
     with {:ok, updated_ticket_type} <-
            ticket_type
            |> TicketType.changeset(attrs)
+           |> validate_ticket_type_belongs_to_event(event_id)
            |> Repo.update() do
       if timing_changed?(ticket_type, updated_ticket_type) do
         EventSchedulerWorker.schedule_ticket_job(updated_ticket_type)
@@ -204,6 +206,22 @@ defmodule Tiki.Tickets do
 
       broadcast_updated(updated_ticket_type)
     end
+  end
+
+  defp validate_ticket_type_belongs_to_event(changeset, event_id) do
+    Ecto.Changeset.validate_change(changeset, :ticket_batch_id, fn :ticket_batch_id,
+                                                                   ticket_batch_id ->
+      # Query to check if the ticket_batch belongs to the given event
+      query =
+        from tb in Tiki.Tickets.TicketBatch,
+          where: tb.id == ^ticket_batch_id and tb.event_id == ^event_id,
+          select: count(tb.id)
+
+      case Tiki.Repo.one(query) do
+        1 -> []
+        _ -> [ticket_batch_id: "does not belong to this event"]
+      end
+    end)
   end
 
   @doc """
