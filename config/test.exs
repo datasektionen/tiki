@@ -6,6 +6,7 @@ config :bcrypt_elixir, :log_rounds, 1
 config :tiki,
   stripe_module: Tiki.Support.StripeMock,
   swish_module: Tiki.Support.SwishMock,
+  permission_service_module: Tiki.Support.PermissionServiceMock,
   metrics_port: 9002
 
 # Configure your database

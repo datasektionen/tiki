@@ -129,12 +129,22 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
   end
 
   defp save_membership(socket, :edit, membership_params) do
-    case Teams.update_membership(socket.assigns.membership, membership_params) do
+    case Teams.update_membership(
+           socket.assigns.current_scope,
+           socket.assigns.membership,
+           membership_params
+         ) do
       {:ok, membership} ->
         {:noreply,
          socket
          |> put_flash(:info, gettext("Membership updated successfully"))
          |> push_navigate(to: return_path(socket.assigns.return_to, membership.team_id))}
+
+      {:error, :unauthorized} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> push_navigate(to: ~p"/admin/team/members")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -142,12 +152,22 @@ defmodule TikiWeb.AdminLive.Team.MembershipForm do
   end
 
   defp save_membership(socket, :new, membership_params) do
-    case Teams.create_membership(socket.assigns.team.id, membership_params) do
+    case Teams.create_membership(
+           socket.assigns.current_scope,
+           socket.assigns.team.id,
+           membership_params
+         ) do
       {:ok, membership} ->
         {:noreply,
          socket
          |> put_flash(:info, gettext("Membership created successfully"))
          |> push_navigate(to: return_path(socket.assigns.return_to, membership.team_id))}
+
+      {:error, :unauthorized} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> push_navigate(to: ~p"/admin/team/members")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

@@ -13,6 +13,7 @@ config :tiki,
   ecto_repos: [Tiki.Repo],
   stripe_module: Stripe,
   swish_module: Swish,
+  permission_service_module: Tiki.Hive,
   metrics_port: 9001
 
 config :tiki, Tiki.Repo,

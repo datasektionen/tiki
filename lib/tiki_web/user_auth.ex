@@ -103,8 +103,11 @@ defmodule TikiWeb.UserAuth do
         team_id -> Teams.get_team(team_id)
       end
 
+    scope = Accounts.Scope.for_user_and_team(user, team)
+
     assign(conn, :current_user, user)
     |> assign(:current_team, team)
+    |> assign(:current_scope, scope)
   end
 
   @doc """
@@ -270,6 +273,11 @@ defmodule TikiWeb.UserAuth do
            %Tiki.Teams.Team{} = team <- Teams.get_team(team_id) do
         team
       end
+    end)
+    |> Phoenix.Component.assign_new(:current_scope, fn ->
+      user = socket.assigns[:current_user]
+      team = socket.assigns[:current_team]
+      Accounts.Scope.for_user_and_team(user, team)
     end)
     |> Phoenix.Component.assign_new(:current_path, fn ->
       session["current_path"]
