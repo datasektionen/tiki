@@ -75,5 +75,4 @@ defmodule Tiki.OidccTestHelpers do
       Map.put(acc, to_string(key), value)
     end)
   end
-
 end

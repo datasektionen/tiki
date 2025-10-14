@@ -3,6 +3,7 @@ defmodule TikiWeb.OidccController do
 
   alias TikiWeb.UserAuth
   alias Tiki.Accounts
+  require Logger
 
   @key_replacements %{
     "sub" => "kth_id",
@@ -72,8 +73,15 @@ defmodule TikiWeb.OidccController do
         {:error, error} when is_binary(error) ->
           conn |> put_flash(:error, error) |> redirect(to: ~p"/account/settings")
 
-        {:error, changeset} ->
-          conn |> put_status(400) |> render(:error, reason: changeset)
+        {:error, %Ecto.Changeset{} = changeset} ->
+          Logger.error("Account linking failed: #{inspect(changeset.errors)}")
+
+          conn
+          |> put_flash(
+            :error,
+            gettext("Unable to link your KTH account. Please try again or contact support.")
+          )
+          |> redirect(to: ~p"/account/settings")
       end
     else
       # User is logging in via OIDC
@@ -93,8 +101,17 @@ defmodule TikiWeb.OidccController do
             )
             |> redirect(to: ~p"/users/log_in")
           else
-            # Other validation errors
-            conn |> put_status(400) |> render(:error, reason: changeset)
+            # Other validation errors (e.g., invalid data from OIDC provider)
+            Logger.error("OIDC user creation failed: #{inspect(changeset.errors)}")
+
+            conn
+            |> put_flash(
+              :error,
+              gettext(
+                "Unable to create your account. Please try again or contact support if the problem persists."
+              )
+            )
+            |> redirect(to: ~p"/users/log_in")
           end
       end
     end
@@ -104,7 +121,18 @@ defmodule TikiWeb.OidccController do
         %Plug.Conn{private: %{Oidcc.Plug.AuthorizationCallback => {:error, reason}}} = conn,
         _params
       ) do
-    conn |> put_status(400) |> render(:error, reason: reason)
+    # Log the error for debugging but don't expose details to user
+    Logger.error("OIDC authentication failed: #{inspect(reason)}")
+
+    # Redirect to login with friendly error message instead of rendering error page
+    conn
+    |> put_flash(
+      :error,
+      gettext(
+        "We encountered a problem signing you in with KTH. Please try again or contact us if the problem persists."
+      )
+    )
+    |> redirect(to: ~p"/users/log_in")
   end
 
   @doc false

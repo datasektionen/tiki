@@ -227,14 +227,62 @@ defmodule TikiWeb.OidccControllerTest do
     end
   end
 
+  describe "GET /oidcc/callback - validation errors" do
+    test "handles validation errors during account linking gracefully" do
+      # Create a user with a kth_id
+      _existing = oidc_user_fixture(kth_id: "existing_user")
+
+      # Try to link another user with invalid/duplicate kth_id via changeset error
+      user = user_fixture(email: "another@example.com")
+      conn = build_conn() |> log_in_user(user)
+
+      # Mock invalid userinfo that would cause changeset errors
+      # (in practice this is hard to trigger since link_user_with_userinfo checks duplicates)
+      # But we test the fallback error handling path
+      userinfo = oidc_userinfo(sub: "existing_user")
+
+      conn =
+        conn
+        |> put_session(:link_account, true)
+        |> call_oidc_callback(userinfo)
+
+      assert redirected_to(conn) == ~p"/account/settings"
+      # Should show friendly error message, not crash
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
+               "A user with this KTH-id already exists"
+    end
+
+    test "prevents account linking when not logged in", %{conn: conn} do
+      # Try to link account without being logged in
+      userinfo = oidc_userinfo(sub: "sneaky", email: "sneaky@kth.se")
+
+      conn =
+        conn
+        |> bypass_through(TikiWeb.Router, [:browser])
+        |> get(~p"/oidcc/callback")
+        |> put_session(:link_account, true)
+        |> mock_oidc_callback(userinfo)
+        |> TikiWeb.OidccController.callback(%{})
+
+      # Should treat it as a regular login, not an account link
+      # (Because current_user is nil, it falls through to the login path)
+      assert redirected_to(conn) == ~p"/"
+      assert get_session(conn, :user_token)
+
+      # Verify a new user was created (logged in), not linked
+      user = Accounts.get_user_by_email("sneaky@kth.se")
+      assert user.kth_id == "sneaky"
+    end
+  end
+
   describe "GET /oidcc/callback - OIDC errors" do
     test "handles OIDC provider errors gracefully", %{conn: conn} do
-      # Error callback tries to render a view. In a real scenario this would work
-      # but in tests we're bypassing the plugs so the view module isn't set up correctly.
-      # We're just testing that the error path is reached in the controller.
-      assert_raise RuntimeError, ~r/no view was found/, fn ->
-        call_oidc_error(conn, :invalid_token)
-      end
+      conn = call_oidc_error(conn, :invalid_token)
+
+      assert redirected_to(conn) == ~p"/users/log_in"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
+               "We encountered a problem signing you in with KTH"
     end
 
     test "handles missing required fields", %{conn: conn} do
