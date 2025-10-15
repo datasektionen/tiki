@@ -7,14 +7,17 @@ defmodule TikiWeb.Component.Sidebar do
   import TikiWeb.Component.Breadcrumb
 
   alias Tiki.Policy
-  alias Tiki.Events.Event
 
   attr :mobile, :boolean, default: false
 
   def sidebar(%{current_scope: %{team: nil}} = assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} current_team={@current_scope.team} current_user={@current_scope.user} />
+      <.sidebar_header
+        mobile={@mobile}
+        current_team={@current_scope.team}
+        current_user={@current_scope.user}
+      />
 
       <div :if={Policy.authorize?(:tiki_admin, @current_scope.user)} class="flex w-full flex-col py-4">
         <.admin_items active_tab={@active_tab} />
@@ -28,7 +31,11 @@ defmodule TikiWeb.Component.Sidebar do
   def sidebar(%{current_scope: %{event: nil}} = assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} current_team={@current_scope.team} current_user={@current_scope.user} />
+      <.sidebar_header
+        mobile={@mobile}
+        current_team={@current_scope.team}
+        current_user={@current_scope.user}
+      />
       <div class="flex w-full flex-col py-4">
         <.all_event_items active_tab={@active_tab} />
       </div>
@@ -44,7 +51,11 @@ defmodule TikiWeb.Component.Sidebar do
   def sidebar(assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} current_team={@current_scope.team} current_user={@current_scope.user} />
+      <.sidebar_header
+        mobile={@mobile}
+        current_team={@current_scope.team}
+        current_user={@current_scope.user}
+      />
       <div class="flex w-full flex-col py-4">
         <.event_items active_tab={@active_tab} event={@current_scope.event} />
       </div>

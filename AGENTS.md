@@ -379,6 +379,7 @@ The application uses a `Tiki.Accounts.Scope` struct to represent the current aut
 %Tiki.Accounts.Scope{
   user: %User{},  # The authenticated user
   team: %Team{}   # The currently selected team (can be nil)
+  event: %Event{} # The currently selected event (can be nil)
 }
 ```
 
@@ -387,8 +388,6 @@ The application uses a `Tiki.Accounts.Scope` struct to represent the current aut
 - `@current_scope` - The scope struct (preferred for new code)
 - `@current_user` - The authenticated user (legacy, still supported)
 - `@current_team` - The currently selected team (legacy, still supported)
-
-**Scope is for identity/context only**. Do NOT add specific resources like events or orders to the scope. Use socket assigns for those.
 
 ### Authorization Layers (Defense in Depth)
 

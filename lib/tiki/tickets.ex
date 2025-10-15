@@ -10,6 +10,10 @@ defmodule Tiki.Tickets do
   alias Tiki.Tickets.TreeBuilder
   alias Tiki.Tickets.TicketBatch
   alias Tiki.Workers.EventSchedulerWorker
+  alias Tiki.Accounts.Scope
+  alias Tiki.Events.Event
+
+  alias Tiki.Policy
 
   @doc """
   Returns the list of ticket_batch.
@@ -52,8 +56,8 @@ defmodule Tiki.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_ticket_batch(event_id, attrs \\ %{}) when is_binary(event_id) do
-    %TicketBatch{event_id: event_id}
+  def create_ticket_batch(%Scope{event: %Event{} = event}, attrs \\ %{}) do
+    %TicketBatch{event_id: event.id}
     |> TicketBatch.changeset(attrs)
     |> Repo.insert()
   end
@@ -70,7 +74,8 @@ defmodule Tiki.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_ticket_batch(%TicketBatch{} = ticket_batch, attrs) do
+  def update_ticket_batch(%Scope{event: event}, %TicketBatch{} = ticket_batch, attrs)
+      when event.id == ticket_batch.event_id do
     case ticket_batch
          |> TicketBatch.changeset(attrs)
          |> Repo.update() do
@@ -163,18 +168,22 @@ defmodule Tiki.Tickets do
 
   ## Examples
 
-      iex> create_ticket_type(event_id, %{field: value})
+      iex> create_ticket_type(scope, event_id, %{field: value})
       {:ok, %TicketType{}}
 
-      iex> create_ticket_type(event_id, %{field: bad_value})
+      iex> create_ticket_type(scope, event_id, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
+      iex> create_ticket_type(bad_scope, event_id, %{field: bad_value})
+      {:error, :unauthorized}
+
   """
-  def create_ticket_type(event_id, attrs \\ %{}) when is_binary(event_id) do
-    with {:ok, ticket_type} <-
+  def create_ticket_type(%Scope{event: %Event{} = event} = scope, attrs \\ %{}) do
+    with :ok <- Policy.authorize(:event_manage, scope.user, event),
+         {:ok, ticket_type} <-
            %TicketType{}
            |> TicketType.changeset(attrs)
-           |> validate_ticket_type_belongs_to_event(event_id)
+           |> validate_ticket_type_belongs_to_event(event.id)
            |> Repo.insert(returning: [:id]) do
       EventSchedulerWorker.schedule_ticket_job(ticket_type)
 
@@ -194,11 +203,11 @@ defmodule Tiki.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_ticket_type(event_id, %TicketType{} = ticket_type, attrs) when is_binary(event_id) do
+  def update_ticket_type(%Scope{event: %Event{} = event}, %TicketType{} = ticket_type, attrs) do
     with {:ok, updated_ticket_type} <-
            ticket_type
            |> TicketType.changeset(attrs)
-           |> validate_ticket_type_belongs_to_event(event_id)
+           |> validate_ticket_type_belongs_to_event(event.id)
            |> Repo.update() do
       if timing_changed?(ticket_type, updated_ticket_type) do
         EventSchedulerWorker.schedule_ticket_job(updated_ticket_type)

@@ -37,6 +37,16 @@ defmodule Tiki.AccountsFixtures do
     user
   end
 
+  def admin_user_fixture(attrs \\ %{}) do
+    user_fixture(attrs)
+    |> grant_permission("admin")
+  end
+
+  def grant_permission(%Accounts.User{} = user, permission) do
+    :ok = Tiki.Support.PermissionServiceMock.grant_permission(user, permission)
+    user
+  end
+
   def extract_user_token(fun) do
     fun.(&"[TOKEN]#{&1}[TOKEN]")
 

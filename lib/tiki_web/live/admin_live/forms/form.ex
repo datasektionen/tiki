@@ -422,7 +422,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   end
 
   defp save_form(socket, :new, form_params) do
-    case Forms.create_form(socket.assigns.event.id, form_params) do
+    case Forms.create_form(socket.assigns.current_scope, form_params) do
       {:ok, form} ->
         {:noreply,
          socket

@@ -221,7 +221,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
 
   defp save_ticket_type(socket, :edit_ticket_type, ticket_type_params) do
     case Tickets.update_ticket_type(
-           socket.assigns.event.id,
+           socket.assigns.current_scope,
            socket.assigns.ticket_type,
            ticket_type_params
          ) do
@@ -237,7 +237,7 @@ defmodule TikiWeb.AdminLive.Ticket.TicketTypeFormComponent do
   end
 
   defp save_ticket_type(socket, :new_ticket_type, ticket_type_params) do
-    case Tickets.create_ticket_type(socket.assigns.event.id, ticket_type_params) do
+    case Tickets.create_ticket_type(socket.assigns.current_scope, ticket_type_params) do
       {:ok, _ticket_type} ->
         {:noreply,
          socket
