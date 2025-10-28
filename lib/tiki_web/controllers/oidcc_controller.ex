@@ -97,7 +97,10 @@ defmodule TikiWeb.OidccController do
             conn
             |> put_flash(
               :error,
-              "Email #{message}. Sign in with your email address and link to your KTH account instead."
+              gettext(
+                "Email %{error}. Sign in with your email address and link to your KTH account instead.",
+                error: message
+              )
             )
             |> redirect(to: ~p"/users/log_in")
           else

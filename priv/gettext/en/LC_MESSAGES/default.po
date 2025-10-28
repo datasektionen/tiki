@@ -51,32 +51,32 @@ msgstr ""
 msgid "close"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:159
+#: lib/tiki_web/components/sidebar.ex:164
 #: lib/tiki_web/live/admin_live/event/index.ex:65
 #, elixir-autogen, elixir-format
 msgid "All events"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:87
+#: lib/tiki_web/components/sidebar.ex:92
 #: lib/tiki_web/live/admin_live/attendees/index.ex:83
 #, elixir-autogen, elixir-format
 msgid "Attendees"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:74
-#: lib/tiki_web/components/sidebar.ex:157
+#: lib/tiki_web/components/sidebar.ex:79
+#: lib/tiki_web/components/sidebar.ex:162
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:170
 #: lib/tiki_web/live/order_live/show.ex:192
 #, elixir-autogen, elixir-format
 msgid "Event"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:93
+#: lib/tiki_web/components/sidebar.ex:98
 #, elixir-autogen, elixir-format
 msgid "Live status"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:161
+#: lib/tiki_web/components/sidebar.ex:166
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:132
 #: lib/tiki_web/live/admin_live/event/edit.ex:49
 #: lib/tiki_web/live/admin_live/event/index.ex:41
@@ -85,28 +85,28 @@ msgstr ""
 msgid "New event"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:77
+#: lib/tiki_web/components/sidebar.ex:82
 #, elixir-autogen, elixir-format
 msgid "Overview"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:177
+#: lib/tiki_web/components/sidebar.ex:182
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:84
+#: lib/tiki_web/components/sidebar.ex:89
 #, elixir-autogen, elixir-format
 msgid "Registrations"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:169
-#: lib/tiki_web/components/sidebar.ex:349
+#: lib/tiki_web/components/sidebar.ex:174
+#: lib/tiki_web/components/sidebar.ex:354
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:114
+#: lib/tiki_web/components/sidebar.ex:119
 #: lib/tiki_web/live/admin_live/attendees/show.ex:124
 #: lib/tiki_web/live/admin_live/orders/show.ex:18
 #: lib/tiki_web/live/admin_live/ticket/index.ex:17
@@ -119,7 +119,7 @@ msgid "Tickets"
 msgstr ""
 
 #: lib/tiki_web/components/layouts/nav.html.heex:120
-#: lib/tiki_web/components/sidebar.ex:357
+#: lib/tiki_web/components/sidebar.ex:362
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr ""
@@ -210,7 +210,7 @@ msgstr ""
 msgid "Use this form to manage events"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:150
+#: lib/tiki_web/components/sidebar.ex:155
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:35
 #, elixir-autogen
 msgid "Dashboard"
@@ -237,7 +237,7 @@ msgstr ""
 msgid "Save event"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:118
+#: lib/tiki_web/components/sidebar.ex:123
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Ticket types"
 msgstr ""
@@ -294,7 +294,7 @@ msgid "Saving..."
 msgstr ""
 
 #: lib/tiki_web/live/admin_live/event/edit.ex:77
-#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:114
+#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:118
 #, elixir-autogen, elixir-format
 msgid "Something went wrong"
 msgstr ""
@@ -315,53 +315,53 @@ msgstr ""
 msgid "Sort by date"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:172
+#: lib/tiki_web/components/sidebar.ex:177
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:266
+#: lib/tiki_web/components/sidebar.ex:271
 #, elixir-autogen, elixir-format
 msgid "Create or join one"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:266
+#: lib/tiki_web/components/sidebar.ex:271
 #, elixir-autogen, elixir-format
 msgid "No team"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:188
+#: lib/tiki_web/components/sidebar.ex:193
 #: lib/tiki_web/live/admin_live/dashboard/team.ex:41
 #: lib/tiki_web/live/admin_live/users/form_component.ex:53
 #, elixir-autogen, elixir-format
 msgid "Teams"
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:211
-#: lib/tiki_web/user_auth.ex:311
+#: lib/tiki_web/user_auth.ex:227
+#: lib/tiki_web/user_auth.ex:347
 #, elixir-autogen, elixir-format
 msgid "You must log in to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:241
+#: lib/tiki_web/user_auth.ex:257
 #, elixir-autogen, elixir-format
 msgid "You must select a team to access this page."
 msgstr ""
 
-#: lib/tiki_web/user_auth.ex:325
-#: lib/tiki_web/user_auth.ex:340
+#: lib/tiki_web/user_auth.ex:361
+#: lib/tiki_web/user_auth.ex:376
 #, elixir-autogen, elixir-format
 msgid "You need to be an admin to access this page."
 msgstr ""
 
 #: lib/tiki_web/components/layouts/nav.html.heex:65
 #: lib/tiki_web/components/layouts/nav.html.heex:81
-#: lib/tiki_web/components/sidebar.ex:184
+#: lib/tiki_web/components/sidebar.ex:189
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:190
+#: lib/tiki_web/components/sidebar.ex:195
 #: lib/tiki_web/live/admin_live/team/index.ex:10
 #: lib/tiki_web/live/admin_live/team/index.ex:44
 #, elixir-autogen, elixir-format
@@ -380,7 +380,7 @@ msgstr ""
 msgid "Events"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:191
+#: lib/tiki_web/components/sidebar.ex:196
 #, elixir-autogen, elixir-format
 msgid "New team"
 msgstr ""
@@ -483,7 +483,7 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:138
+#: lib/tiki_web/components/sidebar.ex:143
 #: lib/tiki_web/live/admin_live/forms/index.ex:27
 #: lib/tiki_web/live/admin_live/releases/index.ex:47
 #: lib/tiki_web/live/admin_live/team/members.ex:65
@@ -526,7 +526,7 @@ msgstr ""
 msgid "Manage the tickets for this event. Each ticket type needs to be assigned to a batch before they can be created."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:130
+#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:134
 #: lib/tiki_web/live/admin_live/ticket/index.ex:27
 #, elixir-autogen, elixir-format
 msgid "New batch"
@@ -575,7 +575,7 @@ msgstr ""
 msgid "Are you sure?"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:109
+#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:113
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Batch created successfully"
 msgstr ""
@@ -585,7 +585,7 @@ msgstr ""
 msgid "Batch deleted successfully"
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:96
+#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:100
 #, elixir-autogen, elixir-format, fuzzy
 msgid "Batch updated successfully"
 msgstr ""
@@ -606,7 +606,7 @@ msgstr ""
 msgid "Deleting..."
 msgstr ""
 
-#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:129
+#: lib/tiki_web/live/admin_live/ticket/batch_form.ex:133
 #, elixir-autogen, elixir-format
 msgid "Edit batch"
 msgstr ""
@@ -691,7 +691,7 @@ msgstr ""
 msgid "Purchased"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:147
+#: lib/tiki_web/components/sidebar.ex:152
 #, elixir-autogen, elixir-format
 msgid "Team"
 msgstr ""
@@ -811,7 +811,7 @@ msgstr ""
 msgid "Form updated successfully"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:131
+#: lib/tiki_web/components/sidebar.ex:136
 #: lib/tiki_web/live/admin_live/forms/index.ex:11
 #, elixir-autogen, elixir-format
 msgid "Forms"
@@ -1234,7 +1234,7 @@ msgstr ""
 msgid "Accepts"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:176
+#: lib/tiki_web/components/sidebar.ex:181
 #: lib/tiki_web/live/admin_live/team/form.ex:51
 #: lib/tiki_web/live/admin_live/team/form.ex:72
 #, elixir-autogen, elixir-format
@@ -1333,7 +1333,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/ticket/index.ex:156
 #: lib/tiki_web/live/admin_live/ticket/index.ex:176
 #: lib/tiki_web/live/admin_live/users/index.ex:107
-#: lib/tiki_web/user_auth.ex:226
+#: lib/tiki_web/user_auth.ex:242
 #, elixir-autogen, elixir-format
 msgid "You are not authorized to do that."
 msgstr ""
@@ -1948,7 +1948,7 @@ msgstr ""
 msgid "Form"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:105
+#: lib/tiki_web/components/sidebar.ex:110
 #: lib/tiki_web/live/admin_live/attendees/form_answers.ex:14
 #, elixir-autogen, elixir-format
 msgid "Form answers"
@@ -1986,7 +1986,7 @@ msgstr ""
 msgid "Check out"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:99
+#: lib/tiki_web/components/sidebar.ex:104
 #: lib/tiki_web/live/admin_live/attendees/check_in.ex:39
 #: lib/tiki_web/live/admin_live/attendees/check_in.ex:128
 #, elixir-autogen, elixir-format
@@ -2299,7 +2299,7 @@ msgstr ""
 msgid "Release updated successfully"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:123
+#: lib/tiki_web/components/sidebar.ex:128
 #: lib/tiki_web/live/admin_live/releases/index.ex:117
 #, elixir-autogen, elixir-format
 msgid "Releases"
@@ -2401,7 +2401,7 @@ msgstr ""
 msgid "Admin Tools"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:198
+#: lib/tiki_web/components/sidebar.ex:203
 #, elixir-autogen, elixir-format
 msgid "All users"
 msgstr ""
@@ -2495,7 +2495,7 @@ msgstr ""
 msgid "New User"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:199
+#: lib/tiki_web/components/sidebar.ex:204
 #, elixir-autogen, elixir-format
 msgid "New user"
 msgstr ""
@@ -2545,7 +2545,7 @@ msgstr ""
 msgid "User updated successfully"
 msgstr ""
 
-#: lib/tiki_web/components/sidebar.ex:196
+#: lib/tiki_web/components/sidebar.ex:201
 #: lib/tiki_web/live/admin_live/users/index.ex:15
 #: lib/tiki_web/live/admin_live/users/index.ex:123
 #, elixir-autogen, elixir-format
@@ -2567,7 +2567,7 @@ msgstr ""
 msgid "You are now logged in as %{user}"
 msgstr ""
 
-#: lib/tiki_web/controllers/oidcc_controller.ex:110
+#: lib/tiki_web/controllers/oidcc_controller.ex:113
 #, elixir-autogen, elixir-format
 msgid "Unable to create your account. Please try again or contact support if the problem persists."
 msgstr "Unable to create your account. Please try again or contact support if the problem persists."
@@ -2577,7 +2577,12 @@ msgstr "Unable to create your account. Please try again or contact support if th
 msgid "Unable to link your KTH account. Please try again or contact support."
 msgstr "Unable to link your KTH account. Please try again or contact support."
 
-#: lib/tiki_web/controllers/oidcc_controller.ex:131
+#: lib/tiki_web/controllers/oidcc_controller.ex:134
 #, elixir-autogen, elixir-format
 msgid "We encountered a problem signing you in with KTH. Please try again or contact us if the problem persists."
+msgstr ""
+
+#: lib/tiki_web/controllers/oidcc_controller.ex:100
+#, elixir-autogen, elixir-format
+msgid "Email %{error}. Sign in with your email address and link to your KTH account instead."
 msgstr ""
