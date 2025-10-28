@@ -366,3 +366,115 @@ mix gettext.extract --merge --no-fuzzy
 ```
 
 After extracting the translations, please fill in the missing translations in the `prib/gettext/sv/LC_MESSAGES` file.
+
+## Authentication & Authorization
+
+This application uses Phoenix 1.8 scopes pattern combined with the `let_me` library for centralized policy management.
+
+### Phoenix 1.8 Scopes
+
+The application uses a `Tiki.Accounts.Scope` struct to represent the current authentication and authorization context:
+
+```elixir
+%Tiki.Accounts.Scope{
+  user: %User{},  # The authenticated user
+  team: %Team{}   # The currently selected team (can be nil)
+  event: %Event{} # The currently selected event (can be nil)
+}
+```
+
+**Available in all LiveViews and Controllers:**
+
+- `@current_scope` - The scope struct (preferred for new code)
+- `@current_user` - The authenticated user (legacy, still supported)
+- `@current_team` - The currently selected team (legacy, still supported)
+
+### Authorization Layers (Defense in Depth)
+
+The application uses three layers of authorization:
+
+1. **Router/LiveSession (Coarse-grained)** - Use `on_mount` hooks for broad checks like "must be authenticated" or "must be manager"
+2. **Context Functions (Fine-grained)** - Admin/mutating operations enforce authorization at the context layer
+3. **LiveView Mount (Resource-specific)** - Use `Policy.authorize` for read operations when needed
+
+### When to Enforce Authorization in Context Functions
+
+**DO enforce in context for admin/mutating operations:**
+
+```elixir
+def update_membership(%Scope{} = scope, %Membership{} = membership, attrs) do
+  team = get_team!(membership.team_id)
+
+  with :ok <- Tiki.Policy.authorize(:team_update, scope.user, team) do
+    membership
+    |> Membership.changeset(attrs)
+    |> Repo.update()
+  end
+end
+```
+
+**DON'T enforce for read operations used in multiple contexts:**
+
+```elixir
+# Public function - no authorization, used by both public and admin pages
+def get_event!(id, opts \\ [])
+```
+
+### Pattern for Admin Context Functions
+
+When creating admin/mutating operations:
+
+```elixir
+def dangerous_operation(%Tiki.Accounts.Scope{} = scope, resource_id, attrs) do
+  resource = get_resource!(resource_id)
+
+  with :ok <- Tiki.Policy.authorize(:resource_manage, scope.user, resource) do
+    # Do the actual operation
+    do_dangerous_operation(resource, attrs)
+  end
+end
+```
+
+**Benefits:**
+
+- Authorization check cannot be forgotten - function signature requires scope
+- Returns `{:error, :unauthorized}` if user lacks permission
+- LiveView code becomes simpler - no need to duplicate authorization checks
+
+### Policy Definitions
+
+Policies are defined in `lib/tiki/policy.ex` using the `let_me` DSL:
+
+```elixir
+object :team do
+  action :update do
+    allow hive: "admin"
+    allow team_role: :admin
+  end
+end
+```
+
+Policy checks are implemented in `lib/tiki/policy/checks.ex`.
+
+### Testing Authorization
+
+For tests, the application uses a mock permission service. To grant permissions in tests:
+
+```elixir
+# In test setup
+user = user_fixture()
+team = team_fixture()
+
+# Grant team admin permission by making user a member
+%Membership{user_id: user.id, team_id: team.id, role: :admin}
+|> Repo.insert!()
+
+# Or for hive permissions (admin, audit, etc)
+PermissionServiceMock.grant_permission(user, "admin")
+```
+
+### Migration Strategy
+
+- **New features**: Always use scopes and scoped context functions
+- **Existing code**: Migrate opportunistically when touching code
+- **Priority**: Admin/mutating operations first (highest security benefit)

@@ -7,10 +7,9 @@ defmodule Tiki.FormsFixtures do
       |> Enum.into(%{
         description: "some description",
         description_sv: "någon beskrivning",
-        name: "some name",
-        event_id: event.id
+        name: "some name"
       })
-      |> Tiki.Forms.create_form()
+      |> then(&Tiki.Forms.create_form(event.id, &1))
 
     form
   end

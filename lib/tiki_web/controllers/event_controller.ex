@@ -1,10 +1,10 @@
 defmodule TikiWeb.EventController do
   use TikiWeb, :controller
 
-  def export_form_answers(conn, %{"id" => event_id}) do
+  def export_form_answers(conn, %{"event_id" => event_id}) do
     event = Tiki.Events.get_event!(event_id)
 
-    with :ok <- Tiki.Policy.authorize(:event_view, conn.assigns.current_user, event),
+    with :ok <- Tiki.Policy.authorize(:event_view, conn.assigns.current_scope.user, event),
          {:ok, {name, binary}} <- Tiki.Forms.export_event_forms(event_id) do
       conn
       |> put_resp_content_type("application/zip")

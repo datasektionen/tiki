@@ -3,6 +3,7 @@ defmodule TikiWeb.OidccController do
 
   alias TikiWeb.UserAuth
   alias Tiki.Accounts
+  require Logger
 
   @key_replacements %{
     "sub" => "kth_id",
@@ -63,6 +64,7 @@ defmodule TikiWeb.OidccController do
       end)
 
     if get_session(conn, :link_account) && conn.assigns[:current_user] do
+      # User is logged in and wants to link their KTH account
       case Accounts.link_user_with_userinfo(conn.assigns.current_user, userinfo) do
         {:ok, _user} ->
           put_flash(conn, :info, gettext("Sucessfully linked KTH account."))
@@ -71,13 +73,49 @@ defmodule TikiWeb.OidccController do
         {:error, error} when is_binary(error) ->
           conn |> put_flash(:error, error) |> redirect(to: ~p"/account/settings")
 
-        {:error, changeset} ->
-          conn |> put_status(400) |> render(:error, reason: changeset)
+        {:error, %Ecto.Changeset{} = changeset} ->
+          Logger.error("Account linking failed: #{inspect(changeset.errors)}")
+
+          conn
+          |> put_flash(
+            :error,
+            gettext("Unable to link your KTH account. Please try again or contact support.")
+          )
+          |> redirect(to: ~p"/account/settings")
       end
     else
+      # User is logging in via OIDC
       case Accounts.upsert_user_with_userinfo(userinfo) do
-        {:ok, user} -> UserAuth.log_in_user(conn, user)
-        {:error, changeset} -> conn |> put_status(400) |> render(:error, reason: changeset)
+        {:ok, user} ->
+          UserAuth.log_in_user(conn, user)
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          # Check if this is an email uniqueness error
+          if Keyword.has_key?(changeset.errors, :email) do
+            {message, _opts} = changeset.errors[:email]
+
+            conn
+            |> put_flash(
+              :error,
+              gettext(
+                "Email %{error}. Sign in with your email address and link to your KTH account instead.",
+                error: message
+              )
+            )
+            |> redirect(to: ~p"/users/log_in")
+          else
+            # Other validation errors (e.g., invalid data from OIDC provider)
+            Logger.error("OIDC user creation failed: #{inspect(changeset.errors)}")
+
+            conn
+            |> put_flash(
+              :error,
+              gettext(
+                "Unable to create your account. Please try again or contact support if the problem persists."
+              )
+            )
+            |> redirect(to: ~p"/users/log_in")
+          end
       end
     end
   end
@@ -86,7 +124,18 @@ defmodule TikiWeb.OidccController do
         %Plug.Conn{private: %{Oidcc.Plug.AuthorizationCallback => {:error, reason}}} = conn,
         _params
       ) do
-    conn |> put_status(400) |> render(:error, reason: reason)
+    # Log the error for debugging but don't expose details to user
+    Logger.error("OIDC authentication failed: #{inspect(reason)}")
+
+    # Redirect to login with friendly error message instead of rendering error page
+    conn
+    |> put_flash(
+      :error,
+      gettext(
+        "We encountered a problem signing you in with KTH. Please try again or contact us if the problem persists."
+      )
+    )
+    |> redirect(to: ~p"/users/log_in")
   end
 
   @doc false

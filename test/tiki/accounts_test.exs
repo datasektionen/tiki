@@ -118,9 +118,17 @@ defmodule Tiki.AccountsTest do
       "last_name" => "Teknolog"
     }
 
-    test "gets a user if it exists" do
-      user = user_fixture(%{kth_id: "turetek"})
-      assert Accounts.upsert_user_with_userinfo(%{"kth_id" => "turetek"}) == {:ok, user}
+    test "gets a user if it exists by kth_id" do
+      user = oidc_user_fixture(kth_id: "turetek")
+
+      assert {:ok, found_user} =
+               Accounts.upsert_user_with_userinfo(%{
+                 "kth_id" => "turetek",
+                 "email" => "turetek@kth.se"
+               })
+
+      assert found_user.id == user.id
+      assert found_user.kth_id == "turetek"
     end
 
     test "creates a user with valid userinfo" do
@@ -130,6 +138,119 @@ defmodule Tiki.AccountsTest do
       assert user.last_name == "Teknolog"
       assert user.email == "turetek@kth.se"
       assert user.kth_id == "turetek"
+      assert user.confirmed_at != nil
+    end
+
+    test "detects collision when email exists without kth_id" do
+      # User registered via magic link
+      user_fixture(email: "collision@kth.se")
+
+      # Later tries to log in via OIDC with same email
+      userinfo = %{
+        "kth_id" => "collision",
+        "email" => "collision@kth.se",
+        "first_name" => "Collision",
+        "last_name" => "Test"
+      }
+
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Accounts.upsert_user_with_userinfo(userinfo)
+
+      assert {"has already been taken", [validation: :unsafe_unique, fields: [:email]]} =
+               changeset.errors[:email]
+
+      assert errors_on(changeset).email
+      assert changeset.valid? == false
+    end
+
+    test "does not create duplicate user on collision" do
+      user_fixture(email: "nodupe@kth.se")
+
+      userinfo = %{
+        "kth_id" => "nodupe",
+        "email" => "nodupe@kth.se"
+      }
+
+      Accounts.upsert_user_with_userinfo(userinfo)
+
+      # Should only have one user with this email
+      users = Accounts.list_users() |> Enum.filter(&(&1.email == "nodupe@kth.se"))
+      assert length(users) == 1
+    end
+
+    test "allows creating user when email exists but has different kth_id" do
+      # This shouldn't happen in practice, but test the edge case
+      oidc_user_fixture(kth_id: "user1", email: "shared@kth.se")
+
+      # Different kth_id, different email - should work
+      userinfo = %{
+        "kth_id" => "user2",
+        "email" => "user2@kth.se"
+      }
+
+      assert {:ok, user} = Accounts.upsert_user_with_userinfo(userinfo)
+      assert user.kth_id == "user2"
+    end
+  end
+
+  describe "link_user_with_userinfo/2" do
+    setup do
+      %{user: user_fixture(email: "link@example.com")}
+    end
+
+    test "links kth_id to user without kth_id", %{user: user} do
+      userinfo = %{
+        "kth_id" => "newlink",
+        "year_tag" => "D-23"
+      }
+
+      assert {:ok, updated_user} = Accounts.link_user_with_userinfo(user, userinfo)
+      assert updated_user.kth_id == "newlink"
+      assert updated_user.year_tag == "D-23"
+      assert updated_user.email == "link@example.com"
+    end
+
+    test "works with optional year_tag", %{user: user} do
+      userinfo = %{"kth_id" => "noyear"}
+
+      assert {:ok, updated_user} = Accounts.link_user_with_userinfo(user, userinfo)
+      assert updated_user.kth_id == "noyear"
+      assert updated_user.year_tag == nil
+    end
+
+    test "fails if kth_id already taken by another user", %{user: user} do
+      _other_user = oidc_user_fixture(kth_id: "taken")
+
+      userinfo = %{"kth_id" => "taken"}
+
+      assert {:error, error} = Accounts.link_user_with_userinfo(user, userinfo)
+      assert is_binary(error)
+      assert error =~ "A user with this KTH-id already exists"
+    end
+
+    test "is idempotent when kth_id already belongs to user", %{user: user} do
+      # First link
+      {:ok, user} = Accounts.link_user_with_userinfo(user, %{"kth_id" => "mine"})
+
+      # Link again
+      assert {:ok, updated_user} = Accounts.link_user_with_userinfo(user, %{"kth_id" => "mine"})
+      assert updated_user.id == user.id
+      assert updated_user.kth_id == "mine"
+      assert user == updated_user
+    end
+
+    test "can update year_tag on subsequent link", %{user: user} do
+      {:ok, user} = Accounts.link_user_with_userinfo(user, %{"kth_id" => "update"})
+
+      # Link again with new year_tag
+      assert {:ok, updated_user} =
+               Accounts.link_user_with_userinfo(user, %{
+                 "kth_id" => "update",
+                 "year_tag" => "D-24"
+               })
+
+      assert updated_user.id == user.id
+      assert updated_user.year_tag == "D-24"
     end
   end
 

@@ -7,62 +7,67 @@ defmodule TikiWeb.Component.Sidebar do
   import TikiWeb.Component.Breadcrumb
 
   alias Tiki.Policy
-  alias Tiki.Events.Event
 
-  attr :event, :map, default: nil
   attr :mobile, :boolean, default: false
 
-  def sidebar(%{current_team: nil} = assigns) do
+  def sidebar(%{current_scope: %{team: nil}} = assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
+      <.sidebar_header
+        mobile={@mobile}
+        current_team={@current_scope.team}
+        current_user={@current_scope.user}
+      />
 
-      <div :if={Policy.authorize?(:tiki_admin, @current_user)} class="flex w-full flex-col py-4">
+      <div :if={Policy.authorize?(:tiki_admin, @current_scope.user)} class="flex w-full flex-col py-4">
         <.admin_items active_tab={@active_tab} />
       </div>
     </nav>
     <!-- sidebar footer -->
-    <.sidebar_footer mobile={@mobile} current_user={@current_user} />
+    <.sidebar_footer mobile={@mobile} current_user={@current_scope.user} />
     """
   end
 
-  def sidebar(%{event: nil} = assigns) do
+  def sidebar(%{current_scope: %{event: nil}} = assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
+      <.sidebar_header
+        mobile={@mobile}
+        current_team={@current_scope.team}
+        current_user={@current_scope.user}
+      />
       <div class="flex w-full flex-col py-4">
         <.all_event_items active_tab={@active_tab} />
       </div>
-      <div :if={Policy.authorize?(:tiki_admin, @current_user)} class="flex w-full flex-col py-4">
+      <div :if={Policy.authorize?(:tiki_admin, @current_scope.user)} class="flex w-full flex-col py-4">
         <.admin_items active_tab={@active_tab} />
       </div>
     </nav>
     <!-- sidebar footer -->
-    <.sidebar_footer mobile={@mobile} current_user={@current_user} />
+    <.sidebar_footer mobile={@mobile} current_user={@current_scope.user} />
     """
-  end
-
-  def sidebar(%{event: %Event{id: nil}} = assigns) do
-    assign(assigns, event: nil)
-    |> sidebar()
   end
 
   def sidebar(assigns) do
     ~H"""
     <nav class="flex flex-col gap-1 px-2 py-5">
-      <.sidebar_header mobile={@mobile} current_team={@current_team} current_user={@current_user} />
+      <.sidebar_header
+        mobile={@mobile}
+        current_team={@current_scope.team}
+        current_user={@current_scope.user}
+      />
       <div class="flex w-full flex-col py-4">
-        <.event_items active_tab={@active_tab} event={@event} />
+        <.event_items active_tab={@active_tab} event={@current_scope.event} />
       </div>
       <div class="flex w-full flex-col py-4">
         <.all_event_items active_tab={@active_tab} />
       </div>
-      <div :if={Policy.authorize?(:tiki_admin, @current_user)} class="flex w-full flex-col py-4">
+      <div :if={Policy.authorize?(:tiki_admin, @current_scope.user)} class="flex w-full flex-col py-4">
         <.admin_items active_tab={@active_tab} />
       </div>
     </nav>
     <!-- sidebar footer -->
-    <.sidebar_footer mobile={@mobile} current_user={@current_user} />
+    <.sidebar_footer mobile={@mobile} current_user={@current_scope.user} />
     """
   end
 

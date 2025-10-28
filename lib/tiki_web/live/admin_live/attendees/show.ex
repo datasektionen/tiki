@@ -8,7 +8,7 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
   import TikiWeb.Component.Card
   import TikiWeb.Component.Badge
 
-  def mount(%{"id" => event_id, "ticket_id" => ticket_id}, _session, socket) do
+  def mount(%{"event_id" => event_id, "ticket_id" => ticket_id}, _session, socket) do
     event =
       Events.get_event!(event_id)
       |> Localizer.localize()

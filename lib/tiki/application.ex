@@ -13,6 +13,7 @@ defmodule Tiki.Application do
 
     oban_config = Application.fetch_env!(:tiki, Oban)
     metrics_port = Application.get_env(:tiki, :metrics_port, 9001)
+    permission_service = Application.get_env(:tiki, :permission_service_module, Tiki.Hive)
 
     children =
       [
@@ -36,7 +37,8 @@ defmodule Tiki.Application do
         # Start processes required for order handling
         Tiki.OrderHandler.Supervisor,
         Tiki.PurchaseMonitor,
-        Tiki.Hive
+        # Start the permission service (Hive or mock in tests)
+        permission_service
       ] ++ stripe_webhook_listener()
 
     opts = [strategy: :one_for_one, name: Tiki.Supervisor]

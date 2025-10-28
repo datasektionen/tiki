@@ -28,11 +28,12 @@ defmodule Tiki.ReleasesTest do
         name_sv: "some name_sv",
         starts_at: ~U[2025-09-10 13:05:00Z],
         ends_at: ~U[2025-09-10 13:05:00Z],
-        ticket_batch_id: ticket_batch.id,
-        event_id: ticket_batch.event_id
+        ticket_batch_id: ticket_batch.id
       }
 
-      assert {:ok, %Release{} = release} = Releases.create_release(valid_attrs)
+      assert {:ok, %Release{} = release} =
+               Releases.create_release(ticket_batch.event_id, valid_attrs)
+
       assert release.name == "some name"
       assert release.name_sv == "some name_sv"
       assert release.starts_at == ~U[2025-09-10 13:05:00Z]
@@ -40,7 +41,10 @@ defmodule Tiki.ReleasesTest do
     end
 
     test "create_release/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Releases.create_release(@invalid_attrs)
+      ticket_batch = Tiki.TicketsFixtures.ticket_batch_fixture()
+
+      assert {:error, %Ecto.Changeset{}} =
+               Releases.create_release(ticket_batch.event_id, @invalid_attrs)
     end
 
     test "update_release/2 with valid data updates the release" do

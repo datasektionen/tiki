@@ -7,7 +7,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
   alias Tiki.Presence
   alias Tiki.Localizer
 
-  def mount(%{"id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, _session, socket) do
     event = Events.get_event!(event_id) |> Localizer.localize()
 
     with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do

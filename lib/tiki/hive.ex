@@ -1,33 +1,41 @@
 defmodule Tiki.Hive do
+  @moduledoc """
+  Implementation of PermissionService that fetches permissions from the Hive API.
+
+  Hive is an external service that manages user permissions. This module caches
+  permissions in ETS for 5 hours to reduce API calls.
+  """
+
   use GenServer
+  @behaviour PermissionService
 
   alias Tiki.Accounts.User
   # 5 hours
   @ttl 1000 * 60 * 60 * 5
 
+  @impl PermissionService
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  @doc """
-  Gets a list of hive permissions for tiki for the given user.
-  """
+  @impl PermissionService
   def get_permissions(user) do
     GenServer.call(__MODULE__, {:get_permissions, user}, 10_000)
   end
 
-  @doc """
-  Invalidates the permissions for the given user.
-  """
+  @impl PermissionService
   def clear() do
     GenServer.cast(__MODULE__, :clear)
+    :ok
   end
 
+  @impl GenServer
   def init(_) do
     :ets.new(:tiki_hive, [:named_table, :set, :protected])
     {:ok, %{timers: %{}}}
   end
 
+  @impl GenServer
   def handle_call({:get_permissions, user}, _from, state) do
     kth_id = user.kth_id
 
@@ -45,6 +53,7 @@ defmodule Tiki.Hive do
     end
   end
 
+  @impl GenServer
   def handle_cast(:clear, %{timers: timers}) do
     for {_, timer} <- timers do
       Process.cancel_timer(timer)
@@ -55,6 +64,7 @@ defmodule Tiki.Hive do
     {:noreply, %{timers: %{}}}
   end
 
+  @impl GenServer
   def handle_info({:invalidate, kth_id}, state) do
     :ets.delete(:tiki_hive, kth_id)
     {:noreply, state}

@@ -14,7 +14,8 @@ defmodule Tiki.Teams.Membership do
   @doc false
   def changeset(membership, attrs) do
     membership
-    |> cast(attrs, [:role, :team_id, :user_id])
-    |> validate_required([:role, :team_id, :user_id])
+    |> cast(attrs, [:role, :user_id])
+    |> validate_required([:role, :user_id, :team_id])
+    |> foreign_key_constraint(:user_id)
   end
 end

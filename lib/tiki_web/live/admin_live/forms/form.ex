@@ -8,8 +8,6 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   def render(assigns) do
     ~H"""
     <.simple_form for={@client_form} id="form-form" phx-change="validate" phx-submit="save">
-      <.input field={@client_form[:event_id]} type="hidden" value={@event.id} />
-
       <.input field={@client_form[:name]} type="text" label={gettext("Name")} />
       <.bilingual_input
         field_en={@client_form[:description]}
@@ -171,7 +169,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id} = params, _session, socket) do
+  def mount(%{"event_id" => event_id} = params, _session, socket) do
     event =
       Tiki.Events.get_event!(event_id)
       |> Localizer.localize()
@@ -424,7 +422,7 @@ defmodule TikiWeb.AdminLive.Forms.Form do
   end
 
   defp save_form(socket, :new, form_params) do
-    case Forms.create_form(form_params) do
+    case Forms.create_form(socket.assigns.current_scope, form_params) do
       {:ok, form} ->
         {:noreply,
          socket

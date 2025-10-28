@@ -95,7 +95,7 @@ defmodule TikiWeb.AdminLive.Attendees.FormAnswers do
     """
   end
 
-  def mount(%{"id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, _session, socket) do
     event =
       Tiki.Events.get_event!(event_id)
       |> Localizer.localize()

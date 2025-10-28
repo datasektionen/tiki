@@ -2,6 +2,7 @@ defmodule Tiki.TicketsTest do
   use Tiki.DataCase
 
   alias Tiki.Tickets
+  alias Tiki.Accounts.Scope
 
   describe "ticket_batch" do
     alias Tiki.Tickets.TicketBatch
@@ -22,24 +23,31 @@ defmodule Tiki.TicketsTest do
 
     test "create_ticket_batch/1 with valid data creates a ticket_batch" do
       event = Tiki.EventsFixtures.event_fixture()
-      valid_attrs = %{max_size: 42, min_size: 42, name: "some name", event_id: event.id}
+      valid_attrs = %{max_size: 42, min_size: 42, name: "some name"}
 
-      assert {:ok, %TicketBatch{} = ticket_batch} = Tickets.create_ticket_batch(valid_attrs)
+      assert {:ok, %TicketBatch{} = ticket_batch} =
+               Tickets.create_ticket_batch(%Scope{event: event}, valid_attrs)
+
       assert ticket_batch.max_size == 42
       assert ticket_batch.min_size == 42
       assert ticket_batch.name == "some name"
     end
 
     test "create_ticket_batch/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket_batch(@invalid_attrs)
+      event = Tiki.EventsFixtures.event_fixture()
+      scope = %Scope{event: event}
+
+      assert {:error, %Ecto.Changeset{}} =
+               Tickets.create_ticket_batch(scope, @invalid_attrs)
     end
 
     test "update_ticket_batch/2 with valid data updates the ticket_batch" do
       ticket_batch = ticket_batch_fixture()
       update_attrs = %{max_size: 43, min_size: 43, name: "some updated name"}
+      scope = Scope.for(event: ticket_batch.event_id)
 
       assert {:ok, %TicketBatch{} = ticket_batch} =
-               Tickets.update_ticket_batch(ticket_batch, update_attrs)
+               Tickets.update_ticket_batch(scope, ticket_batch, update_attrs)
 
       assert ticket_batch.max_size == 43
       assert ticket_batch.min_size == 43
@@ -49,13 +57,17 @@ defmodule Tiki.TicketsTest do
     test "update_ticket_batch/2 with invalid data returns error changeset" do
       ticket_batch = ticket_batch_fixture()
 
+      scope = Scope.for(event: ticket_batch.event_id)
+
       assert {:error, %Ecto.Changeset{}} =
-               Tickets.update_ticket_batch(ticket_batch, @invalid_attrs)
+               Tickets.update_ticket_batch(scope, ticket_batch, @invalid_attrs)
 
       assert ticket_batch == Tickets.get_ticket_batch!(ticket_batch.id)
 
       assert {:error, %Ecto.Changeset{}} =
-               Tickets.update_ticket_batch(ticket_batch, %{:parent_batch_id => ticket_batch.id})
+               Tickets.update_ticket_batch(scope, ticket_batch, %{
+                 :parent_batch_id => ticket_batch.id
+               })
     end
 
     test "delete_ticket_batch/1 deletes the ticket_batch" do
@@ -113,7 +125,12 @@ defmodule Tiki.TicketsTest do
         form_id: form.id
       }
 
-      assert {:ok, %TicketType{} = ticket_types} = Tickets.create_ticket_type(valid_attrs)
+      scope =
+        Scope.for(event: batch.event_id, user: Tiki.AccountsFixtures.admin_user_fixture().id)
+
+      assert {:ok, %TicketType{} = ticket_types} =
+               Tickets.create_ticket_type(scope, valid_attrs)
+
       assert ticket_types.description == "some description"
       assert ticket_types.expire_time == ~U[2023-03-25 18:01:00Z]
       assert ticket_types.name == "some name"
@@ -125,7 +142,21 @@ defmodule Tiki.TicketsTest do
     end
 
     test "create_ticket_type/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket_type(@invalid_attrs)
+      scope = %Scope{
+        event: Tiki.EventsFixtures.event_fixture(),
+        user: Tiki.AccountsFixtures.admin_user_fixture()
+      }
+
+      assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket_type(scope, @invalid_attrs)
+    end
+
+    test "create_ticket_type/1 with unauthorized user returns error changeset" do
+      scope = %Scope{
+        event: Tiki.EventsFixtures.event_fixture(),
+        user: Tiki.AccountsFixtures.user_fixture()
+      }
+
+      assert {:error, :unauthorized} = Tickets.create_ticket_type(scope, @invalid_attrs)
     end
 
     test "update_ticket_type/2 with valid data updates the ticket_types" do
@@ -145,7 +176,11 @@ defmodule Tiki.TicketsTest do
       }
 
       assert {:ok, %TicketType{} = ticket_types} =
-               Tickets.update_ticket_type(ticket_types, update_attrs)
+               Tickets.update_ticket_type(
+                 Scope.for(event: batch.event_id),
+                 ticket_types,
+                 update_attrs
+               )
 
       assert ticket_types.description == "some updated description"
       assert ticket_types.expire_time == ~U[2023-03-26 18:01:00Z]
@@ -158,12 +193,18 @@ defmodule Tiki.TicketsTest do
     end
 
     test "update_ticket_type/2 with invalid data returns error changeset" do
-      ticket_types = ticket_type_fixture() |> Repo.preload(:ticket_batch)
+      ticket_type = ticket_type_fixture() |> Repo.preload(:ticket_batch)
+
+      scope = Scope.for(event: ticket_type.ticket_batch.event_id)
 
       assert {:error, %Ecto.Changeset{}} =
-               Tickets.update_ticket_type(ticket_types, @invalid_attrs)
+               Tickets.update_ticket_type(
+                 scope,
+                 ticket_type,
+                 @invalid_attrs
+               )
 
-      assert ticket_types == Tickets.get_ticket_type!(ticket_types.id)
+      assert ticket_type == Tickets.get_ticket_type!(ticket_type.id)
     end
 
     test "delete_ticket_type/1 deletes the ticket_types" do

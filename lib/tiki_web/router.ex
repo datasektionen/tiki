@@ -13,6 +13,7 @@ defmodule TikiWeb.Router do
     plug :fetch_current_user
     plug :fetch_locale
     plug :fetch_current_path
+    plug :assign_event_to_scope
   end
 
   pipeline :embedded do
@@ -143,7 +144,7 @@ defmodule TikiWeb.Router do
       get "/set_team/:team_id", UserSessionController, :set_team
       get "/clear_team", UserSessionController, :clear_team
 
-      get "/events/:id/attendees/form-answers/export", EventController, :export_form_answers
+      get "/events/:event_id/attendees/form-answers/export", EventController, :export_form_answers
     end
 
     scope "/admin", AdminLive do
@@ -170,6 +171,7 @@ defmodule TikiWeb.Router do
         on_mount: [
           {TikiWeb.UserAuth, :ensure_authenticated},
           {TikiWeb.UserAuth, :ensure_team},
+          {TikiWeb.UserAuth, :assign_event_to_scope},
           {TikiWeb.UserAuth, {:authorize, :tiki_manage}},
           TikiWeb.Nav
         ],
@@ -191,7 +193,7 @@ defmodule TikiWeb.Router do
         live "/team/members/:id/edit", Team.MembershipForm, :edit
         live "/team/edit", Team.Form, :manager_edit
 
-        scope "/events/:id" do
+        scope "/events/:event_id" do
           # Event dashboard
           live "/", Event.Show, :show
 

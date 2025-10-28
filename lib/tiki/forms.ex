@@ -63,8 +63,8 @@ defmodule Tiki.Forms do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_form(attrs \\ %{}) do
-    %Form{}
+  def create_form(event_id, attrs \\ %{}) when is_binary(event_id) do
+    %Form{event_id: event_id}
     |> Form.changeset(attrs)
     |> Repo.insert()
   end

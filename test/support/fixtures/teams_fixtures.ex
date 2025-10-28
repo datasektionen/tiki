@@ -26,15 +26,35 @@ defmodule Tiki.TeamsFixtures do
     user = Tiki.AccountsFixtures.user_fixture()
     team = Tiki.TeamsFixtures.team_fixture()
 
-    {:ok, membership} =
-      attrs
-      |> Enum.into(%{
-        role: :admin,
+    # First add user as admin member directly to DB (bypass authorization for setup)
+    admin_membership =
+      %Tiki.Teams.Membership{
+        team_id: team.id,
         user_id: user.id,
-        team_id: team.id
-      })
-      |> Tiki.Teams.create_membership()
+        role: :admin
+      }
+      |> Tiki.Repo.insert!()
 
-    membership
+    # Now we can use the scoped function since user is an admin of the team
+    scope = Tiki.Accounts.Scope.for(user: user.id, team: team.id)
+
+    # If creating a new membership (different user), use scoped function
+    requested_user_id = attrs[:user_id]
+
+    if requested_user_id == nil || requested_user_id == user.id do
+      admin_membership
+    else
+      {:ok, membership} =
+        Tiki.Teams.create_membership(
+          scope,
+          team.id,
+          Enum.into(attrs, %{
+            role: :admin,
+            user_id: requested_user_id
+          })
+        )
+
+      membership
+    end
   end
 end

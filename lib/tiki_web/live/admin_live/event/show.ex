@@ -9,7 +9,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
   import TikiWeb.Component.Card
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, _session, socket) do
     event =
       Events.get_event!(event_id, preload_ticket_types: true)
       |> Localizer.localize()
@@ -48,7 +48,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
   end
 
   @impl Phoenix.LiveView
-  def handle_params(%{"id" => event_id} = params, _, socket) do
+  def handle_params(%{"event_id" => event_id} = params, _, socket) do
     recent_tickets = Orders.list_tickets_for_event(event_id, limit: 10)
 
     {:noreply,

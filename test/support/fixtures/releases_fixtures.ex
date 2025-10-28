@@ -18,10 +18,9 @@ defmodule Tiki.ReleasesFixtures do
         name: "some name",
         name_sv: "some name_sv",
         starts_at: ~U[2025-09-10 13:05:00Z] |> DateTime.shift_zone!("Europe/Stockholm"),
-        ticket_batch_id: ticket_batch.id,
-        event_id: ticket_batch.event_id
+        ticket_batch_id: ticket_batch.id
       })
-      |> Tiki.Releases.create_release()
+      |> then(&Tiki.Releases.create_release(ticket_batch.event_id, &1))
 
     release
   end

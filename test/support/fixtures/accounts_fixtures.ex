@@ -37,6 +37,16 @@ defmodule Tiki.AccountsFixtures do
     user
   end
 
+  def admin_user_fixture(attrs \\ %{}) do
+    user_fixture(attrs)
+    |> grant_permission("admin")
+  end
+
+  def grant_permission(%Accounts.User{} = user, permission) do
+    :ok = Tiki.Support.PermissionServiceMock.grant_permission(user, permission)
+    user
+  end
+
   def extract_user_token(fun) do
     fun.(&"[TOKEN]#{&1}[TOKEN]")
 
@@ -62,5 +72,24 @@ defmodule Tiki.AccountsFixtures do
     {encoded_token, user_token} = Accounts.UserToken.build_email_token(user, "login")
     Tiki.Repo.insert!(user_token)
     {encoded_token, user_token.token}
+  end
+
+  @doc """
+  Creates a user via OIDC (with kth_id and confirmed).
+  """
+  def oidc_user_fixture(attrs \\ %{}) do
+    kth_id = Keyword.get(attrs, :kth_id, "kthid#{System.unique_integer([:positive])}")
+    email = Keyword.get(attrs, :email, "#{kth_id}@kth.se")
+
+    userinfo = %{
+      "kth_id" => kth_id,
+      "email" => email,
+      "first_name" => Keyword.get(attrs, :first_name, "Test"),
+      "last_name" => Keyword.get(attrs, :last_name, "User"),
+      "year_tag" => Keyword.get(attrs, :year_tag, "D-23")
+    }
+
+    {:ok, user} = Accounts.upsert_user_with_userinfo(userinfo)
+    user
   end
 end

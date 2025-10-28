@@ -33,28 +33,38 @@ defmodule Tiki.EventsFixtures do
   def example_event_fixture(attrs \\ %{}) do
     event = event_fixture(attrs)
 
+    user =
+      Tiki.AccountsFixtures.user_fixture()
+      |> Tiki.AccountsFixtures.grant_permission("admin")
+
+    scope = Tiki.Accounts.Scope.for(event: event.id, user: user.id)
+
     {:ok, external} =
-      Tiki.Tickets.create_ticket_batch(%{event_id: event.id, name: "External", max_size: 5})
+      Tiki.Tickets.create_ticket_batch(scope, %{
+        name: "External",
+        max_size: 5
+      })
 
     {:ok, regular} =
-      Tiki.Tickets.create_ticket_batch(%{event_id: event.id, name: "Biljetter", max_size: 20})
+      Tiki.Tickets.create_ticket_batch(scope, %{
+        name: "Biljetter",
+        max_size: 20
+      })
 
     {:ok, alumns} =
-      Tiki.Tickets.create_ticket_batch(%{
-        event_id: event.id,
+      Tiki.Tickets.create_ticket_batch(scope, %{
         name: "Alumner",
         min_size: 7,
         parent_batch_id: regular.id
       })
 
     {:ok, students} =
-      Tiki.Tickets.create_ticket_batch(%{
-        event_id: event.id,
+      Tiki.Tickets.create_ticket_batch(scope, %{
         name: "Studenter",
         parent_batch_id: regular.id
       })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(scope, %{
       ticket_batch_id: external.id,
       name: "Styrelser",
       name_sv: "Styrelser",
@@ -63,7 +73,7 @@ defmodule Tiki.EventsFixtures do
       price: 600
     })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(scope, %{
       ticket_batch_id: external.id,
       name: "Inbjudna",
       name_sv: "Inbjudna",
@@ -72,7 +82,7 @@ defmodule Tiki.EventsFixtures do
       price: 600
     })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(scope, %{
       ticket_batch_id: students.id,
       name: "Studentbiljett",
       name_sv: "Studentbiljett",
@@ -81,7 +91,7 @@ defmodule Tiki.EventsFixtures do
       price: 400
     })
 
-    Tiki.Tickets.create_ticket_type(%{
+    Tiki.Tickets.create_ticket_type(scope, %{
       ticket_batch_id: alumns.id,
       name: "Alumnbiljett",
       name_sv: "Alumnbiljett",

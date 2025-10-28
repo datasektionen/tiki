@@ -57,7 +57,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id, "release_id" => release_id}, _session, socket) do
+  def mount(%{"event_id" => event_id, "release_id" => release_id}, _session, socket) do
     event =
       Events.get_event!(event_id)
       |> Localizer.localize()

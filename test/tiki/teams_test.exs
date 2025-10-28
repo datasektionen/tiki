@@ -2,6 +2,7 @@ defmodule Tiki.TeamsTest do
   use Tiki.DataCase
 
   alias Tiki.Teams
+  alias Tiki.Accounts.Scope
 
   describe "teams" do
     alias Tiki.Teams.Team
@@ -98,29 +99,58 @@ defmodule Tiki.TeamsTest do
 
     test "create_membership/1 with valid data creates a membership" do
       team = team_fixture()
-      user = Tiki.AccountsFixtures.user_fixture()
+      admin_user = Tiki.AccountsFixtures.user_fixture()
+      new_user = Tiki.AccountsFixtures.user_fixture()
 
-      valid_attrs = %{role: :admin, user_id: user.id, team_id: team.id}
+      # Make admin_user an admin of the team
+      %Membership{user_id: admin_user.id, team_id: team.id, role: :admin}
+      |> Tiki.Repo.insert!()
 
-      assert {:ok, %Membership{} = membership} = Teams.create_membership(valid_attrs)
+      scope = Scope.for(user: admin_user.id, team: team.id)
+      valid_attrs = %{role: :admin, user_id: new_user.id}
+
+      assert {:ok, %Membership{} = membership} =
+               Teams.create_membership(scope, team.id, valid_attrs)
+
       assert membership.role == :admin
+      assert membership.user_id == new_user.id
     end
 
     test "create_membership/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Teams.create_membership(@invalid_attrs)
+      team = team_fixture()
+      admin_user = Tiki.AccountsFixtures.user_fixture()
+
+      # Make admin_user an admin of the team
+      %Membership{user_id: admin_user.id, team_id: team.id, role: :admin}
+      |> Tiki.Repo.insert!()
+
+      scope = Scope.for(user: admin_user.id, team: team.id)
+
+      assert {:error, %Ecto.Changeset{}} = Teams.create_membership(scope, team.id, @invalid_attrs)
     end
 
     test "update_membership/2 with valid data updates the membership" do
-      membership = membership_fixture()
+      membership = membership_fixture() |> Tiki.Repo.preload([:user, :team])
+
+      scope =
+        Scope.for_user(membership.user) |> Scope.put_team(membership.team)
+
       update_attrs = %{role: :member}
 
-      assert {:ok, %Membership{} = membership} = Teams.update_membership(membership, update_attrs)
+      assert {:ok, %Membership{} = membership} =
+               Teams.update_membership(scope, membership, update_attrs)
+
       assert membership.role == :member
     end
 
     test "update_membership/2 with invalid data returns error changeset" do
       membership = membership_fixture() |> Tiki.Repo.preload([:user, :team])
-      assert {:error, %Ecto.Changeset{}} = Teams.update_membership(membership, @invalid_attrs)
+
+      scope = Scope.for(user: membership.user.id, team: membership.team.id)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Teams.update_membership(scope, membership, @invalid_attrs)
+
       assert membership == Teams.get_membership!(membership.id)
     end
 
@@ -147,6 +177,29 @@ defmodule Tiki.TeamsTest do
       {:ok, team} = Teams.create_team(@valid_attrs, members: [user.id])
 
       assert Teams.get_members_for_team(team.id) |> Enum.map(& &1.user) == [user]
+    end
+
+    test "create_membership/3 rejects unauthorized user" do
+      team = team_fixture()
+      unauthorized_user = Tiki.AccountsFixtures.user_fixture()
+      new_user = Tiki.AccountsFixtures.user_fixture()
+
+      # unauthorized_user is NOT a member of the team
+      scope = Scope.for(user: unauthorized_user.id, team: team.id)
+      valid_attrs = %{role: :admin, user_id: new_user.id}
+
+      assert {:error, :unauthorized} = Teams.create_membership(scope, team.id, valid_attrs)
+    end
+
+    test "update_membership/3 rejects unauthorized user" do
+      membership = membership_fixture() |> Tiki.Repo.preload([:user, :team])
+      unauthorized_user = Tiki.AccountsFixtures.user_fixture()
+
+      # unauthorized_user is NOT a member of the team
+      scope = Scope.for(user: unauthorized_user.id, team: membership.team.id)
+
+      assert {:error, :unauthorized} =
+               Teams.update_membership(scope, membership, %{role: :member})
     end
   end
 end

@@ -40,7 +40,7 @@ defmodule TikiWeb.AdminLive.Forms.Index do
   end
 
   @impl Phoenix.LiveView
-  def mount(%{"id" => event_id}, _session, socket) do
+  def mount(%{"event_id" => event_id}, _session, socket) do
     event = Tiki.Events.get_event!(event_id)
 
     with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do

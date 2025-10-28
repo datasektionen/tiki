@@ -117,8 +117,8 @@ defmodule Tiki.Teams do
     result =
       Enum.reduce(member_ids, multi, fn id, multi ->
         Multi.insert(multi, "membership_#{id}", fn %{team: team} ->
-          Membership.changeset(%Membership{}, %{team_id: team.id, user_id: id, role: :admin})
-          |> Ecto.Changeset.foreign_key_constraint(:user_id)
+          %Membership{team_id: team.id}
+          |> Membership.changeset(%{user_id: id, role: :admin})
         end)
       end)
       |> Repo.transaction()
@@ -224,39 +224,51 @@ defmodule Tiki.Teams do
   end
 
   @doc """
-  Creates a membership.
+  Creates a membership with authorization.
 
   ## Examples
 
-      iex> create_membership(%{field: value})
+      iex> create_membership(scope, team_id, %{user_id: 123, role: :member})
       {:ok, %Membership{}}
 
-      iex> create_membership(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      iex> create_membership(scope, team_id, %{user_id: 123})
+      {:error, %Changeset{}}
+
+
+      iex> create_membership(unauthorized_scope, team_id, attrs)
+      {:error, :unauthorized}
 
   """
-  def create_membership(attrs \\ %{}) do
-    %Membership{}
-    |> Membership.changeset(attrs)
-    |> Repo.insert()
+  def create_membership(%Tiki.Accounts.Scope{} = scope, team_id, attrs \\ %{})
+      when is_integer(team_id) do
+    team = get_team!(team_id)
+
+    with :ok <- Tiki.Policy.authorize(:team_update, scope.user, team) do
+      %Membership{team_id: team_id}
+      |> Membership.changeset(attrs)
+      |> Repo.insert()
+    end
   end
 
   @doc """
   Updates a membership.
-
   ## Examples
 
-      iex> update_membership(membership, %{field: new_value})
+      iex> update_membership(scope, membership, %{role: :admin})
       {:ok, %Membership{}}
 
-      iex> update_membership(membership, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      iex> update_membership(unauthorized_scope, membership, attrs)
+      {:error, :unauthorized}
 
   """
-  def update_membership(%Membership{} = membership, attrs) do
-    membership
-    |> Membership.changeset(attrs)
-    |> Repo.update()
+  def update_membership(%Tiki.Accounts.Scope{} = scope, %Membership{} = membership, attrs) do
+    team = get_team!(membership.team_id)
+
+    with :ok <- Tiki.Policy.authorize(:team_update, scope.user, team) do
+      membership
+      |> Membership.changeset(attrs)
+      |> Repo.update()
+    end
   end
 
   @doc """

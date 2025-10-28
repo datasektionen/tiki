@@ -69,9 +69,9 @@ defmodule Tiki.Releases do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_release(attrs \\ %{}) do
+  def create_release(event_id, attrs \\ %{}) when is_binary(event_id) do
     with {:ok, release} <-
-           %Release{}
+           %Release{event_id: event_id}
            |> Release.changeset(attrs)
            |> Repo.insert(returning: [:id]) do
       EventSchedulerWorker.schedule_release_jobs(release)

@@ -13,8 +13,8 @@ defmodule TikiWeb.AdminLive.Event.Edit do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    event = Events.get_event!(id)
+  defp apply_action(socket, :edit, %{"event_id" => event_id}) do
+    event = Events.get_event!(event_id)
 
     with :ok <- Tiki.Policy.authorize(:event_manage, socket.assigns.current_user, event) do
       socket
@@ -22,15 +22,15 @@ defmodule TikiWeb.AdminLive.Event.Edit do
       |> assign_breadcrumbs([
         {"Dashboard", ~p"/admin"},
         {"Events", ~p"/admin/events"},
-        {Localizer.localize(event).name, ~p"/admin/events/#{id}"},
-        {"Edit event", ~p"/admin/events/#{id}/edit"}
+        {Localizer.localize(event).name, ~p"/admin/events/#{event_id}"},
+        {"Edit event", ~p"/admin/events/#{event_id}/edit"}
       ])
       |> assign(:event, event)
     else
       {:error, :unauthorized} ->
         socket
         |> put_flash(:error, gettext("You are not authorized to do that."))
-        |> redirect(to: ~p"/admin/events/#{id}")
+        |> redirect(to: ~p"/admin/events/#{event_id}")
     end
   end
 

@@ -3,8 +3,10 @@ defmodule Tiki.Policy.Checks do
   alias Tiki.Teams
   alias Tiki.Events
 
+  @permission_service Application.compile_env(:tiki, :permission_service_module)
+
   def hive(%Accounts.User{} = user, _object, permission) do
-    Tiki.Hive.get_permissions(user)
+    @permission_service.get_permissions(user)
     |> Enum.any?(fn p -> p == permission end)
   end
 
