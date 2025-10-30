@@ -92,7 +92,9 @@ defmodule Tiki.MixProject do
       {:nimble_csv, "~> 1.2"},
       {:prom_ex, "~> 1.0"},
       {:langchain, "0.4.0-rc.2"},
-      {:tidewave, "~> 0.5", only: [:dev]}
+      {:tidewave, "~> 0.5", only: [:dev]},
+      {:libcluster, "~> 3.5"},
+      {:libcluster_postgres, "~> 0.2"}
     ]
   end
 

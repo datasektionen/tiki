@@ -15,6 +15,11 @@ defmodule Tiki.Application do
     metrics_port = Application.get_env(:tiki, :metrics_port, 9001)
     permission_service = Application.get_env(:tiki, :permission_service_module, Tiki.Hive)
 
+    topology = [
+      strategy: LibclusterPostgres.Strategy,
+      config: Tiki.Repo.config()
+    ]
+
     children =
       [
         # Start the PromEx metrics exporter and telemetry
@@ -30,6 +35,7 @@ defmodule Tiki.Application do
         {Finch, name: Tiki.Finch},
         # Start the Endpoint (http/https)
         TikiWeb.Endpoint,
+        {Cluster.Supervisor, [[app: topology]]},
         # Start the PromEx plug endpoint
         {Bandit, plug: TikiWeb.MetricsPlug, port: metrics_port},
         # Start the OIDC provider configuration worker (fetches the OIDC connect configuration)
