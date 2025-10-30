@@ -99,7 +99,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
     ~H"""
     <div>
       <div
-        phx-hook="SearchCombobox"
+        phx-hook=".SearchCombobox"
         id={"#{@id}-combobox"}
         phx-target={@myself}
         phx-click-away="close"
@@ -213,6 +213,45 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
       </div>
 
       <.input field={@field} type="hidden" value={@chosen} />
+
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".SearchCombobox">
+        export default {
+          mounted() {
+            const allowedKeys = new Set(["ArrowUp", "ArrowDown", "Enter"]);
+
+            let input = this.el;
+            document.addEventListener("keydown", (event) => {
+              if (!allowedKeys.has(event.key)) {
+                return;
+              }
+
+              const focused = document.querySelector(":focus");
+
+              if (!focused || !input.contains(focused)) {
+                return;
+              }
+
+              event.preventDefault();
+              let elements = this.el.querySelectorAll("input, li");
+              let index = Array.from(elements).indexOf(focused);
+              let count = elements.length;
+
+              if (event.key === "Enter" && index > 0) {
+                let data = elements[index].dataset;
+                this.pushEventTo(this.el, "chosen", data);
+              }
+
+              if (event.key === "ArrowUp") {
+                elements[index > 0 ? index - 1 : tabElementsCount].focus();
+              }
+
+              if (event.key === "ArrowDown") {
+                elements[index < count ? index + 1 : 0].focus();
+              }
+            });
+          }
+        }
+      </script>
     </div>
     """
   end

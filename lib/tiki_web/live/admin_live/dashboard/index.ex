@@ -156,7 +156,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Index do
           </.card_header>
           <.card_content>
             <.table
-              id="events"
+              id="attendees"
               rows={@streams.recent_tickets}
               row_click={
                 fn {_id, ticket} ->

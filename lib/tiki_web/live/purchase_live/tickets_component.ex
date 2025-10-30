@@ -35,7 +35,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
               {time_to_string(date, format: :Hm)}
             </span>
           </div>
-          <div :for={ticket_type <- ticket_types} class="bg-accent overflow-hidden rounded-xl">
+          <div :for={ticket_type <- ticket_types} class="bg-accent rounded-xl">
             <div :if={ticket_type.promo_code != nil}>
               <div class="bg-cyan-700 py-1 text-center text-sm text-cyan-100">
                 {ticket_type.promo_code}
@@ -44,7 +44,22 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
             <div class="flex flex-row justify-between px-4 py-4">
               <div class="flex flex-col">
-                <h3 class="text-md pb-1 font-semibold">{Localizer.localize(ticket_type).name}</h3>
+                <div class="flex flex-row items-center gap-1 pb-1">
+                  <h3 class="text-md font-semibold">{Localizer.localize(ticket_type).name}</h3>
+                  <.tooltip
+                    :if={ticket_type.description != nil}
+                    class="flex justify-center p-1"
+                  >
+                    <.icon name="hero-information-circle" class="size-4" />
+                    <.tooltip_content
+                      id={ticket_type.id}
+                      side="right"
+                      class="max-w-64 size-fit z-20 w-max whitespace-normal"
+                    >
+                      <div class="size-max max-w-64 w-full w-fit whitespace-pre-line" phx-no-format>{Localizer.localize(ticket_type).description}</div>
+                    </.tooltip_content>
+                  </.tooltip>
+                </div>
                 <div class="text-muted-foreground text-sm">{ticket_type.price} kr</div>
               </div>
 

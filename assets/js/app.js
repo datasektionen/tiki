@@ -22,15 +22,15 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { InitCheckout } from "./checkout";
-import { SearchCombobox } from "./searchCombobox";
 import { InitSorting } from "./sortable";
 import Scanner from "./scanner";
+import { hooks as colocated } from "phoenix-colocated/tiki";
 
 let Hooks = {
   InitCheckout: InitCheckout,
-  SearchCombobox: SearchCombobox,
   Scanner: Scanner,
   InitSorting: InitSorting,
+  ...colocated,
 };
 
 let Uploaders = {};
