@@ -72,6 +72,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
             batch={@batch}
             event={@event}
             action={@live_action}
+            current_scope={@current_scope}
           />
         </.sheet_content>
       </.sheet>
@@ -90,6 +91,7 @@ defmodule TikiWeb.AdminLive.Ticket.Index do
             ticket_type={@ticket_type}
             event={@event}
             action={@live_action}
+            current_scope={@current_scope}
           />
         </.sheet_content>
       </.sheet>

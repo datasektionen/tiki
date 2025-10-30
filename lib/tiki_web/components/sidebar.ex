@@ -179,7 +179,6 @@ defmodule TikiWeb.Component.Sidebar do
         active={@active_tab == :team_members}
       />
       <:item text={gettext("Edit team")} to={~p"/admin/team/edit"} active={@active_tab == :team_edit} />
-      <:item text={gettext("Payments")} to="" />
     </.sidebar_group>
     """
   end
@@ -202,6 +201,13 @@ defmodule TikiWeb.Component.Sidebar do
       </:header>
       <:item text={gettext("All users")} to={~p"/admin/users"} active={@active_tab == :users} />
       <:item text={gettext("New user")} to={~p"/admin/users/new"} active={@active_tab == :new_user} />
+    </.sidebar_group>
+    <.sidebar_group>
+      <:header>
+        <.icon name="hero-credit-card" class="h-4 w-4" />
+        <span>{gettext("Payments")}</span>
+      </:header>
+      <:item text={gettext("Reports")} to={~p"/admin/reports"} active={@active_tab == :reports} />
     </.sidebar_group>
     """
   end
@@ -233,7 +239,7 @@ defmodule TikiWeb.Component.Sidebar do
     assigns = assign(assigns, :len, Enum.count(assigns.breadcrumbs))
 
     ~H"""
-    <div class="md:hidden">
+    <div class="print:hidden md:hidden">
       <.breadcrumb_list>
         <.breadcrumb_item class="text-sm">
           <.breadcrumb_page class="text-foreground">
@@ -242,7 +248,7 @@ defmodule TikiWeb.Component.Sidebar do
         </.breadcrumb_item>
       </.breadcrumb_list>
     </div>
-    <.breadcrumb class="hidden md:flex">
+    <.breadcrumb class="hidden print:hidden md:flex">
       <.breadcrumb_list>
         <.breadcrumb_item :for={{{name, url}, index} <- Enum.with_index(@breadcrumbs)}>
           <.breadcrumb_link navigate={url} class={index == @len - 1 && "text-foreground"}>

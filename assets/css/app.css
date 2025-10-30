@@ -55,12 +55,20 @@
 
     @keyframes flash-error {
         from {
-            background: linear-gradient(to right, var(--color-error-background) 50%, var(--color-background) 50%);
+            background: linear-gradient(
+                to right,
+                var(--color-error-background) 50%,
+                var(--color-background) 50%
+            );
             background-size: 200% 100%;
             background-position: right bottom;
         }
         to {
-            background: linear-gradient(to right, var(--color-error-background) 50%, var(--color-background) 50%);
+            background: linear-gradient(
+                to right,
+                var(--color-error-background) 50%,
+                var(--color-background) 50%
+            );
             background-size: 200% 100%;
             background-position: left bottom;
         }
@@ -70,12 +78,20 @@
 
     @keyframes flash-success {
         from {
-            background: linear-gradient(to right, var(--color-success-background) 50%, var(--color-background) 50%);
+            background: linear-gradient(
+                to right,
+                var(--color-success-background) 50%,
+                var(--color-background) 50%
+            );
             background-size: 200% 100%;
             background-position: right bottom;
         }
         to {
-            background: linear-gradient(to right, var(--color-success-background) 50%, var(--color-background) 50%);
+            background: linear-gradient(
+                to right,
+                var(--color-success-background) 50%,
+                var(--color-background) 50%
+            );
             background-size: 200% 100%;
             background-position: left bottom;
         }
@@ -134,5 +150,15 @@
         --color-success-background: oklch(22.1% 0.035 172.552);
         --color-error: oklch(0.577 0.245 27.325);
         --color-error-background: oklch(20.1% 0.045 12.09);
+    }
+}
+
+@media print {
+    .print\:pl-0 {
+        padding-left: 0 !important;
+    }
+
+    .print\:hidden {
+        display: hidden !important;
     }
 }

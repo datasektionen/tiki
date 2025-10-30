@@ -87,6 +87,42 @@ defmodule Tiki.Events do
   end
 
   @doc """
+  Lists all events with optional limit.
+
+  ## Examples
+
+      iex> list_all_events(limit: 10)
+      [%Event{}, ...]
+
+  """
+  def list_all_events(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 50)
+    Repo.all(from e in Event, limit: ^limit, order_by: [asc: e.name])
+  end
+
+  @doc """
+  Searches for events by name.
+
+  ## Examples
+
+      iex> search_events("test")
+      [%Event{}, ...]
+
+  """
+  def search_events(query) do
+    search_term = "%#{query}%"
+
+    Repo.all(
+      from e in Event,
+        where:
+          ilike(e.name, ^search_term) or
+            ilike(e.name_sv, ^search_term),
+        limit: 50,
+        order_by: [asc: e.name]
+    )
+  end
+
+  @doc """
   Gets a single event.
 
   Raises `Ecto.NoResultsError` if the Event does not exist.

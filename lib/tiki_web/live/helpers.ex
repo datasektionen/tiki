@@ -12,6 +12,15 @@ defmodule TikiWeb.LiveHelpers do
   def time_to_string(time, opts \\ [])
   def time_to_string(nil, _opts), do: ""
 
+  # convert date to datetime
+  def time_to_string(%Date{} = date, _opts) do
+    date
+    |> Date.to_gregorian_days()
+    |> Kernel.*(86400)
+    |> Kernel.+(86399)
+    |> DateTime.from_gregorian_seconds()
+  end
+
   def time_to_string(%NaiveDateTime{} = time, opts) do
     DateTime.from_naive!(time, "Etc/UTC")
     |> time_to_string(opts)
@@ -20,10 +29,14 @@ defmodule TikiWeb.LiveHelpers do
   def time_to_string(time, opts) do
     format = Keyword.get(opts, :format, :yMMMEd)
     timezone = Keyword.get(opts, :timezone, "Europe/Stockholm")
+    locale = Keyword.get(opts, :locale, nil)
 
     {:ok, time} = DateTime.shift_zone(time, timezone)
 
-    Tiki.Cldr.DateTime.to_string!(time, format: format)
+    cldr_opts = [format: format]
+    cldr_opts = if locale, do: [locale: locale] ++ cldr_opts, else: cldr_opts
+
+    Tiki.Cldr.DateTime.to_string!(time, cldr_opts)
     |> String.capitalize()
   end
 

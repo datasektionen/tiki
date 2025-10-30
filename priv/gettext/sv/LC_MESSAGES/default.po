@@ -66,6 +66,7 @@ msgstr "Besökare"
 #: lib/tiki_web/components/sidebar.ex:79
 #: lib/tiki_web/components/sidebar.ex:162
 #: lib/tiki_web/live/admin_live/dashboard/index.ex:170
+#: lib/tiki_web/live/admin_live/reports/index.ex:43
 #: lib/tiki_web/live/order_live/show.ex:192
 #, elixir-autogen, elixir-format
 msgid "Event"
@@ -90,7 +91,7 @@ msgstr "Nytt evenemang"
 msgid "Overview"
 msgstr "Översikt"
 
-#: lib/tiki_web/components/sidebar.ex:182
+#: lib/tiki_web/components/sidebar.ex:208
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr "Betalningar"
@@ -101,7 +102,7 @@ msgid "Registrations"
 msgstr "Anmälningar"
 
 #: lib/tiki_web/components/sidebar.ex:174
-#: lib/tiki_web/components/sidebar.ex:354
+#: lib/tiki_web/components/sidebar.ex:360
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Inställningar"
@@ -110,7 +111,7 @@ msgstr "Inställningar"
 #: lib/tiki_web/live/admin_live/attendees/show.ex:124
 #: lib/tiki_web/live/admin_live/orders/show.ex:18
 #: lib/tiki_web/live/admin_live/ticket/index.ex:17
-#: lib/tiki_web/live/admin_live/ticket/index.ex:145
+#: lib/tiki_web/live/admin_live/ticket/index.ex:147
 #: lib/tiki_web/live/order_live/show.ex:47
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:13
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:111
@@ -119,7 +120,7 @@ msgid "Tickets"
 msgstr "Biljetter"
 
 #: lib/tiki_web/components/layouts/nav.html.heex:120
-#: lib/tiki_web/components/sidebar.ex:362
+#: lib/tiki_web/components/sidebar.ex:368
 #, elixir-autogen, elixir-format
 msgid "Log out"
 msgstr "Logga ut"
@@ -320,17 +321,17 @@ msgstr "Sortera efter datum"
 msgid "Members"
 msgstr "Medlemmar"
 
-#: lib/tiki_web/components/sidebar.ex:271
+#: lib/tiki_web/components/sidebar.ex:277
 #, elixir-autogen, elixir-format
 msgid "Create or join one"
 msgstr "Skapa eller gå med i ett"
 
-#: lib/tiki_web/components/sidebar.ex:271
+#: lib/tiki_web/components/sidebar.ex:277
 #, elixir-autogen, elixir-format
 msgid "No team"
 msgstr "Inget team"
 
-#: lib/tiki_web/components/sidebar.ex:193
+#: lib/tiki_web/components/sidebar.ex:192
 #: lib/tiki_web/live/admin_live/dashboard/team.ex:41
 #: lib/tiki_web/live/admin_live/users/form_component.ex:53
 #, elixir-autogen, elixir-format
@@ -356,12 +357,12 @@ msgstr "Du måste vara admin för att komma åt denna sida."
 
 #: lib/tiki_web/components/layouts/nav.html.heex:65
 #: lib/tiki_web/components/layouts/nav.html.heex:81
-#: lib/tiki_web/components/sidebar.ex:189
+#: lib/tiki_web/components/sidebar.ex:188
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr "Admin"
 
-#: lib/tiki_web/components/sidebar.ex:195
+#: lib/tiki_web/components/sidebar.ex:194
 #: lib/tiki_web/live/admin_live/team/index.ex:10
 #: lib/tiki_web/live/admin_live/team/index.ex:44
 #, elixir-autogen, elixir-format
@@ -380,7 +381,7 @@ msgstr "Nuvarande besökare"
 msgid "Events"
 msgstr "Evenemang"
 
-#: lib/tiki_web/components/sidebar.ex:196
+#: lib/tiki_web/components/sidebar.ex:195
 #, elixir-autogen, elixir-format
 msgid "New team"
 msgstr "Nytt team"
@@ -538,27 +539,27 @@ msgstr "Ny batch"
 msgid "New ticket type"
 msgstr "Ny biljettyp"
 
-#: lib/tiki_web/live/components/search_combobox.ex:99
+#: lib/tiki_web/live/components/search_combobox.ex:118
 #, elixir-autogen, elixir-format
 msgid "Search..."
 msgstr "Sök..."
 
-#: lib/tiki_web/live/admin_live/ticket/index.ex:152
+#: lib/tiki_web/live/admin_live/ticket/index.ex:154
 #, elixir-autogen, elixir-format
 msgid "Edit Ticket Batch"
 msgstr "Redigera batch"
 
-#: lib/tiki_web/live/admin_live/ticket/index.ex:172
+#: lib/tiki_web/live/admin_live/ticket/index.ex:174
 #, elixir-autogen, elixir-format
 msgid "Edit Ticket type"
 msgstr "Redigera biljettyp"
 
-#: lib/tiki_web/live/admin_live/ticket/index.ex:163
+#: lib/tiki_web/live/admin_live/ticket/index.ex:165
 #, elixir-autogen, elixir-format
 msgid "New Ticket Batch"
 msgstr "Ny batch"
 
-#: lib/tiki_web/live/admin_live/ticket/index.ex:194
+#: lib/tiki_web/live/admin_live/ticket/index.ex:196
 #, elixir-autogen, elixir-format
 msgid "New Ticket type"
 msgstr "Ny biljettyp"
@@ -1094,7 +1095,7 @@ msgstr "Välkommen till Tiki - Datasektionens senaste och bästa eventplattform.
 msgid "Open main menu"
 msgstr "Öppna huvudmeny"
 
-#: lib/tiki_web/live/admin_live/ticket/index.ex:272
+#: lib/tiki_web/live/admin_live/ticket/index.ex:274
 #, elixir-autogen, elixir-format
 msgid "Add ticket"
 msgstr "Lägg till biljett"
@@ -1204,7 +1205,7 @@ msgstr "Tiki är en eventplattform utvecklad för och av Datasektionen på KTH."
 msgid "for an account now."
 msgstr "för ett konto nu."
 
-#: lib/tiki_web/live/admin_live/ticket/index.ex:215
+#: lib/tiki_web/live/admin_live/ticket/index.ex:217
 #, elixir-autogen, elixir-format
 msgid "tickets"
 msgstr "biljetter"
@@ -1328,10 +1329,10 @@ msgstr "Ladda upp en fil"
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:146
 #: lib/tiki_web/live/admin_live/team/membership_form.ex:169
 #: lib/tiki_web/live/admin_live/team/show.ex:68
-#: lib/tiki_web/live/admin_live/ticket/index.ex:112
-#: lib/tiki_web/live/admin_live/ticket/index.ex:138
-#: lib/tiki_web/live/admin_live/ticket/index.ex:156
-#: lib/tiki_web/live/admin_live/ticket/index.ex:176
+#: lib/tiki_web/live/admin_live/ticket/index.ex:114
+#: lib/tiki_web/live/admin_live/ticket/index.ex:140
+#: lib/tiki_web/live/admin_live/ticket/index.ex:158
+#: lib/tiki_web/live/admin_live/ticket/index.ex:178
 #: lib/tiki_web/live/admin_live/users/index.ex:107
 #: lib/tiki_web/user_auth.ex:242
 #, elixir-autogen, elixir-format
@@ -2401,7 +2402,7 @@ msgstr "Du måste ha ett KTH-konto kopplat för att anmäla dig till ett biljett
 msgid "Admin Tools"
 msgstr "Administratörsverktyg"
 
-#: lib/tiki_web/components/sidebar.ex:203
+#: lib/tiki_web/components/sidebar.ex:202
 #, elixir-autogen, elixir-format
 msgid "All users"
 msgstr "Alla användare"
@@ -2495,7 +2496,7 @@ msgstr "Hantera användarkonton."
 msgid "New User"
 msgstr "Ny användare"
 
-#: lib/tiki_web/components/sidebar.ex:204
+#: lib/tiki_web/components/sidebar.ex:203
 #, elixir-autogen, elixir-format
 msgid "New user"
 msgstr "Ny användare"
@@ -2545,7 +2546,7 @@ msgstr "Användaren raderades"
 msgid "User updated successfully"
 msgstr "Användaren uppdaterades"
 
-#: lib/tiki_web/components/sidebar.ex:201
+#: lib/tiki_web/components/sidebar.ex:200
 #: lib/tiki_web/live/admin_live/users/index.ex:15
 #: lib/tiki_web/live/admin_live/users/index.ex:123
 #, elixir-autogen, elixir-format
@@ -2586,3 +2587,78 @@ msgstr "Något gick fel när du försökte logga in med KTH. Försök igen eller
 #, elixir-autogen, elixir-format
 msgid "Email %{error}. Sign in with your email address and link to your KTH account instead."
 msgstr "Mail %{error}. Logga in med din e-postadress och länka till ditt KTH-konto istället."
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:45
+#: lib/tiki_web/live/admin_live/reports/index.ex:46
+#, elixir-autogen, elixir-format
+msgid "All Events"
+msgstr "Alla Evenemang"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:102
+#, elixir-autogen, elixir-format
+msgid "Include detailed transactions"
+msgstr "Inkludera transaktionsdetaljer"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:77
+#: lib/tiki_web/live/admin_live/reports/index.ex:84
+#, elixir-autogen, elixir-format
+msgid "Inclusive. Leave blank for unbounded dates"
+msgstr "Inklusivt. Lämna tomt för obegränsade datum"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:54
+#, elixir-autogen, elixir-format
+msgid "Leave blank to include all ticket types"
+msgstr "Lämna tomt för att inkludera alla biljettyper"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:92
+#, elixir-autogen, elixir-format
+msgid "Payment Methods"
+msgstr "Betalmetoder"
+
+#: lib/tiki_web/components/sidebar.ex:210
+#: lib/tiki_web/live/admin_live/reports/index.ex:17
+#: lib/tiki_web/live/admin_live/reports/index.ex:303
+#, elixir-autogen, elixir-format
+msgid "Reports"
+msgstr "Rapporter"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:103
+#, elixir-autogen, elixir-format
+msgid "Shows individual ticket purchases (increases report size)"
+msgstr "Visar individuella biljettköp (ökar rapportstorleken)"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:83
+#, elixir-autogen, elixir-format
+msgid "End Date"
+msgstr "Slutdatum"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:26
+#: lib/tiki_web/live/admin_live/reports/index.ex:115
+#, elixir-autogen, elixir-format
+msgid "Generate Report"
+msgstr "Generera Rapport"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:19
+#, elixir-autogen, elixir-format
+msgid "Generate ticket sales reports for your events. Reports are displayed in English only"
+msgstr "Generera biljettförsäljningsrapporter för dina evenemang. Rapporter visas endast på engelska"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:113
+#, elixir-autogen, elixir-format
+msgid "Generating..."
+msgstr "Genererar..."
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:130
+#, elixir-autogen, elixir-format
+msgid "Print / Save as PDF"
+msgstr "Utskrift / Spara som PDF"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:76
+#, elixir-autogen, elixir-format
+msgid "Start Date"
+msgstr "Startdatum"
+
+#: lib/tiki_web/live/admin_live/reports/index.ex:52
+#, elixir-autogen, elixir-format
+msgid "Ticket Types"
+msgstr "Biljettryper"

@@ -34,6 +34,8 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
   * `label` - The label for the combobox.
   * `chosen` - The id of the chosen item, used to preselect an already chosen item.
   * `placeholder` - The placeholder text for the combobox, used only initially when rendered.
+  * `empty_option` - Optional tuple `{id, label}` to show an empty/clear option at the top of results (e.g., `{"", "All Events"}`).
+  * `notify_fn` - Optional callback function that receives the chosen item when selected. The function is called with the raw item (before mapping), eg. `{id, name}`.
   """
 
   use TikiWeb, :live_component
@@ -46,6 +48,8 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
     placeholder = Map.get(assigns, :placeholder, "")
     all_fn = Map.get(assigns, :all_fn, fn -> [] end)
     map_fn = Map.get(assigns, :map_fn, fn x -> x end)
+    empty_option = Map.get(assigns, :empty_option, nil)
+    notify_fn = Map.get(assigns, :notify_fn, fn _ -> nil end)
 
     {:ok,
      socket
@@ -54,7 +58,10 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
        results: [],
        chosen: chosen,
        all_fn: all_fn,
-       map_fn: map_fn
+       map_fn: map_fn,
+       empty_option: empty_option,
+       notify_fn: notify_fn,
+       opened: false
      )
      |> assign_new(:query, fn -> placeholder end)}
   end
@@ -65,26 +72,38 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
       socket.assigns.search_fn.(query)
       |> Enum.take(@display_limit)
 
-    {:noreply, assign(socket, results: results, query: query)}
+    {:noreply, assign(socket, results: results, query: query, opened: true)}
   end
 
   @impl true
   def handle_event("show_all", _query, socket) do
     results = socket.assigns.all_fn.(limit: @display_limit)
 
-    {:noreply, assign(socket, results: results)}
+    {:noreply, assign(socket, results: results, opened: !socket.assigns.opened)}
   end
 
   @impl true
   def handle_event("chosen", %{"id" => id, "value" => value}, socket) do
-    {:noreply, assign(socket, chosen: id, query: value, results: [])}
+    socket.assigns.notify_fn.({id, value})
+
+    {:noreply, assign(socket, chosen: id, query: value, results: [], opened: false)}
+  end
+
+  @impl true
+  def handle_event("close", _params, socket) do
+    {:noreply, assign(socket, opened: false, results: [])}
   end
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <div phx-hook="SearchCombobox" id={"#{@id}-combobox"}>
+      <div
+        phx-hook="SearchCombobox"
+        id={"#{@id}-combobox"}
+        phx-target={@myself}
+        phx-click-away="close"
+      >
         <label for="combobox" class="text-foreground block text-sm font-medium leading-6">
           {@label}
         </label>
@@ -95,7 +114,7 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
             class="py-[7px] px-[11px] text-foreground border-input bg-background mt-2 block w-full rounded-lg text-sm focus:ring-ring focus:border-input focus:outline-hidden focus:ring-2 sm:leading-6"
             role="combobox"
             aria-controls="options"
-            aria-expanded="false"
+            aria-expanded={@opened}
             placeholder={gettext("Search...")}
             phx-target={@myself}
             phx-change="search"
@@ -124,11 +143,44 @@ defmodule TikiWeb.LiveComponents.SearchCombobox do
           </button>
 
           <div
-            :if={@results != []}
+            :if={@opened}
             class="bg-background ring-border absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md py-1 text-base shadow-lg ring-1 ring-opacity-5 focus:outline-hidden sm:text-sm"
             id={"#{@id}-options"}
             role="listbox"
+            phx-target={@myself}
           >
+            <%!-- Empty option if provided --%>
+            <%= if @empty_option do %>
+              <% {empty_id, empty_label} = @empty_option %>
+              <li
+                class="text-foreground relative cursor-pointer select-none list-none py-2 pr-9 pl-3 hover:bg-accent/50 focus:bg-accent/50 focus:outline-hidden"
+                role="option"
+                tabindex="-1"
+                phx-click={JS.push("chosen", value: %{id: empty_id, value: empty_label})}
+                phx-target={@myself}
+                data-id={empty_id}
+                data-value={empty_label}
+              >
+                <span class={["block truncate", @chosen == empty_id && "font-semibold"]}>
+                  {empty_label}
+                </span>
+
+                <span
+                  :if={@chosen == empty_id}
+                  class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600"
+                >
+                  <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </span>
+              </li>
+            <% end %>
+
+            <%!-- Regular results --%>
             <li
               :for={{id, value} <- @results |> Enum.map(&@map_fn.(&1))}
               class="text-foreground relative cursor-pointer select-none list-none py-2 pr-9 pl-3 hover:bg-accent/50 focus:bg-accent/50 focus:outline-hidden"

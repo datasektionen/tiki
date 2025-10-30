@@ -36,7 +36,7 @@ defmodule TikiWeb.AdminLive.Dashboard.Team do
               class="w-full"
             >
               <.select_trigger builder={select} />
-              <.select_content builder={select} class="w-full">
+              <.select_content builder={select} class="w-full overflow-y-auto">
                 <.select_group>
                   <.select_label>{gettext("Teams")}</.select_label>
 
