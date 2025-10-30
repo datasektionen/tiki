@@ -72,4 +72,11 @@ defmodule Tiki.Policy do
       allow hive: "audit"
     end
   end
+
+  object :report do
+    action :generate do
+      allow hive: "admin"
+      allow hive: "audit"
+    end
+  end
 end

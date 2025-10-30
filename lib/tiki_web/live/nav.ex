@@ -89,6 +89,8 @@ defmodule TikiWeb.Nav do
   tab AdminLive.Users.Index, :new, :new_user
   tab AdminLive.Users.Index, :edit, :users
 
+  tab AdminLive.Reports.Index, :index, :reports
+
   defp set_nav(_params, url, socket) do
     active_tab = active_tab(socket.view, socket.assigns.live_action)
 

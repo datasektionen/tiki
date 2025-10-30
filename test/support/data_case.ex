@@ -18,12 +18,14 @@ defmodule Tiki.DataCase do
 
   using do
     quote do
-      alias Tiki.Repo
+      use Oban.Testing, repo: Tiki.Repo
 
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import Tiki.DataCase
+
+      alias Tiki.Repo
     end
   end
 

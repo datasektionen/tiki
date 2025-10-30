@@ -10,7 +10,7 @@ defmodule Tiki.TicketsFixtures do
   def ticket_batch_fixture(attrs \\ %{}) do
     event = Map.get(attrs, :event, Tiki.EventsFixtures.event_fixture())
 
-    user = Tiki.AccountsFixtures.admin_user_fixture()
+    user = Map.get(attrs, :user, Tiki.AccountsFixtures.admin_user_fixture())
     scope = Tiki.Accounts.Scope.for(event: event.id, user: user.id)
 
     {:ok, ticket_batch} =
@@ -34,7 +34,7 @@ defmodule Tiki.TicketsFixtures do
 
     batch = Tiki.Tickets.get_ticket_batch!(batch_id)
 
-    user = Tiki.AccountsFixtures.admin_user_fixture()
+    user = Map.get(attrs, :user, Tiki.AccountsFixtures.admin_user_fixture())
     scope = Tiki.Accounts.Scope.for(event: batch.event_id, user: user.id)
 
     {:ok, ticket_types} =
