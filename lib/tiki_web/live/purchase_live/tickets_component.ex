@@ -54,7 +54,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
                     <.tooltip_content
                       id={ticket_type.id}
                       side="right"
-                      class="z-20 max-w-64 size-fit w-max whitespace-normal"
+                      class="max-w-64 size-fit z-20 w-max whitespace-normal"
                     >
                       <div class="size-max max-w-64 w-full w-fit whitespace-pre-line" phx-no-format>{Localizer.localize(ticket_type).description}</div>
                     </.tooltip_content>
