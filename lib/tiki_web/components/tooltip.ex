@@ -79,13 +79,13 @@ defmodule TikiWeb.Component.Tooltip do
       data-tooltip-state="closed"
       class={
         classes([
-          "z-50 absolute",
+          "absolute z-50",
           "bg-popover text-popover-foreground rounded-md border px-3 py-1.5 text-sm shadow-md",
           "animate-in fade-in-0 zoom-in-95",
           "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
           "hidden data-[tooltip-state=open]:block group-hover/tooltip:block",
           "data-[tooltip-state=open]:pointer-events-auto group-hover/tooltip:pointer-events-auto",
-          "max-w-xs break-words pointer-events-none",
+          "pointer-events-none max-w-xs break-words",
           @variant_class,
           @class
         ])
