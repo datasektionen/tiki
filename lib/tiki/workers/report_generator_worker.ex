@@ -9,13 +9,14 @@ defmodule Tiki.Workers.ReportGeneratorWorker do
   alias Tiki.Reports
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: args, id: job_id}) do
+  def perform(%Oban.Job{args: args}) do
     event_ids = parse_event_ids(args["event_ids"])
     ticket_type_ids = parse_ticket_type_ids(args["ticket_type_ids"])
     start_date = parse_date(args["start_date"])
     end_date = parse_date(args["end_date"])
     include_details = Map.get(args, "include_details", true)
     payment_type = args["payment_type"] || ""
+    id = args["id"]
 
     opts = [
       event_ids: event_ids,
@@ -28,12 +29,12 @@ defmodule Tiki.Workers.ReportGeneratorWorker do
 
     try do
       report = Reports.generate_report(opts)
-      broadcast_result(:ok, report, job_id)
+      broadcast_result(:ok, report, id)
       :ok
     rescue
       e ->
         error_message = Exception.message(e)
-        broadcast_result(:error, %{message: error_message}, job_id)
+        broadcast_result(:error, %{message: error_message}, id)
         {:error, error_message}
     end
   end

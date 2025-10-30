@@ -14,12 +14,17 @@ defmodule Tiki.Events do
 
   ## Examples
 
-      iex> list_events()
+      iex> list_events(limit: 10)
       [%Event{}, ...]
 
   """
-  def list_events do
-    Repo.all(Event)
+  def list_events(opts \\ []) do
+    limit = Keyword.get(opts, :limit, nil)
+
+    q = from e in Event, order_by: [asc: e.name]
+    q = if limit, do: limit(q, ^limit), else: q
+
+    Repo.all(q)
   end
 
   @doc """
@@ -87,20 +92,6 @@ defmodule Tiki.Events do
   end
 
   @doc """
-  Lists all events with optional limit.
-
-  ## Examples
-
-      iex> list_all_events(limit: 10)
-      [%Event{}, ...]
-
-  """
-  def list_all_events(opts \\ []) do
-    limit = Keyword.get(opts, :limit, 50)
-    Repo.all(from e in Event, limit: ^limit, order_by: [asc: e.name])
-  end
-
-  @doc """
   Searches for events by name.
 
   ## Examples
@@ -117,7 +108,7 @@ defmodule Tiki.Events do
         where:
           ilike(e.name, ^search_term) or
             ilike(e.name_sv, ^search_term),
-        limit: 50,
+        limit: 25,
         order_by: [asc: e.name]
     )
   end

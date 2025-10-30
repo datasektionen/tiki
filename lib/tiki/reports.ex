@@ -6,15 +6,88 @@ defmodule Tiki.Reports do
   import Ecto.Query, warn: false
   alias Tiki.Repo
   alias Tiki.Orders.{Order, AuditLog}
+  alias Tiki.Workers.ReportGeneratorWorker
+  alias Tiki.Reports.ReportParams
+  alias Tiki.Policy
+  alias Ecto.Changeset
+
+  @doc """
+  Enqueue a report generation job to be processed asynchronously.
+
+  Accepts form parameters as a map, validates them using ReportParams changeset,
+  and if valid, enqueues the report generation job.
+
+  ## Parameters (as map)
+    * `event_id` - Event ID to filter by, or empty string for all events
+    * `ticket_type_ids` - List of ticket type IDs to include
+    * `start_date` - Date string or Date to filter from (inclusive)
+    * `end_date` - Date string or Date to filter to (inclusive)
+    * `include_details` - Boolean to include detailed transactions
+    * `payment_type` - Filter by payment method: "", "stripe", or "swish"
+    * `requester_id` - User ID requesting the report
+
+  ## Returns
+    {:ok, job} - Job was enqueued successfully
+    {:error, changeset} - Validation failed
+    {:error, :unauthorized} - User is not authorized to generate reports
+  """
+  def queue_report_generation(scope, params) when is_map(params) do
+    with :ok <- Policy.authorize(:report_generate, scope) do
+      changeset =
+        ReportParams.changeset(params)
+        |> Map.put(:action, :validate)
+
+      if changeset.valid? do
+        data = Changeset.apply_changes(changeset)
+
+        event_ids = format_event_ids(data.event_id)
+        ticket_type_ids_formatted = format_ticket_type_ids(data.ticket_type_ids)
+
+        uuid = Ecto.UUID.generate()
+
+        # Build job arguments
+        job_args =
+          %{
+            "event_ids" => event_ids,
+            "ticket_type_ids" => ticket_type_ids_formatted,
+            "start_date" => data.start_date && Date.to_iso8601(data.start_date),
+            "end_date" => data.end_date && Date.to_iso8601(data.end_date),
+            "include_details" => data.include_details,
+            "payment_type" => data.payment_type,
+            "id" => uuid
+          }
+
+        job_result =
+          ReportGeneratorWorker.new(job_args)
+          |> Oban.insert()
+
+        # Subscribe to PubSub for results
+        case job_result do
+          {:ok, %Oban.Job{} = job} ->
+            Phoenix.PubSub.subscribe(Tiki.PubSub, "reports:#{uuid}")
+            {:ok, job}
+
+          {:error, _} = error ->
+            error
+        end
+      else
+        {:error, changeset}
+      end
+    end
+  end
 
   @doc """
   Generate a ticket sales report with the given filters.
+
+  This is the main entry point for report generation called by the Oban worker.
 
   ## Parameters
     * `:event_ids` - List of event IDs to include, or :all for all events
     * `:ticket_type_ids` - List of ticket type IDs to include, or :all for all types
     * `:start_date` - Date/DateTime to filter from (inclusive)
     * `:end_date` - Date/DateTime to filter to (inclusive)
+    * `:include_details` - Boolean to include detailed transactions
+    * `:payment_type` - Filter by payment method: "", "stripe", or "swish"
 
   ## Returns
     A map containing:
@@ -22,6 +95,7 @@ defmodule Tiki.Reports do
       * `:details` - List of individual ticket transactions
       * `:grand_total` - Total revenue across all tickets
       * `:total_tickets` - Total number of tickets sold
+      * `:generated_at` - Timestamp when report was generated
   """
   def generate_report(opts) do
     event_ids = Keyword.get(opts, :event_ids, :all)
@@ -225,4 +299,10 @@ defmodule Tiki.Reports do
         "Unknown"
     end
   end
+
+  defp format_event_ids(nil), do: "all"
+  defp format_event_ids(event_id), do: [event_id]
+
+  defp format_ticket_type_ids([]), do: "all"
+  defp format_ticket_type_ids(ids) when is_list(ids), do: ids
 end

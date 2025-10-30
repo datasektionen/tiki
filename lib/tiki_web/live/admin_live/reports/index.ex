@@ -4,7 +4,7 @@ defmodule TikiWeb.AdminLive.Reports.Index do
   alias Tiki.Events
   alias Tiki.Tickets
   alias Tiki.Policy
-  alias Tiki.Workers.ReportGeneratorWorker
+  alias Tiki.Reports
   alias Tiki.Reports.ReportParams
 
   alias Tiki.Localizer
@@ -37,7 +37,7 @@ defmodule TikiWeb.AdminLive.Reports.Index do
               id="event-search-component"
               module={TikiWeb.LiveComponents.SearchCombobox}
               search_fn={&Events.search_events/1}
-              all_fn={&Events.list_all_events/1}
+              all_fn={&Events.list_events/1}
               map_fn={fn event -> {event.id, Localizer.localize(event).name} end}
               field={@form[:event_id]}
               label={gettext("Event")}
@@ -338,43 +338,18 @@ defmodule TikiWeb.AdminLive.Reports.Index do
   def handle_event("generate_report", %{"report_params" => params}, socket) do
     %{current_scope: scope} = socket.assigns
 
-    changeset = ReportParams.changeset(params)
+    case Reports.queue_report_generation(scope, params) do
+      {:ok, _job} ->
+        changeset = ReportParams.changeset(params)
 
-    if changeset.valid? do
-      # Extract values from changeset
-      event_id = Ecto.Changeset.get_field(changeset, :event_id)
-      ticket_type_ids = Ecto.Changeset.get_field(changeset, :ticket_type_ids)
-      start_date = Ecto.Changeset.get_field(changeset, :start_date)
-      end_date = Ecto.Changeset.get_field(changeset, :end_date)
-      include_details = Ecto.Changeset.get_field(changeset, :include_details)
-      payment_type = Ecto.Changeset.get_field(changeset, :payment_type)
+        {:noreply,
+         socket
+         |> assign(:form, to_form(changeset))
+         |> assign(:loading, true)
+         |> assign(:report_data, nil)}
 
-      event_ids = parse_event_ids(event_id)
-      ticket_type_ids = parse_ticket_type_ids(ticket_type_ids)
-
-      # Enqueue the Oban job (convert dates to ISO8601 strings for storage)
-      job_args = %{
-        "event_ids" => event_ids,
-        "ticket_type_ids" => ticket_type_ids,
-        "start_date" => start_date && Date.to_iso8601(start_date),
-        "end_date" => end_date && Date.to_iso8601(end_date),
-        "include_details" => include_details,
-        "payment_type" => payment_type,
-        "requester_id" => scope.user.id
-      }
-
-      {:ok, %Oban.Job{id: job_id}} = ReportGeneratorWorker.new(job_args) |> Oban.insert()
-
-      # Subscribe to PubSub for results
-      Phoenix.PubSub.subscribe(Tiki.PubSub, "reports:#{job_id}")
-
-      {:noreply,
-       socket
-       |> assign(:form, to_form(changeset))
-       |> assign(:loading, true)
-       |> assign(:report_data, nil)}
-    else
-      {:noreply, assign(socket, :form, to_form(changeset))}
+      {:error, changeset} ->
+        {:noreply, assign(socket, :form, to_form(changeset))}
     end
   end
 
@@ -410,14 +385,6 @@ defmodule TikiWeb.AdminLive.Reports.Index do
      |> assign(:form, form)
      |> assign(:ticket_types, ticket_types)}
   end
-
-  defp parse_event_ids(nil), do: :all
-  defp parse_event_ids(""), do: :all
-  defp parse_event_ids(event_id), do: [event_id]
-
-  defp parse_ticket_type_ids([]), do: :all
-  defp parse_ticket_type_ids(nil), do: :all
-  defp parse_ticket_type_ids(ids) when is_list(ids), do: ids
 
   defp format_report_date_range(nil, nil), do: "all time"
 
