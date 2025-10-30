@@ -5,15 +5,15 @@ job "tiki" {
   group "tiki" {
 
     network {
-      port "tikihttp" {}
-      port "tikimetricshttp" {}
-      port "imgproxyhttp" {}
+      port "http" {}
+      port "metrics" {}
+      port "imgproxy" {}
     }
 
     task "tiki" {
       service {
         name     = "tiki"
-        port     = "tikihttp"
+        port     = "http"
         provider = "nomad"
         tags = [
           "traefik.enable=true",
@@ -27,7 +27,7 @@ job "tiki" {
 
       service {
         name     = "tiki-metrics"
-        port     = "tikimetricshttp"
+        port     = "metrics"
         provider = "nomad"
         tags = [
           "prometheus.scrape=true",
@@ -41,43 +41,53 @@ job "tiki" {
 
       config {
         image = var.image_tag
-        ports = ["tikihttp", "tikimetricshttp"]
+        ports = ["http", "metrics"]
       }
+
+      template {
+        data        = <<EOF
+SWISH_API_URL=https://cpc.getswish.net/swish-cpcapi/api
+SWISH_CALLBACK_URL=https://tiki.datasektionen.se/swish/callback
+PHX_HOST=tiki.datasektionen.se
+AWS_REGION="eu-north-1"
+S3_BUCKET_NAME=dsekt-tiki
+HIVE_URL=https://hive.datasektionen.se/api/v1
+IMAGE_FRONTEND_URL=https://dnok4ulql7gij.cloudfront.net
+OIDC_ISSUER_URL=https://sso.datasektionen.se/op
+PORT={{ env "NOMAD_PORT_http" }}
+METRICS_PORT={{ env "NOMAD_PORT_metrics" }}
+{{ end }}
+EOF
+        destination = "local/.env"
+        env         = true
+      }
+
 
       template {
 
         data        = <<EOF
 {{ with nomadVar "nomad/jobs/tiki" }}
+RELEASE_COOKIE={{ .release_cookie }}
 DATABASE_URL=postgres://tiki:{{ .database_password }}@postgres.dsekt.internal:5432/tiki
-SWISH_API_URL=https://cpc.getswish.net/swish-cpcapi/api
 SWISH_CERT={{ .swish_cert }}
 SWISH_KEY={{ .swish_key }}
 SWISH_MERCHANT_NUMBER={{ .swish_merchant_number }}
-SWISH_CALLBACK_URL=https://tiki.datasektionen.se/swish/callback
 SECRET_KEY_BASE={{ .secret_key_base }}
-PHX_HOST=tiki.datasektionen.se
-PORT={{ env "NOMAD_PORT_tikihttp" }}
-METRICS_PORT={{ env "NOMAD_PORT_tikimetricshttp" }}
 SPAM_API_KEY={{ .spam_api_key }}
 STRIPE_API_KEY={{ .stripe_api_key }}
 STRIPE_PUBLIC_KEY={{ .stripe_public_key }}
 STRIPE_WEBHOOK_SECRET={{ .stripe_webhook_secret }}
-OIDC_ISSUER_URL=https://sso.datasektionen.se/op
 OIDC_CLIENT_ID={{ .oidc_client_id }}
 OIDC_CLIENT_SECRET={{ .oidc_client_secret }}
-S3_BUCKET_NAME=dsekt-tiki
-AWS_REGION="eu-north-1"
 AWS_ACCESS_KEY_ID={{ .aws_access_key_id }}
 AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
-IMAGE_FRONTEND_URL=https://dnok4ulql7gij.cloudfront.net
 OPENAI_KEY={{ .openai_key }}
-HIVE_URL=https://hive.datasektionen.se/api/v1
 HIVE_API_TOKEN={{ .hive_api_token }}
 {{ end }}
 EOF
-        destination = "local/.env"
+        destination = "${NOMAD_ALLOC_DIR}/secrets.env"
         env         = true
       }
 
@@ -91,8 +101,8 @@ EOF
     task "imgproxy" {
 
       service {
-        name     = "imgproxy"
-        port     = "imgproxyhttp"
+        name     = "tiki-imgproxy"
+        port     = "imgproxy"
         provider = "nomad"
         tags = [
           "traefik.enable=true",
@@ -105,7 +115,7 @@ EOF
 
       config {
         image = "ghcr.io/imgproxy/imgproxy:latest"
-        ports = ["imgproxyhttp"]
+        ports = ["imgproxy"]
       }
 
 
@@ -117,7 +127,7 @@ IMGPROXY_SALT={{ .imgproxy_salt }}
 AWS_ACCESS_KEY_ID={{ .imgproxy_aws_access_key_id }}
 AWS_SECRET_ACCESS_KEY={{ .imgproxy_aws_secret_access_key }}
 {{ end }}
-IMGPROXY_BIND=:{{ env "NOMAD_PORT_imgproxyhttp" }}
+IMGPROXY_BIND=:{{ env "NOMAD_PORT_imgproxy" }}
 IMGPROXY_MAX_SRC_RESOLUTION=30
 IMGPROXY_USE_S3=true
 IMGPROXY_TTL=31536000
