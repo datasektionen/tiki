@@ -202,14 +202,14 @@ defmodule Tiki.Reports do
           # If we don't find it here, it's probably because the user purchased one ticket,
           # which later changed ticket type. We want to report the original one, and look it
           # up in the database.
-          found_ticket =
+          ticket_type =
             if found_ticket == nil do
               Tiki.Tickets.get_ticket_type!(ticket["ticket_type"]["id"])
             else
-              found_ticket
+              found_ticket.ticket_type
             end
 
-          Map.put(ticket, "ticket_type_name", found_ticket.ticket_type.name)
+          Map.put(ticket, "ticket_type_name", ticket_type.name)
         end)
 
       Enum.map(metadata_tickets, fn ticket_data ->
