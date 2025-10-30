@@ -3,6 +3,7 @@ job "tiki" {
   namespace = "metaspexet"
 
   group "tiki" {
+    count = 1
 
     network {
       port "http" {}
@@ -56,7 +57,6 @@ IMAGE_FRONTEND_URL=https://dnok4ulql7gij.cloudfront.net
 OIDC_ISSUER_URL=https://sso.datasektionen.se/op
 PORT={{ env "NOMAD_PORT_http" }}
 METRICS_PORT={{ env "NOMAD_PORT_metrics" }}
-{{ end }}
 EOF
         destination = "local/.env"
         env         = true
