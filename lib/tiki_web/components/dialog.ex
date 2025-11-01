@@ -55,7 +55,7 @@ defmodule TikiWeb.Component.Dialog do
       phx-mounted={@show && show_modal(@id)}
       phx-remove={hide_modal(@id)}
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
-      class="group/dialog relative z-50 hidden"
+      class="group/dialog z-60 relative hidden"
     >
       <div
         id={"#{@id}-bg"}
@@ -75,7 +75,7 @@ defmodule TikiWeb.Component.Dialog do
               id={"#{@id}-content"}
               class={
                 classes([
-                  "bg-background z-50 grid w-full max-w-xl gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:rounded-lg",
+                  "bg-background z-60 grid w-full max-w-xl gap-4 border p-6 shadow-lg duration-200 group-data-[state=closed]/dialog:animate-out group-data-[state=closed]/dialog:fade-out-0 group-data-[state=closed]/dialog:zoom-out-95 group-data-[state=open]/dialog:animate-in group-data-[state=open]/dialog:fade-in-0 group-data-[state=open]/dialog:zoom-in-95 sm:rounded-lg",
                   @class
                 ])
               }

@@ -80,7 +80,7 @@ defmodule TikiWeb.Component.DropdownMenu do
     ~H"""
     <div
       class={[
-        "animate-in z-50 peer-data-[side=bottom]:slide-in-from-top-2 peer-data-[side=left]:slide-in-from-right-2 peer-data-[side=right]:slide-in-from-left-2 peer-data-[side=top]:slide-in-from-bottom-2 peer-data-[state=closed]:fade-out-0 peer-data-[state=closed]:zoom-out-95 peer-data-[state=open]:fade-in-0 peer-data-[state=open]:zoom-in-95",
+        "animate-in z-40 peer-data-[side=bottom]:slide-in-from-top-2 peer-data-[side=left]:slide-in-from-right-2 peer-data-[side=right]:slide-in-from-left-2 peer-data-[side=top]:slide-in-from-bottom-2 peer-data-[state=closed]:fade-out-0 peer-data-[state=closed]:zoom-out-95 peer-data-[state=open]:fade-in-0 peer-data-[state=open]:zoom-in-95",
         "absolute peer-data-[state=closed]:hidden",
         @variant_class,
         @class
