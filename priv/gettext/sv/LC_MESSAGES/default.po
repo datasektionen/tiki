@@ -114,7 +114,7 @@ msgstr "Inställningar"
 #: lib/tiki_web/live/admin_live/ticket/index.ex:147
 #: lib/tiki_web/live/order_live/show.ex:47
 #: lib/tiki_web/live/purchase_live/tickets_component.ex:13
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:111
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:126
 #, elixir-autogen, elixir-format
 msgid "Tickets"
 msgstr "Biljetter"
@@ -635,7 +635,7 @@ msgid "Price"
 msgstr "Pris"
 
 #: lib/tiki_web/live/admin_live/ticket/ticket_type_form.ex:105
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:101
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:116
 #, elixir-autogen, elixir-format
 msgid "Promo code"
 msgstr "Promokod"
@@ -1225,7 +1225,7 @@ msgstr "Beställd"
 msgid "Developed by Adrian Salamon."
 msgstr "Utvecklat av Adrian Salamon."
 
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:119
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:134
 #, elixir-autogen, elixir-format
 msgid "Buy"
 msgstr "Köp"
@@ -1425,18 +1425,18 @@ msgstr "Inga biljetter tillgängliga"
 msgid "Please contact the event organizer if you have any questions."
 msgstr "Kontakta evenemangets arrangör om du har några frågor."
 
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:147
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:162
 #, elixir-autogen, elixir-format
 msgid "Sold out"
 msgstr "Slutsåld"
 
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:135
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:138
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:150
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:153
 #, elixir-autogen, elixir-format
 msgid "Ticket not available"
 msgstr "Biljetten inte tillgänglig"
 
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:143
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:158
 #, elixir-autogen, elixir-format
 msgid "Ticket releases at"
 msgstr "Biljett släpps vid"
@@ -1844,7 +1844,7 @@ msgstr "Fel"
 msgid "Something went wrong. Your order was cancelled or has expired. Please try again."
 msgstr "Något gick fel. Din beställning är avbruten eller har gått ut. Vänligen försök igen."
 
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:105
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:120
 #, elixir-autogen, elixir-format
 msgid "Activate"
 msgstr "Aktivera"
@@ -2341,7 +2341,7 @@ msgstr "Detta är ett biljettsläpp för %{event_name}.\n        Om det finns f�
 msgid "This release opens at"
 msgstr "Biljettsläppet öppnar vid"
 
-#: lib/tiki_web/live/purchase_live/tickets_component.ex:150
+#: lib/tiki_web/live/purchase_live/tickets_component.ex:165
 #, elixir-autogen, elixir-format
 msgid "Ticket is part of an active release."
 msgstr "Biljetten är en del av ett aktivt biljettsläpp."
