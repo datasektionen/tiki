@@ -73,7 +73,8 @@ defmodule TikiWeb.AdminLive.Releases.Index do
   def mount(%{"event_id" => event_id}, _session, socket) do
     event = Events.get_event!(event_id, preload_ticket_types: true)
 
-    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event) do
+    with :ok <- Tiki.Policy.authorize(:event_view, socket.assigns.current_user, event),
+         true <- FunWithFlags.enabled?(:releases) do
       releases = Releases.list_releases_for_event(event_id)
 
       {:ok,
@@ -84,6 +85,12 @@ defmodule TikiWeb.AdminLive.Releases.Index do
         {:ok,
          socket
          |> put_flash(:error, gettext("You are not authorized to do that."))
+         |> redirect(to: ~p"/admin")}
+
+      false ->
+        {:ok,
+         socket
+         |> put_flash(:error, gettext("This feature is not enabled."))
          |> redirect(to: ~p"/admin")}
     end
   end
