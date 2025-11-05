@@ -153,10 +153,12 @@ if config_env() == :prod do
 
   # Mail config
   spam_api_key = System.get_env("SPAM_API_KEY") || raise "SPAM_API_KEY is missing"
+  spam_url = System.get_env("SPAM_URL") || raise "SPAM_URL is missing"
 
   config :tiki, Tiki.Mailer,
     adapter: Tiki.Mail.SpamAdapter,
-    api_key: spam_api_key
+    api_key: spam_api_key,
+    url: spam_url
 
   config :swoosh, :api_client, Swoosh.ApiClient.Req
 

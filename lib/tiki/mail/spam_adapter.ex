@@ -21,11 +21,9 @@ defmodule Tiki.Mail.SpamAdapter do
   ## Required config parameters
       - `:api_key` - The API key for the Spam API
   """
-  use Swoosh.Adapter, required_config: [:api_key]
+  use Swoosh.Adapter, required_config: [:api_key, :url]
 
   alias Swoosh.Email
-
-  @spam_url "https://spam.datasektionen.se/api/legacy/sendmail"
 
   def deliver(%Email{} = email, config \\ []) do
     headers = [
@@ -42,7 +40,7 @@ defmodule Tiki.Mail.SpamAdapter do
       |> prepare_key(api_key)
       |> Swoosh.json_library().encode!()
 
-    case Swoosh.ApiClient.post(@spam_url, headers, body, email) do
+    case Swoosh.ApiClient.post(config[:url], headers, body, email) do
       {:ok, 200, _headers, body} ->
         {:ok, parse_response(body)}
 
