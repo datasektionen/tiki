@@ -148,8 +148,7 @@ defmodule Tiki.Orders do
   def reserve_tickets(event_id, ticket_types, user_id \\ nil) do
     with {:ok, order, ticket_types} <-
            OrderHandler.Worker.reserve_tickets(event_id, ticket_types, user_id) do
-      # Monitor the order, automatically cancels it if it's not paid in time
-      Tiki.PurchaseMonitor.monitor(order)
+      Orders.Jobs.CancelPendingOrderJob.schedule_cancellation(order.id)
 
       available_types = Tickets.put_available_ticket_meta(ticket_types)
       Orders.PubSub.broadcast_order_created(order)
@@ -330,6 +329,13 @@ defmodule Tiki.Orders do
       Tickets.get_available_ticket_types(order.event_id)
     )
   end
+
+  @doc """
+  Retuns the timeout for confirming an order in minutes.
+  """
+  defdelegate order_timeout_minutes,
+    to: Orders.Jobs.CancelPendingOrderJob,
+    as: :get_timeout_minutes
 
   @doc """
   Returns the orders for an event, ordered by most recent first.

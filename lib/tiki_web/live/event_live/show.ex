@@ -219,7 +219,7 @@ defmodule TikiWeb.EventLive.Show do
     {:noreply, socket}
   end
 
-  def handle_info({:cancelled, order}, socket) do
+  def handle_info(%Tiki.Orders.Events.OrderCancelled{order: order}, socket) do
     {:noreply, assign(socket, order: order)}
   end
 

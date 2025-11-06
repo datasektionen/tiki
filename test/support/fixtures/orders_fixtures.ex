@@ -44,7 +44,7 @@ defmodule Tiki.OrdersFixtures do
   end
 
   def get_order_email() do
-    %{failure: 0} = Oban.drain_queue(queue: :email)
+    %{failure: 0} = Oban.drain_queue(queue: :mail)
 
     [captured_email] = Swoosh.X.TestAssertions.flush_emails()
 

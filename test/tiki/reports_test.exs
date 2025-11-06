@@ -37,7 +37,7 @@ defmodule Tiki.ReportsTest do
       status: "succeeded"
     })
 
-    Swoosh.X.TestAssertions.flush_emails()
+    Tiki.OrdersFixtures.get_order_email()
 
     assert_receive %Tiki.Orders.Events.OrderPaid{order: %Tiki.Orders.Order{status: :paid} = order}
 
@@ -68,7 +68,7 @@ defmodule Tiki.ReportsTest do
              })
 
     Tiki.Checkouts.confirm_swish_payment(order.swish_checkout.callback_identifier, "PAID")
-    Swoosh.X.TestAssertions.flush_emails()
+    Tiki.OrdersFixtures.get_order_email()
 
     assert_receive %Tiki.Orders.Events.OrderPaid{order: %Tiki.Orders.Order{status: :paid} = order}
     order

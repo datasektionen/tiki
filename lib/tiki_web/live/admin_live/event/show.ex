@@ -41,7 +41,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
     {:noreply, assign(socket, :online_count, online_count)}
   end
 
-  def handle_info({:order_confirmed, order}, socket) do
+  def handle_info(%Tiki.Orders.Events.OrderPaid{order: order}, socket) do
     tickets_in_order = Enum.map(order.tickets, fn ticket -> Map.put(ticket, :order, order) end)
 
     {:noreply, stream(socket, :recent_tickets, tickets_in_order, at: 0, limit: 10)}

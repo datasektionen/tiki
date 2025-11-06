@@ -112,7 +112,7 @@ config :tails,
 
 config :tiki, Oban,
   engine: Oban.Engines.Basic,
-  queues: [default: 10, mail: 10, event_schedule: 10],
+  queues: [default: 10, mail: 10, event_schedule: 10, order_cancellations: 5],
   repo: Tiki.Repo
 
 config :fun_with_flags, :persistence,

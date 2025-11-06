@@ -42,7 +42,6 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   end
 
   alias Tiki.Localizer
-  alias Tiki.PurchaseMonitor
   use TikiWeb, :live_component
 
   alias Tiki.Orders
@@ -75,7 +74,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
                 {gettext(
                   "Purchase tickets for %{event}. You have %{count} minutes to complete your order.",
                   event: @event.name,
-                  count: PurchaseMonitor.timeout_minutes()
+                  count: Orders.order_timeout_minutes()
                 )}
               </:subtitle>
             </.header>

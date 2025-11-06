@@ -50,7 +50,7 @@ defmodule Tiki.AccountsFixtures do
   def extract_user_token(fun) do
     fun.(&"[TOKEN]#{&1}[TOKEN]")
 
-    %{failure: 0} = Oban.drain_queue(queue: :email)
+    %{success: 1, failure: 0} = Oban.drain_queue(queue: :mail)
 
     [captured_email] = Swoosh.X.TestAssertions.flush_emails()
 

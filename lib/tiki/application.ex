@@ -42,7 +42,6 @@ defmodule Tiki.Application do
         {Oidcc.ProviderConfiguration.Worker, oidc_config},
         # Start processes required for order handling
         Tiki.OrderHandler.Supervisor,
-        Tiki.PurchaseMonitor,
         # Start the permission service (Hive or mock in tests)
         permission_service
       ] ++ stripe_webhook_listener()

@@ -115,7 +115,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
     {:noreply, assign(socket, metadata: metadata) |> stream(:tickets, tickets)}
   end
 
-  def handle_info({:order_confirmed, order}, socket) do
+  def handle_info(%Tiki.Orders.Events.OrderPaid{order: order}, socket) do
     socket =
       Enum.reduce(order.tickets, socket, fn ticket, acc ->
         ticket = %{ticket | order: order, name: order.name, email: order.email}
