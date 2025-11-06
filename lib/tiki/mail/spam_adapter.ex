@@ -82,7 +82,7 @@ defmodule Tiki.Mail.SpamAdapter do
 
   defp prepare_subject(body, %{subject: subject}), do: Map.put(body, :subject, subject)
 
-  defp prepare_content(body, %{html_body: content}), do: Map.put(body, :content, content)
+  defp prepare_content(body, %{html_body: content}), do: Map.put(body, :html, content)
 
   defp prepare_reply_to(body, %{reply_to: to}), do: Map.put(body, "replyTo", render_recipient(to))
 
