@@ -49,7 +49,7 @@ job "tiki" {
         data        = <<EOF
 SWISH_API_URL=https://cpc.getswish.net/swish-cpcapi/api
 SWISH_CALLBACK_URL=https://tiki.datasektionen.se/swish/callback
-SPAM_URL=https://spam-old.datasektionen.se/api/sendmail
+SPAM_URL=https://spam.datasektionen.se/api/legacy/sendmail
 PHX_HOST=tiki.datasektionen.se
 AWS_REGION="eu-north-1"
 S3_BUCKET_NAME=dsekt-tiki
