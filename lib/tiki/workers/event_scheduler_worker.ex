@@ -42,9 +42,9 @@ defmodule Tiki.Workers.EventSchedulerWorker do
 
         Logger.info("Broadcasting ticket released: #{ticket_type_id} for event: #{event_id}")
 
-        Tiki.Orders.broadcast(
+        Tiki.Orders.PubSub.broadcast_tickets_updated(
           event_id,
-          {:tickets_updated, Tiki.Tickets.get_available_ticket_types(event_id)}
+          Tiki.Tickets.get_available_ticket_types(event_id)
         )
     end
   end

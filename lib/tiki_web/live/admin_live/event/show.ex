@@ -18,7 +18,7 @@ defmodule TikiWeb.AdminLive.Event.Show do
       initial_count = Presence.list("presence:event:#{event_id}") |> map_size
       TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
-      if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+      if connected?(socket), do: Orders.PubSub.subscribe_to_purchases(event_id)
 
       stats = Events.get_event_stats!(event_id)
 

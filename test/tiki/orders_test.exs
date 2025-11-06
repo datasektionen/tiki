@@ -184,13 +184,13 @@ defmodule Tiki.OrdersTest do
       to_purchase = Map.put(%{}, ticket_type.id, 2)
       cost = ticket_type.price * 2
 
-      Orders.subscribe(ticket_type.ticket_batch.event.id)
+      Orders.PubSub.subscribe_to_event(ticket_type.ticket_batch.event.id)
 
       result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
       assert {:ok, %Order{status: :pending, price: ^cost, id: id}} = result
 
-      Orders.subscribe_to_order(id)
+      Orders.PubSub.subscribe_to_order(id)
 
       {:ok, order} = result
 
@@ -201,7 +201,7 @@ defmodule Tiki.OrdersTest do
       assert Enum.all?(order.tickets, fn %{order_id: order_id} -> order_id == order.id end)
       assert cost == Enum.map(order.tickets, & &1.price) |> Enum.sum()
 
-      assert_receive {:tickets_updated, _}
+      assert_receive %Tiki.Orders.Events.TicketsUpdated{ticket_types: _}
     end
 
     test "reserve_tickets/3 works with events with release and expire times" do
@@ -215,13 +215,13 @@ defmodule Tiki.OrdersTest do
       to_purchase = Map.put(%{}, ticket_type.id, 2)
       cost = ticket_type.price * 2
 
-      Orders.subscribe(ticket_type.ticket_batch.event.id)
+      Orders.PubSub.subscribe_to_event(ticket_type.ticket_batch.event.id)
 
       result = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
       assert {:ok, %Order{status: :pending, price: ^cost, id: id}} = result
 
-      Orders.subscribe_to_order(id)
+      Orders.PubSub.subscribe_to_order(id)
 
       {:ok, order} = result
 
@@ -232,7 +232,7 @@ defmodule Tiki.OrdersTest do
       assert Enum.all?(order.tickets, fn %{order_id: order_id} -> order_id == order.id end)
       assert cost == Enum.map(order.tickets, & &1.price) |> Enum.sum()
 
-      assert_receive {:tickets_updated, _}
+      assert_receive %Tiki.Orders.Events.TicketsUpdated{ticket_types: _}
     end
 
     test "reserve_tickets/3 fails if reserving no tickets" do
@@ -254,7 +254,7 @@ defmodule Tiki.OrdersTest do
       assert {:error, msg} =
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert msg =~ "too many tickets requested"
+      assert msg =~ "some tickets exceed their purchase limit"
     end
 
     test "reserve_tickets/3 fails if reserving too many tickets for an event" do
@@ -270,7 +270,7 @@ defmodule Tiki.OrdersTest do
       assert {:error, msg} =
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert msg =~ "too many tickets requested"
+      assert msg =~ "order exceeds maximum event order size"
     end
 
     test "reserve_tickets/3 fails if reserving tickets that are not purchasable" do
@@ -282,7 +282,7 @@ defmodule Tiki.OrdersTest do
       assert {:error, msg} =
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert msg =~ "not all ticket types are purchasable"
+      assert msg =~ "not all tickets are purchasable"
     end
 
     test "reserve_tickets/3 fails if reserving too many tickets" do
@@ -316,7 +316,7 @@ defmodule Tiki.OrdersTest do
       assert {:error, msg} =
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert msg =~ "not all ticket types are purchasable"
+      assert msg =~ "not all tickets are purchasable"
     end
 
     test "reserve_tickets/3 fails if reserving tickets that have expired" do
@@ -329,7 +329,7 @@ defmodule Tiki.OrdersTest do
       assert {:error, msg} =
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
-      assert msg =~ "not all ticket types are purchasable"
+      assert msg =~ "not all tickets are purchasable"
     end
 
     test "maybe_cancel_order/1 cancels a pending order" do
@@ -589,7 +589,7 @@ defmodule Tiki.OrdersTest do
 
       assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
 
-      Orders.subscribe_to_order(id)
+      Orders.PubSub.subscribe_to_order(id)
 
       assert {:ok, %Order{status: :checkout, id: ^id, swish_checkout: swish_checkout}} =
                Orders.init_checkout(order, "swish", %{
@@ -599,7 +599,7 @@ defmodule Tiki.OrdersTest do
 
       Checkouts.confirm_swish_payment(swish_checkout.callback_identifier, "PAID")
 
-      assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
+      assert_receive %Tiki.Orders.Events.OrderPaid{order: %Order{status: :paid, id: ^id} = order}
 
       assert order.status == :paid
 
@@ -644,7 +644,7 @@ defmodule Tiki.OrdersTest do
 
       assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
 
-      Orders.subscribe_to_order(id)
+      Orders.PubSub.subscribe_to_order(id)
 
       assert {:ok, %Order{status: :checkout, id: ^id, stripe_checkout: stripe_checkout}} =
                Orders.init_checkout(order, "credit_card", %{
@@ -657,7 +657,7 @@ defmodule Tiki.OrdersTest do
         status: "succeeded"
       })
 
-      assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
+      assert_receive %Tiki.Orders.Events.OrderPaid{order: %Order{status: :paid, id: ^id} = order}
 
       assert order.status == :paid
 

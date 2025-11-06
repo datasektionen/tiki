@@ -30,7 +30,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
         |> Enum.map(&{&1.name, &1.id})
 
       if connected?(socket) do
-        Orders.subscribe(event_id, :tickets)
+        Orders.PubSub.subscribe_to_ticket_checkins(event_id)
       end
 
       {:ok,
@@ -278,7 +278,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
     """
   end
 
-  def handle_info({:ticket_updated, ticket}, socket) do
+  def handle_info(%Tiki.Orders.Events.TicketCheckedIn{ticket: ticket}, socket) do
     {:noreply, stream_insert(socket, :tickets, ticket)}
   end
 

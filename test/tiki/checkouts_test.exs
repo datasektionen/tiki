@@ -28,7 +28,7 @@ defmodule Tiki.CheckoutsTest do
     test "confirm_stripe_payment/1 works with a valid stripe payment" do
       order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
-      Orders.subscribe_to_order(order.id)
+      Orders.PubSub.subscribe_to_order(order.id)
 
       assert {:ok, %Checkouts.StripeCheckout{} = checkout} =
                Checkouts.create_stripe_payment_intent(order)
@@ -37,7 +37,7 @@ defmodule Tiki.CheckoutsTest do
 
       assert :ok = Checkouts.confirm_stripe_payment(payment_intent)
 
-      assert_received {:paid, paid_order}
+      assert_received %Tiki.Orders.Events.OrderPaid{order: paid_order}
 
       paid_order =
         Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])
@@ -50,7 +50,7 @@ defmodule Tiki.CheckoutsTest do
     test "confirm_stripe_payment/1 does nothing if the payment is already confirmed" do
       order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
-      Orders.subscribe_to_order(order.id)
+      Orders.PubSub.subscribe_to_order(order.id)
 
       assert {:ok, %Checkouts.StripeCheckout{} = checkout} =
                Checkouts.create_stripe_payment_intent(order)
@@ -59,7 +59,7 @@ defmodule Tiki.CheckoutsTest do
 
       assert :ok = Checkouts.confirm_stripe_payment(payment_intent)
 
-      assert_received {:paid, paid_order}
+      assert_received %Tiki.Orders.Events.OrderPaid{order: paid_order}
 
       paid_order =
         Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])
@@ -130,14 +130,14 @@ defmodule Tiki.CheckoutsTest do
     test "confirm_swish_payment/2 works with valid swish callback data" do
       order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
-      Orders.subscribe_to_order(order.id)
+      Orders.PubSub.subscribe_to_order(order.id)
 
       assert {:ok, %Checkouts.SwishCheckout{} = checkout} =
                Checkouts.create_swish_payment_request(order)
 
       assert :ok = Checkouts.confirm_swish_payment(checkout.callback_identifier, "PAID")
 
-      assert_received {:paid, paid_order}
+      assert_received %Tiki.Orders.Events.OrderPaid{order: paid_order}
 
       paid_order =
         Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])
@@ -150,14 +150,14 @@ defmodule Tiki.CheckoutsTest do
     test "confirm_swish_payment/2 does nothing if the payment is already confirmed" do
       order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
-      Orders.subscribe_to_order(order.id)
+      Orders.PubSub.subscribe_to_order(order.id)
 
       assert {:ok, %Checkouts.SwishCheckout{} = checkout} =
                Checkouts.create_swish_payment_request(order)
 
       assert :ok = Checkouts.confirm_swish_payment(checkout.callback_identifier, "PAID")
 
-      assert_received {:paid, paid_order}
+      assert_received %Tiki.Orders.Events.OrderPaid{order: paid_order}
 
       paid_order =
         Tiki.Repo.preload(paid_order, [:stripe_checkout, :swish_checkout, :tickets, :user, :event])

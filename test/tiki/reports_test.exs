@@ -24,7 +24,7 @@ defmodule Tiki.ReportsTest do
 
     assert {:ok, order} = result
 
-    Tiki.Orders.subscribe_to_order(order.id)
+    Tiki.Orders.PubSub.subscribe_to_order(order.id)
 
     assert {:ok, order} =
              Tiki.Orders.init_checkout(order, "credit_card", %{
@@ -39,7 +39,8 @@ defmodule Tiki.ReportsTest do
 
     Swoosh.X.TestAssertions.flush_emails()
 
-    assert_receive {:paid, %Tiki.Orders.Order{status: :paid} = order}
+    assert_receive %Tiki.Orders.Events.OrderPaid{order: %Tiki.Orders.Order{status: :paid} = order}
+
     order
   end
 
@@ -58,7 +59,7 @@ defmodule Tiki.ReportsTest do
 
     assert {:ok, order} = result
 
-    Tiki.Orders.subscribe_to_order(order.id)
+    Tiki.Orders.PubSub.subscribe_to_order(order.id)
 
     assert {:ok, order} =
              Tiki.Orders.init_checkout(order, "swish", %{
@@ -69,7 +70,7 @@ defmodule Tiki.ReportsTest do
     Tiki.Checkouts.confirm_swish_payment(order.swish_checkout.callback_identifier, "PAID")
     Swoosh.X.TestAssertions.flush_emails()
 
-    assert_receive {:paid, %Tiki.Orders.Order{status: :paid} = order}
+    assert_receive %Tiki.Orders.Events.OrderPaid{order: %Tiki.Orders.Order{status: :paid} = order}
     order
   end
 

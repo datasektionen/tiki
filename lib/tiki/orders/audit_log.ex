@@ -15,9 +15,8 @@ defmodule Tiki.Orders.AuditLog do
   end
 
   def log(order_id, event_type, metadata \\ %{}) do
-    %__MODULE__{}
+    %__MODULE__{order_id: order_id}
     |> changeset(%{
-      order_id: order_id,
       event_type: event_type,
       metadata: encode_metadata(metadata)
     })
@@ -26,8 +25,8 @@ defmodule Tiki.Orders.AuditLog do
 
   defp changeset(order, attrs) do
     order
-    |> cast(attrs, [:event_type, :metadata, :order_id])
-    |> validate_required([:event_type, :metadata, :order_id])
+    |> cast(attrs, [:event_type, :metadata])
+    |> validate_required([:event_type, :metadata])
   end
 
   defp encode_metadata(%Tiki.Orders.Order{} = order) do

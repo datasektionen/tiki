@@ -15,7 +15,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
         Tickets.get_cached_available_ticket_types(event_id)
         |> Localizer.localize()
 
-      Orders.subscribe(event_id)
+      Orders.PubSub.subscribe_to_event(event_id)
 
       initial_count = Presence.list("presence:event:#{event_id}") |> map_size
       TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
@@ -41,7 +41,7 @@ defmodule TikiWeb.AdminLive.Event.Status do
      ])}
   end
 
-  def handle_info({:tickets_updated, ticket_types}, socket) do
+  def handle_info(%Tiki.Orders.Events.TicketsUpdated{ticket_types: ticket_types}, socket) do
     {:noreply, assign(socket, ticket_types: ticket_types |> Localizer.localize())}
   end
 

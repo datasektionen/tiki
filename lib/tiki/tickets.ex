@@ -80,9 +80,9 @@ defmodule Tiki.Tickets do
          |> TicketBatch.changeset(attrs)
          |> Repo.update() do
       {:ok, batch} ->
-        Tiki.Orders.broadcast(
+        Tiki.Orders.PubSub.broadcast_tickets_updated(
           ticket_batch.event_id,
-          {:tickets_updated, get_available_ticket_types(ticket_batch.event_id)}
+          get_available_ticket_types(ticket_batch.event_id)
         )
 
         {:ok, batch}
@@ -260,9 +260,9 @@ defmodule Tiki.Tickets do
 
     event_id = Repo.one(event_id_query)
 
-    Tiki.Orders.broadcast(
+    Tiki.Orders.PubSub.broadcast_tickets_updated(
       event_id,
-      {:tickets_updated, get_available_ticket_types(event_id)}
+      get_available_ticket_types(event_id)
     )
 
     {:ok, ticket_type}

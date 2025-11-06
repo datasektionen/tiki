@@ -59,7 +59,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
       %{entries: tickets, metadata: metadata} =
         Orders.list_tickets_for_event(event_id, limit: @page_size, paginate: %{after: nil})
 
-      if connected?(socket), do: Orders.subscribe(event_id, :purchases)
+      if connected?(socket), do: Orders.PubSub.subscribe_to_purchases(event_id)
 
       {:ok,
        socket

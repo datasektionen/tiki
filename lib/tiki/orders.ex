@@ -5,12 +5,13 @@ defmodule Tiki.Orders do
 
   use Gettext, backend: TikiWeb.Gettext
 
+  require Logger
   import Ecto.Query, warn: false
   alias Tiki.Accounts
   alias Tiki.Checkouts
   alias Tiki.Orders.OrderNotifier
   alias Ecto.Multi
-  alias Phoenix.PubSub
+  alias Tiki.Orders
   alias Tiki.Orders.Order
   alias Tiki.Orders.Ticket
   alias Tiki.Orders.AuditLog
@@ -126,7 +127,7 @@ defmodule Tiki.Orders do
 
     case transaction do
       {:ok, ticket} ->
-        broadcast_ticket(ticket.order.event_id, ticket)
+        Orders.PubSub.broadcast_ticket_checked_in(ticket, event_id)
         {:ok, ticket}
 
       err ->
@@ -150,12 +151,9 @@ defmodule Tiki.Orders do
       # Monitor the order, automatically cancels it if it's not paid in time
       Tiki.PurchaseMonitor.monitor(order)
 
-      broadcast(
-        order.event_id,
-        {:tickets_updated, Tickets.put_available_ticket_meta(ticket_types)}
-      )
-
-      broadcast_order(order.id, :created, order)
+      available_types = Tickets.put_available_ticket_meta(ticket_types)
+      Orders.PubSub.broadcast_order_created(order)
+      Orders.PubSub.broadcast_tickets_updated(order.event_id, available_types)
 
       {:ok, order}
     else
@@ -174,7 +172,7 @@ defmodule Tiki.Orders do
       iex> cancel_order(%Order{})
       {:error, reason}
   """
-  def maybe_cancel_order(order_id) do
+  def maybe_cancel_order(order_id, reason \\ :unknown) do
     multi =
       Multi.new()
       |> Multi.run(:order, fn repo, _changes ->
@@ -198,12 +196,12 @@ defmodule Tiki.Orders do
 
     case Repo.transaction(multi) do
       {:ok, %{order_failed: order}} ->
-        broadcast(
-          order.event_id,
-          {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
-        )
+        Orders.PubSub.broadcast_order_cancelled(order, reason)
 
-        broadcast_order(order.id, :cancelled, order)
+        Orders.PubSub.broadcast_tickets_updated(
+          order.event_id,
+          Tickets.get_available_ticket_types(order.event_id)
+        )
 
         {:ok, order}
 
@@ -308,23 +306,28 @@ defmodule Tiki.Orders do
     do: Map.put(order, :stripe_checkout, checkout)
 
   @doc """
-  Confirms an order after it has been paid. Returns the order. Does
-  some stuff like sending emails, logging, and broadcasting the order
-  over PubSub.
+  Confirms an order after it has been paid.
+
+  This is called when a checkout is completed. It:
+  1. Sends a confirmation email to the user
+  2. Logs the payment in audit trail
+  3. Broadcasts payment confirmation via PubSub
+  4. Updates inventory availability
   """
   def confirm_order(%Order{status: :paid} = order) do
     order = get_order!(order.id)
 
-    # Send email confirmaiton
+    # Send email confirmation
     OrderNotifier.deliver(order)
+
     # Audit log
     AuditLog.log(order.id, "order.paid", order)
 
-    broadcast_order(order.id, :paid, order)
+    Orders.PubSub.broadcast_order_paid(order)
 
-    broadcast(
+    Orders.PubSub.broadcast_tickets_updated(
       order.event_id,
-      {:tickets_updated, Tickets.get_available_ticket_types(order.event_id)}
+      Tickets.get_available_ticket_types(order.event_id)
     )
   end
 
@@ -536,45 +539,5 @@ defmodule Tiki.Orders do
     |> where([o], o.status in ^statuses)
     |> order_by([o], desc: o.inserted_at)
     |> Repo.all()
-  end
-
-  def broadcast_order(order_id, :created, order) do
-    PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:created, order})
-  end
-
-  def broadcast_order(order_id, :cancelled, order) do
-    PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:cancelled, order})
-  end
-
-  def broadcast_order(order_id, :paid, order) do
-    PubSub.broadcast(Tiki.PubSub, "order:#{order_id}", {:paid, order})
-  end
-
-  def broadcast(event_id, message) do
-    PubSub.broadcast(Tiki.PubSub, "event:#{event_id}", message)
-  end
-
-  def broadcast_ticket(event_id, ticket) do
-    PubSub.broadcast(Tiki.PubSub, "event:#{event_id}:tickets", {:ticket_updated, ticket})
-  end
-
-  def subscribe(event_id, :purchases) do
-    PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:purchases")
-  end
-
-  def subscribe(event_id, :tickets) do
-    PubSub.subscribe(Tiki.PubSub, "event:#{event_id}:tickets")
-  end
-
-  def subscribe_to_order(order_id) do
-    PubSub.subscribe(Tiki.PubSub, "order:#{order_id}")
-  end
-
-  def subscribe(event_id) do
-    PubSub.subscribe(Tiki.PubSub, "event:#{event_id}")
-  end
-
-  def unsubscribe(event_id) do
-    PubSub.unsubscribe(Tiki.PubSub, "event:#{event_id}")
   end
 end

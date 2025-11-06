@@ -146,7 +146,7 @@ defmodule TikiWeb.EventLive.Release do
           Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
           TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
 
-          Orders.subscribe(event.id)
+          Orders.PubSub.subscribe_to_event(event.id)
           Releases.subscribe(release_id)
         end
 
@@ -198,7 +198,7 @@ defmodule TikiWeb.EventLive.Release do
   end
 
   @impl true
-  def handle_info({:tickets_updated, _} = msg, socket) do
+  def handle_info(%Tiki.Orders.Events.TicketsUpdated{} = msg, socket) do
     send_update(TicketsComponent, id: "tickets-component", action: msg)
     {:noreply, socket}
   end

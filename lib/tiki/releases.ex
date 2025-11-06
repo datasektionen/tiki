@@ -332,9 +332,9 @@ defmodule Tiki.Releases do
     PubSub.broadcast(Tiki.PubSub, "releases:#{release.event_id}", {:releases_updated, releases})
 
     # Broadcast ticket types for event
-    Tiki.Orders.broadcast(
+    Tiki.Orders.PubSub.broadcast_tickets_updated(
       release.event_id,
-      {:tickets_updated, Tiki.Tickets.get_available_ticket_types(release.event_id)}
+      Tiki.Tickets.get_available_ticket_types(release.event_id)
     )
   end
 

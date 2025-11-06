@@ -110,7 +110,7 @@ defmodule Tiki.TicketsTest do
       batch = ticket_batch_fixture()
       form = Tiki.FormsFixtures.form_fixture()
 
-      Tiki.Orders.subscribe(batch.event_id)
+      Tiki.Orders.PubSub.subscribe_to_event(batch.event_id)
 
       valid_attrs = %{
         description: "some description",
@@ -138,7 +138,7 @@ defmodule Tiki.TicketsTest do
       assert ticket_types.purchasable == true
       assert ticket_types.release_time == ~U[2023-03-25 18:01:00Z]
 
-      assert_received {:tickets_updated, _ticket_types}
+      assert_received %Tiki.Orders.Events.TicketsUpdated{ticket_types: _}
     end
 
     test "create_ticket_type/1 with invalid data returns error changeset" do
@@ -162,7 +162,7 @@ defmodule Tiki.TicketsTest do
     test "update_ticket_type/2 with valid data updates the ticket_types" do
       batch = ticket_batch_fixture()
       ticket_types = ticket_type_fixture(%{ticket_batch_id: batch.id})
-      Tiki.Orders.subscribe(batch.event_id)
+      Tiki.Orders.PubSub.subscribe_to_event(batch.event_id)
 
       update_attrs = %{
         description: "some updated description",
@@ -189,7 +189,7 @@ defmodule Tiki.TicketsTest do
       assert ticket_types.purchasable == false
       assert ticket_types.release_time == ~U[2023-03-26 18:01:00Z]
 
-      assert_received {:tickets_updated, _ticket_types}
+      assert_received %Tiki.Orders.Events.TicketsUpdated{ticket_types: _}
     end
 
     test "update_ticket_type/2 with invalid data returns error changeset" do
@@ -210,11 +210,11 @@ defmodule Tiki.TicketsTest do
     test "delete_ticket_type/1 deletes the ticket_types" do
       batch = ticket_batch_fixture()
       ticket_types = ticket_type_fixture(%{ticket_batch_id: batch.id})
-      Tiki.Orders.subscribe(batch.event_id)
+      Tiki.Orders.PubSub.subscribe_to_event(batch.event_id)
 
       assert {:ok, %TicketType{}} = Tickets.delete_ticket_type(ticket_types)
       assert_raise Ecto.NoResultsError, fn -> Tickets.get_ticket_type!(ticket_types.id) end
-      assert_received {:tickets_updated, _ticket_types}
+      assert_received %Tiki.Orders.Events.TicketsUpdated{ticket_types: _}
     end
 
     test "change_ticket_type/1 returns a ticket_types changeset" do

@@ -179,7 +179,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
   end
 
   @impl Phoenix.LiveComponent
-  def update(%{action: {:tickets_updated, ticket_types}}, socket) do
+  def update(%{action: %Tiki.Orders.Events.TicketsUpdated{ticket_types: ticket_types}}, socket) do
     # TODO: make sure that this is automatically updated when a ticket type is released, eg. via Oban
 
     {:ok, assign_ticket_types(socket, ticket_types) |> update_time()}

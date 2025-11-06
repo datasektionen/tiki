@@ -142,7 +142,7 @@ defmodule TikiWeb.EventLive.Show do
 
     if connected?(socket) do
       TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
-      Orders.subscribe(event.id)
+      Orders.PubSub.subscribe_to_event(event.id)
       Releases.subscribe_to_event(event.id)
       Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
     end
@@ -191,7 +191,7 @@ defmodule TikiWeb.EventLive.Show do
     order = Orders.get_order!(order_id)
 
     if connected?(socket) do
-      Orders.subscribe_to_order(order_id)
+      Orders.PubSub.subscribe_to_order(order_id)
     end
 
     case order.status do
@@ -214,7 +214,7 @@ defmodule TikiWeb.EventLive.Show do
   end
 
   @impl true
-  def handle_info({:tickets_updated, _} = msg, socket) do
+  def handle_info(%Tiki.Orders.Events.TicketsUpdated{} = msg, socket) do
     send_update(TicketsComponent, id: "tickets-component", action: msg)
     {:noreply, socket}
   end
@@ -223,7 +223,7 @@ defmodule TikiWeb.EventLive.Show do
     {:noreply, assign(socket, order: order)}
   end
 
-  def handle_info({:paid, order}, socket) do
+  def handle_info(%Tiki.Orders.Events.OrderPaid{order: order}, socket) do
     if order.status == :paid do
       url =
         if socket.assigns.live_action in [:embedded, :embedded_purchase],
