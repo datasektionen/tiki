@@ -577,4 +577,133 @@ defmodule Tiki.Orders do
   def unsubscribe(event_id) do
     PubSub.unsubscribe(Tiki.PubSub, "event:#{event_id}")
   end
+
+  @doc """
+  Changes the ticket type of a ticket.
+
+  Validates that:
+  - The new ticket type exists and belongs to the same event
+  - Changing the ticket type doesn't violate ticket batch limits
+  - The user has permission to make this change
+
+  Returns {:ok, ticket} on success or {:error, reason} on failure.
+
+  ## Examples
+
+      iex> change_ticket_type(scope, ticket_id, new_ticket_type_id)
+      {:ok, %Ticket{}}
+
+      iex> change_ticket_type(scope, ticket_id, invalid_ticket_type_id)
+      {:error, "ticket type does not belong to the same event"}
+  """
+  def change_ticket_type(%Tiki.Accounts.Scope{} = scope, ticket_id, new_ticket_type_id) do
+    multi =
+      Multi.new()
+      |> Multi.run(:ticket, fn repo, _ ->
+        case repo.one(
+               from t in Ticket,
+                 where: t.id == ^ticket_id,
+                 join: tt in assoc(t, :ticket_type),
+                 join: o in assoc(t, :order),
+                 join: e in assoc(o, :event),
+                 preload: [ticket_type: tt, order: {o, event: e}]
+             ) do
+          nil -> {:error, gettext("ticket not found")}
+          ticket -> {:ok, ticket}
+        end
+      end)
+      |> Multi.run(:authorize, fn _repo, %{ticket: ticket} ->
+        case Tiki.Policy.authorize(:event_manage, scope.user, ticket.order.event) do
+          :ok -> {:ok, :authorized}
+          {:error, _} -> {:error, :unauthorized}
+        end
+      end)
+      |> Multi.run(:new_ticket_type, fn repo, %{ticket: ticket} ->
+        case repo.one(
+               from tt in Tickets.TicketType,
+                 where: tt.id == ^new_ticket_type_id,
+                 join: tb in assoc(tt, :ticket_batch),
+                 where: tb.event_id == ^ticket.order.event_id,
+                 preload: [ticket_batch: tb]
+             ) do
+          nil -> {:error, gettext("ticket type does not belong to the same event")}
+          new_ticket_type -> {:ok, new_ticket_type}
+        end
+      end)
+      |> Multi.run(:validate_limits, fn _repo,
+                                        %{
+                                          ticket: ticket,
+                                          new_ticket_type: new_ticket_type
+                                        } ->
+        old_ticket_type = ticket.ticket_type
+
+        if old_ticket_type.id == new_ticket_type.id do
+          {:error, gettext("ticket type is already set to this value")}
+        else
+          validate_ticket_type_change(
+            ticket.order.event_id,
+            old_ticket_type.id,
+            new_ticket_type.id
+          )
+        end
+      end)
+      |> Multi.update(:updated_ticket, fn %{ticket: ticket, new_ticket_type: new_ticket_type} ->
+        Ticket.changeset(ticket, %{
+          ticket_type_id: new_ticket_type.id,
+          price: new_ticket_type.price
+        })
+      end)
+      |> Multi.run(:audit, fn _repo,
+                              %{
+                                ticket: old_ticket,
+                                updated_ticket: ticket,
+                                new_ticket_type: new_ticket_type
+                              } ->
+        old_ticket_type = old_ticket.ticket_type
+
+        AuditLog.log(ticket.order_id, "ticket.type_changed", %{
+          ticket_id: ticket.id,
+          old_ticket_type: %{id: old_ticket_type.id, name: old_ticket_type.name},
+          new_ticket_type: %{id: new_ticket_type.id, name: new_ticket_type.name},
+          changed_by: scope.user.id
+        })
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{updated_ticket: ticket, ticket: original_ticket}} ->
+        event_id = original_ticket.order.event_id
+
+        broadcast(
+          event_id,
+          {:tickets_updated, Tickets.get_available_ticket_types(event_id)}
+        )
+
+        broadcast_ticket(event_id, ticket)
+
+        {:ok, get_ticket!(ticket.id)}
+
+      {:error, :authorize, :unauthorized, _} ->
+        {:error, :unauthorized}
+
+      {:error, _step, error, _} ->
+        {:error, error}
+    end
+  end
+
+  defp validate_ticket_type_change(event_id, _old_ticket_type_id, new_ticket_type_id) do
+    ticket_types = Tickets.get_available_ticket_types(event_id)
+
+    new_tt = Enum.find(ticket_types, &(&1.id == new_ticket_type_id))
+
+    cond do
+      is_nil(new_tt) ->
+        {:error, gettext("new ticket type not found")}
+
+      new_tt.available < 0 ->
+        {:error, gettext("not enough tickets available for the new ticket type")}
+
+      true ->
+        {:ok, :valid}
+    end
+  end
 end
