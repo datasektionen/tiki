@@ -491,6 +491,75 @@ defmodule Tiki.OrdersTest do
     end
   end
 
+  describe "change_ticket_type" do
+    import Tiki.OrdersFixtures
+    import Tiki.TicketsFixtures
+    alias Tiki.Accounts.Scope
+
+    test "successfully changes ticket type" do
+      event = Tiki.EventsFixtures.event_fixture()
+      user = Tiki.AccountsFixtures.admin_user_fixture()
+      scope = Scope.for(event: event.id, user: user.id)
+
+      batch = ticket_batch_fixture(%{event: event})
+      old_type = ticket_type_fixture(%{ticket_batch_id: batch.id, price: 100})
+      new_type = ticket_type_fixture(%{ticket_batch_id: batch.id, price: 200})
+
+      order = order_fixture(%{event_id: event.id})
+      ticket = ticket_fixture(%{order_id: order.id, ticket_type_id: old_type.id, price: 100})
+
+      assert {:ok, updated_ticket} = Orders.change_ticket_type(scope, ticket.id, new_type.id)
+      assert updated_ticket.ticket_type_id == new_type.id
+      assert updated_ticket.price == 200
+    end
+
+    test "fails if ticket not found" do
+      event = Tiki.EventsFixtures.event_fixture()
+      user = Tiki.AccountsFixtures.admin_user_fixture()
+      scope = Scope.for(event: event.id, user: user.id)
+
+      batch = ticket_batch_fixture(%{event: event})
+      ticket_type = ticket_type_fixture(%{ticket_batch_id: batch.id})
+
+      assert {:error, msg} =
+               Orders.change_ticket_type(scope, Ecto.UUID.generate(), ticket_type.id)
+
+      assert msg == "ticket not found"
+    end
+
+    test "fails if user is not authorized" do
+      event = Tiki.EventsFixtures.event_fixture()
+      user = Tiki.AccountsFixtures.user_fixture()
+      scope = Scope.for(event: event.id, user: user.id)
+
+      batch = ticket_batch_fixture(%{event: event})
+      old_type = ticket_type_fixture(%{ticket_batch_id: batch.id})
+      new_type = ticket_type_fixture(%{ticket_batch_id: batch.id})
+
+      order = order_fixture(%{event_id: event.id})
+      ticket = ticket_fixture(%{order_id: order.id, ticket_type_id: old_type.id})
+
+      assert {:error, :unauthorized} = Orders.change_ticket_type(scope, ticket.id, new_type.id)
+    end
+
+    test "fails if ticket type is the same" do
+      event = Tiki.EventsFixtures.event_fixture()
+      user = Tiki.AccountsFixtures.admin_user_fixture()
+      scope = Scope.for(event: event.id, user: user.id)
+
+      batch = ticket_batch_fixture(%{event: event})
+      ticket_type = ticket_type_fixture(%{ticket_batch_id: batch.id})
+
+      order = order_fixture(%{event_id: event.id})
+      ticket = ticket_fixture(%{order_id: order.id, ticket_type_id: ticket_type.id})
+
+      assert {:error, msg} =
+               Orders.change_ticket_type(scope, ticket.id, ticket_type.id)
+
+      assert msg == "ticket type is already set to this value"
+    end
+  end
+
   describe "full order process" do
     import Tiki.OrdersFixtures
     import Tiki.TicketsFixtures

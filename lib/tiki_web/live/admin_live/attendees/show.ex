@@ -7,6 +7,7 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
 
   import TikiWeb.Component.Card
   import TikiWeb.Component.Badge
+  import TikiWeb.Component.Dialog
 
   def mount(%{"event_id" => event_id, "ticket_id" => ticket_id}, _session, socket) do
     event =
@@ -17,8 +18,17 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
          ticket <- Orders.get_ticket!(ticket_id),
          order <- Orders.get_order!(ticket.order_id),
          true <- order.event_id == event.id do
+      available_ticket_types =
+        Tiki.Tickets.get_cached_available_ticket_types(event.id)
+        |> Enum.map(fn tt -> {Localizer.localize(tt).name, tt.id} end)
+
       {:ok,
-       assign(socket, event: event, ticket: ticket, order: order)
+       assign(socket,
+         event: event,
+         ticket: ticket,
+         order: order,
+         available_ticket_types: available_ticket_types
+       )
        |> assign_async(:payment_method, fn -> get_payment_method(order) end)}
     else
       _ ->
@@ -43,6 +53,50 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
      ])}
   end
 
+  def handle_event("change_ticket_type", %{"ticket_type_id" => ""}, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:error, gettext("Please select a ticket type"))}
+  end
+
+  def handle_event("change_ticket_type", %{"ticket_type_id" => ticket_type_id}, socket) do
+    case Orders.change_ticket_type(
+           socket.assigns.current_scope,
+           socket.assigns.ticket.id,
+           ticket_type_id
+         ) do
+      {:ok, updated_ticket} ->
+        available_ticket_types =
+          Tiki.Tickets.get_cached_available_ticket_types(socket.assigns.event.id)
+          |> Enum.map(fn tt -> {Localizer.localize(tt).name, tt.id} end)
+
+        {:noreply,
+         socket
+         |> assign(
+           ticket: updated_ticket,
+           order: Orders.get_order!(updated_ticket.order_id),
+           available_ticket_types: available_ticket_types
+         )
+         |> put_flash(:info, gettext("Ticket type changed successfully"))
+         |> push_event("js-exec", %{to: "#change-ticket-type-dialog", attr: "data-cancel"})}
+
+      {:error, :unauthorized} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("You are not authorized to do that."))}
+
+      {:error, reason} when is_binary(reason) ->
+        {:noreply,
+         socket
+         |> put_flash(:error, reason)}
+
+      {:error, _} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("Failed to change ticket type"))}
+    end
+  end
+
   def render(assigns) do
     ~H"""
     <div class="flex flex-col gap-4">
@@ -64,7 +118,19 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
             {time_to_string(@ticket.checked_in_at, format: :short)}
           </span>
         </:item>
-        <:item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</:item>
+        <:item name={gettext("Ticket type")}>
+          <div class="flex items-center gap-2">
+            <span>{@ticket.ticket_type.name}</span>
+            <.button
+              variant="outline"
+              size="sm"
+              phx-click={show_modal("change-ticket-type-dialog")}
+              type="button"
+            >
+              {gettext("Change")}
+            </.button>
+          </div>
+        </:item>
 
         <:actions>
           <.link navigate={~p"/tickets/#{@ticket}"}>
@@ -100,7 +166,19 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
             {time_to_string(@ticket.checked_in_at, format: :short)}
           </span>
         </:item>
-        <:item name={gettext("Ticket type")}>{@ticket.ticket_type.name}</:item>
+        <:item name={gettext("Ticket type")}>
+          <div class="flex items-center justify-between gap-3">
+            <span>{@ticket.ticket_type.name}</span>
+            <span
+              variant="link"
+              class="text-muted-foreground flex items-center gap-x-1.5 p-0 hover:text-foreground hover:cursor-pointer hover:underline"
+              phx-click={show_modal("change-ticket-type-dialog")}
+            >
+              <.icon name="hero-pencil" class="size-3" />
+              {gettext("Change")}
+            </span>
+          </div>
+        </:item>
         <:item
           :for={qr <- @ticket.form_response.question_responses}
           name={Localizer.localize(qr.question).name}
@@ -134,6 +212,42 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
 
         <.payment_details order={@order} payment_method={@payment_method} />
       </.information_card>
+
+      <.dialog id="change-ticket-type-dialog">
+        <.dialog_header>
+          <.dialog_title>{gettext("Change Ticket Type")}</.dialog_title>
+          <.dialog_description>
+            {gettext("Select a new ticket type for this ticket.")}
+          </.dialog_description>
+        </.dialog_header>
+
+        <.form for={%{}} phx-submit="change_ticket_type" id="change-ticket-type-form">
+          <div class="grid gap-4 py-4">
+            <div class="grid gap-2">
+              <.label for="ticket_type_id">{gettext("New Ticket Type")}</.label>
+              <.input
+                type="select"
+                name="ticket_type_id"
+                id="ticket_type_id"
+                required
+                options={@available_ticket_types}
+                value={@ticket.ticket_type_id}
+              />
+            </div>
+          </div>
+
+          <.dialog_footer>
+            <.button
+              type="button"
+              variant="outline"
+              phx-click={hide_modal("change-ticket-type-dialog")}
+            >
+              {gettext("Cancel")}
+            </.button>
+            <.button type="submit">{gettext("Change Ticket Type")}</.button>
+          </.dialog_footer>
+        </.form>
+      </.dialog>
     </div>
     """
   end
