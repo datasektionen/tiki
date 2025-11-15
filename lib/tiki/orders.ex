@@ -150,7 +150,9 @@ defmodule Tiki.Orders do
            OrderHandler.Worker.reserve_tickets(event_id, ticket_types, user_id) do
       Orders.Jobs.CancelPendingOrderJob.schedule_cancellation(order.id)
 
-      available_types = Tickets.put_available_ticket_meta(ticket_types)
+      available_types =
+        Tickets.put_available_ticket_meta(ticket_types)
+
       Orders.PubSub.broadcast_order_created(order)
       Orders.PubSub.broadcast_tickets_updated(order.event_id, available_types)
 

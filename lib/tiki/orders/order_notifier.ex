@@ -1,4 +1,8 @@
 defmodule Tiki.Orders.OrderNotifier do
+  @moduledoc """
+  Delivers email notifications on order confirmation.
+  """
+
   import Phoenix.Component
   import Swoosh.Email
 
@@ -151,7 +155,8 @@ defmodule Tiki.Orders.OrderNotifier do
     """
   end
 
-  def ics(order) do
+  # Generate iCal calendar entry to be used as an attachment
+  defp ics(order) do
     vevents =
       Enum.filter(order.tickets, fn t -> t.ticket_type.start_time && t.ticket_type.end_time end)
       |> Enum.group_by(fn t -> {t.ticket_type.start_time, t.ticket_type.end_time} end)

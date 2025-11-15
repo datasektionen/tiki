@@ -33,9 +33,6 @@ defmodule Tiki.Orders.PubSub do
     event = Events.order_created(order)
     PubSub.broadcast(@pubsub, order_topic(order.id), event)
 
-    # Also broadcast to event listeners (shows in event purchase feed)
-    broadcast_tickets_updated(order.event_id, get_available_types(order.event_id))
-
     :ok
   end
 
