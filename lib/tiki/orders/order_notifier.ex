@@ -156,6 +156,16 @@ defmodule Tiki.Orders.OrderNotifier do
       Enum.filter(order.tickets, fn t -> t.ticket_type.start_time && t.ticket_type.end_time end)
       |> Enum.group_by(fn t -> {t.ticket_type.start_time, t.ticket_type.end_time} end)
       |> Enum.map(fn {{start_time, end_time}, ts} ->
+        summary = escape_text(order.event.name)
+        ticket_names = Enum.map(ts, fn t -> t.ticket_type.name end) |> Enum.join(", ")
+
+        description =
+          escape_text(
+            "Event details: #{TikiWeb.Endpoint.url()}/events/#{order.event.id}\n\nYour Tickets: #{ticket_names}"
+          )
+
+        location = escape_text(order.event.location)
+
         """
         BEGIN:VEVENT
         UID:#{order.id}-#{hd(ts).id}
@@ -164,9 +174,9 @@ defmodule Tiki.Orders.OrderNotifier do
         URL:#{TikiWeb.Endpoint.url()}/events/#{order.event.id}
         DTSTART:#{format_date(start_time)}
         DTEND:#{format_date(end_time)}
-        SUMMARY:#{order.event.name}
-        DESCRIPTION:Event details: #{TikiWeb.Endpoint.url()}/events/#{order.event.id}\n\nYour Tickets: #{Enum.map(ts, fn t -> t.ticket_type.name end) |> Enum.join(", ")}
-        LOCATION:#{order.event.location}
+        SUMMARY:#{summary}
+        DESCRIPTION:#{description}
+        LOCATION:#{location}
         END:VEVENT
         """
         |> String.trim_trailing()
@@ -186,6 +196,7 @@ defmodule Tiki.Orders.OrderNotifier do
         END:VCALENDAR
         """
         |> String.trim_trailing()
+        |> fold_ical_lines()
     end
   end
 
@@ -193,5 +204,47 @@ defmodule Tiki.Orders.OrderNotifier do
     datetime
     |> DateTime.shift_zone!("Etc/UTC")
     |> Calendar.strftime("%Y%m%dT%H%M%SZ")
+  end
+
+  # RFC 5545 section 3.3.11: escaping for TEXT property values
+  # https://www.rfc-editor.org/rfc/rfc5545#section-3.3.11
+  defp escape_text(text) when is_binary(text) do
+    text
+    |> String.replace("\\", "\\\\")
+    |> String.replace(",", "\\,")
+    |> String.replace(";", "\\;")
+    |> String.replace("\n", "\\n")
+    |> String.replace("\r", "")
+  end
+
+  defp escape_text(nil), do: ""
+
+  # RFC 5545 section 3.1: line folding for lines > 75 octets
+  # https://www.rfc-editor.org/rfc/rfc5545#section-3.1
+  defp fold_ical_lines(ical_string) when is_binary(ical_string) do
+    ical_string
+    |> String.split("\n")
+    |> Enum.flat_map(&fold_line/1)
+    |> Enum.join("\r\n")
+  end
+
+  defp fold_line(str) when byte_size(str) <= 75, do: [str]
+
+  defp fold_line(str) do
+    size = next_utf8_boundary(str, 75, 0)
+    <<line::binary-size(size), rest::binary>> = str
+    [line | fold_line(" " <> rest)]
+  end
+
+  defp next_utf8_boundary(_str, max_bytes, acc) when acc >= max_bytes, do: acc
+
+  defp next_utf8_boundary(str, max_bytes, acc) do
+    case String.next_grapheme_size(str) do
+      {size, rest} when acc + size <= max_bytes ->
+        next_utf8_boundary(rest, max_bytes, acc + size)
+
+      _ ->
+        acc
+    end
   end
 end
