@@ -560,6 +560,86 @@ defmodule Tiki.OrdersTest do
     end
   end
 
+  describe "iCal generation" do
+    import Tiki.OrdersFixtures
+    import Tiki.TicketsFixtures
+
+    test "escapes special characters in iCalendar TEXT values (RFC 5545)" do
+      ticket_type =
+        ticket_type_fixture(%{
+          name: "Ticket; with, special; chars",
+          price: 0,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 21:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      event = ticket_type.ticket_batch.event
+      # Event with newlines and special chars in name and location
+      Tiki.Repo.update!(
+        Ecto.Changeset.change(event, %{
+          name: "Event\nWith\nNewlines",
+          location: "Room 123, Building A; Floor 2"
+        })
+      )
+
+      order = order_fixture(%{event_id: event.id})
+      _ticket = ticket_fixture(%{order_id: order.id, ticket_type_id: ticket_type.id})
+
+      order = Tiki.Repo.preload(order, [:event, tickets: :ticket_type])
+      ics = Tiki.Orders.OrderNotifier.ics(order)
+
+      # Verify escaping
+      assert ics =~ "SUMMARY:Event\\nWith\\nNewlines"
+      assert ics =~ "LOCATION:Room 123\\, Building A\\; Floor 2"
+      assert ics =~ "Your Tickets: Ticket\\; with\\, special\\; chars"
+
+      # Verify it's valid iCalendar
+      assert ics =~ "BEGIN:VCALENDAR"
+      assert ics =~ "END:VCALENDAR"
+    end
+
+    test "folds lines longer than 75 octets (RFC 5545)" do
+      # the ❓ is at position 74, so it should be folded
+      long_event_name =
+        String.duplicate(
+          "This is a very long event name that will definitely exceed 75 octet❓ ",
+          3
+        )
+
+      ticket_type =
+        ticket_type_fixture(%{
+          price: 0,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 21:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      event = ticket_type.ticket_batch.event
+      Tiki.Repo.update!(Ecto.Changeset.change(event, %{name: long_event_name}))
+
+      order = order_fixture(%{event_id: event.id})
+      _ticket = ticket_fixture(%{order_id: order.id, ticket_type_id: ticket_type.id})
+
+      order = Tiki.Repo.preload(order, [:event, tickets: :ticket_type])
+      ics = Tiki.Orders.OrderNotifier.ics(order)
+
+      # Split by newlines and check line lengths
+      lines = String.split(ics, "\r\n")
+
+      Enum.each(lines, fn line ->
+        assert byte_size(line) <= 75,
+               "Line exceeds 75 bytes: #{inspect(line)} (#{byte_size(line)} bytes)"
+
+        assert String.valid?(line)
+      end)
+
+      assert ics =~ "BEGIN:VCALENDAR"
+      assert ics =~ "SUMMARY:"
+      assert ics =~ "very long event name"
+    end
+  end
+
   describe "full order process" do
     import Tiki.OrdersFixtures
     import Tiki.TicketsFixtures
