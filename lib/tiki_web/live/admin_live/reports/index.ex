@@ -130,8 +130,6 @@ defmodule TikiWeb.AdminLive.Reports.Index do
               {gettext("Print / Save as PDF")}
             </button>
           </div>
-
-          <%!-- Print header --%>
           <div class="mb-6 hidden space-y-2 print:block">
             <h1 class="text-2xl font-bold">Tiki Sales Report</h1>
             <p class="text-sm">
@@ -151,8 +149,6 @@ defmodule TikiWeb.AdminLive.Reports.Index do
               <strong>Payment Methods:</strong> {format_payment_type(@form[:payment_type].value)}
             </p>
           </div>
-
-    <!-- Summary Table -->
           <div class="bg-card border-border overflow-hidden rounded-lg border print:border-gray-300">
             <table class="w-full text-sm">
               <thead class="bg-muted print:bg-gray-100">
@@ -166,31 +162,28 @@ defmodule TikiWeb.AdminLive.Reports.Index do
               </thead>
               <tbody>
                 <%= for event_summary <- @report_data.summary do %>
-                  <!-- Event header -->
                   <tr class="border-border bg-muted/60 border-t-2 print:border-gray-300 print:bg-gray-50">
                     <td colspan="5" class="px-4 py-2 font-semibold">
                       Event: {event_summary.event_name}
                     </td>
                   </tr>
+                  <tr
+                    :for={item <- event_summary.items}
+                    class="border-border border-t hover:bg-secondary print:border-gray-300 print:hover:bg-transparent"
+                  >
+                    <td class="px-4 py-2">{item.ticket_type_name}</td>
+                    <td class="px-2 py-2 text-right tabular-nums">{item.quantity}</td>
+                    <td class="px-4 py-2 text-right tabular-nums">
+                      {format_accounting_sek(item.total_revenue)}
+                    </td>
+                    <td class="px-2 py-2 text-right tabular-nums">
+                      {format_accounting_sek(0)}
+                    </td>
+                    <td class="px-4 py-2 text-right tabular-nums">
+                      {format_accounting_sek(item.total_revenue)}
+                    </td>
+                  </tr>
 
-    <!-- Ticket types for this event -->
-                  <%= for item <- event_summary.items do %>
-                    <tr class="border-border border-t hover:bg-secondary print:border-gray-300 print:hover:bg-transparent">
-                      <td class="px-4 py-2">{item.ticket_type_name}</td>
-                      <td class="px-2 py-2 text-right tabular-nums">{item.quantity}</td>
-                      <td class="px-4 py-2 text-right tabular-nums">
-                        {format_accounting_sek(item.total_revenue)}
-                      </td>
-                      <td class="px-2 py-2 text-right tabular-nums">
-                        {format_accounting_sek(0)}
-                      </td>
-                      <td class="px-4 py-2 text-right tabular-nums">
-                        {format_accounting_sek(item.total_revenue)}
-                      </td>
-                    </tr>
-                  <% end %>
-
-    <!-- Event subtotal -->
                   <tr class="border-border bg-muted/30 border-t font-semibold print:border-gray-300 print:bg-gray-50">
                     <td class="px-4 py-2">Subtotal</td>
                     <td class="px-2 py-2 text-right tabular-nums">{event_summary.total_quantity}</td>
@@ -206,7 +199,6 @@ defmodule TikiWeb.AdminLive.Reports.Index do
                   </tr>
                 <% end %>
 
-    <!-- Grand total -->
                 <tr class="border-border bg-muted border-t-2 font-semibold print:border-gray-400 print:bg-gray-100">
                   <td class="px-4 py-2">Grand total</td>
                   <td class="px-2 py-2 text-right tabular-nums">{@report_data.total_tickets}</td>
@@ -223,53 +215,51 @@ defmodule TikiWeb.AdminLive.Reports.Index do
               </tbody>
             </table>
           </div>
-
-    <!-- Detailed Transactions Table -->
-          <%= if @form[:include_details].value && !Enum.empty?(@report_data.details) do %>
-            <div class="bg-card border-border overflow-hidden rounded-lg border print:page-break-before print:mt-0 print:border-gray-300">
-              <div class="border-border bg-muted border-b px-4 py-3 print:border-gray-300 print:bg-gray-100">
-                <h3 class="font-semibold">Detailed Transactions</h3>
-              </div>
-              <div class="space-y-4 p-4 print:space-y-6">
-                <%= for detail <- @report_data.details do %>
-                  <div class="border-border border-b pb-4 last:border-b-0 print:border-gray-300 print:pb-6">
-                    <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
-                      <div>
-                        <p class="text-muted-foreground text-xs">Date</p>
-                        <p>{time_to_string(detail.paid_at, format: "yyyy-mm-dd")}</p>
-                      </div>
-                      <div>
-                        <p class="text-muted-foreground text-xs">Event</p>
-                        <p>{detail.event_name}</p>
-                      </div>
-                      <div>
-                        <p class="text-muted-foreground text-xs">Order ID</p>
-                        <.link navigate={
-                          ~p"/admin/events/#{detail.event_id}/orders/#{detail.order_id}"
-                        }>
-                          <p class="break-all font-medium hover:underline print:font-normal">
-                            {detail.order_id}
-                          </p>
-                        </.link>
-                      </div>
-                      <div>
-                        <p class="text-muted-foreground text-xs">Ticket Type</p>
-                        <p>{detail.ticket_type_name}</p>
-                      </div>
-                      <div>
-                        <p class="text-muted-foreground text-xs">Buyer</p>
-                        <p>{detail.buyer_name}</p>
-                      </div>
-                      <div>
-                        <p class="text-muted-foreground text-xs">Amount</p>
-                        <p class="">{format_accounting_sek(detail.price)}</p>
-                      </div>
-                    </div>
+          <div
+            :if={@form[:include_details].value && !Enum.empty?(@report_data.details)}
+            class="bg-card border-border overflow-hidden rounded-lg border print:page-break-before print:mt-0 print:border-gray-300"
+          >
+            <div class="border-border bg-muted border-b px-4 py-3 print:border-gray-300 print:bg-gray-100">
+              <h3 class="font-semibold">Detailed Transactions</h3>
+            </div>
+            <div class="space-y-4 p-4 print:space-y-6">
+              <div
+                :for={detail <- @report_data.details}
+                class="border-border border-b pb-4 last:border-b-0 print:border-gray-300 print:pb-6"
+              >
+                <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
+                  <div>
+                    <p class="text-muted-foreground text-xs">Date</p>
+                    <p>{time_to_string(detail.paid_at, format: "yyyy-mm-dd")}</p>
                   </div>
-                <% end %>
+                  <div>
+                    <p class="text-muted-foreground text-xs">Event</p>
+                    <p>{detail.event_name}</p>
+                  </div>
+                  <div>
+                    <p class="text-muted-foreground text-xs">Order ID</p>
+                    <.link navigate={~p"/admin/events/#{detail.event_id}/orders/#{detail.order_id}"}>
+                      <p class="break-all font-medium hover:underline print:font-normal">
+                        {detail.order_id}
+                      </p>
+                    </.link>
+                  </div>
+                  <div>
+                    <p class="text-muted-foreground text-xs">Ticket Type</p>
+                    <p>{detail.ticket_type_name}</p>
+                  </div>
+                  <div>
+                    <p class="text-muted-foreground text-xs">Buyer</p>
+                    <p>{detail.buyer_name}</p>
+                  </div>
+                  <div>
+                    <p class="text-muted-foreground text-xs">Amount</p>
+                    <p class="">{format_accounting_sek(detail.price)}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          <% end %>
+          </div>
         </div>
       <% end %>
     </div>
