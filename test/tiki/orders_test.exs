@@ -160,6 +160,82 @@ defmodule Tiki.OrdersTest do
     end
   end
 
+  describe "order cancellation" do
+    import Tiki.OrdersFixtures
+    import Tiki.TicketsFixtures
+
+    test "maybe_cancel_order/1 cancels a pending order" do
+      order = order_fixture(%{status: "pending"})
+
+      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+      assert order.status == :cancelled
+      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 cancels an order being checked out" do
+      order = order_fixture(%{status: "checkout"})
+
+      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+      assert order.status == :cancelled
+      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 does not modify paid orders" do
+      order = order_fixture(%{status: "paid"})
+      ticket = ticket_fixture(%{order_id: order.id}) |> Repo.preload(:ticket_type)
+
+      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
+      assert msg =~ "order is not cancellable"
+
+      assert %Orders.Order{status: :paid, tickets: [^ticket]} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 does not modify cancelled orders" do
+      order = order_fixture(%{status: "cancelled"}) |> Repo.preload(@standard_preloads)
+
+      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
+      assert msg =~ "order is not cancellable"
+
+      assert Orders.get_order!(order.id) == order
+    end
+
+    test "maybe_cancel_order/1 returns an error if the order does not exist" do
+      assert {:error, msg} = Orders.maybe_cancel_order(Ecto.UUID.generate())
+      assert msg =~ "order not found, nothing to cancel"
+    end
+
+    test "maybe_cancel_order/1 propagates cancellation to " do
+      ticket_type =
+        ticket_type_fixture(%{
+          price: 50,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 20:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+      cost = ticket_type.price * 2
+
+      {:ok, order} = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, order} =
+               Orders.init_checkout(order, "swish", %{
+                 name: "John Doe",
+                 email: "john@doe.com"
+               })
+
+      swish_id = order.swish_checkout.id
+
+      Oban.Testing.with_testing_mode(:manual, fn ->
+        assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+        assert order.status == :cancelled
+        assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+
+        assert_enqueued worker: Tiki.Orders.CancelWorker, args: %{"swish_id" => swish_id}
+      end)
+    end
+  end
+
   describe "ticket" do
     import Tiki.OrdersFixtures
 
@@ -330,46 +406,6 @@ defmodule Tiki.OrdersTest do
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
       assert msg =~ "not all ticket types are purchasable"
-    end
-
-    test "maybe_cancel_order/1 cancels a pending order" do
-      order = order_fixture(%{status: "pending"})
-
-      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
-      assert order.status == :cancelled
-      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
-    end
-
-    test "maybe_cancel_order/1 cancels an order being checked out" do
-      order = order_fixture(%{status: "checkout"})
-
-      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
-      assert order.status == :cancelled
-      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
-    end
-
-    test "maybe_cancel_order/1 does not modify paid orders" do
-      order = order_fixture(%{status: "paid"})
-      ticket = ticket_fixture(%{order_id: order.id}) |> Repo.preload(:ticket_type)
-
-      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not cancellable"
-
-      assert %Orders.Order{status: :paid, tickets: [^ticket]} = Orders.get_order!(order.id)
-    end
-
-    test "maybe_cancel_order/1 does not modify cancelled orders" do
-      order = order_fixture(%{status: "cancelled"}) |> Repo.preload(@standard_preloads)
-
-      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not cancellable"
-
-      assert Orders.get_order!(order.id) == order
-    end
-
-    test "maybe_cancel_order/1 returns an error if the order does not exist" do
-      assert {:error, msg} = Orders.maybe_cancel_order(Ecto.UUID.generate())
-      assert msg =~ "order not found, nothing to cancel"
     end
   end
 
