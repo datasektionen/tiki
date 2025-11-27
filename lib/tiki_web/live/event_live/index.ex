@@ -50,7 +50,7 @@ defmodule TikiWeb.EventLive.Index do
             </span>
           </.button>
         </.dropdown_menu_trigger>
-        <.dropdown_menu_content align="end" class="min-w-[10rem]">
+        <.dropdown_menu_content align="end" class="min-w-40">
           <.menu class="">
             <.menu_label>
               {gettext("Sort by")}
@@ -86,7 +86,7 @@ defmodule TikiWeb.EventLive.Index do
           <div class="relative overflow-hidden rounded-lg">
             <img
               src={image_url(event.image_url, width: 600)}
-              class="aspect-[16/9] h-full w-full rounded-md object-cover"
+              class="aspect-video h-full w-full rounded-md object-cover"
               alt={event.name}
               loading="lazy"
             />
@@ -169,7 +169,16 @@ defmodule TikiWeb.EventLive.Index do
     do: {:or, {:start_time, DateTime.utc_now(), :gt}, {:end_time, DateTime.utc_now(), :gt}}
 
   def handle_event("filter", %{"date" => date}, socket) do
-    url = self_path(socket, :index, %{"date" => date})
+    current_params = socket.assigns.params
+
+    new_params =
+      case {current_params["sort"], current_params["date"], date} do
+        {"date", "upcoming", "past" = date} -> %{"date" => date, "sort" => "date_desc"}
+        {"date_desc", "past", "upcoming" = date} -> %{"date" => date, "sort" => "date"}
+        {_, _, date} -> %{"date" => date}
+      end
+
+    url = self_path(socket, :index, new_params)
 
     {:noreply, push_patch(socket, to: url)}
   end
