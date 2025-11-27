@@ -230,7 +230,7 @@ defmodule TikiWeb.AdminLive.Reports.Index do
                 <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
                   <div>
                     <p class="text-muted-foreground text-xs">Date</p>
-                    <p>{time_to_string(detail.paid_at, format: "yyyy-mm-dd")}</p>
+                    <p>{time_to_string(detail.paid_at, format: "yyyy-MM-dd")}</p>
                   </div>
                   <div>
                     <p class="text-muted-foreground text-xs">Event</p>
