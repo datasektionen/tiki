@@ -55,7 +55,14 @@ defmodule TikiWeb.LiveHelpers do
     |> to_string()
   end
 
-  def format_sek(amount) do
-    "#{Tiki.Cldr.Number.to_string!(amount, format: "#,##0")} SEK"
+  def format_sek(amount, opts \\ []) do
+    locale = Keyword.get(opts, :locale, Gettext.get_locale(TikiWeb.Gettext))
+    currency_digits = Keyword.get(opts, :currency_digits, :cash)
+
+    Tiki.Cldr.Number.to_string!(amount,
+      locale: locale,
+      currency_digits: currency_digits,
+      currency: "SEK"
+    )
   end
 end
