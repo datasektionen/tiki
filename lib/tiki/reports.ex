@@ -294,7 +294,7 @@ defmodule Tiki.Reports do
         event_id: order.event_id
       }
     end)
-    |> Enum.sort_by(fn row -> {row.event_name, row.paid_at} end)
+    |> Enum.sort_by(fn row -> row.paid_at end, {:asc, NaiveDateTime})
   end
 
   defp buyer_name(order) do

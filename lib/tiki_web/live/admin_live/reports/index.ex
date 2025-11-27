@@ -151,7 +151,7 @@ defmodule TikiWeb.AdminLive.Reports.Index do
               <strong>Payment Methods:</strong> {format_payment_type(@form[:payment_type].value)}
             </p>
           </div>
-          
+
     <!-- Summary Table -->
           <div class="bg-card border-border overflow-hidden rounded-lg border print:border-gray-300">
             <table class="w-full text-sm">
@@ -172,58 +172,58 @@ defmodule TikiWeb.AdminLive.Reports.Index do
                       Event: {event_summary.event_name}
                     </td>
                   </tr>
-                  
+
     <!-- Ticket types for this event -->
                   <%= for item <- event_summary.items do %>
                     <tr class="border-border border-t hover:bg-secondary print:border-gray-300 print:hover:bg-transparent">
                       <td class="px-4 py-2">{item.ticket_type_name}</td>
                       <td class="px-2 py-2 text-right tabular-nums">{item.quantity}</td>
                       <td class="px-4 py-2 text-right tabular-nums">
-                        {format_sek(item.total_revenue)}
+                        {format_accounting_sek(item.total_revenue)}
                       </td>
                       <td class="px-2 py-2 text-right tabular-nums">
-                        {format_sek(0)}
+                        {format_accounting_sek(0)}
                       </td>
                       <td class="px-4 py-2 text-right tabular-nums">
-                        {format_sek(item.total_revenue)}
+                        {format_accounting_sek(item.total_revenue)}
                       </td>
                     </tr>
                   <% end %>
-                  
+
     <!-- Event subtotal -->
                   <tr class="border-border bg-muted/30 border-t font-semibold print:border-gray-300 print:bg-gray-50">
                     <td class="px-4 py-2">Subtotal</td>
                     <td class="px-2 py-2 text-right tabular-nums">{event_summary.total_quantity}</td>
                     <td class="px-4 py-2 text-right tabular-nums">
-                      {format_sek(event_summary.total_revenue)}
+                      {format_accounting_sek(event_summary.total_revenue)}
                     </td>
                     <td class="px-2 py-2 text-right tabular-nums">
-                      {format_sek(0)}
+                      {format_accounting_sek(0)}
                     </td>
                     <td class="px-4 py-2 text-right tabular-nums">
-                      {format_sek(event_summary.total_revenue)}
+                      {format_accounting_sek(event_summary.total_revenue)}
                     </td>
                   </tr>
                 <% end %>
-                
+
     <!-- Grand total -->
                 <tr class="border-border bg-muted border-t-2 font-semibold print:border-gray-400 print:bg-gray-100">
                   <td class="px-4 py-2">Grand total</td>
                   <td class="px-2 py-2 text-right tabular-nums">{@report_data.total_tickets}</td>
                   <td class="px-4 py-2 text-right tabular-nums">
-                    {format_sek(@report_data.grand_total)}
+                    {format_accounting_sek(@report_data.grand_total)}
                   </td>
                   <td class="px-2 py-2 text-right tabular-nums">
-                    {format_sek(0)}
+                    {format_accounting_sek(0)}
                   </td>
                   <td class="px-4 py-2 text-right tabular-nums">
-                    {format_sek(@report_data.grand_total)}
+                    {format_accounting_sek(@report_data.grand_total)}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          
+
     <!-- Detailed Transactions Table -->
           <%= if @form[:include_details].value && !Enum.empty?(@report_data.details) do %>
             <div class="bg-card border-border overflow-hidden rounded-lg border print:page-break-before print:mt-0 print:border-gray-300">
@@ -262,7 +262,7 @@ defmodule TikiWeb.AdminLive.Reports.Index do
                       </div>
                       <div>
                         <p class="text-muted-foreground text-xs">Amount</p>
-                        <p class="">{format_sek(detail.price)}</p>
+                        <p class="">{format_accounting_sek(detail.price)}</p>
                       </div>
                     </div>
                   </div>
@@ -418,5 +418,9 @@ defmodule TikiWeb.AdminLive.Reports.Index do
 
   defp notify_parent(msg) do
     send(self(), {__MODULE__, {:event_selected, msg}})
+  end
+
+  defp format_accounting_sek(amount) do
+    format_sek(amount, locale: "sv", currency_digits: :accounting)
   end
 end

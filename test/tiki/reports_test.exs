@@ -429,6 +429,36 @@ defmodule Tiki.ReportsTest do
       assert report_swish.grand_total == 200
       assert report_swish.total_tickets == 1
     end
+
+    test "detailed transactions are sorted chronologically by date, not alphabetically" do
+      # Create events with names that sort differently alphabetically
+      event_z = event_fixture(name: "Z Event")
+      event_a = event_fixture(name: "A Event")
+
+      order_swish(event_z, 100)
+      order_swish(event_a, 200)
+
+      report =
+        Reports.generate_report(
+          event_ids: :all,
+          ticket_type_ids: :all,
+          start_date: nil,
+          end_date: nil,
+          include_details: true,
+          payment_type: ""
+        )
+
+      details = report.details
+      assert length(details) == 2
+
+      first_detail = Enum.at(details, 0)
+      second_detail = Enum.at(details, 1)
+
+      # Should be sorted chronologically by paid_at, not alphabetically by event_name
+      assert first_detail.event_name == "Z Event"
+      assert second_detail.event_name == "A Event"
+      assert NaiveDateTime.compare(first_detail.paid_at, second_detail.paid_at) in [:lt, :eq]
+    end
   end
 
   describe "ReportParams changeset" do
