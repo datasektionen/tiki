@@ -36,6 +36,7 @@ defmodule TikiWeb.UserAuth do
     conn
     |> renew_session()
     |> put_token_in_session(token)
+    |> put_session(:picture_url, user.picture_url)
     |> maybe_write_remember_me_cookie(token, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
   end
@@ -96,6 +97,17 @@ defmodule TikiWeb.UserAuth do
     {user_token, conn} = ensure_user_token(conn)
 
     user = user_token && Accounts.get_user_by_session_token(user_token)
+
+    picture_url = get_session(conn, :picture_url)
+
+    user =
+      if user && picture_url do
+        Map.put(user, :picture_url, picture_url)
+      else
+        user
+      end
+
+    IO.inspect(picture_url, label: "this is the picture_url")
 
     team =
       case get_session(conn, :current_team_id) do
@@ -303,7 +315,14 @@ defmodule TikiWeb.UserAuth do
     end)
     |> Phoenix.Component.assign_new(:current_user, fn ->
       if user_token = session["user_token"] do
-        Accounts.get_user_by_session_token(user_token)
+        user = Accounts.get_user_by_session_token(user_token)
+        picture_url = session["picture_url"]
+
+        if user && picture_url do
+          Map.put(user, :picture_url, picture_url)
+        else
+          user
+        end
       end
     end)
     |> Phoenix.Component.assign_new(:current_team, fn ->

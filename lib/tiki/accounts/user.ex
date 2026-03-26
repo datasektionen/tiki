@@ -14,7 +14,8 @@ defmodule Tiki.Accounts.User do
     field :confirmed_at, :naive_datetime
 
     field :locale, :string, default: "en"
-
+    
+    field :picture_url, :string, virtual: true
     has_many :memberships, Tiki.Teams.Membership
 
     timestamps()
@@ -22,7 +23,7 @@ defmodule Tiki.Accounts.User do
 
   def oidcc_changeset(user, attrs) do
     user
-    |> cast(attrs, [:kth_id, :year_tag, :email, :first_name, :last_name])
+    |> cast(attrs, [:kth_id, :year_tag, :email, :first_name, :last_name, :picture_url])
     |> validate_required([:kth_id, :email])
     |> unsafe_validate_unique(:email, Tiki.Repo)
     |> unique_constraint(:email)
