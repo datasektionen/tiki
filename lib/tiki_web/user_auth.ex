@@ -98,17 +98,6 @@ defmodule TikiWeb.UserAuth do
 
     user = user_token && Accounts.get_user_by_session_token(user_token)
 
-    picture_url = get_session(conn, :picture_url)
-
-    user =
-      if user && picture_url do
-        Map.put(user, :picture_url, picture_url)
-      else
-        user
-      end
-
-    IO.inspect(picture_url, label: "this is the picture_url")
-
     team =
       case get_session(conn, :current_team_id) do
         nil -> nil
