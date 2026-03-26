@@ -14,7 +14,7 @@ defmodule Tiki.Accounts.User do
     field :confirmed_at, :naive_datetime
 
     field :locale, :string, default: "en"
-    
+
     field :picture_url, :string, virtual: true
     has_many :memberships, Tiki.Teams.Membership
 
