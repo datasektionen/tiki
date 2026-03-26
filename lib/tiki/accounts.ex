@@ -138,6 +138,7 @@ defmodule Tiki.Accounts do
       nil ->
         # Include kth_id and year_tag if present
         link_attrs = Map.take(attrs, ["kth_id", "year_tag"])
+
         User.oidcc_changeset(user, link_attrs)
         |> Repo.update()
 
