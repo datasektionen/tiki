@@ -155,7 +155,7 @@ configs:
       users:
         - kth_id: turetek
           email: turetek@kth.se
-          first_name: Tusre
+          first_name: Ture
           family_name: Teknolog
           picture: https://thskth.se/wp-content/uploads/2023/06/ths-logo-bla-01-300x294-1.png
           thumbnail: https://thskth.se/wp-content/uploads/2019/12/ths-logo-svart-01.png

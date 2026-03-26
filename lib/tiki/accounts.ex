@@ -136,6 +136,7 @@ defmodule Tiki.Accounts do
   def link_user_with_userinfo(user, %{"kth_id" => id} = attrs) do
     case Repo.get_by(User, kth_id: id) do
       nil ->
+        # Include kth_id, year_tag and picture_url if present
         link_attrs = Map.take(attrs, ["kth_id", "year_tag", "picture_url"])
 
         User.oidcc_changeset(user, link_attrs)

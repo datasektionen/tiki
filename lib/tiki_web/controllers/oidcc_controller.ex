@@ -57,7 +57,7 @@ defmodule TikiWeb.OidccController do
         %Plug.Conn{private: %{Oidcc.Plug.AuthorizationCallback => {:ok, {_token, userinfo}}}} =
           conn,
         _params
-      ) do        
+      ) do
     userinfo =
       Map.new(userinfo, fn {k, v} ->
         key = Map.get(@key_replacements, k, k)
