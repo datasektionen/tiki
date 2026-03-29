@@ -329,6 +329,7 @@ defmodule TikiWeb.Component.Sidebar do
         <.dropdown_menu_trigger>
           <button class="flex w-full flex-row items-center gap-2 rounded-md p-2 hover:bg-accent">
             <img
+              :if={@current_user.picture_url}
               src={"#{@current_user.picture_url}"}
               class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
             />
@@ -344,6 +345,7 @@ defmodule TikiWeb.Component.Sidebar do
             <.menu_label>
               <div class="inline-flex gap-2">
                 <img
+                  :if={@current_user.picture_url}
                   src={"#{@current_user.picture_url}"}
                   class="fill-primary-foreground h-8 w-8 rounded-lg object-cover"
                 />
