@@ -12,7 +12,7 @@ RUN apt-get update && \
     mix archive.install hex phx_new --force && \
     mix local.rebar --force
 
-RUN apt-get install -y nginx
+RUN apt-get install -y nginx gpg
 
 # Add stripe CLI
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg

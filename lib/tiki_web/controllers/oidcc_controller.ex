@@ -8,7 +8,8 @@ defmodule TikiWeb.OidccController do
   @key_replacements %{
     "sub" => "kth_id",
     "given_name" => "first_name",
-    "family_name" => "last_name"
+    "family_name" => "last_name",
+    "picture" => "picture_url"
   }
 
   plug(
@@ -18,7 +19,7 @@ defmodule TikiWeb.OidccController do
       client_id: &__MODULE__.client_id/0,
       client_secret: &__MODULE__.client_secret/0,
       redirect_uri: &__MODULE__.callback_uri/0,
-      scopes: ["openid", "profile", "email", "year_tag"]
+      scopes: ["openid", "profile", "email", "year_tag", "picture"]
     ]
     when action in [:authorize]
   )

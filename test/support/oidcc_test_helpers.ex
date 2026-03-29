@@ -67,7 +67,8 @@ defmodule Tiki.OidccTestHelpers do
       "given_name" => Keyword.get(attrs, :given_name, "Test"),
       "family_name" => Keyword.get(attrs, :family_name, "User"),
       "email" => Keyword.get(attrs, :email, "#{kth_id}@kth.se"),
-      "year_tag" => Keyword.get(attrs, :year_tag, "D-23")
+      "year_tag" => Keyword.get(attrs, :year_tag, "D-23"),
+      "picture" => Keyword.get(attrs, :picture, nil)
     }
 
     # Allow overriding any field
