@@ -123,8 +123,15 @@ defmodule Tiki.Accounts do
         |> Repo.insert()
 
       user ->
+        {:ok, user}
+    end
+    |> case do
+      {:ok, user} ->
         user = Map.put(user, :picture_url, attrs["picture_url"])
         {:ok, user}
+
+      changeset ->
+        changeset
     end
   end
 

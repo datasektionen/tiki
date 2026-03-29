@@ -36,7 +36,7 @@ defmodule TikiWeb.UserAuth do
     conn
     |> renew_session()
     |> put_token_in_session(token)
-    |> put_session(:picture_url, user.picture_url)
+    |> put_user_picture_in_session(user)
     |> maybe_write_remember_me_cookie(token, params)
     |> redirect(to: user_return_to || signed_in_path(conn))
   end
@@ -96,7 +96,10 @@ defmodule TikiWeb.UserAuth do
   def fetch_current_user(conn, _opts) do
     {user_token, conn} = ensure_user_token(conn)
 
-    user = user_token && Accounts.get_user_by_session_token(user_token)
+    user =
+      user_token &&
+        Accounts.get_user_by_session_token(user_token)
+        |> assign_user_picture_from_session(get_session(conn))
 
     team =
       case get_session(conn, :current_team_id) do
@@ -304,14 +307,8 @@ defmodule TikiWeb.UserAuth do
     end)
     |> Phoenix.Component.assign_new(:current_user, fn ->
       if user_token = session["user_token"] do
-        user = Accounts.get_user_by_session_token(user_token)
-        picture_url = session["picture_url"]
-
-        if user && picture_url do
-          Map.put(user, :picture_url, picture_url)
-        else
-          user
-        end
+        Accounts.get_user_by_session_token(user_token)
+        |> assign_user_picture_from_session(session)
       end
     end)
     |> Phoenix.Component.assign_new(:current_team, fn ->
@@ -399,6 +396,21 @@ defmodule TikiWeb.UserAuth do
     |> put_session(:user_token, token)
     |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
   end
+
+  defp put_user_picture_in_session(conn, user) do
+    put_session(conn, :picture_url, user.picture_url)
+  end
+
+  defp assign_user_picture_from_session(%Accounts.User{} = user, session) do
+    picture_url = session["picture_url"]
+
+    case picture_url do
+      nil -> user
+      picture -> Map.put(user, :picture_url, picture)
+    end
+  end
+
+  defp assign_user_picture_from_session(user, _session), do: user
 
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))
