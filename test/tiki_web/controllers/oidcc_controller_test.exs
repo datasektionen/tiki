@@ -4,6 +4,8 @@ defmodule TikiWeb.OidccControllerTest do
   import Tiki.AccountsFixtures
   import Tiki.OidccTestHelpers
 
+  import Phoenix.LiveViewTest
+
   alias Tiki.Accounts
 
   # Helper to call controller action directly, bypassing Oidcc plugs
@@ -66,6 +68,32 @@ defmodule TikiWeb.OidccControllerTest do
       assert user = Accounts.get_user_by_email("noyeartag@kth.se")
       assert user.kth_id == "noyeartag"
       assert user.year_tag == nil
+    end
+
+    test "assigns user picture from claims", %{conn: conn} do
+      userinfo =
+        oidc_userinfo(
+          sub: "newuser",
+          email: "newuser@kth.se",
+          picture: "https://example.com/picture.jpg"
+        )
+
+      conn = call_oidc_callback(conn, userinfo)
+
+      assert user = Accounts.get_user_by_email("newuser@kth.se")
+      grant_permission(user, "admin")
+
+      # Test on intitial render
+      conn = get(conn, ~p"/admin/select-team")
+      html = html_response(conn, 200)
+
+      assert html =~ "newuser@kth.se"
+      assert html =~ "https://example.com/picture.jpg"
+
+      # Test on live view render/mount
+      {:ok, _lv, html} = live(conn, ~p"/admin/select-team")
+      assert html =~ "newuser@kth.se"
+      assert html =~ "https://example.com/picture.jpg"
     end
   end
 
