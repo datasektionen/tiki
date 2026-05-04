@@ -138,12 +138,13 @@ defmodule Tiki.Checkouts do
   # max length: 50 chars
 
   @swish_allowed_chars Enum.concat([
-    ?a..?z,
-    ?A..?Z,
-    ?0..?9,
-    [?å, ?ä, ?ö, ?Å, ?Ä, ?Ö],
-    [?\s, ?!, ??, ?(, ?), ?,, ?., ?-, ?:, ?;]
-  ]) |> MapSet.new()
+                         ?a..?z,
+                         ?A..?Z,
+                         ?0..?9,
+                         [?å, ?ä, ?ö, ?Å, ?Ä, ?Ö],
+                         [?\s, ?!, ??, ?(, ?), ?,, ?., ?-, ?:, ?;]
+                       ])
+                       |> MapSet.new()
 
   defp sanitize_swish_message(message) do
     message
