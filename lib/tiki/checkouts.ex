@@ -9,6 +9,7 @@ defmodule Tiki.Checkouts do
   @stripe Application.compile_env(:tiki, :stripe_module)
   @swish Application.compile_env(:tiki, :swish_module)
 
+  require Logger
   import Ecto.Query, warn: false
   alias Ecto.Multi
   alias Tiki.Repo
@@ -113,9 +114,11 @@ defmodule Tiki.Checkouts do
   and creates a Swish checkout in the database. Returns the request.
   """
   def create_swish_payment_request(%Order{user_id: user_id, price: price} = order) do
+    message = sanitize_swish_message(order.event.name)
+
     with {:ok, swish_request} <-
            @swish.create_payment_request(price, %{
-             "message" => order.event.name |> String.slice(0, 50),
+             "message" => message,
              "payeePaymentReference" => order.id |> String.replace("-", "")
            }),
          {:ok, checkout} <-
@@ -124,9 +127,35 @@ defmodule Tiki.Checkouts do
            ) do
       {:ok, checkout}
     else
-      {:error, err} -> {:error, err}
+      {:error, err} ->
+        Logger.error("Swish payment request failed for order #{order.id}: #{inspect(err)}")
+        {:error, err}
     end
   end
+
+  # https://developer.swish.nu/api/payment-request/v2
+  # allowed characters: a-ö, A-Ö, 0-9, and !?(),.-:;
+  # max length: 50 chars
+
+  @swish_allowed_chars Enum.concat([
+    ?a..?z,
+    ?A..?Z,
+    ?0..?9,
+    [?å, ?ä, ?ö, ?Å, ?Ä, ?Ö],
+    [?\s, ?!, ??, ?(, ?), ?,, ?., ?-, ?:, ?;]
+  ]) |> MapSet.new()
+
+  defp sanitize_swish_message(message) do
+    message
+    |> String.graphemes()
+    |> Enum.filter(&swish_allowed_char?/1)
+    |> Enum.join()
+    |> String.trim()
+    |> String.slice(0, 50)
+  end
+
+  defp swish_allowed_char?(<<c::utf8>>), do: c in @swish_allowed_chars
+  defp swish_allowed_char?(_), do: false
 
   @doc """
   Confirms a Swish payment request with a given callback identifier that
