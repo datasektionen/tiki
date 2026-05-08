@@ -24,7 +24,7 @@ defmodule Tiki.MixProject do
 
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, benchmark: :test]
     ]
   end
 
@@ -113,7 +113,8 @@ defmodule Tiki.MixProject do
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "esbuild default"],
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"],
+      benchmark: ["ecto.create --quiet", "ecto.migrate --quiet", "benchmark"]
     ]
   end
 end

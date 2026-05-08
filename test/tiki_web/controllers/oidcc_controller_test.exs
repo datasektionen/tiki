@@ -304,9 +304,9 @@ defmodule TikiWeb.OidccControllerTest do
   end
 
   describe "GET /oidcc/callback - OIDC errors" do
+    @tag capture_log: true
     test "handles OIDC provider errors gracefully", %{conn: conn} do
       conn = call_oidc_error(conn, :invalid_token)
-
       assert redirected_to(conn) == ~p"/users/log_in"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~

@@ -259,7 +259,12 @@ defmodule Tiki.OrderHandler.Worker do
     if started?(event_id) do
       {:ok, :already_started}
     else
-      OrderHandler.DynamicSupervisor.start_worker(event_id)
+      case OrderHandler.DynamicSupervisor.start_worker(event_id) do
+        {:ok, pid} -> {:ok, pid}
+        # Another concurrent caller started the worker between our check - proceed
+        {:error, {:already_started, _pid}} -> {:ok, :already_started}
+        {:error, reason} -> {:error, reason}
+      end
     end
   end
 

@@ -121,6 +121,7 @@ defmodule Tiki.CheckoutsTest do
       assert is_binary(checkout.token)
     end
 
+    @tag capture_log: true
     test "create_swish_payment_request/1 with invalid order returns an error" do
       order = Tiki.OrdersFixtures.order_fixture(price: 0)
 
