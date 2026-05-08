@@ -26,21 +26,28 @@ defmodule Mix.Tasks.Benchmark do
     run_scenario("single_batch / no noise", Scenarios.single_batch())
     run_scenario("single_batch / cancel noise (30%)", Scenarios.single_batch(), cancel_prob: 0.3)
     run_scenario("single_batch / pay noise (30%)", Scenarios.single_batch(), pay_prob: 0.3)
-    run_scenario("single_batch / mixed noise (20%+20%)", Scenarios.single_batch(), cancel_prob: 0.2, pay_prob: 0.2)
+
+    run_scenario("single_batch / mixed noise (20%+20%)", Scenarios.single_batch(),
+      cancel_prob: 0.2,
+      pay_prob: 0.2
+    )
+
     run_scenario("multi_date", Scenarios.multi_date())
     run_scenario("shared_pool", Scenarios.shared_pool())
 
+    run_scenario("shared_pool / mixed noise (20%+20%)", Scenarios.shared_pool(),
+      cancel_prob: 0.2,
+      pay_prob: 0.2
+    )
+
     IO.puts("=== Done ===\n")
   end
-
-  @perf_admin_id -1
 
   defp run_scenario(label, spec, noise_opts \\ []) do
     %{event: event, batches: batches, buyer_plan: plan, cleanup: cleanup} =
       Bench.setup_event(spec: spec)
 
-    opts = Keyword.merge([user_id: @perf_admin_id], noise_opts)
-    {micros, zipped, timings} = Bench.run_buyer_plan(event.id, plan, opts)
+    {micros, zipped, timings} = Bench.run_buyer_plan(event.id, plan, noise_opts)
     {_, results} = Enum.unzip(zipped)
 
     Bench.print_metrics(event.id, results,

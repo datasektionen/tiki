@@ -20,24 +20,22 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
       event: event,
       batches: batches,
       buyer_plan: plan,
-      admin_user_id: admin_user_id,
       cleanup: cleanup
     } =
       setup_event(spec: scenario)
 
     %{batch: batch} = batches["General"]
     on_exit(cleanup)
-    %{event: event, buyer_plan: plan, capacity: batch.max_size, admin_user_id: admin_user_id}
+    %{event: event, buyer_plan: plan, capacity: batch.max_size}
   end
 
   test "no overbooking with cancellation noise", %{
     event: event,
     buyer_plan: plan,
-    capacity: capacity,
-    admin_user_id: admin_user_id
+    capacity: capacity
   } do
     {micros, zipped, timings} =
-      run_buyer_plan(event.id, plan, cancel_prob: 0.3, user_id: admin_user_id)
+      run_buyer_plan(event.id, plan, cancel_prob: 0.3)
 
     noise_report(event.id, zipped, timings,
       label: "noise/cancel",
@@ -49,11 +47,10 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
   test "no overbooking with payment noise", %{
     event: event,
     buyer_plan: plan,
-    capacity: capacity,
-    admin_user_id: admin_user_id
+    capacity: capacity
   } do
     {micros, zipped, timings} =
-      run_buyer_plan(event.id, plan, pay_prob: 0.3, user_id: admin_user_id)
+      run_buyer_plan(event.id, plan, pay_prob: 0.3)
 
     noise_report(event.id, zipped, timings,
       label: "noise/pay",
@@ -65,11 +62,10 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
   test "no overbooking with mixed cancellation and payment noise", %{
     event: event,
     buyer_plan: plan,
-    capacity: capacity,
-    admin_user_id: admin_user_id
+    capacity: capacity
   } do
     {micros, zipped, timings} =
-      run_buyer_plan(event.id, plan, cancel_prob: 0.2, pay_prob: 0.2, user_id: admin_user_id)
+      run_buyer_plan(event.id, plan, cancel_prob: 0.2, pay_prob: 0.2)
 
     noise_report(event.id, zipped, timings,
       label: "noise/mixed",
@@ -78,25 +74,23 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
     )
   end
 
-
   describe "shared pool event" do
     setup do
       scenario = Scenarios.shared_pool()
 
-      %{event: event, batches: batches, buyer_plan: plan, cleanup: cleanup, admin_user_id: admin_user_id} =
+      %{event: event, batches: batches, buyer_plan: plan, cleanup: cleanup} =
         setup_event(spec: scenario)
 
       on_exit(cleanup)
-      %{event: event, batches: batches, buyer_plan: plan, scenario: scenario, admin_user_id: admin_user_id}
+      %{event: event, batches: batches, buyer_plan: plan, scenario: scenario}
     end
 
     test "no overbooking in any batch under full load", %{
       event: event,
       buyer_plan: plan,
-      scenario: scenario,
-      admin_user_id: admin_user_id
+      scenario: scenario
     } do
-      {micros, zipped, timings} = run_buyer_plan(event.id, plan, pay_prob: 0.2, cancel_prob: 0.2, user_id: admin_user_id)
+      {micros, zipped, timings} = run_buyer_plan(event.id, plan, pay_prob: 0.2, cancel_prob: 0.2)
 
       noise_report(event.id, zipped, timings,
         label: "noise/shared-pool",

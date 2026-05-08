@@ -33,6 +33,8 @@ defmodule Tiki.PerformanceCase do
   # on_conflict: :nothing so it survives across test runs without fixture overhead.
   @perf_admin_id -1
 
+  def perf_admin_id, do: @perf_admin_id
+
   using do
     quote do
       import Ecto.Query
@@ -120,14 +122,12 @@ defmodule Tiki.PerformanceCase do
     - `:cancel_prob` — probability [0,1) that a successful reservation is immediately cancelled
     - `:pay_prob`    — probability [0,1) that a successful reservation is immediately paid via
       `Orders.init_checkout/3` (mutually exclusive with cancel; combined probability should be ≤ 1)
-    - `:user_id`     — user id passed to `init_checkout` when `pay_prob > 0` (required if pay_prob > 0)
     - `:timeout`     — per-task await timeout in ms (default 60_000)
   """
   def run_buyer_plan(event_id, plan, opts \\ []) do
     timeout = Keyword.get(opts, :timeout, 60_000)
     cancel_prob = Keyword.get(opts, :cancel_prob, 0.0)
     pay_prob = Keyword.get(opts, :pay_prob, 0.0)
-    user_id = Keyword.get(opts, :user_id)
 
     tasks =
       Enum.map(plan, fn %{ticket_type: tt} = entry ->
@@ -146,7 +146,8 @@ defmodule Tiki.PerformanceCase do
                      Orders.maybe_cancel_order(order.id)
 
                    r < cancel_prob + pay_prob ->
-                     Orders.init_checkout(order, nil, user_id) # if price == 0 this immediately marks order as paid
+                     # if price == 0 this immediately marks order as paid
+                     Orders.init_checkout(order, nil, perf_admin_id())
 
                    true ->
                      :ok
@@ -224,10 +225,17 @@ defmodule Tiki.PerformanceCase do
     capacity = Keyword.fetch!(opts, :capacity)
     metrics = compute_metrics(event_id, results)
 
-    assert metrics.successes + metrics.failures == length(results), "not all tasks returned a result"
-    assert metrics.successes <= capacity, "#{metrics.successes} succeeded but capacity is #{capacity}"
-    assert metrics.db_count <= capacity, "DB shows #{metrics.db_count} tickets but capacity is #{capacity}"
-    assert metrics.successes == metrics.db_count, "application successes and DB ticket count disagree"
+    assert metrics.successes + metrics.failures == length(results),
+           "not all tasks returned a result"
+
+    assert metrics.successes <= capacity,
+           "#{metrics.successes} succeeded but capacity is #{capacity}"
+
+    assert metrics.db_count <= capacity,
+           "DB shows #{metrics.db_count} tickets but capacity is #{capacity}"
+
+    assert metrics.successes == metrics.db_count,
+           "application successes and DB ticket count disagree"
 
     metrics
   end
@@ -262,10 +270,13 @@ defmodule Tiki.PerformanceCase do
 
     latency_lines =
       case timings do
-        [] -> ""
+        [] ->
+          ""
+
         _ ->
           p50 = percentile(timings, 50)
           p99 = percentile(timings, 99)
+
           "  p50       : #{Float.round(p50 / 1000, 1)} ms\n  p99       : #{Float.round(p99 / 1000, 1)} ms\n"
       end
 
@@ -442,7 +453,6 @@ defmodule Tiki.PerformanceCase do
       event: event,
       batches: batches,
       buyer_plan: buyer_plan,
-      admin_user_id: admin_id,
       cleanup: cleanup_fn(event.id, team.id, batches, delete_admin: true)
     }
   end
@@ -592,9 +602,7 @@ defmodule Tiki.PerformanceCase do
       Tiki.Repo.delete_all(from t in Tiki.Teams.Team, where: t.id == ^team_id)
 
       if delete_admin do
-        Tiki.Repo.delete_all(
-          from u in Tiki.Accounts.User, where: u.id == ^@perf_admin_id
-        )
+        Tiki.Repo.delete_all(from u in Tiki.Accounts.User, where: u.id == ^@perf_admin_id)
       end
     end
   end
