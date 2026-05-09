@@ -14,7 +14,8 @@ config :tiki,
   stripe_module: Stripe,
   swish_module: Swish,
   permission_service_module: Tiki.Hive,
-  metrics_port: 9001
+  metrics_port: 9001,
+  env_test: false
 
 config :tiki, Tiki.Repo,
   migration_timestamps: [

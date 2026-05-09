@@ -94,7 +94,8 @@ defmodule Tiki.MixProject do
       {:langchain, "0.4.0-rc.2"},
       {:tidewave, "~> 0.5", only: [:dev]},
       {:libcluster, "~> 3.5"},
-      {:libcluster_postgres, "~> 0.2"}
+      {:libcluster_postgres, "~> 0.2"},
+      {:local_cluster, "~> 2.0", only: [:test]}
     ]
   end
 
@@ -109,7 +110,7 @@ defmodule Tiki.MixProject do
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --no-start"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "esbuild default"],
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],

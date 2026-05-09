@@ -54,7 +54,7 @@ defmodule Tiki.Application do
   end
 
   defp oidc_provider_worker do
-    if Mix.env() == :test do
+    if Application.get_env(:tiki, :env_test) do
       []
     else
       oidc_config =

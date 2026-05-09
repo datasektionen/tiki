@@ -30,7 +30,7 @@ defmodule Tiki.OrdersTest do
 
           order
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Tiki.Repo.preload([:event | @standard_preloads])
 
       assert Orders.list_team_orders(event.team_id) |> Enum.sort() == orders |> Enum.sort()
@@ -48,7 +48,7 @@ defmodule Tiki.OrdersTest do
 
           order
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Tiki.Repo.preload([:event | @standard_preloads])
 
       assert Orders.list_team_orders(event.team_id, limit: 3) == Enum.take(orders, 3)
@@ -84,7 +84,7 @@ defmodule Tiki.OrdersTest do
         |> Tiki.Repo.preload(@standard_preloads)
 
       list = Orders.list_orders_for_event(event.id)
-      assert list == Enum.sort_by(list, & &1.inserted_at, :desc)
+      assert list == Enum.sort_by(list, & &1.inserted_at, {:desc, NaiveDateTime})
       assert Enum.sort(list) == Enum.sort(orders)
     end
 
@@ -100,7 +100,7 @@ defmodule Tiki.OrdersTest do
           order_fixture(%{status: status}, event: event)
           |> Tiki.Repo.preload(@standard_preloads)
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Tiki.Repo.preload(@standard_preloads)
 
       list = Orders.list_orders_for_event(event.id, status: [:paid])

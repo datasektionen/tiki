@@ -85,6 +85,15 @@ defmodule Tiki.OrderHandler.Worker do
     # that the user has an :accepted release sign up.
     result =
       Multi.new()
+      |> Multi.run(:lock, fn repo, _ ->
+        <<lock_key::signed-64, _::binary>> =
+          :crypto.hash(:md5, "event_reservation_lock:#{event_id}")
+
+        case Ecto.Adapters.SQL.query(repo, "SELECT pg_advisory_xact_lock($1)", [lock_key]) do
+          {:ok, _} -> {:ok, :locked}
+          error -> error
+        end
+      end)
       |> Multi.run(:requested_types, fn repo, _ ->
         tt_ids = Enum.map(ticket_types, fn {tt, _} -> tt end)
 
