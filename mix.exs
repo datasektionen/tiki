@@ -11,14 +11,7 @@ defmodule Tiki.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader],
-      test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test
-      ]
+      listeners: [Phoenix.CodeReloader]
     ]
   end
 
@@ -71,12 +64,12 @@ defmodule Tiki.MixProject do
       {:stripity_stripe, "~> 3.0"},
       {:req, "~> 0.5"},
       {:req_s3, "~> 0.2.3"},
+      {:req_llm, "~> 1.11"},
       {:imgproxy, "~> 3.0"},
       {:oidcc_plug, "~> 0.1.0"},
       {:oidcc, "~> 3.4.0"},
       {:let_me, "~> 1.2"},
       {:qrcode_ex, "~> 0.1.0"},
-      {:excoveralls, "~> 0.18", only: :test},
       {:tailwind_formatter, "~> 0.4.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:salad_ui,
@@ -91,7 +84,6 @@ defmodule Tiki.MixProject do
       {:fun_with_flags_ui, "~> 1.0"},
       {:nimble_csv, "~> 1.2"},
       {:prom_ex, "~> 1.0"},
-      {:langchain, "0.4.0-rc.2"},
       {:tidewave, "~> 0.5", only: [:dev]},
       {:libcluster, "~> 3.5"},
       {:libcluster_postgres, "~> 0.2"},

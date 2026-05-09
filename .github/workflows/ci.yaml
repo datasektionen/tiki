@@ -79,6 +79,5 @@ jobs:
 
       - run: mix compile
       - run: |
-          epmd -daemon
+          epmd -daemon # need to start daemon
           mix test
-      # - run: mix coveralls.github

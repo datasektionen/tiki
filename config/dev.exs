@@ -136,8 +136,3 @@ config :imgproxy,
   key: System.get_env("IMGPROXY_KEY"),
   salt: System.get_env("IMGPROXY_SALT"),
   prefix: System.get_env("IMAGE_FRONTEND_URL")
-
-# Langchain config
-config :langchain,
-  openai_key: System.get_env("OPENAI_KEY"),
-  google_ai_key: System.get_env("GOOGLE_AI_KEY")

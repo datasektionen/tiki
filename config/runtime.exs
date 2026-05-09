@@ -164,8 +164,5 @@ if config_env() == :prod do
 
   # Langchain config
 
-  openai_key = System.get_env("OPENAI_KEY") || raise "OPENAI_KEY is not set"
-
-  config :langchain,
-    openai_key: openai_key
+  System.get_env("OPENAI_API_KEY") || raise "OPENAI_API_KEY is not set"
 end
