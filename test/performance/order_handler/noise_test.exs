@@ -133,13 +133,16 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
 
       Enum.map(nodes, fn node ->
         Task.async(fn ->
-          :rpc.call(node, Tiki.PerformanceCase, :run_buyer_plan, [event.id, plan, [pay_prob: 0.2, cancel_prob: 0.2]])
+          :rpc.call(node, Tiki.PerformanceCase, :run_buyer_plan, [
+            event.id,
+            plan,
+            [pay_prob: 0.2, cancel_prob: 0.2]
+          ])
         end)
       end)
       |> Task.await_many()
       |> Enum.with_index()
       |> Enum.map(fn {{micros, zipped, timings}, node} ->
-
         noise_report(event.id, zipped, timings,
           label: "multinode/noise/shared-pool/node #{node + 1}",
           capacity: scenario_capacity(scenario),

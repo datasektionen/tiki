@@ -78,5 +78,7 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true'
 
       - run: mix compile
-      - run: mix test
+      - run: |
+          epmd -daemon
+          mix test
       # - run: mix coveralls.github
