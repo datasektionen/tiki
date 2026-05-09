@@ -99,6 +99,57 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
         timings: timings
       )
     end
+
+    test "multinode shared pool", %{
+      event: event,
+      buyer_plan: plan,
+      scenario: scenario
+    } do
+      :ok = LocalCluster.start()
+      Application.ensure_all_started(:tiki)
+
+      n_nodes = 2
+
+      repo_config = Application.get_env(:tiki, Tiki.Repo, []) |> Keyword.put(:pool_size, 2)
+
+      env = [
+        tiki: [
+          {Tiki.Repo, repo_config},
+          {:metrics_port, 0}
+        ]
+      ]
+
+      {:ok, cluster} = LocalCluster.start_link(n_nodes, environment: env)
+
+      nodes =
+        case LocalCluster.nodes(cluster) do
+          {:ok, n} -> n
+          n when is_list(n) -> n
+        end
+
+      Enum.each(nodes, fn node ->
+        :rpc.call(node, Ecto.Adapters.SQL.Sandbox, :mode, [Tiki.Repo, :auto])
+      end)
+
+      Enum.map(nodes, fn node ->
+        Task.async(fn ->
+          :rpc.call(node, Tiki.PerformanceCase, :run_buyer_plan, [event.id, plan, [pay_prob: 0.2, cancel_prob: 0.2]])
+        end)
+      end)
+      |> Task.await_many()
+      |> Enum.with_index()
+      |> Enum.map(fn {{micros, zipped, timings}, node} ->
+
+        noise_report(event.id, zipped, timings,
+          label: "multinode/noise/shared-pool/node #{node + 1}",
+          capacity: scenario_capacity(scenario),
+          micros: micros,
+          timings: timings
+        )
+      end)
+
+      LocalCluster.stop(cluster)
+    end
   end
 
   # Noise tests have a weaker invariant than report/3: db_count can be lower

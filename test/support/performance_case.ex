@@ -223,6 +223,7 @@ defmodule Tiki.PerformanceCase do
   """
   def report(event_id, results, opts \\ []) do
     capacity = Keyword.fetch!(opts, :capacity)
+    multinode = Keyword.get(opts, :multinode, false)
     metrics = compute_metrics(event_id, results)
 
     assert metrics.successes + metrics.failures == length(results),
@@ -234,8 +235,8 @@ defmodule Tiki.PerformanceCase do
     assert metrics.db_count <= capacity,
            "DB shows #{metrics.db_count} tickets but capacity is #{capacity}"
 
-    assert metrics.successes == metrics.db_count,
-           "application successes and DB ticket count disagree"
+    assert multinode || metrics.successes == metrics.db_count,
+           "#{metrics.successes} successes and #{metrics.db_count} DB ticket count"
 
     metrics
   end

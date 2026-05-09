@@ -86,6 +86,11 @@ defmodule Tiki.OrderHandler.Worker do
     result =
       Multi.new()
       |> Multi.run(:lock, fn repo, _ ->
+        # Serialize all reservations for this event. Since _only_ reservations increase
+        # the active ticket count (cancels and payments only maintain/decrease it), this lock
+        # guarantees capacity invariant (pending + paid <= capacity) holds for all ticket
+        # types of the event.
+
         <<lock_key::signed-64, _::binary>> =
           :crypto.hash(:md5, "event_reservation_lock:#{event_id}")
 
