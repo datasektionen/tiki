@@ -5,13 +5,29 @@ defmodule Tiki.Orders.CancelWorker do
 
   use Oban.Worker, queue: :default, max_attempts: 3
 
+  import Ecto.Query, warn: false
+  alias Tiki.Checkouts.SwishCheckout
   alias Tiki.Orders
+  alias Tiki.Repo
+
+  @swish Application.compile_env(:tiki, :swish_module)
 
   require Logger
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"swish_id" => swish_id}}) do
-    cancel_swish_payment(swish_id)
+    status =
+      Repo.one(from sc in SwishCheckout, where: sc.swish_id == ^swish_id, select: sc.status)
+
+    if status in Swish.terminal_statuses() do
+      Logger.info(
+        "Swish payment #{swish_id} already in terminal state (#{status}), skipping cancellation"
+      )
+
+      :ok
+    else
+      cancel_swish_payment(swish_id)
+    end
   end
 
   def perform(%Oban.Job{args: %{}}) do
@@ -25,8 +41,8 @@ defmodule Tiki.Orders.CancelWorker do
     order = Orders.get_order!(order_id)
 
     case order do
-      %{swish_checkout: %{id: checkout_id}} ->
-        %{"swish_id" => checkout_id}
+      %{swish_checkout: %{swish_id: swish_id}} ->
+        %{"swish_id" => swish_id}
         |> new()
         |> Oban.insert()
 
@@ -36,9 +52,7 @@ defmodule Tiki.Orders.CancelWorker do
   end
 
   defp cancel_swish_payment(swish_id) do
-    swish_module = Application.get_env(:tiki, :swish_module)
-
-    case swish_module.cancel_payment_request(swish_id) do
+    case @swish.cancel_payment_request(swish_id) do
       {:ok, _response} ->
         Logger.info("Successfully cancelled Swish payment: #{swish_id}")
         :ok

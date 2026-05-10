@@ -10,15 +10,11 @@ defmodule TikiWeb.SwishController do
       ) do
     [callback_identifier] = get_req_header(conn, "callbackidentifier")
 
-    # TODO: Handle the case where status is "CANCELLED" or "ERROR" separately
-
-    case Checkouts.confirm_swish_payment(callback_identifier, status) do
-      :ok ->
-        send_resp(conn, 200, "OK")
-
-      {:error, reason} ->
-        Logger.error("Confirming Swish payment failed: #{reason}")
-        send_resp(conn, 500, "Internal server error")
+    case Checkouts.handle_swish_callback(callback_identifier, status) do
+      :ok -> :ok
+      {:error, reason} -> Logger.error("Handling Swish callback failed: #{inspect(reason)}")
     end
+
+    send_resp(conn, 200, "OK")
   end
 end

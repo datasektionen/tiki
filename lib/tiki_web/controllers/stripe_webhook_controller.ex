@@ -3,6 +3,7 @@ defmodule TikiWeb.StripeWebhookController do
   require Logger
 
   alias Tiki.Checkouts
+  alias Tiki.Stripe
 
   plug :verify_signature
 
@@ -10,7 +11,10 @@ defmodule TikiWeb.StripeWebhookController do
         "type" => "payment_intent.succeeded",
         "data" => %{"object" => %{"metadata" => %{"tiki_order_id" => _}} = object}
       }) do
-    Checkouts.confirm_stripe_payment(Tiki.Utils.cast_to_struct(Stripe.PaymentIntent, object))
+    case Checkouts.confirm_stripe_payment(Tiki.Utils.cast_to_struct(Stripe.PaymentIntent, object)) do
+      :ok -> :ok
+      {:error, reason} -> Logger.error("Confirming Stripe payment failed: #{inspect(reason)}")
+    end
 
     send_resp(conn, 200, "")
   end
@@ -20,20 +24,27 @@ defmodule TikiWeb.StripeWebhookController do
     send_resp(conn, 200, "")
   end
 
-  defp verify_signature(conn, _opts) do
+  defp verify_signature(conn, []) do
     secret = Application.fetch_env!(:tiki, :stripe_webhook_secret)
+    "whsec_" <> _ = secret
 
-    with [signature] <- get_req_header(conn, "stripe-signature"),
-         raw_body <- conn.assigns[:raw_body] |> Enum.reverse() |> IO.iodata_to_binary(),
-         :ok <- Tiki.Stripe.WebhookSignature.verify(raw_body, signature, secret) do
+    with {:ok, signature} <- get_signature(conn),
+         :ok <- Tiki.Stripe.WebhookSignature.verify(conn.assigns.raw_body, signature, secret) do
       conn
     else
-      {:error, message} ->
-        Logger.error("[StripeWebhookController] invalid signature: #{message}")
-        conn |> send_resp(400, "invalid signature") |> halt()
+      {:error, error} ->
+        Logger.error("[StripeWebhookController] invalid signature: #{error}")
 
-      _ ->
-        conn |> send_resp(400, "missing signature") |> halt()
+        conn
+        |> send_resp(400, "invalid signature: " <> error)
+        |> halt()
+    end
+  end
+
+  defp get_signature(conn) do
+    case get_req_header(conn, "stripe-signature") do
+      [header] -> {:ok, header}
+      _ -> {:error, "no signature"}
     end
   end
 end

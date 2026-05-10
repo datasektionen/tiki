@@ -2,8 +2,19 @@ defmodule Tiki.Stripe.WebhookSignature do
   @schema "v1"
   @valid_period_in_seconds 300
 
+  @doc """
+  Signs payload with timestamp and secret.
+  """
+  def sign(payload, timestamp, secret) do
+    signature = "#{@schema}=" <> hash(timestamp, payload, secret)
+    "t=#{timestamp}," <> signature
+  end
+
+  @doc """
+  Verifies payload against signature and secret.
+  """
   def verify(payload, signature, secret) do
-    with {:ok, timestamp, hash} <- parse(signature) do
+    with {:ok, timestamp, hash} <- parse(signature, @schema) do
       current_timestamp = System.system_time(:second)
 
       cond do
@@ -19,18 +30,18 @@ defmodule Tiki.Stripe.WebhookSignature do
     end
   end
 
-  defp parse(signature) do
+  defp parse(signature, schema) do
     parsed =
       for pair <- String.split(signature, ","),
           destructure([key, value], String.split(pair, "=", parts: 2)),
           do: {key, value},
           into: %{}
 
-    with %{"t" => timestamp, @schema => hash} <- parsed,
+    with %{"t" => timestamp, ^schema => hash} <- parsed,
          {timestamp, ""} <- Integer.parse(timestamp) do
       {:ok, timestamp, hash}
     else
-      _ -> {:error, "signature is in wrong format or missing #{@schema} schema"}
+      _ -> {:error, "signature is in a wrong format or is missing #{schema} schema"}
     end
   end
 

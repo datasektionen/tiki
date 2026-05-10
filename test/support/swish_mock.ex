@@ -37,10 +37,14 @@ defmodule Tiki.Support.SwishMock do
     {:ok, Map.put(@payment_request, "id", id)}
   end
 
-  def cancel_payment_request(id) do
+  def cancel_payment_request(id) when is_binary(id) do
     {:ok,
      Map.put(@payment_request, "id", id)
      |> Map.put("status", "CANCELLED")}
+  end
+
+  def cancel_payment_request(id) when is_integer(id) do
+    {:error, "Invalid id"}
   end
 
   def get_svg_qr_code(_token) do

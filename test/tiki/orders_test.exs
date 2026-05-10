@@ -205,7 +205,7 @@ defmodule Tiki.OrdersTest do
       assert msg =~ "order not found, nothing to cancel"
     end
 
-    test "maybe_cancel_order/1 propagates cancellation to " do
+    test "maybe_cancel_order/1 propagates cancellation to swish" do
       ticket_type =
         ticket_type_fixture(%{
           price: 50,
@@ -215,7 +215,6 @@ defmodule Tiki.OrdersTest do
         |> Tiki.Repo.preload(ticket_batch: [event: []])
 
       to_purchase = Map.put(%{}, ticket_type.id, 2)
-      cost = ticket_type.price * 2
 
       {:ok, order} = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
@@ -225,7 +224,7 @@ defmodule Tiki.OrdersTest do
                  email: "john@doe.com"
                })
 
-      swish_id = order.swish_checkout.id
+      swish_id = order.swish_checkout.swish_id
 
       Oban.Testing.with_testing_mode(:manual, fn ->
         assert {:ok, order} = Orders.maybe_cancel_order(order.id)
@@ -783,7 +782,7 @@ defmodule Tiki.OrdersTest do
                  email: "john@doe.com"
                })
 
-      Checkouts.confirm_swish_payment(swish_checkout.callback_identifier, "PAID")
+      Checkouts.handle_swish_callback(swish_checkout.callback_identifier, "PAID")
 
       assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
 
@@ -812,6 +811,49 @@ defmodule Tiki.OrdersTest do
                %Tiki.Orders.AuditLog{event_type: "order.checkout.swish"},
                %Tiki.Orders.AuditLog{event_type: "order.created"}
              ] = log
+    end
+
+    for status <- ["DECLINED", "ERROR", "CANCELLED"] do
+      test "swish payment #{status} cancels the order" do
+        status = unquote(status)
+
+        ticket_type =
+          ticket_type_fixture(%{price: 50})
+          |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+        to_purchase = Map.put(%{}, ticket_type.id, 1)
+        {:ok, order} = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+        Orders.subscribe_to_order(order.id)
+
+        assert {:ok, %Order{id: id, swish_checkout: swish_checkout}} =
+                 Orders.init_checkout(order, "swish", %{name: "John Doe", email: "john@doe.com"})
+
+        assert :ok = Checkouts.handle_swish_callback(swish_checkout.callback_identifier, status)
+
+        assert_receive {:cancelled, %Order{status: :cancelled, id: ^id}}
+
+        cancelled_order = Orders.get_order!(id)
+        assert cancelled_order.status == :cancelled
+        assert cancelled_order.tickets == []
+        assert cancelled_order.swish_checkout.status == status
+      end
+    end
+
+    test "swish payment failure is idempotent when order already cancelled" do
+      ticket_type =
+        ticket_type_fixture(%{price: 50})
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 1)
+      {:ok, order} = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{swish_checkout: swish_checkout}} =
+               Orders.init_checkout(order, "swish", %{name: "John Doe", email: "john@doe.com"})
+
+      Orders.maybe_cancel_order(order.id)
+
+      assert :ok = Checkouts.handle_swish_callback(swish_checkout.callback_identifier, "DECLINED")
     end
 
     test "full order process with stripe" do

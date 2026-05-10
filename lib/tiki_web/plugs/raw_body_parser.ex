@@ -15,6 +15,7 @@ defmodule TikiWeb.RawBodyParser do
     Plug.Parsers.call(conn, nocache)
   end
 
+  @doc false
   def cache_raw_body(conn, opts) do
     with {:ok, body, conn} <- Plug.Conn.read_body(conn, opts) do
       conn = update_in(conn.assigns[:raw_body], &[body | &1 || []])

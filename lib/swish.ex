@@ -10,6 +10,7 @@ defmodule Swish do
   @full_alphabet ~c"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-"
   @full_alph_len length(@full_alphabet)
   @alph_len length(@alphabet)
+  @terminal_statuses ["DECLINED", "ERROR", "CANCELLED", "PAID"]
 
   @type id :: String.t()
 
@@ -116,15 +117,16 @@ defmodule Swish do
   def cancel_payment_request(id) do
     # The body has to contain a list of Operation objects. There is only
     # support for one operation at the moment in the Swish API.
-
-    operations = [%{"op" => "replace", "path" => "/status", "value" => "CANCELLED"}]
+    operations = [%{"op" => "replace", "path" => "/status", "value" => "cancelled"}]
 
     res =
-      Req.patch(base_request(),
+      base_request(
         url: api_url() <> "/v1/paymentrequests/#{id}",
-        headers: [{"Content-Type", "application/json-patch+json"}],
-        json: operations
+        json: operations,
+        method: :patch
       )
+      |> Req.Request.put_header("Content-Type", "application/json-patch+json")
+      |> Req.request()
 
     case res do
       {:ok, %Req.Response{status: 200, body: body}} ->
@@ -180,7 +182,7 @@ defmodule Swish do
     end
   end
 
-  defp base_request() do
+  defp base_request(params \\ []) do
     config = Application.get_env(:tiki, Swish)
 
     [{pk_type, pk_der, :not_encrypted} | _] = :public_key.pem_decode(config[:key])
@@ -199,9 +201,12 @@ defmodule Swish do
         ]
       ]
     )
+    |> Req.merge(params)
   end
 
   def api_url do
     Application.get_env(:tiki, Swish)[:api_url]
   end
+
+  def terminal_statuses(), do: @terminal_statuses
 end

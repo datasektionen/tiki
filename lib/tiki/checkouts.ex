@@ -74,12 +74,16 @@ defmodule Tiki.Checkouts do
           _ -> {:error, :invalid_status}
         end
       end)
-      |> Multi.run(:status, fn _repo, %{order_checkout: {order, _}} ->
-        if Order.valid_transition?(order.status, :paid) do
-          {:ok, :paid}
-        else
-          {:error, :invalid_status}
-        end
+      |> Multi.run(:status, fn
+        _repo, %{order_checkout: nil} ->
+          {:error, "checkout not found"}
+
+        _repo, %{order_checkout: {order, _}} ->
+          if Order.valid_transition?(order.status, :paid) do
+            {:ok, :paid}
+          else
+            {:error, :invalid_status}
+          end
       end)
       |> Multi.run(:checkout, fn _repo, %{order_checkout: {_, checkout}} ->
         update_stripe_checkout(checkout, %{
@@ -156,51 +160,39 @@ defmodule Tiki.Checkouts do
   defp swish_allowed_char?(_), do: false
 
   @doc """
-  Confirms a Swish payment request with a given callback identifier that
-  should be recieved from the Swish API. Does not return the order, but
-  broadcasts it over PubSub.
+  Handles a Swish payment callback by updating the checkout status and transitioning
+  the order accordingly. Does not return the order, but broadcasts it over PubSub. Idempotent.
+
+  Handles all terminal Swish statuses: PAID, DECLINED, ERROR, CANCELLED.
   """
 
-  def confirm_swish_payment(callback_identifier, status) do
-    query =
-      from sc in SwishCheckout,
-        where: sc.callback_identifier == ^callback_identifier,
-        join: o in assoc(sc, :order),
-        select: {o, sc}
+  def handle_swish_callback(callback_identifier, "PAID") do
+    query = swish_checkout_query(callback_identifier)
 
     multi =
       Multi.new()
-      |> Multi.run(:status_paid, fn _, _ ->
-        case swish_to_order_status(status) do
-          :paid -> {:ok, :paid}
-          _ -> {:error, "invalid status: #{status}"}
-        end
-      end)
       |> Multi.one(:order_checkout, query)
       |> Multi.run(:status, fn
         _repo, %{order_checkout: nil} ->
           {:error, "checkout not found"}
 
         _repo, %{order_checkout: {order, _}} ->
-          to = swish_to_order_status(status)
-
-          if Order.valid_transition?(order.status, to) do
-            {:ok, to}
+          if Order.valid_transition?(order.status, :paid) do
+            {:ok, :paid}
           else
             {:error, :invalid_status}
           end
       end)
       |> Multi.run(:swish_checkout, fn _repo, %{order_checkout: {_, swish_checkout}} ->
-        update_swish_checkout(swish_checkout, %{status: status})
+        update_swish_checkout(swish_checkout, %{status: "PAID"})
       end)
-      |> Multi.update(:order, fn %{status: status, order_checkout: {order, _}} ->
-        Order.changeset(order, %{status: status})
+      |> Multi.update(:order, fn %{order_checkout: {order, _}} ->
+        Order.changeset(order, %{status: :paid})
       end)
 
     case Repo.transaction(multi) do
       {:ok, %{order: order}} ->
         Orders.confirm_order(order)
-
         :ok
 
       {:error, :status, :invalid_status, _} ->
@@ -209,6 +201,48 @@ defmodule Tiki.Checkouts do
       {:error, _, msg, _} ->
         {:error, msg}
     end
+  end
+
+  def handle_swish_callback(callback_identifier, status)
+      when status in ["DECLINED", "ERROR", "CANCELLED"] do
+    query = swish_checkout_query(callback_identifier)
+
+    multi =
+      Multi.new()
+      |> Multi.one(:order_checkout, query)
+      |> Multi.run(:swish_checkout, fn
+        _repo, %{order_checkout: nil} ->
+          {:error, "checkout not found"}
+
+        _repo, %{order_checkout: {_, swish_checkout}} ->
+          if swish_checkout.status in Swish.terminal_statuses() do
+            {:ok, :already_terminal}
+          else
+            update_swish_checkout(swish_checkout, %{status: status})
+          end
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, %{swish_checkout: :already_terminal}} ->
+        :ok
+
+      {:ok, %{order_checkout: {order, _}}} ->
+        case Orders.maybe_cancel_order(order.id) do
+          {:ok, _} -> :ok
+          {:error, "order is not cancellable"} -> :ok
+          {:error, reason} -> {:error, reason}
+        end
+
+      {:error, _, msg, _} ->
+        {:error, msg}
+    end
+  end
+
+  defp swish_checkout_query(callback_identifier) do
+    from sc in SwishCheckout,
+      where: sc.callback_identifier == ^callback_identifier,
+      join: o in assoc(sc, :order),
+      select: {o, sc}
   end
 
   defp create_stripe_checkout(attrs) do
@@ -234,9 +268,6 @@ defmodule Tiki.Checkouts do
     |> SwishCheckout.changeset(attrs)
     |> Repo.update()
   end
-
-  defp swish_to_order_status("PAID"), do: :paid
-  defp swish_to_order_status(status) when is_binary(status), do: :cancelled
 
   defdelegate retrieve_stripe_payment_method(payment_method_id),
     to: Module.concat(@stripe, PaymentMethod),
