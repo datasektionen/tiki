@@ -4,6 +4,7 @@ defmodule Tiki.ReportsTest do
   alias Tiki.Reports
   alias Tiki.Reports.ReportParams
   alias Tiki.Accounts.Scope
+  alias Tiki.Stripe
 
   import Tiki.EventsFixtures
   import Tiki.TicketsFixtures

@@ -46,12 +46,7 @@ defmodule TikiWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
-  plug Stripe.WebhookPlug,
-    at: "/stripe/webhook",
-    handler: TikiWeb.StripeHandler,
-    secret: {Application, :get_env, [:stripity_stripe, :webhook_secret]}
-
-  plug Plug.Parsers,
+  plug TikiWeb.RawBodyParser,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()

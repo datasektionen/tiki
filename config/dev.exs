@@ -76,7 +76,11 @@ config :tiki,
   hive_url: System.get_env("HIVE_URL", "https://hive.datasektionen.se/api/v1"),
   hive_api_token: System.get_env("HIVE_API_TOKEN"),
   # Allowed origins for embedded iframes. If you want more, add them here, separated by spaces.
-  allowed_origins: System.get_env("ALLOWED_ORIGINS", "http://localhost:4001")
+  allowed_origins: System.get_env("ALLOWED_ORIGINS", "http://localhost:4001"),
+  # Config for Stripe
+  stripe_api_key: System.get_env("STRIPE_API_KEY"),
+  stripe_public_key: System.get_env("STRIPE_PUBLIC_KEY"),
+  stripe_webhook_secret: System.get_env("STRIPE_WEBHOOK_SECRET")
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
@@ -98,12 +102,6 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
-
-# Config for Stripe
-config :stripity_stripe,
-  api_key: System.get_env("STRIPE_API_KEY"),
-  public_key: System.get_env("STRIPE_PUBLIC_KEY"),
-  webhook_secret: System.get_env("STRIPE_WEBHOOK_SECRET")
 
 # Path to install SaladUI components
 config :salad_ui, components_path: Path.join(File.cwd!(), "lib/tiki_web/components")

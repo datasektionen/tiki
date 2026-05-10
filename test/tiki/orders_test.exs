@@ -4,6 +4,7 @@ defmodule Tiki.OrdersTest do
   use Tiki.DataCase
 
   alias Tiki.Orders
+  alias Tiki.Stripe
 
   describe "order" do
     alias Tiki.Orders.Order

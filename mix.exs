@@ -56,20 +56,19 @@ defmodule Tiki.MixProject do
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.20"},
+      {:gettext, "~> 1.0"},
       {:ex_cldr_dates_times, "~> 2.0"},
       {:tz, "~> 0.28"},
       {:jason, "~> 1.2"},
       {:bandit, "~> 1.0"},
-      {:stripity_stripe, "~> 3.0"},
       {:req, "~> 0.5"},
       {:req_s3, "~> 0.2.3"},
       {:req_llm, "~> 1.11"},
       {:imgproxy, "~> 3.0"},
-      {:oidcc_plug, "~> 0.1.0"},
-      {:oidcc, "~> 3.4.0"},
+      {:oidcc_plug, "~> 0.1"},
+      {:oidcc, "~> 3.7"},
       {:let_me, "~> 1.2"},
-      {:qrcode_ex, "~> 0.1.0"},
+      {:eqrcode, "~> 0.2.0"},
       {:tailwind_formatter, "~> 0.4.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:salad_ui,
@@ -87,7 +86,9 @@ defmodule Tiki.MixProject do
       {:tidewave, "~> 0.5", only: [:dev]},
       {:libcluster, "~> 3.5"},
       {:libcluster_postgres, "~> 0.2"},
-      {:local_cluster, "~> 2.0", only: [:test]}
+      {:local_cluster, "~> 2.0", only: [:test]},
+      # swoosh really wants to use hackney in test mode
+      {:hackney, "~> 1.9", only: [:test]}
     ]
   end
 

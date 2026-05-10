@@ -11,7 +11,7 @@ config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
 config :tiki,
   ecto_repos: [Tiki.Repo],
-  stripe_module: Stripe,
+  stripe_module: Tiki.Stripe,
   swish_module: Swish,
   permission_service_module: Tiki.Hive,
   metrics_port: 9001,

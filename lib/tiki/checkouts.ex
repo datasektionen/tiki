@@ -18,6 +18,7 @@ defmodule Tiki.Checkouts do
   alias Tiki.Checkouts.SwishCheckout
   alias Tiki.Orders
   alias Tiki.Orders.Order
+  alias Tiki.Stripe
 
   @doc """
   Creates a stripe payment intent with the stripe API,
@@ -26,17 +27,13 @@ defmodule Tiki.Checkouts do
   ## Examples
 
       iex> create_stripe_payment_intent(%Order{user_id: 1, price: 10000})
-      {:ok, %Stripe.PaymentIntent{}}
+      {:ok, %Checkouts.StripeCheckout{}}
 
       iex> create_stripe_payment_intent(%Order{user_id: 1, price: 0})
-      {:error, %Stripe.Error{}}
+      {:error, _}
   """
   def create_stripe_payment_intent(%Order{user_id: user_id, price: price} = order) do
-    with {:ok,
-          %Stripe.PaymentIntent{
-            id: intent_id,
-            client_secret: secret
-          }}
+    with {:ok, %Stripe.PaymentIntent{id: intent_id, client_secret: secret}}
          when not is_nil(secret) <-
            @stripe.PaymentIntent.create(%{
              amount: price * 100,
@@ -61,10 +58,10 @@ defmodule Tiki.Checkouts do
   and updates the stripe checkout in the database. Does not return the order, but
   broadcasts it over PubSub.
   """
-  def confirm_stripe_payment(%Stripe.PaymentIntent{} = intent) do
+  def confirm_stripe_payment(%Stripe.PaymentIntent{id: intent_id} = intent) do
     query =
       from stc in StripeCheckout,
-        where: stc.payment_intent_id == ^intent.id,
+        where: stc.payment_intent_id == ^intent_id,
         join: o in assoc(stc, :order),
         select: {o, stc}
 
@@ -246,7 +243,7 @@ defmodule Tiki.Checkouts do
     as: :retrieve
 
   defdelegate get_swish_payment_request(id), to: @swish, as: :get_payment_request
-  defdelegate get_swisg_svg_qr_code!(token), to: @swish, as: :get_svg_qr_code!
+  defdelegate get_swish_svg_qr_code!(token), to: @swish, as: :get_svg_qr_code!
 
   def load_stripe_client_secret!(%StripeCheckout{payment_intent_id: intent_id} = checkout) do
     {:ok, %Stripe.PaymentIntent{client_secret: client_secret}} =

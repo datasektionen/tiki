@@ -80,6 +80,13 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
+  # Stripe config
+  stripe_api_key = System.get_env("STRIPE_API_KEY") || raise "STRIPE_API_KEY is not set"
+  stripe_public_key = System.get_env("STRIPE_PUBLIC_KEY") || raise "STRIPE_PUBLIC_KEY is not set"
+
+  stripe_webhook_secret =
+    System.get_env("STRIPE_WEBHOOK_SECRET") || raise "STRIPE_WEBHOOK_SECRET is not set"
+
   config :tiki, TikiWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
@@ -90,19 +97,10 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base
-
-  # Stripe config
-  stripe_api_key = System.get_env("STRIPE_API_KEY") || raise "STRIPE_API_KEY is not set"
-  stripe_public_key = System.get_env("STRIPE_PUBLIC_KEY") || raise "STRIPE_PUBLIC_KEY is not set"
-
-  stripe_webhook_secret =
-    System.get_env("STRIPE_WEBHOOK_SECRET") || raise "STRIPE_WEBHOOK_SECRET is not set"
-
-  config :stripity_stripe,
-    api_key: stripe_api_key,
-    public_key: stripe_public_key,
-    webhook_secret: stripe_webhook_secret
+    secret_key_base: secret_key_base,
+    stripe_api_key: stripe_api_key,
+    stripe_public_key: stripe_public_key,
+    stripe_webhook_secret: stripe_webhook_secret
 
   # Oidc login
   oidc_issuer_url = System.get_env("OIDC_ISSUER_URL") || "https://sso.datasektionen.se/op"

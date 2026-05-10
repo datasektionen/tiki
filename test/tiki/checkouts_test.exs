@@ -3,6 +3,7 @@ defmodule Tiki.CheckoutsTest do
 
   alias Tiki.Checkouts
   alias Tiki.Orders
+  alias Tiki.Stripe
 
   describe "stripe_checkouts" do
     import Tiki.CheckoutsFixtures
@@ -22,7 +23,7 @@ defmodule Tiki.CheckoutsTest do
     test "create_stripe_payment_intent/1 with an stripe API error returns an error" do
       order = Tiki.OrdersFixtures.order_fixture(%{price: 0})
 
-      assert {:error, %Stripe.ApiErrors{}} = Checkouts.create_stripe_payment_intent(order)
+      assert {:error, _} = Checkouts.create_stripe_payment_intent(order)
     end
 
     test "confirm_stripe_payment/1 works with a valid stripe payment" do

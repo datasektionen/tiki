@@ -26,6 +26,7 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
 
     %{batch: batch} = batches["General"]
     on_exit(cleanup)
+
     %{event: event, buyer_plan: plan, capacity: batch.max_size}
   end
 
@@ -49,8 +50,7 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
     buyer_plan: plan,
     capacity: capacity
   } do
-    {micros, zipped, timings} =
-      run_buyer_plan(event.id, plan, pay_prob: 0.3)
+    {micros, zipped, timings} = run_buyer_plan(event.id, plan, pay_prob: 0.3)
 
     noise_report(event.id, zipped, timings,
       label: "noise/pay",
@@ -113,6 +113,7 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
       repo_config = Application.get_env(:tiki, Tiki.Repo, []) |> Keyword.put(:pool_size, 2)
 
       env = [
+        swoosh: [api_client: false],
         tiki: [
           {Tiki.Repo, repo_config},
           {:metrics_port, 0}

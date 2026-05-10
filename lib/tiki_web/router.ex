@@ -252,6 +252,11 @@ defmodule TikiWeb.Router do
     post "/callback", OidccController, :callback
   end
 
+  scope "/stripe", TikiWeb do
+    pipe_through :api
+    post "/webhook", StripeWebhookController, :create
+  end
+
   scope "/swish", TikiWeb do
     pipe_through :api
     post "/callback", SwishController, :callback

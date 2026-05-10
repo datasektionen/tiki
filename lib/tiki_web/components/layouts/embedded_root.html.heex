@@ -22,7 +22,7 @@
   </body>
   <script>
     window._env_ = {
-      STRIPE_PUBLIC_KEY: "<%= Application.get_env(:stripity_stripe, :public_key) %>"
+      STRIPE_PUBLIC_KEY: "<%= Application.get_env(:tiki, :stripe_public_key) %>"
     };
   </script>
 </html>
