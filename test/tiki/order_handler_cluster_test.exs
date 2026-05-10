@@ -1,6 +1,9 @@
 defmodule Tiki.OrderHandlerClusterTest do
   use Tiki.PerformanceCase
 
+  @moduletag :cluster
+  @moduletag :performance
+
   setup do
     scenario =
       Scenarios.single_batch()

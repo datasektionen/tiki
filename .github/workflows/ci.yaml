@@ -82,4 +82,4 @@ jobs:
       - name: Run tests
         run: |
           epmd -daemon # need to start daemon
-          mix test
+          mix test --include cluster

@@ -107,7 +107,12 @@ defmodule Tiki.MixProject do
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "esbuild default"],
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"],
+      precommit: [
+        "compile --warning-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "test --include cluster"
+      ],
       benchmark: ["ecto.create --quiet", "ecto.migrate --quiet", "benchmark"]
     ]
   end

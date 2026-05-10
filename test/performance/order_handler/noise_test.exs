@@ -100,6 +100,7 @@ defmodule Tiki.Performance.OrderHandler.NoiseTest do
       )
     end
 
+    @tag :cluster
     test "multinode shared pool", %{
       event: event,
       buyer_plan: plan,
