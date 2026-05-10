@@ -18,6 +18,7 @@ defmodule Tiki.Orders do
   alias Tiki.Repo
 
   alias Tiki.OrderHandler
+  alias Tiki.Orders.CancelWorker
 
   @doc """
   Gets a single order.
@@ -204,6 +205,9 @@ defmodule Tiki.Orders do
         )
 
         broadcast_order(order.id, :cancelled, order)
+
+        # Queue the Swish cancellation job if there's a Swish checkout
+        CancelWorker.enqueue(order.id)
 
         {:ok, order}
 
