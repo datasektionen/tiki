@@ -208,5 +208,5 @@ defmodule Swish do
     Application.get_env(:tiki, Swish)[:api_url]
   end
 
-  def terminal_statuses(), do: @terminal_statuses
+  defmacro terminal_statuses(), do: @terminal_statuses
 end

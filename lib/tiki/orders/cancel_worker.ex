@@ -13,25 +13,33 @@ defmodule Tiki.Orders.CancelWorker do
   @swish Application.compile_env(:tiki, :swish_module)
 
   require Logger
+  require Swish
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"swish_id" => swish_id}}) do
-    status =
-      Repo.one(from sc in SwishCheckout, where: sc.swish_id == ^swish_id, select: sc.status)
+    checkout =
+      Repo.one(
+        from sc in SwishCheckout,
+          where: sc.swish_id == ^swish_id,
+          select: {sc.swish_id, sc.status}
+      )
 
-    cond do
-      is_nil(status) ->
-        Logger.warning("Swish payment #{swish_id} not found, skipping cancellation")
-        :ok
-
-      status in Swish.terminal_statuses() ->
-        Logger.info(
-          "Swish payment #{swish_id} already in terminal state (#{status}), skipping cancellation"
+    case checkout do
+      nil ->
+        Logger.warning(
+          "Swish checkout for payment with swish id #{swish_id} not found, skipping cancellation"
         )
 
         :ok
 
-      true ->
+      {id, status} when status in Swish.terminal_statuses() ->
+        Logger.info(
+          "Swish checkout with swish id #{id} already in terminal state (#{status}), skipping cancellation"
+        )
+
+        :ok
+
+      _ ->
         cancel_swish_payment(swish_id)
     end
   end

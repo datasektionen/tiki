@@ -10,6 +10,7 @@ defmodule Tiki.Checkouts do
   @swish Application.compile_env(:tiki, :swish_module)
 
   require Logger
+  require Swish
   import Ecto.Query, warn: false
   alias Ecto.Multi
   alias Tiki.Repo
