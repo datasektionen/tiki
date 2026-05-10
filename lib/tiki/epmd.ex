@@ -1,5 +1,17 @@
 defmodule Tiki.Epmd do
-  @moduledoc false
+  @moduledoc """
+  This module is a stub for the epmd behaviour. It does not actually run an epmd process,
+  but provides a stub implementation of all the functions, to be able to run empdless.
+
+  Assumes that each node has a local port ERL_DIST_PORT accessible by all other nodes. This
+  value can be dynamically set across the cluster.
+
+  Node names should be set as "tiki-<ERL_DIST_PORT>-<uid>@<host>", where uid is a unique id for the node.
+
+  Activate by passing "-start_epmd false -epmd_module Elixir.Tiki.Epmd" when starting Erlang.
+
+  Inspired by: https://github.com/ElixirOSS/libcluster-dynamic-srv
+  """
 
   @distro_version 5
 
