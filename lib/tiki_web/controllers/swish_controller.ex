@@ -1,13 +1,20 @@
-defmodule TikiWeb.QrController do
+defmodule TikiWeb.SwishController do
   use TikiWeb, :controller
+  alias Tiki.Checkouts
 
-  def create(conn, %{"code" => code}) do
-    qr =
-      QRCodeEx.encode(code)
-      |> QRCodeEx.png()
+  require Logger
 
-    conn
-    |> put_resp_content_type("image/png")
-    |> send_resp(200, qr)
+  def callback(
+        conn,
+        %{"status" => status}
+      ) do
+    [callback_identifier] = get_req_header(conn, "callbackidentifier")
+
+    case Checkouts.handle_swish_callback(callback_identifier, status) do
+      :ok -> :ok
+      {:error, reason} -> Logger.error("Handling Swish callback failed: #{inspect(reason)}")
+    end
+
+    send_resp(conn, 200, "OK")
   end
 end

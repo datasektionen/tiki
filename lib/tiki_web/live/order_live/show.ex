@@ -3,6 +3,7 @@ defmodule TikiWeb.OrderLive.Show do
 
   alias Tiki.Orders
   alias Tiki.Localizer
+  alias Tiki.Stripe
 
   import TikiWeb.Component.Card
   import TikiWeb.Component.Skeleton

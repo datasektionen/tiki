@@ -3,6 +3,7 @@ defmodule Tiki.CheckoutsTest do
 
   alias Tiki.Checkouts
   alias Tiki.Orders
+  alias Tiki.Stripe
 
   describe "stripe_checkouts" do
     import Tiki.CheckoutsFixtures
@@ -22,7 +23,7 @@ defmodule Tiki.CheckoutsTest do
     test "create_stripe_payment_intent/1 with an stripe API error returns an error" do
       order = Tiki.OrdersFixtures.order_fixture(%{price: 0})
 
-      assert {:error, %Stripe.ApiErrors{}} = Checkouts.create_stripe_payment_intent(order)
+      assert {:error, _} = Checkouts.create_stripe_payment_intent(order)
     end
 
     test "confirm_stripe_payment/1 works with a valid stripe payment" do
@@ -121,13 +122,14 @@ defmodule Tiki.CheckoutsTest do
       assert is_binary(checkout.token)
     end
 
+    @tag capture_log: true
     test "create_swish_payment_request/1 with invalid order returns an error" do
       order = Tiki.OrdersFixtures.order_fixture(price: 0)
 
       assert {:error, _} = Checkouts.create_swish_payment_request(order)
     end
 
-    test "confirm_swish_payment/2 works with valid swish callback data" do
+    test "handle_swish_callback/2 works with valid swish callback data" do
       order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
       Orders.subscribe_to_order(order.id)
@@ -135,7 +137,7 @@ defmodule Tiki.CheckoutsTest do
       assert {:ok, %Checkouts.SwishCheckout{} = checkout} =
                Checkouts.create_swish_payment_request(order)
 
-      assert :ok = Checkouts.confirm_swish_payment(checkout.callback_identifier, "PAID")
+      assert :ok = Checkouts.handle_swish_callback(checkout.callback_identifier, "PAID")
 
       assert_received {:paid, paid_order}
 
@@ -147,7 +149,7 @@ defmodule Tiki.CheckoutsTest do
       assert Orders.get_order!(order.id) == paid_order
     end
 
-    test "confirm_swish_payment/2 does nothing if the payment is already confirmed" do
+    test "handle_swish_callback/2 does nothing if the payment is already confirmed" do
       order = Tiki.OrdersFixtures.order_fixture(%{status: :checkout})
 
       Orders.subscribe_to_order(order.id)
@@ -155,7 +157,7 @@ defmodule Tiki.CheckoutsTest do
       assert {:ok, %Checkouts.SwishCheckout{} = checkout} =
                Checkouts.create_swish_payment_request(order)
 
-      assert :ok = Checkouts.confirm_swish_payment(checkout.callback_identifier, "PAID")
+      assert :ok = Checkouts.handle_swish_callback(checkout.callback_identifier, "PAID")
 
       assert_received {:paid, paid_order}
 
@@ -164,30 +166,32 @@ defmodule Tiki.CheckoutsTest do
 
       assert Orders.get_order!(order.id) == paid_order
 
-      assert :ok = Checkouts.confirm_swish_payment(checkout.callback_identifier, "PAID")
+      assert :ok = Checkouts.handle_swish_callback(checkout.callback_identifier, "PAID")
       assert Orders.get_order!(order.id) == paid_order
     end
 
-    test "confirm_swish_payment/2 returns an error on non-existing checkout" do
+    test "handle_swish_callback/2 returns an error on non-existing checkout" do
       order = Tiki.OrdersFixtures.order_fixture()
 
       assert {:ok, %Checkouts.SwishCheckout{}} =
                Checkouts.create_swish_payment_request(order)
 
-      assert {:error, message} = Checkouts.confirm_swish_payment("bogus", "PAID")
+      assert {:error, message} = Checkouts.handle_swish_callback("bogus", "PAID")
       assert message == "checkout not found"
     end
 
-    test "confirm_swish_payment/2 returns an error on invalid payment" do
-      order = Tiki.OrdersFixtures.order_fixture()
+    for status <- ["DECLINED", "ERROR", "CANCELLED"] do
+      test "handle_swish_callback/2 cancels the order on #{status}" do
+        status = unquote(status)
+        order = Tiki.OrdersFixtures.order_fixture()
 
-      assert {:ok, %Checkouts.SwishCheckout{} = checkout} =
-               Checkouts.create_swish_payment_request(order)
+        assert {:ok, %Checkouts.SwishCheckout{} = checkout} =
+                 Checkouts.create_swish_payment_request(order)
 
-      assert {:error, message} =
-               Checkouts.confirm_swish_payment(checkout.callback_identifier, "DECLINED")
+        assert :ok = Checkouts.handle_swish_callback(checkout.callback_identifier, status)
 
-      assert message == "invalid status: DECLINED"
+        assert Tiki.Repo.reload!(order).status == :cancelled
+      end
     end
   end
 end

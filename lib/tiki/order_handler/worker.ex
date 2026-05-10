@@ -85,6 +85,20 @@ defmodule Tiki.OrderHandler.Worker do
     # that the user has an :accepted release sign up.
     result =
       Multi.new()
+      |> Multi.run(:lock, fn repo, _ ->
+        # Serialize all reservations for this event. Since _only_ reservations increase
+        # the active ticket count (cancels and payments only maintain/decrease it), this lock
+        # guarantees capacity invariant (pending + paid <= capacity) holds for all ticket
+        # types of the event.
+
+        <<lock_key::signed-64, _::binary>> =
+          :crypto.hash(:md5, "event_reservation_lock:#{event_id}")
+
+        case Ecto.Adapters.SQL.query(repo, "SELECT pg_advisory_xact_lock($1)", [lock_key]) do
+          {:ok, _} -> {:ok, :locked}
+          error -> error
+        end
+      end)
       |> Multi.run(:requested_types, fn repo, _ ->
         tt_ids = Enum.map(ticket_types, fn {tt, _} -> tt end)
 
@@ -259,7 +273,12 @@ defmodule Tiki.OrderHandler.Worker do
     if started?(event_id) do
       {:ok, :already_started}
     else
-      OrderHandler.DynamicSupervisor.start_worker(event_id)
+      case OrderHandler.DynamicSupervisor.start_worker(event_id) do
+        {:ok, pid} -> {:ok, pid}
+        # Another concurrent caller started the worker between our check - proceed
+        {:error, {:already_started, _pid}} -> {:ok, :already_started}
+        {:error, reason} -> {:error, reason}
+      end
     end
   end
 

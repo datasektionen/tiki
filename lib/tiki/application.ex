@@ -7,10 +7,6 @@ defmodule Tiki.Application do
 
   @impl true
   def start(_type, _args) do
-    oidc_config =
-      Application.get_env(:tiki, Oidcc.ProviderConfiguration, [])
-      |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})
-
     oban_config = Application.fetch_env!(:tiki, Oban)
     metrics_port = Application.get_env(:tiki, :metrics_port, 9001)
     permission_service = Application.get_env(:tiki, :permission_service_module, Tiki.Hive)
@@ -38,14 +34,12 @@ defmodule Tiki.Application do
         {Cluster.Supervisor, [[app: topology]]},
         # Start the PromEx plug endpoint
         {Bandit, plug: TikiWeb.MetricsPlug, port: metrics_port},
-        # Start the OIDC provider configuration worker (fetches the OIDC connect configuration)
-        {Oidcc.ProviderConfiguration.Worker, oidc_config},
         # Start processes required for order handling
         Tiki.OrderHandler.Supervisor,
         Tiki.PurchaseMonitor,
         # Start the permission service (Hive or mock in tests)
         permission_service
-      ] ++ stripe_webhook_listener()
+      ] ++ Enum.concat([stripe_webhook_listener(), oidc_provider_worker()])
 
     opts = [strategy: :one_for_one, name: Tiki.Supervisor]
     Supervisor.start_link(children, opts)
@@ -57,6 +51,19 @@ defmodule Tiki.Application do
   def config_change(changed, _new, removed) do
     TikiWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp oidc_provider_worker do
+    if Application.get_env(:tiki, :env_test) do
+      []
+    else
+      oidc_config =
+        Application.get_env(:tiki, Oidcc.ProviderConfiguration, [])
+        |> Enum.into(%{name: Tiki.OpenIdConfigurationProvider, backoff_type: :exponential})
+
+      # Start the OIDC provider configuration worker (fetches the OIDC connect configuration)
+      [{Oidcc.ProviderConfiguration.Worker, oidc_config}]
+    end
   end
 
   defp stripe_webhook_listener do

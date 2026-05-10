@@ -176,7 +176,7 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
               {gettext("Pay using Swish")}
             </.label>
             <div class="max-w-96 w-full self-center">
-              {raw(Tiki.Checkouts.get_swisg_svg_qr_code!(@order.swish_checkout.token))}
+              {raw(Tiki.Checkouts.get_swish_svg_qr_code!(@order.swish_checkout.token))}
             </div>
 
             <.link href={{:swish, "//paymentrequest?token=#{@order.swish_checkout.token}"}}>

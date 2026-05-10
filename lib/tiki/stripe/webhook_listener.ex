@@ -65,7 +65,7 @@ defmodule Tiki.Stripe.WebhookListener do
         nil ->
           case Regex.run(~r/whsec_[a-zA-Z0-9]+/, line) do
             [secret] ->
-              Application.put_env(:stripity_stripe, :webhook_secret, secret)
+              Application.put_env(:tiki, :stripe_webhook_secret, secret)
               Logger.info(["[stripe] set secret: ", secret])
               secret
 

@@ -11,20 +11,13 @@ defmodule Tiki.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader],
-      test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test
-      ]
+      listeners: [Phoenix.CodeReloader]
     ]
   end
 
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, benchmark: :test]
     ]
   end
 
@@ -63,20 +56,19 @@ defmodule Tiki.MixProject do
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 1.0"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.20"},
+      {:gettext, "~> 1.0"},
       {:ex_cldr_dates_times, "~> 2.0"},
       {:tz, "~> 0.28"},
       {:jason, "~> 1.2"},
       {:bandit, "~> 1.0"},
-      {:stripity_stripe, "~> 3.0"},
       {:req, "~> 0.5"},
       {:req_s3, "~> 0.2.3"},
+      {:req_llm, "~> 1.11"},
       {:imgproxy, "~> 3.0"},
-      {:oidcc_plug, "~> 0.1.0"},
-      {:oidcc, "~> 3.4.0"},
+      {:oidcc_plug, "~> 0.1"},
+      {:oidcc, "~> 3.7"},
       {:let_me, "~> 1.2"},
-      {:qrcode_ex, "~> 0.1.0"},
-      {:excoveralls, "~> 0.18", only: :test},
+      {:eqrcode, "~> 0.2.0"},
       {:tailwind_formatter, "~> 0.4.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:salad_ui,
@@ -91,10 +83,12 @@ defmodule Tiki.MixProject do
       {:fun_with_flags_ui, "~> 1.0"},
       {:nimble_csv, "~> 1.2"},
       {:prom_ex, "~> 1.0"},
-      {:langchain, "0.4.0-rc.2"},
       {:tidewave, "~> 0.5", only: [:dev]},
       {:libcluster, "~> 3.5"},
-      {:libcluster_postgres, "~> 0.2"}
+      {:libcluster_postgres, "~> 0.2"},
+      {:local_cluster, "~> 2.0", only: [:test]},
+      # swoosh really wants to use hackney in test mode
+      {:hackney, "~> 1.9", only: [:test]}
     ]
   end
 
@@ -109,11 +103,17 @@ defmodule Tiki.MixProject do
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test --no-start"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "esbuild default"],
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
-      precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: [
+        "compile --warning-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "test --include cluster"
+      ],
+      benchmark: ["ecto.create --quiet", "ecto.migrate --quiet", "benchmark"]
     ]
   end
 end

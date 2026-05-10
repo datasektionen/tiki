@@ -333,8 +333,8 @@ defmodule TikiWeb.CoreComponents do
     ~H"""
     <div {@rest}>
       {Phoenix.HTML.raw(
-        QRCodeEx.encode(@data)
-        |> QRCodeEx.svg(
+        EQRCode.encode(@data)
+        |> EQRCode.svg(
           color: "var(--color-foreground)",
           viewbox: true,
           background_color: :transparent

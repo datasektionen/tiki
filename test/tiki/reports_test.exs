@@ -4,6 +4,7 @@ defmodule Tiki.ReportsTest do
   alias Tiki.Reports
   alias Tiki.Reports.ReportParams
   alias Tiki.Accounts.Scope
+  alias Tiki.Stripe
 
   import Tiki.EventsFixtures
   import Tiki.TicketsFixtures
@@ -66,7 +67,7 @@ defmodule Tiki.ReportsTest do
                email: "john@doe.com"
              })
 
-    Tiki.Checkouts.confirm_swish_payment(order.swish_checkout.callback_identifier, "PAID")
+    Tiki.Checkouts.handle_swish_callback(order.swish_checkout.callback_identifier, "PAID")
     Swoosh.X.TestAssertions.flush_emails()
 
     assert_receive {:paid, %Tiki.Orders.Order{status: :paid} = order}

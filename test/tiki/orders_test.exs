@@ -4,6 +4,7 @@ defmodule Tiki.OrdersTest do
   use Tiki.DataCase
 
   alias Tiki.Orders
+  alias Tiki.Stripe
 
   describe "order" do
     alias Tiki.Orders.Order
@@ -30,7 +31,7 @@ defmodule Tiki.OrdersTest do
 
           order
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Tiki.Repo.preload([:event | @standard_preloads])
 
       assert Orders.list_team_orders(event.team_id) |> Enum.sort() == orders |> Enum.sort()
@@ -48,7 +49,7 @@ defmodule Tiki.OrdersTest do
 
           order
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Tiki.Repo.preload([:event | @standard_preloads])
 
       assert Orders.list_team_orders(event.team_id, limit: 3) == Enum.take(orders, 3)
@@ -84,7 +85,7 @@ defmodule Tiki.OrdersTest do
         |> Tiki.Repo.preload(@standard_preloads)
 
       list = Orders.list_orders_for_event(event.id)
-      assert list == Enum.sort_by(list, & &1.inserted_at, :desc)
+      assert list == Enum.sort_by(list, & &1.inserted_at, {:desc, NaiveDateTime})
       assert Enum.sort(list) == Enum.sort(orders)
     end
 
@@ -100,7 +101,7 @@ defmodule Tiki.OrdersTest do
           order_fixture(%{status: status}, event: event)
           |> Tiki.Repo.preload(@standard_preloads)
         end)
-        |> Enum.sort_by(& &1.inserted_at, :desc)
+        |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
         |> Tiki.Repo.preload(@standard_preloads)
 
       list = Orders.list_orders_for_event(event.id, status: [:paid])
@@ -157,6 +158,81 @@ defmodule Tiki.OrdersTest do
     test "get_order!/1 returns the order with given id" do
       order = order_fixture() |> Tiki.Repo.preload(@standard_preloads)
       assert Orders.get_order!(order.id) == order
+    end
+  end
+
+  describe "order cancellation" do
+    import Tiki.OrdersFixtures
+    import Tiki.TicketsFixtures
+
+    test "maybe_cancel_order/1 cancels a pending order" do
+      order = order_fixture(%{status: "pending"})
+
+      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+      assert order.status == :cancelled
+      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 cancels an order being checked out" do
+      order = order_fixture(%{status: "checkout"})
+
+      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+      assert order.status == :cancelled
+      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 does not modify paid orders" do
+      order = order_fixture(%{status: "paid"})
+      ticket = ticket_fixture(%{order_id: order.id}) |> Repo.preload(:ticket_type)
+
+      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
+      assert msg =~ "order is not cancellable"
+
+      assert %Orders.Order{status: :paid, tickets: [^ticket]} = Orders.get_order!(order.id)
+    end
+
+    test "maybe_cancel_order/1 does not modify cancelled orders" do
+      order = order_fixture(%{status: "cancelled"}) |> Repo.preload(@standard_preloads)
+
+      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
+      assert msg =~ "order is not cancellable"
+
+      assert Orders.get_order!(order.id) == order
+    end
+
+    test "maybe_cancel_order/1 returns an error if the order does not exist" do
+      assert {:error, msg} = Orders.maybe_cancel_order(Ecto.UUID.generate())
+      assert msg =~ "order not found, nothing to cancel"
+    end
+
+    test "maybe_cancel_order/1 propagates cancellation to swish" do
+      ticket_type =
+        ticket_type_fixture(%{
+          price: 50,
+          start_time: ~U[2020-04-24 18:00:00Z],
+          end_time: ~U[2020-04-24 20:00:00Z]
+        })
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 2)
+
+      {:ok, order} = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, order} =
+               Orders.init_checkout(order, "swish", %{
+                 name: "John Doe",
+                 email: "john@doe.com"
+               })
+
+      swish_id = order.swish_checkout.swish_id
+
+      Oban.Testing.with_testing_mode(:manual, fn ->
+        assert {:ok, order} = Orders.maybe_cancel_order(order.id)
+        assert order.status == :cancelled
+        assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
+
+        assert_enqueued worker: Tiki.Orders.CancelWorker, args: %{"swish_id" => swish_id}
+      end)
     end
   end
 
@@ -330,46 +406,6 @@ defmodule Tiki.OrdersTest do
                Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
 
       assert msg =~ "not all ticket types are purchasable"
-    end
-
-    test "maybe_cancel_order/1 cancels a pending order" do
-      order = order_fixture(%{status: "pending"})
-
-      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
-      assert order.status == :cancelled
-      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
-    end
-
-    test "maybe_cancel_order/1 cancels an order being checked out" do
-      order = order_fixture(%{status: "checkout"})
-
-      assert {:ok, order} = Orders.maybe_cancel_order(order.id)
-      assert order.status == :cancelled
-      assert %Orders.Order{status: :cancelled, tickets: []} = Orders.get_order!(order.id)
-    end
-
-    test "maybe_cancel_order/1 does not modify paid orders" do
-      order = order_fixture(%{status: "paid"})
-      ticket = ticket_fixture(%{order_id: order.id}) |> Repo.preload(:ticket_type)
-
-      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not cancellable"
-
-      assert %Orders.Order{status: :paid, tickets: [^ticket]} = Orders.get_order!(order.id)
-    end
-
-    test "maybe_cancel_order/1 does not modify cancelled orders" do
-      order = order_fixture(%{status: "cancelled"}) |> Repo.preload(@standard_preloads)
-
-      assert {:error, msg} = Orders.maybe_cancel_order(order.id)
-      assert msg =~ "order is not cancellable"
-
-      assert Orders.get_order!(order.id) == order
-    end
-
-    test "maybe_cancel_order/1 returns an error if the order does not exist" do
-      assert {:error, msg} = Orders.maybe_cancel_order(Ecto.UUID.generate())
-      assert msg =~ "order not found, nothing to cancel"
     end
   end
 
@@ -746,7 +782,7 @@ defmodule Tiki.OrdersTest do
                  email: "john@doe.com"
                })
 
-      Checkouts.confirm_swish_payment(swish_checkout.callback_identifier, "PAID")
+      Checkouts.handle_swish_callback(swish_checkout.callback_identifier, "PAID")
 
       assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
 
@@ -775,6 +811,50 @@ defmodule Tiki.OrdersTest do
                %Tiki.Orders.AuditLog{event_type: "order.checkout.swish"},
                %Tiki.Orders.AuditLog{event_type: "order.created"}
              ] = log
+    end
+
+    for status <- ["DECLINED", "ERROR", "CANCELLED"] do
+      test "swish payment #{status} cancels the order" do
+        status = unquote(status)
+
+        ticket_type =
+          ticket_type_fixture(%{price: 50})
+          |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+        to_purchase = Map.put(%{}, ticket_type.id, 1)
+        {:ok, order} = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+        Orders.subscribe_to_order(order.id)
+
+        assert {:ok, %Order{id: id, swish_checkout: swish_checkout}} =
+                 Orders.init_checkout(order, "swish", %{name: "John Doe", email: "john@doe.com"})
+
+        assert :ok = Checkouts.handle_swish_callback(swish_checkout.callback_identifier, status)
+
+        assert_receive {:cancelled, %Order{status: :cancelled, id: ^id}}
+
+        cancelled_order = Orders.get_order!(id)
+        assert cancelled_order.status == :cancelled
+        assert cancelled_order.tickets == []
+        assert cancelled_order.swish_checkout.status == status
+      end
+    end
+
+    @tag capture_log: true
+    test "swish payment failure is idempotent when order already cancelled" do
+      ticket_type =
+        ticket_type_fixture(%{price: 50})
+        |> Tiki.Repo.preload(ticket_batch: [event: []])
+
+      to_purchase = Map.put(%{}, ticket_type.id, 1)
+      {:ok, order} = Orders.reserve_tickets(ticket_type.ticket_batch.event.id, to_purchase)
+
+      assert {:ok, %Order{swish_checkout: swish_checkout}} =
+               Orders.init_checkout(order, "swish", %{name: "John Doe", email: "john@doe.com"})
+
+      Orders.maybe_cancel_order(order.id)
+
+      assert :ok = Checkouts.handle_swish_callback(swish_checkout.callback_identifier, "DECLINED")
     end
 
     test "full order process with stripe" do

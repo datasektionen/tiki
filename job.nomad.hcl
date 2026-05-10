@@ -9,6 +9,7 @@ job "tiki" {
       port "http" {}
       port "metrics" {}
       port "imgproxy" {}
+      port "dist" {}
     }
 
     task "tiki" {
@@ -58,6 +59,10 @@ IMAGE_FRONTEND_URL=https://dnok4ulql7gij.cloudfront.net
 OIDC_ISSUER_URL=https://sso.datasektionen.se/op
 PORT={{ env "NOMAD_PORT_http" }}
 METRICS_PORT={{ env "NOMAD_PORT_metrics" }}
+RELEASE_NODE=tiki-{{ env "NOMAD_PORT_dist" }}-{{ env "NOMAD_ALLOC_ID" }}@{{ env "NOMAD_IP_dist" }}
+ERL_DIST_PORT={{ env "NOMAD_PORT_dist" }}
+ELIXIR_ERL_OPTIONS="-start_epmd false -epmd_module Elixir.Tiki.Epmd"
+RELEASE_DISTRIBUTION="name"
 EOF
         destination = "local/.env"
         env         = true
@@ -84,7 +89,7 @@ AWS_ACCESS_KEY_ID={{ .aws_access_key_id }}
 AWS_SECRET_ACCESS_KEY={{ .aws_secret_access_key }}
 IMGPROXY_KEY={{ .imgproxy_key }}
 IMGPROXY_SALT={{ .imgproxy_salt }}
-OPENAI_KEY={{ .openai_key }}
+OPENAI_API_KEY={{ .openai_key }}
 HIVE_API_TOKEN={{ .hive_api_token }}
 {{ end }}
 EOF

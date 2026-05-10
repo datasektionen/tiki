@@ -14,8 +14,8 @@ jobs:
 
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 27.x
-          elixir-version: 1.17.x
+          otp-version: 28.x
+          elixir-version: 1.19.x
 
       - uses: actions/cache@v3
         id: cache-deps
@@ -78,5 +78,8 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true'
 
       - run: mix compile
-      - run: mix test
-      # - run: mix coveralls.github
+
+      - name: Run tests
+        run: |
+          epmd -daemon # need to start daemon
+          mix test --include cluster

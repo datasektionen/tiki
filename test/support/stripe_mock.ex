@@ -1,11 +1,11 @@
 defmodule Tiki.Support.StripeMock do
+  alias Tiki.Stripe
+
   defmodule PaymentIntent do
-    alias Stripe.PaymentIntent
+    alias Tiki.Stripe.PaymentIntent
 
     def create(%{amount: 0}) do
-      id = Ecto.UUID.generate()
-
-      {:error, %Stripe.ApiErrors{message: "forbidden", payment_intent: "pi_#{id}"}}
+      {:error, %{"error" => %{"message" => "Amount must be greater than 0"}}}
     end
 
     def create(%{amount: amount}) do
@@ -21,12 +21,10 @@ defmodule Tiki.Support.StripeMock do
   end
 
   defmodule PaymentMethod do
-    alias Stripe.PaymentMethod
+    alias Tiki.Stripe.PaymentMethod
 
     def retrieve("invalid") do
-      id = Ecto.UUID.generate()
-
-      {:error, %Stripe.ApiErrors{message: "forbidden", payment_intent: "pi_#{id}"}}
+      {:error, %{"error" => %{"message" => "No such payment method"}}}
     end
 
     def retrieve(id) do
