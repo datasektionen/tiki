@@ -840,6 +840,7 @@ defmodule Tiki.OrdersTest do
       end
     end
 
+    @tag capture_log: true
     test "swish payment failure is idempotent when order already cancelled" do
       ticket_type =
         ticket_type_fixture(%{price: 50})

@@ -19,14 +19,20 @@ defmodule Tiki.Orders.CancelWorker do
     status =
       Repo.one(from sc in SwishCheckout, where: sc.swish_id == ^swish_id, select: sc.status)
 
-    if status in Swish.terminal_statuses() do
-      Logger.info(
-        "Swish payment #{swish_id} already in terminal state (#{status}), skipping cancellation"
-      )
+    cond do
+      is_nil(status) ->
+        Logger.warning("Swish payment #{swish_id} not found, skipping cancellation")
+        :ok
 
-      :ok
-    else
-      cancel_swish_payment(swish_id)
+      status in Swish.terminal_statuses() ->
+        Logger.info(
+          "Swish payment #{swish_id} already in terminal state (#{status}), skipping cancellation"
+        )
+
+        :ok
+
+      true ->
+        cancel_swish_payment(swish_id)
     end
   end
 
