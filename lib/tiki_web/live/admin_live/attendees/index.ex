@@ -161,6 +161,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
           </p>
           <p :if={!@ticket.form_response} class="whitespace-nowrap">
             <.icon name="hero-exclamation-triangle" class="text-destructive h-5 w-5"}/>
+            {gettext("Attendee has not filled in the required ticket information")}
           </p>
         </div>
       </div>
