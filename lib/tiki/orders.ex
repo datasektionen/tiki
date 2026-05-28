@@ -488,6 +488,7 @@ defmodule Tiki.Orders do
       as: :order,
       join: tt in assoc(t, :ticket_type),
       join: u in assoc(o, :user),
+      left_join: fr in assoc(t, :form_response),
       left_join:
         response in subquery(
           from r in Tiki.Forms.Response,
@@ -503,7 +504,11 @@ defmodule Tiki.Orders do
         ),
       on: response.ticket_id == t.id,
       order_by: [desc: o.inserted_at],
-      preload: [ticket_type: tt, order: {o, user: u}],
+      preload: [
+        ticket_type: tt,
+        order: {o, user: u},
+        form_response: fr
+      ],
       select_merge: %{
         name: fragment("COALESCE(?, ?)", response.name, u.full_name),
         email: fragment("COALESCE(?, ?)", response.email, u.email)

@@ -35,7 +35,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
         </.button> --%>
       </.form>
 
-      <.card class="sm:col-span-6">
+      <.card class="min-w-0 sm:col-span-6">
         <ul
           id="tickets"
           phx-update="stream"
@@ -158,6 +158,10 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
             <time datetime="2023-03-17T00:00Z">
               {Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M")}
             </time>
+          </p>
+          <p :if={!@ticket.form_response} class="truncate min-w-0">
+            <.icon name="hero-exclamation-triangle" class="text-destructive h-5 w-5 shrink-0" />
+            {gettext("Attendee has not filled in the required ticket information")}
           </p>
         </div>
       </div>
