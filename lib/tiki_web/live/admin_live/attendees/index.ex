@@ -159,10 +159,9 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
               {Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M")}
             </time>
           </p>
-          <dt :if={!@ticket.form_response}>
-            <.icon name="hero-exclamation-triangle" class="text-destructive" />
-            {gettext("Attendeee has not filled in the required ticket information")}
-          </dt>
+          <p :if={!@ticket.form_response} class="whitespace-nowrap">
+            <.icon name="hero-exclamation-triangle" class="text-destructive h-5 w-5"}/>
+          </p>
         </div>
       </div>
       <div class="flex flex-none items-center gap-x-4"></div>
