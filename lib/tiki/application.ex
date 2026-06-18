@@ -36,7 +36,6 @@ defmodule Tiki.Application do
         {Bandit, plug: TikiWeb.MetricsPlug, port: metrics_port},
         # Start processes required for order handling
         Tiki.OrderHandler.Supervisor,
-        Tiki.PurchaseMonitor,
         # Start the permission service (Hive or mock in tests)
         permission_service
       ] ++ Enum.concat([stripe_webhook_listener(), oidc_provider_worker()])

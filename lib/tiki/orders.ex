@@ -148,8 +148,7 @@ defmodule Tiki.Orders do
   def reserve_tickets(event_id, ticket_types, user_id \\ nil) do
     with {:ok, order, ticket_types} <-
            OrderHandler.Worker.reserve_tickets(event_id, ticket_types, user_id) do
-      # Monitor the order, automatically cancels it if it's not paid in time
-      Tiki.PurchaseMonitor.monitor(order)
+      Tiki.Workers.OrderTimeoutWorker.schedule(order)
 
       broadcast(order.event_id, {:tickets_updated, ticket_types})
 
@@ -161,6 +160,7 @@ defmodule Tiki.Orders do
     end
   end
 
+  def reservation_timeout_minutes(), do: Tiki.Workers.OrderTimeoutWorker.timeout_minutes()
   @doc """
   Cancels a pending order if it exists. Does not modify paid or cancelled orders.
   Returns the order.
