@@ -151,10 +151,7 @@ defmodule Tiki.Orders do
       # Monitor the order, automatically cancels it if it's not paid in time
       Tiki.PurchaseMonitor.monitor(order)
 
-      broadcast(
-        order.event_id,
-        {:tickets_updated, Tickets.put_available_ticket_meta(ticket_types)}
-      )
+      broadcast(order.event_id, {:tickets_updated, ticket_types})
 
       broadcast_order(order.id, :created, order)
 
