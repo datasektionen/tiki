@@ -23,6 +23,8 @@ defmodule Tiki.Orders.Order do
     has_one :stripe_checkout, Tiki.Checkouts.StripeCheckout
     has_one :swish_checkout, Tiki.Checkouts.SwishCheckout
 
+    has_one :release_signup, Tiki.Releases.Signup
+
     timestamps()
   end
 
