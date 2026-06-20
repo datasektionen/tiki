@@ -9,7 +9,10 @@ defmodule Tiki.Orders.OrderNotifier do
 
   def deliver(order) do
     Gettext.put_locale(TikiWeb.Gettext, order.user.locale)
-    Tiki.Cldr.put_locale(order.user.locale)
+
+    order.user.locale
+    |> Tiki.Cldr.wrap_locale()
+    |> Tiki.Cldr.put_locale()
 
     case render(%{order: order}) |> Tiki.Mail.Mjml.to_html() do
       {:ok, html} ->

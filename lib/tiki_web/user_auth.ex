@@ -142,7 +142,7 @@ defmodule TikiWeb.UserAuth do
 
     conn = put_session(conn, :locale, locale)
     Gettext.put_locale(TikiWeb.Gettext, locale)
-    Cldr.put_locale(Tiki.Cldr, locale)
+    Cldr.put_locale(Tiki.Cldr, Tiki.Cldr.wrap_locale(locale))
     conn
   end
 
@@ -302,7 +302,7 @@ defmodule TikiWeb.UserAuth do
     Phoenix.Component.assign_new(socket, :locale, fn ->
       locale = session["locale"] || "en"
       Gettext.put_locale(TikiWeb.Gettext, locale)
-      Cldr.put_locale(Tiki.Cldr, locale)
+      Cldr.put_locale(Tiki.Cldr, Tiki.Cldr.wrap_locale(locale))
       locale
     end)
     |> Phoenix.Component.assign_new(:current_user, fn ->
