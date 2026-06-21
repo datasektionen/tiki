@@ -107,3 +107,19 @@ msgstr ""
 
 msgid "must be equal to %{number}"
 msgstr ""
+
+## Manual errors
+msgid "only one signup per user per release"
+msgstr ""
+
+msgid "did not change"
+msgstr ""
+
+msgid "would create a cycle"
+msgstr ""
+
+msgid "overlaps with an existing release"
+msgstr ""
+
+msgid "must be on or after start date"
+msgstr ""

@@ -5,7 +5,7 @@ defmodule TikiWeb.EventLive.Show do
   alias Tiki.Presence
   alias Tiki.Orders
   alias TikiWeb.PurchaseLive.TicketsComponent
-  alias Tiki.Localizer
+  alias TikiWeb.EventLive.ReleaseSignupComponent
   alias Tiki.Releases
 
   import TikiWeb.Component.Card
@@ -55,40 +55,20 @@ defmodule TikiWeb.EventLive.Show do
         </div>
 
         <div class="flex w-full flex-col gap-6 lg:sticky lg:top-4" id="tickets">
-          <div :if={@releases != []}>
-            <div class="flex flex-col gap-4">
-              <h2 class="text-xl/6 font-semibold">{gettext("Ticket releases")}</h2>
+          <h2 :if={@user_signups != []} class="text-xl/6 font-semibold">
+            {gettext("Release signup queue")}
+          </h2>
 
-              <div class="flex flex-col gap-3">
-                <div
-                  :for={release <- @releases}
-                  class="bg-accent flex flex-col overflow-hidden rounded-xl"
-                >
-                  <div class="flex flex-row justify-between px-4 py-4">
-                    <div class="flex flex-col">
-                      <h3 class="text-md pb-1 font-semibold">{Localizer.localize(release).name}</h3>
-                      <div class="text-sm">
-                        <span class="font-semibold">
-                          {time_to_string(release.starts_at, format: :MMMEd)}
-                        </span>
-                        ·
-                        <span class="text-muted-foreground">
-                          {time_to_string(release.starts_at, format: :Hm)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+          <.live_component
+            :for={signup <- @user_signups}
+            module={ReleaseSignupComponent}
+            id={"release-signup-#{signup.release_id}"}
+            signup={signup}
+            release={@releases[signup.release_id]}
+            current_user={@current_user}
+            current_scope={@current_scope}
+          />
 
-                  <.link
-                    navigate={~p"/events/#{@event}/releases/#{release}"}
-                    class="text-background bg-foreground py-2 text-center text-sm hover:bg-muted-foreground hover:cursor-pointer"
-                  >
-                    {gettext("Join release")}
-                  </.link>
-                </div>
-              </div>
-            </div>
-          </div>
           <.live_component
             module={TicketsComponent}
             id="tickets-component"
@@ -96,6 +76,7 @@ defmodule TikiWeb.EventLive.Show do
             event={@event}
             order={@order}
             promo_codes={@promo_codes}
+            current_scope={@current_scope}
           />
         </div>
       </div>
@@ -119,6 +100,7 @@ defmodule TikiWeb.EventLive.Show do
       id={@event.id}
       event={@event}
       order={@order}
+      expires_at={order_expires_at(@order, @user_signups, @releases)}
       patch={~p"/events/#{@event}"}
     />
 
@@ -134,33 +116,36 @@ defmodule TikiWeb.EventLive.Show do
       Events.get_event!(event_id, preload_ticket_types: true)
       |> Tiki.Localizer.localize()
 
-    releases =
-      Enum.map(event.ticket_batches, & &1.release)
-      |> Enum.filter(& &1)
+    releases = Releases.list_releases_for_event(event_id)
+
+    signups =
+      Releases.get_user_sign_ups(socket.assigns.current_scope, event_id)
+      |> Enum.filter(
+        &(Releases.get_phase(&1.release) in [:scheduled, :open, :drawing, :purchase])
+      )
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
 
     if connected?(socket) do
       TikiWeb.Endpoint.subscribe("presence:event:#{event_id}")
       Orders.subscribe(event.id)
-      Releases.subscribe_to_event(event.id)
+
+      Releases.subscribe_event(
+        event.id,
+        socket.assigns.current_user && socket.assigns.current_user.id
+      )
+
       Presence.track(self(), "presence:event:#{event_id}", socket.id, %{})
     end
-
-    layout =
-      case socket.assigns.live_action do
-        :embedded_purchase -> :blank
-        :embedded -> :embedded
-        _ -> :app
-      end
 
     {:ok,
      assign(socket,
        event: event,
        online_count: initial_count,
-       order: nil
+       order: nil,
+       user_signups: signups
      )
-     |> assign_releases(releases), layout: {TikiWeb.Layouts, layout}}
+     |> assign_releases(releases)}
   end
 
   @impl true
@@ -209,8 +194,22 @@ defmodule TikiWeb.EventLive.Show do
   end
 
   @impl true
-  def handle_info({:releases_updated, releases}, socket) do
-    {:noreply, assign_releases(socket, releases)}
+  def handle_info({:release_updated, release}, socket) do
+    {:noreply, assign_release(socket, release)}
+  end
+
+  def handle_info({:signup_updated, signup}, socket) do
+    if socket.assigns[:current_user] && socket.assigns.current_user.id == signup.user_id do
+      updated = Enum.reject(socket.assigns.user_signups, fn s -> s.id == signup.id end)
+      {:noreply, assign(socket, user_signups: updated ++ [signup])}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info({:signup_deleted, signup}, socket) do
+    updated = Enum.reject(socket.assigns.user_signups, fn s -> s.id == signup.id end)
+    {:noreply, assign(socket, user_signups: updated)}
   end
 
   @impl true
@@ -257,12 +256,31 @@ defmodule TikiWeb.EventLive.Show do
     end
   end
 
-  defp assign_releases(socket, releases) do
-    releases =
-      releases
-      |> Enum.sort_by(& &1.starts_at)
-      |> Enum.filter(&Releases.is_active?/1)
-
+  defp assign_release(socket, release) do
+    releases = Map.put(socket.assigns.releases, release.id, release)
     assign(socket, releases: releases)
+  end
+
+  defp assign_releases(socket, releases) do
+    assign(socket, releases: Map.new(releases, fn r -> {r.id, r} end))
+  end
+
+  defp order_expires_at(nil, _user_signups, _releases), do: nil
+
+  defp order_expires_at(order, user_signups, releases) do
+    with %Releases.Signup{release_id: release_id} <-
+           Enum.find(user_signups, fn signup -> signup.order_id == order.id end),
+         %Releases.Release{} = release <- Map.get(releases, release_id) do
+      DateTime.add(
+        release.opens_at,
+        release.signup_window_minutes + release.purchase_window_minutes,
+        :minute
+      )
+    else
+      _ ->
+        order.inserted_at
+        |> DateTime.from_naive!("Etc/UTC")
+        |> DateTime.add(Orders.reservation_timeout_minutes(), :minute)
+    end
   end
 end

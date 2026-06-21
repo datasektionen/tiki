@@ -110,8 +110,6 @@ defmodule TikiWeb.Router do
       live "/events/:event_id", EventLive.Show, :index
       live "/events/:event_id/purchase/:order_id", EventLive.Show, :purchase
 
-      live "/events/:event_id/releases/:release_id", EventLive.Release, :show
-
       live "/orders/:id", OrderLive.Show, :show
       live "/orders/:id/receipt", OrderLive.Show, :receipt
       live "/tickets/:id", OrderLive.Ticket, :show

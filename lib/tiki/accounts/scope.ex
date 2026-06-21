@@ -27,7 +27,7 @@ defmodule Tiki.Accounts.Scope do
     %__MODULE__{user: user}
   end
 
-  def for_user(nil), do: nil
+  def for_user(nil), do: %__MODULE__{}
 
   def put_team(%__MODULE__{} = scope, %Team{} = team) do
     %{scope | team: team}

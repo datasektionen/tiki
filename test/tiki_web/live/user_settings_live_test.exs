@@ -85,8 +85,14 @@ defmodule TikiWeb.UserSettingsLiveTest do
       email = unique_user_email()
 
       token =
-        extract_user_token(fn url ->
-          Accounts.deliver_user_update_email_instructions(%{user | email: email}, user.email, url)
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          extract_user_token(fn url ->
+            Accounts.deliver_user_update_email_instructions(
+              %{user | email: email},
+              user.email,
+              url
+            )
+          end)
         end)
 
       %{conn: log_in_user(conn, user), token: token, email: email, user: user}

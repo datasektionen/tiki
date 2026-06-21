@@ -26,7 +26,8 @@ defmodule TikiWeb.AdminLive.User.Settings do
     case Accounts.update_user_data(socket.assigns.current_user, user_params) do
       {:ok, user} ->
         Gettext.put_locale(TikiWeb.Gettext, user.locale)
-        Cldr.put_locale(Tiki.Cldr, user.locale)
+
+        Cldr.put_locale(Tiki.Cldr, Tiki.Cldr.wrap_locale(user.locale))
 
         {:noreply,
          socket
