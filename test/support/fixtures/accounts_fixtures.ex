@@ -28,8 +28,10 @@ defmodule Tiki.AccountsFixtures do
     user = unconfirmed_user_fixture(attrs)
 
     token =
-      extract_user_token(fn url ->
-        Accounts.deliver_login_instructions(user, url)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        extract_user_token(fn url ->
+          Accounts.deliver_login_instructions(user, url)
+        end)
       end)
 
     {:ok, user, _expired_tokens} = Accounts.login_user_by_magic_link(token)
