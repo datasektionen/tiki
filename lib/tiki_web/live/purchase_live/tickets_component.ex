@@ -1,9 +1,8 @@
 defmodule TikiWeb.PurchaseLive.TicketsComponent do
   use TikiWeb, :live_component
 
-  alias Tiki.Tickets
-  alias Tiki.Orders
   alias Tiki.Releases
+  alias Tiki.Tickets
   alias Tiki.Localizer
 
   @impl Phoenix.LiveComponent
@@ -12,7 +11,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     <div class="flex flex-col gap-4">
       <h2 class="text-xl/6 font-semibold">{gettext("Tickets")}</h2>
       <div :if={@error != nil} class="mt-3 text-red-700">
-        {@error}
+        {error_message(@error)}
       </div>
 
       <div class="flex flex-col gap-3">
@@ -131,7 +130,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
               phx-target={@myself}
               class={"#{@promo_code != "" && "lg:hidden"} w-full"}
             >
-              {gettext("Buy")}
+              {request_text(@counts, @ticket_types)}
             </.button>
           <% end %>
         </div>
@@ -161,8 +160,22 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         tt.available == 0 ->
           assign(assigns, label: gettext("Sold out"))
 
-        active_release?(tt) ->
-          assign(assigns, label: gettext("Ticket is part of an active release."))
+        active_release?(tt.active_release) ->
+          release_status =
+            case Releases.get_phase(tt.active_release) do
+              :scheduled ->
+                gettext("Ticket release opens %{time}",
+                  time: time_to_string(tt.active_release.opens_at, format: :short)
+                )
+
+              :open ->
+                gettext("Ticket release open")
+
+              _ ->
+                gettext("Ticket is part of an active release.")
+            end
+
+          assign(assigns, label: release_status)
 
         true ->
           assign(assigns, label: nil)
@@ -218,8 +231,10 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
           ticket_types
 
         %Releases.Release{} = release ->
-          Enum.filter(ticket_types, fn tt -> tt.release && tt.release.id == release.id end)
-          |> Enum.map(fn tt -> %{tt | release: nil} end)
+          Enum.filter(ticket_types, fn tt ->
+            tt.active_release && tt.active_release.id == release.id
+          end)
+          |> Enum.map(fn tt -> %{tt | active_release: nil} end)
       end
       |> Enum.group_by(fn tt -> tt.start_time end)
       |> Enum.sort(fn {start_a, _}, {start_b, _} ->
@@ -270,19 +285,23 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
         user -> user.id
       end
 
-    with {:ok, order} <-
-           Orders.reserve_tickets(event_id, to_purchase, user_id) do
-      to =
-        case socket.assigns[:embedded] do
-          nil ->
-            ~p"/events/#{event_id}/purchase/#{order}?#{%{"promo_codes" => socket.assigns.promo_codes}}"
+    case Tickets.request_tickets(event_id, to_purchase, user_id) do
+      {:ok, {:order, order}} ->
+        to =
+          case socket.assigns[:embedded] do
+            nil ->
+              ~p"/events/#{event_id}/purchase/#{order}?#{%{"promo_codes" => socket.assigns.promo_codes}}"
 
-          true ->
-            ~p"/embed/events/#{event_id}/purchase/#{order}"
-        end
+            true ->
+              ~p"/embed/events/#{event_id}/purchase/#{order}"
+          end
 
-      {:noreply, push_navigate(socket, to: to)}
-    else
+        {:noreply, push_navigate(socket, to: to)}
+
+      {:ok, {:signup, _signup}} ->
+        # PubSub will notify Show, which updates the ReleaseSignupComponent
+        {:noreply, assign(socket, error: nil) |> update_time()}
+
       {:error, reason} ->
         {:noreply, assign(socket, error: reason) |> update_time()}
     end
@@ -290,19 +309,34 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
   defp purchasable(now, ticket_type) do
     cond do
-      !ticket_type.purchasable -> false
-      ticket_type.expire_time && DateTime.compare(now, ticket_type.expire_time) == :gt -> false
-      ticket_type.release_time && DateTime.compare(now, ticket_type.release_time) == :lt -> false
-      active_release?(ticket_type) -> false
-      true -> true
+      !ticket_type.purchasable ->
+        false
+
+      ticket_type.expire_time && DateTime.compare(now, ticket_type.expire_time) == :gt ->
+        false
+
+      ticket_type.release_time && DateTime.compare(now, ticket_type.release_time) == :lt ->
+        false
+
+      ticket_type.active_release && Releases.get_phase(ticket_type.active_release) == :scheduled ->
+        false
+
+      true ->
+        true
     end
   end
 
   defp compare_available(counts, ticket_type, event) do
     total = Enum.reduce(counts, 0, fn {_, count}, acc -> acc + count end)
 
+    max_order_size =
+      case ticket_type.active_release do
+        nil -> event.max_order_size
+        %Releases.Release{} = release -> min(release.max_tickets_per_order, event.max_order_size)
+      end
+
     cond do
-      total >= event.max_order_size ->
+      total >= max_order_size ->
         :gt
 
       counts[ticket_type.id] > ticket_type.available &&
@@ -322,14 +356,43 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
     Tickets.get_cached_available_ticket_types(event_id)
   end
 
-  defp active_release?(ticket_type) do
-    case ticket_type.release do
-      nil -> false
-      %Releases.Release{} = release -> Releases.is_active?(release)
-    end
-  end
+  defp active_release?(nil), do: false
+  defp active_release?(%Releases.Release{} = release), do: Releases.is_active?(release)
 
   defp update_time(socket) do
     assign(socket, now: DateTime.utc_now())
+  end
+
+  defp error_message(%Ecto.Changeset{errors: errors}),
+    do: TikiWeb.CoreComponents.translate_errors(errors)
+
+  defp error_message(reason) when is_binary(reason), do: reason
+
+  defp error_message(:mixed_request),
+    do: gettext("Cannot request ticket ticket types with different releases")
+
+  defp error_message(:unauthenticated),
+    do: gettext("You need to be signed in to sign up for this release")
+
+  defp error_message(:exceeds_ticket_limit),
+    do: gettext("You've requested too many of one ticket type")
+
+  defp error_message(:exceeds_order_limit),
+    do: gettext("You've requested too many tickets")
+
+  defp error_message(:not_open),
+    do: gettext("This release is no longer accepting sign ups")
+
+  defp request_text(counts, ticket_types) do
+    selected_active_release =
+      Enum.flat_map(ticket_types, fn {_date, tt} -> tt end)
+      |> Enum.filter(fn tt -> counts[tt.id] > 0 end)
+      |> Enum.any?(fn %{active_release: active_release} ->
+        active_release != nil && Tiki.Releases.is_active?(active_release)
+      end)
+
+    if selected_active_release,
+      do: gettext("Request tickets"),
+      else: gettext("Buy tickets")
   end
 end

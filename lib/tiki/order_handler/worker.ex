@@ -11,6 +11,7 @@ defmodule Tiki.OrderHandler.Worker do
   alias Tiki.Tickets
   alias Tiki.Orders
   alias Tiki.Events
+  alias Tiki.Releases
   alias Tiki.OrderHandler
 
   @timeout :timer.hours(1)
@@ -41,6 +42,16 @@ defmodule Tiki.OrderHandler.Worker do
   def invalidate_cache(event_id) do
     if started?(event_id) do
       GenServer.cast(via_tuple(event_id), :invalidate_cache)
+    end
+  end
+
+  def reserve_release_signups(event_id, winner_signup_ids) do
+    case ensure_started(event_id) do
+      {:ok, _pid} ->
+        GenServer.call(via_tuple(event_id), {:reserve_release_signups, winner_signup_ids})
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -108,6 +119,31 @@ defmodule Tiki.OrderHandler.Worker do
 
         order = order |> Map.put(:tickets, tickets) |> Map.put(:event, event)
         {:reply, {:ok, order, available}, state, @timeout}
+
+      {:error, reason} ->
+        {:reply, {:error, reason}, state, @timeout}
+    end
+  end
+
+  def handle_call(
+        {:reserve_release_signups, winner_signup_ids},
+        _from,
+        %{event_id: event_id} = state
+      ) do
+    result =
+      Repo.transact(fn ->
+        with {:ok, _} <- acquire_reservation_lock(event_id),
+             {:ok, signups} <- fetch_winner_signups(winner_signup_ids),
+             {:ok, orders} <- insert_orders_for_winners(event_id, signups),
+             available <- Tickets.get_available_ticket_types(event_id),
+             {:ok, _} <- validate_release_availability(signups, available) do
+          {:ok, {orders, available}}
+        end
+      end)
+
+    case result do
+      {:ok, {orders, available}} ->
+        {:reply, {:ok, orders, available}, state, @timeout}
 
       {:error, reason} ->
         {:reply, {:error, reason}, state, @timeout}
@@ -189,7 +225,7 @@ defmodule Tiki.OrderHandler.Worker do
       Repo.all(releases_query)
       |> Enum.filter(&Releases.is_active?/1)
       |> Enum.all?(fn release ->
-        Enum.any?(release.release_signups, &(&1.status == :accepted))
+        Enum.any?(release.signups, &(&1.status == :accepted))
       end)
 
     if all_valid do
@@ -223,9 +259,14 @@ defmodule Tiki.OrderHandler.Worker do
     {:ok, total}
   end
 
-  defp insert_order(event_id, total_price) do
+  defp insert_order(event_id, total_price, user_id \\ nil) do
     %Orders.Order{}
-    |> Orders.Order.changeset(%{event_id: event_id, status: :pending, price: total_price})
+    |> Orders.Order.changeset(%{
+      event_id: event_id,
+      status: :pending,
+      price: total_price,
+      user_id: user_id
+    })
     |> Repo.insert(returning: [:id])
   end
 
@@ -239,6 +280,64 @@ defmodule Tiki.OrderHandler.Worker do
 
     case Repo.insert_all(Orders.Ticket, ticket_rows, returning: true) do
       {_, tickets} -> {:ok, tickets}
+    end
+  end
+
+  defp fetch_winner_signups(signup_ids) do
+    signups =
+      Repo.all(
+        from s in Releases.Signup,
+          where: s.id in ^signup_ids,
+          preload: [items: :ticket_type]
+      )
+
+    {:ok, signups}
+  end
+
+  defp insert_orders_for_winners(event_id, signups) do
+    Enum.reduce_while(signups, {:ok, []}, fn signup, {:ok, acc} ->
+      total_price = Enum.sum(Enum.map(signup.items, &(&1.quantity * &1.ticket_type.price)))
+
+      with {:ok, order} <- insert_order(event_id, total_price, signup.user_id) do
+        ticket_rows =
+          Enum.flat_map(signup.items, fn item ->
+            for _ <- 1..item.quantity do
+              %{
+                ticket_type_id: item.ticket_type_id,
+                order_id: order.id,
+                price: item.ticket_type.price
+              }
+            end
+          end)
+
+        Repo.insert_all(Orders.Ticket, ticket_rows)
+
+        signup
+        |> Releases.Signup.changeset(%{order_id: order.id})
+        |> Repo.update!()
+
+        {:cont, {:ok, [order | acc]}}
+      else
+        error -> {:halt, error}
+      end
+    end)
+    |> case do
+      {:ok, orders} -> {:ok, Enum.reverse(orders)}
+      error -> error
+    end
+  end
+
+  defp validate_release_availability(signups, available) do
+    tt_ids =
+      Enum.flat_map(signups, fn s -> Enum.map(s.items, & &1.ticket_type_id) end)
+      |> Enum.uniq()
+
+    chosen = Enum.filter(available, &(&1.id in tt_ids))
+
+    if Enum.all?(chosen, &(&1.available >= 0)) do
+      {:ok, :ok}
+    else
+      {:error, "not enough tickets available for release draw"}
     end
   end
 

@@ -103,7 +103,11 @@ defmodule TikiWeb.Component.Input do
       <select
         id={@id}
         name={@name}
-        class="border-input bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        class={[
+          @errors == [] && "border-input",
+          "bg-background ring-offset-background mt-2 flex h-10 w-full rounded-md border py-2 pr-10 pl-3 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:border-input focus:ring-offset-background focus:ring-ring focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          @errors != [] && "border-destructive"
+        ]}
         multiple={@multiple}
         {@rest}
       >
@@ -129,7 +133,6 @@ defmodule TikiWeb.Component.Input do
         class={[
           @errors == [] && "border-input",
           "min-h-[10rem] bg-background ring-offset-background mt-2 flex w-full rounded-md border px-3 py-2 text-sm placeholder:text-muted-foreground focus:ring-ring focus:ring-offset-background focus:border-input focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          @errors == [] && "border-input",
           @errors != [] && "border-destructive"
         ]}
         {@rest}

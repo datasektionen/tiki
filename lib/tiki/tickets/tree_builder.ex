@@ -4,6 +4,29 @@ defmodule Tiki.Tickets.TreeBuilder do
   """
 
   @doc """
+  Constructs a digraph from the flat list of `%{batch: %TicketBatch{}, purchased: N}` rows
+  returned by `Tiki.Tickets.batch_purchases_query/1`. Connects root batches to a synthetic
+  fake-root vertex (id 0) so the whole forest becomes a single rooted tree.
+
+  Returns `{graph, fake_root_id}`. The caller is responsible for calling `:digraph.delete/1`
+  when done.
+  """
+  def build_graph(batch_rows) do
+    fake_root = %{batch: %Tiki.Tickets.TicketBatch{id: 0, name: "fake_root"}, purchased: 0}
+    graph = :digraph.new()
+
+    for %{batch: %{id: id}} = node <- [fake_root | batch_rows] do
+      :digraph.add_vertex(graph, id, node)
+    end
+
+    for %{batch: %{id: id, parent_batch_id: parent_id}} <- batch_rows do
+      :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
+    end
+
+    {graph, fake_root.batch.id}
+  end
+
+  @doc """
   Builds a tree of ticket batches from a :digraph recursively.
   Propagates the purchased count up the tree and mutates the graph.
 

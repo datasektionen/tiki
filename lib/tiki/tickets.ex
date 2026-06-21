@@ -12,6 +12,8 @@ defmodule Tiki.Tickets do
   alias Tiki.Workers.EventSchedulerWorker
   alias Tiki.Accounts.Scope
   alias Tiki.Events.Event
+  alias Tiki.Releases
+  alias Tiki.Orders
 
   alias Tiki.Policy
 
@@ -76,19 +78,46 @@ defmodule Tiki.Tickets do
   """
   def update_ticket_batch(%Scope{event: event}, %TicketBatch{} = ticket_batch, attrs)
       when event.id == ticket_batch.event_id do
-    case ticket_batch
-         |> TicketBatch.changeset(attrs)
-         |> Repo.update() do
-      {:ok, batch} ->
+    Repo.transact(fn ->
+      changeset = TicketBatch.changeset(ticket_batch, attrs)
+
+      with {:ok, batch} <- Repo.update(changeset),
+           {:ok, _} <- check_no_cycle(batch, changeset) do
         Tiki.Orders.broadcast(
           ticket_batch.event_id,
           {:tickets_updated, get_available_ticket_types(ticket_batch.event_id)}
         )
 
         {:ok, batch}
+      end
+    end)
+  end
 
-      {:error, changeset} ->
-        {:error, changeset}
+  defp check_no_cycle(%TicketBatch{parent_batch_id: nil}, _), do: {:ok, :ok}
+
+  defp check_no_cycle(%TicketBatch{id: batch_id, parent_batch_id: parent_batch_id}, changeset) do
+    base =
+      from tb in TicketBatch,
+        where: tb.id == ^parent_batch_id,
+        select: %{id: tb.id, parent_batch_id: tb.parent_batch_id}
+
+    recursive =
+      from tb in TicketBatch,
+        join: anc in "ancestors",
+        on: tb.id == anc.parent_batch_id,
+        select: %{id: tb.id, parent_batch_id: tb.parent_batch_id}
+
+    query =
+      from(anc in "ancestors", where: anc.id == ^batch_id, select: anc.id)
+      |> recursive_ctes(true)
+      |> with_cte("ancestors", as: ^union_all(base, ^recursive))
+
+    if Repo.exists?(query) do
+      {:error,
+       Ecto.Changeset.add_error(changeset, :parent_batch_id, "would create a cycle")
+       |> Map.put(:action, :update)}
+    else
+      {:ok, :ok}
     end
   end
 
@@ -321,43 +350,103 @@ defmodule Tiki.Tickets do
     Tiki.OrderHandler.Worker.get_ticket_types(event_id)
   end
 
-  @doc """
-  Puts the available, purchased and pending meta data for each ticket type on the ticket types.
+  def request_tickets(event_id, ticket_types, user_id \\ nil) do
+    with {:ok, scope} <- acquisition_scope(ticket_types) do
+      case scope do
+        nil -> wrap(:order, Orders.reserve_tickets(event_id, ticket_types, user_id))
+        release -> wrap(:signup, Releases.sign_up(release.id, ticket_types, user_id))
+      end
+    end
+  end
 
-  ## Examples
+  defp acquisition_scope(ticket_types) do
+    ids =
+      ticket_types
+      |> Enum.filter(fn {_id, qty} -> qty > 0 end)
+      |> Enum.map(&elem(&1, 0))
 
-      iex> put_available_ticket_meta([%{ticket_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...])
-      [
-        %TicketType{
-          available: 10,
-          purchased: 2,
-          pending: 1,
-          ...
-        },
-        ...
-      ]
-  """
-  def put_available_ticket_meta(ticket_types) do
+    tt_rows =
+      Repo.all(
+        from tt in TicketType,
+          where: tt.id in ^ids,
+          join: tb in assoc(tt, :ticket_batch),
+          select: {tt.id, tb.id, tb.event_id}
+      )
+
+    cond do
+      ids == [] ->
+        {:error, :empty_request}
+
+      length(tt_rows) != length(ids) ->
+        {:error, :unknown_ticket_type}
+
+      true ->
+        event_ids = tt_rows |> Enum.map(&elem(&1, 2)) |> Enum.uniq()
+
+        case event_ids do
+          [event_id] ->
+            batch_parents =
+              Repo.all(
+                from tb in TicketBatch,
+                  where: tb.event_id == ^event_id,
+                  select: {tb.id, tb.parent_batch_id}
+              )
+              |> Map.new()
+
+            releases_by_batch =
+              Repo.all(from r in Releases.Release, where: r.event_id == ^event_id)
+              |> Enum.filter(&Releases.is_active?/1)
+              |> Enum.group_by(& &1.ticket_batch_id)
+
+            active_releases =
+              tt_rows
+              |> Enum.map(fn {_tt_id, batch_id, _} ->
+                find_governing_release(batch_id, batch_parents, releases_by_batch)
+              end)
+              |> Enum.uniq()
+
+            case active_releases do
+              [scope] -> {:ok, scope}
+              _ -> {:error, :mixed_request}
+            end
+
+          _ ->
+            {:error, :mixed_request}
+        end
+    end
+  end
+
+  defp find_governing_release(batch_id, batch_parents, releases_by_batch) do
+    now = DateTime.utc_now()
+
+    batch_id
+    |> ancestry(batch_parents)
+    |> Enum.flat_map(&Map.get(releases_by_batch, &1, []))
+    |> Enum.filter(fn release ->
+      DateTime.compare(Releases.window_end(release), now) == :gt
+    end)
+    |> Enum.min_by(&Releases.window_end/1, DateTime, fn -> nil end)
+  end
+
+  defp ancestry(nil, _parents), do: []
+
+  defp ancestry(batch_id, parents),
+    do: [batch_id | ancestry(Map.get(parents, batch_id), parents)]
+
+  defp wrap(tag, {:ok, val}), do: {:ok, {tag, val}}
+  defp wrap(_tag, error), do: error
+
+  defp put_available_ticket_meta(ticket_types) do
     Enum.map(ticket_types, fn tt ->
       tt.ticket_type
       |> Map.put(:available, tt.available)
       |> Map.put(:purchased, tt.purchased)
       |> Map.put(:pending, tt.pending)
-      |> Map.put(:release, tt.release)
+      |> Map.put(:active_release, tt.active_release)
     end)
   end
 
-  @doc """
-  An Ecto Multi that returns the available ticket types for an event.
-  The final result can be found from the `ticket_types_available` key.
-  It will look like this:
-
-  ```
-  # :ticket_types_available
-  %{ticket_type: %TicketType{}, purchased: 2, pending: 1, available: 10}, ...]
-  """
-
-  def get_available_ticket_types_multi(multi, event_id) do
+  defp get_available_ticket_types_multi(multi, event_id) do
     # Subquery for counting tickets based on status
     sub =
       from tt in TicketType,
@@ -375,13 +464,14 @@ defmodule Tiki.Tickets do
     query =
       from tt in TicketType,
         join: tb in assoc(tt, :ticket_batch),
-        left_join: r in assoc(tb, :release),
         left_join: pt in subquery(sub_pending),
         on: tt.id == pt.ticket_type_id,
         left_join: pt2 in subquery(sub_purchased),
         on: tt.id == pt2.ticket_type_id,
         where: tb.event_id == ^event_id,
-        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count, release: r}
+        select: %{ticket_type: tt, purchased: pt2.count, pending: pt.count}
+
+    releases_query = from r in Releases.Release, where: r.event_id == ^event_id
 
     multi
     |> get_batch_tree_multi(event_id)
@@ -397,64 +487,74 @@ defmodule Tiki.Tickets do
 
       {:ok, available}
     end)
+    |> Multi.all(:releases, releases_query)
     |> Multi.all(:ticket_types, query)
     |> Multi.run(:ticket_types_available, fn _repo,
-                                             %{available: available, ticket_types: ticket_types} ->
+                                             %{
+                                               available: available,
+                                               ticket_types: ticket_types,
+                                               batches: batches,
+                                               releases: releases
+                                             } ->
+      batch_parents = Map.new(batches, fn %{batch: tb} -> {tb.id, tb.parent_batch_id} end)
+
+      releases_by_batch =
+        releases
+        |> Enum.filter(&Releases.is_active?/1)
+        |> Enum.group_by(& &1.ticket_batch_id)
+
       ticket_types =
         Enum.map(ticket_types, fn tt ->
+          release =
+            find_governing_release(
+              tt.ticket_type.ticket_batch_id,
+              batch_parents,
+              releases_by_batch
+            )
+
           Map.put(tt, :purchased, tt.purchased || 0)
           |> Map.put(:pending, tt.pending || 0)
           |> Map.put(:available, available[tt.ticket_type.ticket_batch_id])
-          |> Map.put(:release, tt.release || nil)
+          |> Map.put(:active_release, release)
         end)
 
       {:ok, ticket_types}
     end)
   end
 
-  defp get_batch_tree_multi(multi, event_id) do
-    # Get the root batches
-    root_batches_query =
+  @doc """
+  Returns an Ecto query that fetches every batch for `event_id` together with the
+  number of tickets that have been issued from ticket types directly in that batch
+  (not including sub-batches — `TreeBuilder.build/2` propagates counts upward).
+
+  Result rows are `%{batch: %TicketBatch{}, purchased: non_neg_integer}`.
+  """
+  def batch_purchases_query(event_id) do
+    root_batches =
       from tb in TicketBatch,
         where: tb.event_id == ^event_id,
         where: is_nil(tb.parent_batch_id)
 
-    # Get all batches recursively
-    batches_recursion_query =
+    recursive_batches =
       from tb in TicketBatch,
         where: tb.event_id == ^event_id,
         inner_join: ctb in "batch_tree",
         on: tb.parent_batch_id == ctb.id
 
-    batches_query = union_all(root_batches_query, ^batches_recursion_query)
+    TicketBatch
+    |> where([tb], tb.event_id == ^event_id)
+    |> recursive_ctes(true)
+    |> with_cte("batch_tree", as: ^union_all(root_batches, ^recursive_batches))
+    |> join(:left, [tb], tt in assoc(tb, :ticket_types))
+    |> join(:left, [tb, tt], t in assoc(tt, :tickets))
+    |> group_by([tb, _tt, _t], tb.id)
+    |> select([tb, _tt, t], %{batch: tb, purchased: count(t.id)})
+  end
 
-    query =
-      TicketBatch
-      |> where([tb], tb.event_id == ^event_id)
-      |> recursive_ctes(true)
-      |> with_cte("batch_tree", as: ^batches_query)
-      |> join(:left, [tb], tt in assoc(tb, :ticket_types))
-      |> join(:left, [tb, tt], t in assoc(tt, :tickets))
-      |> group_by([tb, tt, t], tb.id)
-      |> select([tb, tt, t], %{batch: tb, purchased: count(t.id)})
-
-    Multi.all(multi, :batches, query)
+  defp get_batch_tree_multi(multi, event_id) do
+    Multi.all(multi, :batches, batch_purchases_query(event_id))
     |> Multi.run(:graph, fn _repo, %{batches: batches} ->
-      # We now have an array of batches with the number of tickets purchased for
-      # each batch. We now need to build the tree.
-      fake_root = %{batch: %TicketBatch{id: 0, name: "fake_root"}, purchased: 0}
-
-      graph = :digraph.new()
-
-      for %{batch: %TicketBatch{id: id}} = node <- [fake_root | batches] do
-        :digraph.add_vertex(graph, id, node)
-      end
-
-      for %{batch: %TicketBatch{id: id, parent_batch_id: parent_id}} <- batches do
-        :digraph.add_edge(graph, id, parent_id || fake_root.batch.id)
-      end
-
-      {:ok, {graph, fake_root.batch.id}}
+      {:ok, TreeBuilder.build_graph(batches)}
     end)
   end
 

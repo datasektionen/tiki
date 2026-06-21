@@ -161,6 +161,16 @@ defmodule Tiki.Orders do
   end
 
   def reservation_timeout_minutes(), do: Tiki.Workers.OrderTimeoutWorker.timeout_minutes()
+
+  @doc """
+  Creates a held order for each winning signup and links it back to the signup
+  via `order_id`. Status updates (drawn/lost/seeded), `drawn_at`, and `seed` are
+  the caller's responsibility and must be committed separately.
+  """
+  def reserve_release_signups(event_id, winner_signup_ids) do
+    OrderHandler.Worker.reserve_release_signups(event_id, winner_signup_ids)
+  end
+
   @doc """
   Cancels a pending order if it exists. Does not modify paid or cancelled orders.
   Returns the order.

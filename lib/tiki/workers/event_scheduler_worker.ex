@@ -11,21 +11,22 @@ defmodule Tiki.Workers.EventSchedulerWorker do
   import Ecto.Query, warn: false
 
   alias Tiki.Releases
+  alias Tiki.Releases.DrawEngine
   alias Tiki.Tickets
   alias Tiki.Repo
 
   require Logger
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"release_id" => release_id}}) do
+  def perform(%Oban.Job{args: %{"release_id" => release_id, "action" => action}}) do
     case Repo.get(Releases.Release, release_id) do
       nil ->
         Logger.warning("Release not found: #{release_id}")
         :ok
 
       release ->
-        Logger.info("Broadcasting release status change: #{release_id}")
-        Releases.broadcast_release_change(release)
+        handle_transition(release, action)
+        Releases.handle_release_change(release)
     end
   end
 
@@ -54,23 +55,39 @@ defmodule Tiki.Workers.EventSchedulerWorker do
   Call this when a release is created or updated.
   """
   def schedule_release_jobs(%Releases.Release{} = release) do
-    now = DateTime.utc_now()
+    lottery_end = DateTime.add(release.opens_at, release.signup_window_minutes, :minute)
+    purchase_end = DateTime.add(lottery_end, release.purchase_window_minutes, :minute)
 
-    # Schedule open event
-    if DateTime.compare(release.starts_at, now) == :gt do
-      %{release_id: release.id}
-      |> new(scheduled_at: release.starts_at)
-      |> Oban.insert()
-    end
-
-    # Schedule close event
-    if DateTime.compare(release.ends_at, now) == :gt do
-      %{release_id: release.id}
-      |> new(scheduled_at: release.ends_at)
-      |> Oban.insert()
-    end
+    schedule_transition(release, "open", release.opens_at)
+    schedule_transition(release, "draw", lottery_end)
+    schedule_transition(release, "release", purchase_end)
 
     :ok
+  end
+
+  # A release moves through three scheduled transitions: it opens for signups, the draw
+  # runs at the end of the signup window, and unclaimed tickets fall back to FCFS at the
+  # end of the purchase window.
+  defp handle_transition(release, "open") do
+    Logger.info("Release opened: #{release.id}")
+  end
+
+  defp handle_transition(release, "draw") do
+    Logger.info("Running draw for release: #{release.id}")
+    DrawEngine.perform_draw(release.id)
+  end
+
+  defp handle_transition(release, "release") do
+    Logger.info("Releasing unclaimed tickets for release: #{release.id}")
+    Releases.release_unclaimed(release)
+  end
+
+  defp schedule_transition(release, action, at) do
+    if DateTime.compare(at, DateTime.utc_now()) == :gt do
+      %{release_id: release.id, action: action}
+      |> new(scheduled_at: at)
+      |> Oban.insert()
+    end
   end
 
   @doc """
