@@ -472,6 +472,12 @@ defmodule Tiki.ReleasesLifecycleTest do
 
       assert Map.get(statuses, :drawn, 0) == 1
       assert Map.get(statuses, :lost, 0) == 2
+
+      winner =
+        Repo.one(from s in Signup, where: s.release_id == ^release.id and s.status == :drawn)
+
+      logs = Tiki.Orders.get_order_logs(winner.order_id)
+      assert Enum.any?(logs, &(&1.event_type == "order.created"))
     end
 
     test "everyone wins when entries <= capacity (undersubscribed)" do

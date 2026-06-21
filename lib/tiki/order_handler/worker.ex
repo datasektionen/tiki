@@ -309,8 +309,18 @@ defmodule Tiki.OrderHandler.Worker do
             end
           end)
 
-        Repo.insert_all(Orders.Ticket, ticket_rows)
-        {:cont, {:ok, [order | acc]}}
+        {_, tickets} = Repo.insert_all(Orders.Ticket, ticket_rows, returning: true)
+        tt_map = Map.new(signup.items, &{&1.ticket_type_id, &1.ticket_type})
+
+        preloaded_tickets =
+          Enum.map(tickets, &Map.put(&1, :ticket_type, tt_map[&1.ticket_type_id]))
+
+        preloaded_order = Map.put(order, :tickets, preloaded_tickets)
+
+        case Orders.AuditLog.log(order.id, "order.created", preloaded_order) do
+          {:ok, _} -> {:cont, {:ok, [order | acc]}}
+          error -> {:halt, error}
+        end
       else
         error -> {:halt, error}
       end
