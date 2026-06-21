@@ -279,13 +279,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
 
     %{event: %{id: event_id}} = socket.assigns
 
-    user_id =
-      case socket.assigns[:current_user] do
-        nil -> nil
-        user -> user.id
-      end
-
-    case Tickets.request_tickets(event_id, to_purchase, user_id) do
+    case Tickets.request_tickets(socket.assigns.current_scope, event_id, to_purchase) do
       {:ok, {:order, order}} ->
         to =
           case socket.assigns[:embedded] do

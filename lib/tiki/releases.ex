@@ -137,7 +137,7 @@ defmodule Tiki.Releases do
   @doc """
   Returns user sign ups for the given event with the given user scope.
   """
-  def get_user_sign_ups(%Accounts.Scope{user: user}, event_id) do
+  def get_user_sign_ups(%Accounts.Scope{user: user}, event_id) when not is_nil(user) do
     signup_query()
     |> where([s, r], s.user_id == ^user.id and r.event_id == ^event_id)
     |> Repo.all()
@@ -160,23 +160,21 @@ defmodule Tiki.Releases do
   Validates auth, release phase, per-ticket purchase limits, and the effective order size
   limit (release override if set, else event default) — all inside a single transaction.
   """
-  def sign_up(release_id, items, user_id) do
-    if is_nil(user_id) do
-      {:error, :unauthenticated}
-    else
-      Repo.transact(fn ->
-        with {:ok, release} <- fetch_open_release(release_id),
-             {:ok, ticket_types} <- fetch_ticket_types_for_signup(Map.keys(items)),
-             {:ok, event} <- fetch_event_for_signup(release.event_id),
-             :ok <- validate_signup_limits(items, ticket_types, release, event),
-             {:ok, signup} <- create_signup(release_id, user_id),
-             {:ok, _} <- create_signup_items(signup.id, items) do
-          signup = Repo.preload(signup, [:user, :release, items: [:ticket_type]])
-          broadcast_signup_updated(signup, event.id)
-          {:ok, signup}
-        end
-      end)
-    end
+  def sign_up(%Accounts.Scope{user: nil}, _release_id, _items), do: {:error, :unauthenticated}
+
+  def sign_up(%Accounts.Scope{user: user}, release_id, items) do
+    Repo.transact(fn ->
+      with {:ok, release} <- fetch_open_release(release_id),
+           {:ok, ticket_types} <- fetch_ticket_types_for_signup(Map.keys(items)),
+           {:ok, event} <- fetch_event_for_signup(release.event_id),
+           :ok <- validate_signup_limits(items, ticket_types, release, event),
+           {:ok, signup} <- create_signup(release_id, user.id),
+           {:ok, _} <- create_signup_items(signup.id, items) do
+        signup = Repo.preload(signup, [:user, :release, items: [:ticket_type]])
+        broadcast_signup_updated(signup, event.id)
+        {:ok, signup}
+      end
+    end)
   end
 
   @doc """

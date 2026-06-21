@@ -133,7 +133,8 @@ defmodule Tiki.ReleasesFixtures do
   `items` is a map of %{ticket_type_id => quantity}.
   """
   def signup_fixture(release, user, items \\ %{}) do
-    {:ok, signup} = Tiki.Releases.sign_up(release.id, items, user.id)
+    scope = Tiki.Accounts.Scope.for_user(user)
+    {:ok, signup} = Tiki.Releases.sign_up(scope, release.id, items)
     signup
   end
 end

@@ -76,6 +76,7 @@ defmodule TikiWeb.EventLive.Show do
             event={@event}
             order={@order}
             promo_codes={@promo_codes}
+            current_scope={@current_scope}
           />
         </div>
       </div>

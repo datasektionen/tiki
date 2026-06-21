@@ -350,11 +350,17 @@ defmodule Tiki.Tickets do
     Tiki.OrderHandler.Worker.get_ticket_types(event_id)
   end
 
-  def request_tickets(event_id, ticket_types, user_id \\ nil) do
-    with {:ok, scope} <- acquisition_scope(ticket_types) do
-      case scope do
-        nil -> wrap(:order, Orders.reserve_tickets(event_id, ticket_types, user_id))
-        release -> wrap(:signup, Releases.sign_up(release.id, ticket_types, user_id))
+  def request_tickets(%Scope{} = scope, event_id, ticket_types) do
+    with {:ok, tickets_scope} <- acquisition_scope(ticket_types) do
+      case tickets_scope do
+        nil ->
+          wrap(
+            :order,
+            Orders.reserve_tickets(event_id, ticket_types, scope.user && scope.user.id)
+          )
+
+        release ->
+          wrap(:signup, Releases.sign_up(scope, release.id, ticket_types))
       end
     end
   end

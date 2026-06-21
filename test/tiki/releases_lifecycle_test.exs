@@ -11,6 +11,8 @@ defmodule Tiki.ReleasesLifecycleTest do
   import Tiki.AccountsFixtures
   import Tiki.OrdersFixtures
 
+  alias Tiki.Accounts.Scope
+
   # ---------------------------------------------------------------------------
   # Helpers
   # ---------------------------------------------------------------------------
@@ -64,8 +66,8 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "returns the signup with preloads when it exists" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
-
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       result = Releases.get_user_sign_up(user.id, release.id)
       assert result.id == signup.id
@@ -84,8 +86,9 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "creates a signup for an open release" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
+      scope = Scope.for_user(user)
 
-      assert {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 2}, user.id)
+      assert {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 2})
       assert signup.release_id == release.id
       assert signup.user_id == user.id
       assert signup.status == :queued
@@ -95,7 +98,9 @@ defmodule Tiki.ReleasesLifecycleTest do
 
     test "returns :unauthenticated when user_id is nil" do
       {release, tt} = open_release_with_ticket_type()
-      assert {:error, :unauthenticated} = Releases.sign_up(release.id, %{tt.id => 1}, nil)
+      scope = %Scope{}
+
+      assert {:error, :unauthenticated} = Releases.sign_up(scope, release.id, %{tt.id => 1})
     end
 
     test "returns :not_open when release is not in the open phase" do
@@ -103,8 +108,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       tt = ticket_type_fixture(%{ticket_batch_id: batch.id})
       release = persisted_release_in_phase(:scheduled, %{ticket_batch: batch})
       user = user_fixture()
+      scope = Scope.for_user(user)
 
-      assert {:error, :not_open} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      assert {:error, :not_open} = Releases.sign_up(scope, release.id, %{tt.id => 1})
     end
 
     test "returns :not_open when release is already released" do
@@ -112,8 +118,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       tt = ticket_type_fixture(%{ticket_batch_id: batch.id})
       release = persisted_release_in_phase(:released, %{ticket_batch: batch})
       user = user_fixture()
+      scope = Scope.for_user(user)
 
-      assert {:error, :not_open} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      assert {:error, :not_open} = Releases.sign_up(scope, release.id, %{tt.id => 1})
     end
 
     test "returns :exceeds_ticket_limit when quantity exceeds purchase_limit" do
@@ -124,9 +131,10 @@ defmodule Tiki.ReleasesLifecycleTest do
         persisted_release_in_phase(:open, %{ticket_batch: batch, max_tickets_per_order: 5})
 
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       assert {:error, :exceeds_ticket_limit} =
-               Releases.sign_up(release.id, %{tt.id => 2}, user.id)
+               Releases.sign_up(scope, release.id, %{tt.id => 2})
     end
 
     test "returns :exceeds_order_limit when total exceeds max_tickets_per_order" do
@@ -137,24 +145,27 @@ defmodule Tiki.ReleasesLifecycleTest do
         persisted_release_in_phase(:open, %{ticket_batch: batch, max_tickets_per_order: 1})
 
       user = user_fixture()
+      scope = Scope.for_user(user)
 
-      assert {:error, :exceeds_order_limit} = Releases.sign_up(release.id, %{tt.id => 2}, user.id)
+      assert {:error, :exceeds_order_limit} = Releases.sign_up(scope, release.id, %{tt.id => 2})
     end
 
     test "prevents duplicate signups from the same user" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
+      scope = Scope.for_user(user)
 
-      assert {:ok, _} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
-      assert {:error, _} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      assert {:ok, _} = Releases.sign_up(scope, release.id, %{tt.id => 1})
+      assert {:error, _} = Releases.sign_up(scope, release.id, %{tt.id => 1})
     end
 
     test "broadcasts :signup_updated on success" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
+      scope = Scope.for_user(user)
       Releases.subscribe_event(release.event_id, user.id)
 
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       assert_received {:signup_updated, ^signup}
     end
@@ -168,9 +179,9 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "cancels a queued signup during the open phase" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
-      scope = Tiki.Accounts.Scope.for(user: user.id)
+      scope = Scope.for_user(user)
 
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       assert {:ok, _} = Releases.cancel_signup(scope, signup.id)
       assert Releases.get_user_sign_up(user.id, release.id) == nil
@@ -178,7 +189,7 @@ defmodule Tiki.ReleasesLifecycleTest do
 
     test "returns :not_found for a non-existent signup" do
       user = user_fixture()
-      scope = Tiki.Accounts.Scope.for(user: user.id)
+      scope = Scope.for(user: user.id)
       assert {:error, :not_found} = Releases.cancel_signup(scope, Ecto.UUID.generate())
     end
 
@@ -186,22 +197,21 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       owner = user_fixture()
       other = user_fixture()
-      scope = Tiki.Accounts.Scope.for(user: other.id)
 
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, owner.id)
+      {:ok, signup} = Scope.for_user(owner) |> Releases.sign_up(release.id, %{tt.id => 1})
 
-      assert {:error, :not_found} = Releases.cancel_signup(scope, signup.id)
+      assert {:error, :not_found} = Scope.for_user(other) |> Releases.cancel_signup(signup.id)
     end
 
     test "returns :not_open when the release is no longer in the open phase" do
       batch = ticket_batch_fixture(%{max_size: 10})
       tt = ticket_type_fixture(%{ticket_batch_id: batch.id})
       user = user_fixture()
-      scope = Tiki.Accounts.Scope.for(user: user.id)
+      scope = Scope.for(user: user.id)
 
       # Sign up while open
       open_release = persisted_release_in_phase(:open, %{ticket_batch: batch})
-      {:ok, signup} = Releases.sign_up(open_release.id, %{tt.id => 1}, user.id)
+      {:ok, signup} = Releases.sign_up(scope, open_release.id, %{tt.id => 1})
 
       # Force the release to look released by moving timestamps into the past
       past = DateTime.add(DateTime.utc_now(), -200, :minute)
@@ -216,9 +226,9 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "broadcasts :signup_deleted on success" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
-      scope = Tiki.Accounts.Scope.for(user: user.id)
+      scope = Scope.for(user: user.id)
 
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       Releases.subscribe(release.id, sign_ups: true)
       {:ok, _} = Releases.cancel_signup(scope, signup.id)
@@ -237,7 +247,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       assert {:ok, updated} = Releases.seed_signup(signup.id, admin.id)
       assert updated.status == :seeded
@@ -249,7 +261,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
       {:ok, seeded} = Releases.seed_signup(signup.id, admin.id)
       assert seeded.status == :seeded
 
@@ -261,7 +275,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
       {:ok, _} = Releases.reject_signup(signup.id, admin.id)
 
       assert {:ok, updated} = Releases.seed_signup(signup.id, admin.id)
@@ -272,7 +287,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       # Force status to :drawn directly
       Repo.update_all(
@@ -287,7 +303,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       Releases.subscribe(release.id, sign_ups: true)
       {:ok, _} = Releases.seed_signup(signup.id, admin.id)
@@ -305,7 +322,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       assert {:ok, updated} = Releases.reject_signup(signup.id, admin.id)
       assert updated.status == :rejected
@@ -316,7 +334,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
       {:ok, _} = Releases.reject_signup(signup.id, admin.id)
 
       assert {:ok, toggled} = Releases.reject_signup(signup.id, admin.id)
@@ -327,7 +346,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
       {:ok, _} = Releases.seed_signup(signup.id, admin.id)
 
       assert {:ok, updated} = Releases.reject_signup(signup.id, admin.id)
@@ -338,7 +358,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
       admin = admin_user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       Repo.update_all(
         from(s in Signup, where: s.id == ^signup.id),
@@ -357,7 +378,8 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "cancels pending orders belonging to winners of the release" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       # Attach a pending order directly (simulating a draw result)
       {:ok, order} = create_order(%{user_id: user.id, event_id: release.event_id, price: 0})
@@ -379,7 +401,8 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "leaves paid orders untouched" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
-      {:ok, signup} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+      {:ok, signup} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       {:ok, order} = create_order(%{user_id: user.id, event_id: release.event_id, price: 0})
 
@@ -428,7 +451,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       users = Enum.map(1..3, fn _ -> user_fixture() end)
 
       Enum.each(users, fn u ->
-        {:ok, _} = Releases.sign_up(release.id, %{tt.id => 1}, u.id)
+        scope = Scope.for_user(u)
+        {:ok, _} = Releases.sign_up(scope, release.id, %{tt.id => 1})
       end)
 
       # Force to drawing phase
@@ -460,7 +484,8 @@ defmodule Tiki.ReleasesLifecycleTest do
       users = Enum.map(1..3, fn _ -> user_fixture() end)
 
       Enum.each(users, fn u ->
-        {:ok, _} = Releases.sign_up(release.id, %{tt.id => 1}, u.id)
+        scope = Scope.for_user(u)
+        {:ok, _} = Releases.sign_up(scope, release.id, %{tt.id => 1})
       end)
 
       Repo.update_all(
@@ -491,8 +516,12 @@ defmodule Tiki.ReleasesLifecycleTest do
       favored = user_fixture()
       others = Enum.map(1..4, fn _ -> user_fixture() end)
 
-      {:ok, favored_signup} = Releases.sign_up(release.id, %{tt.id => 1}, favored.id)
-      Enum.each(others, fn u -> Releases.sign_up(release.id, %{tt.id => 1}, u.id) end)
+      {:ok, favored_signup} =
+        Scope.for_user(favored) |> Releases.sign_up(release.id, %{tt.id => 1})
+
+      Enum.each(others, fn u ->
+        Scope.for_user(u) |> Releases.sign_up(release.id, %{tt.id => 1})
+      end)
 
       {:ok, _} = Releases.seed_signup(favored_signup.id, admin.id)
 
@@ -520,8 +549,12 @@ defmodule Tiki.ReleasesLifecycleTest do
       outcast = user_fixture()
       others = Enum.map(1..2, fn _ -> user_fixture() end)
 
-      {:ok, outcast_signup} = Releases.sign_up(release.id, %{tt.id => 1}, outcast.id)
-      Enum.each(others, fn u -> Releases.sign_up(release.id, %{tt.id => 1}, u.id) end)
+      {:ok, outcast_signup} =
+        Scope.for_user(outcast) |> Releases.sign_up(release.id, %{tt.id => 1})
+
+      Enum.each(others, fn u ->
+        Scope.for_user(u) |> Releases.sign_up(release.id, %{tt.id => 1})
+      end)
 
       {:ok, _} = Releases.reject_signup(outcast_signup.id, admin.id)
 
@@ -546,7 +579,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         persisted_release_in_phase(:open, %{ticket_batch: batch, max_tickets_per_order: 5})
 
       user = user_fixture()
-      {:ok, _} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+
+      {:ok, _} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       Repo.update_all(
         from(r in Tiki.Releases.Release, where: r.id == ^release.id),
@@ -567,7 +602,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         persisted_release_in_phase(:open, %{ticket_batch: batch, max_tickets_per_order: 5})
 
       user = user_fixture()
-      {:ok, _} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+
+      {:ok, _} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       Repo.update_all(
         from(r in Tiki.Releases.Release, where: r.id == ^release.id),
@@ -610,7 +647,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         persisted_release_in_phase(:open, %{ticket_batch: batch, max_tickets_per_order: 5})
 
       user = user_fixture()
-      {:ok, _} = Releases.sign_up(release.id, %{tt.id => 1}, user.id)
+      scope = Scope.for_user(user)
+
+      {:ok, _} = Releases.sign_up(scope, release.id, %{tt.id => 1})
 
       Repo.update_all(
         from(r in Tiki.Releases.Release, where: r.id == ^release.id),
@@ -670,7 +709,7 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "schedules three jobs when a release is created" do
       ticket_batch = ticket_batch_fixture()
       user = admin_user_fixture()
-      scope = Tiki.Accounts.Scope.for(event: ticket_batch.event_id, user: user.id)
+      scope = Scope.for(event: ticket_batch.event_id, user: user.id)
 
       {:ok, release} =
         Tiki.Releases.create_release(scope, %{
@@ -704,9 +743,10 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "routes to sign_up when ticket types belong to an active release" do
       {release, tt} = open_release_with_ticket_type()
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       assert {:ok, {:signup, signup}} =
-               Tickets.request_tickets(release.event_id, %{tt.id => 1}, user.id)
+               Tickets.request_tickets(scope, release.event_id, %{tt.id => 1})
 
       assert signup.release_id == release.id
     end
@@ -715,9 +755,10 @@ defmodule Tiki.ReleasesLifecycleTest do
       batch = ticket_batch_fixture(%{max_size: 10})
       tt = ticket_type_fixture(%{ticket_batch_id: batch.id})
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       assert {:ok, {:order, order}} =
-               Tickets.request_tickets(batch.event_id, %{tt.id => 1}, user.id)
+               Tickets.request_tickets(scope, batch.event_id, %{tt.id => 1})
 
       assert order.event_id == batch.event_id
     end
@@ -731,9 +772,10 @@ defmodule Tiki.ReleasesLifecycleTest do
       _release = persisted_release_in_phase(:open, %{ticket_batch: batch1})
 
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       assert {:error, :mixed_request} =
-               Tickets.request_tickets(batch1.event_id, %{tt1.id => 1, tt2.id => 1}, user.id)
+               Tickets.request_tickets(scope, batch1.event_id, %{tt1.id => 1, tt2.id => 1})
     end
 
     test "returns error when release is not in open phase (FCFS locked out)" do
@@ -741,11 +783,11 @@ defmodule Tiki.ReleasesLifecycleTest do
       tt = ticket_type_fixture(%{ticket_batch_id: batch.id})
       _release = persisted_release_in_phase(:scheduled, %{ticket_batch: batch})
       user = user_fixture()
-
+      scope = Scope.for_user(user)
       # The release is active (scheduled) so request_tickets routes to sign_up,
       # which rejects because phase != :open
       assert {:error, :not_open} =
-               Tickets.request_tickets(batch.event_id, %{tt.id => 1}, user.id)
+               Tickets.request_tickets(scope, batch.event_id, %{tt.id => 1})
     end
 
     test "multiple types from the same release route to a single sign_up" do
@@ -757,9 +799,10 @@ defmodule Tiki.ReleasesLifecycleTest do
         persisted_release_in_phase(:open, %{ticket_batch: batch, max_tickets_per_order: 5})
 
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       assert {:ok, {:signup, signup}} =
-               Tickets.request_tickets(release.event_id, %{tt1.id => 1, tt2.id => 1}, user.id)
+               Tickets.request_tickets(scope, release.event_id, %{tt1.id => 1, tt2.id => 1})
 
       assert signup.release_id == release.id
       assert length(signup.items) == 2
@@ -768,9 +811,10 @@ defmodule Tiki.ReleasesLifecycleTest do
     test "returns :unknown_ticket_type for a non-existent ticket type id" do
       batch = ticket_batch_fixture(%{max_size: 10})
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       assert {:error, :unknown_ticket_type} =
-               Tickets.request_tickets(batch.event_id, %{Ecto.UUID.generate() => 1}, user.id)
+               Tickets.request_tickets(scope, batch.event_id, %{Ecto.UUID.generate() => 1})
     end
 
     test "types from an expired release are treated as plain FCFS" do
@@ -778,10 +822,11 @@ defmodule Tiki.ReleasesLifecycleTest do
       tt = ticket_type_fixture(%{ticket_batch_id: batch.id})
       _release = persisted_release_in_phase(:released, %{ticket_batch: batch})
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       # Once a release ends, its ticket types fall back to the FCFS ground state
       assert {:ok, {:order, order}} =
-               Tickets.request_tickets(batch.event_id, %{tt.id => 1}, user.id)
+               Tickets.request_tickets(scope, batch.event_id, %{tt.id => 1})
 
       assert order.event_id == batch.event_id
     end
@@ -797,20 +842,22 @@ defmodule Tiki.ReleasesLifecycleTest do
       _expired = persisted_release_in_phase(:released, %{ticket_batch: batch2})
 
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       assert {:error, :mixed_request} =
-               Tickets.request_tickets(event.id, %{tt1.id => 1, tt2.id => 1}, user.id)
+               Tickets.request_tickets(scope, event.id, %{tt1.id => 1, tt2.id => 1})
     end
 
     test "requesting only zero-quantity items returns an error" do
       batch = ticket_batch_fixture(%{max_size: 10})
       tt = ticket_type_fixture(%{ticket_batch_id: batch.id})
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       # Zero-quantity items are filtered before the DB lookup, so the resolved
       # scope is empty — expect :empty_request (or the current behaviour if buggy)
       assert {:error, _} =
-               Tickets.request_tickets(batch.event_id, %{tt.id => 0}, user.id)
+               Tickets.request_tickets(scope, batch.event_id, %{tt.id => 0})
     end
   end
 
@@ -863,9 +910,12 @@ defmodule Tiki.ReleasesLifecycleTest do
       seed2 = user_fixture()
       others = Enum.map(1..3, fn _ -> user_fixture() end)
 
-      {:ok, s1} = Releases.sign_up(release.id, %{tt.id => 1}, seed1.id)
-      {:ok, s2} = Releases.sign_up(release.id, %{tt.id => 1}, seed2.id)
-      Enum.each(others, fn u -> Releases.sign_up(release.id, %{tt.id => 1}, u.id) end)
+      {:ok, s1} = Scope.for_user(seed1) |> Releases.sign_up(release.id, %{tt.id => 1})
+      {:ok, s2} = Scope.for_user(seed2) |> Releases.sign_up(release.id, %{tt.id => 1})
+
+      Enum.each(others, fn u ->
+        Scope.for_user(u) |> Releases.sign_up(release.id, %{tt.id => 1})
+      end)
 
       {:ok, _} = Releases.seed_signup(s1.id, admin.id)
       {:ok, _} = Releases.seed_signup(s2.id, admin.id)
@@ -915,7 +965,7 @@ defmodule Tiki.ReleasesLifecycleTest do
 
       signups =
         Enum.map(users, fn u ->
-          {:ok, s} = Releases.sign_up(release.id, %{tt.id => 1}, u.id)
+          {:ok, s} = Scope.for_user(u) |> Releases.sign_up(release.id, %{tt.id => 1})
           s
         end)
 
@@ -958,9 +1008,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       user2 = user_fixture()
       user3 = user_fixture()
 
-      {:ok, _} = Releases.sign_up(release.id, %{tt_a.id => 1}, user1.id)
-      {:ok, _} = Releases.sign_up(release.id, %{tt_b.id => 1}, user2.id)
-      {:ok, _} = Releases.sign_up(release.id, %{tt_a.id => 1}, user3.id)
+      {:ok, _} = Scope.for_user(user1) |> Releases.sign_up(release.id, %{tt_a.id => 1})
+      {:ok, _} = Scope.for_user(user2) |> Releases.sign_up(release.id, %{tt_b.id => 1})
+      {:ok, _} = Scope.for_user(user3) |> Releases.sign_up(release.id, %{tt_a.id => 1})
 
       Repo.update_all(
         from(r in Tiki.Releases.Release, where: r.id == ^release.id),
@@ -990,7 +1040,7 @@ defmodule Tiki.ReleasesLifecycleTest do
       parent = ticket_batch_fixture(%{event: event, max_size: 2})
 
       user_admin = admin_user_fixture()
-      child_scope = Tiki.Accounts.Scope.for(event: event.id, user: user_admin.id)
+      child_scope = Scope.for(event: event.id, user: user_admin.id)
 
       {:ok, child} =
         Tiki.Tickets.create_ticket_batch(child_scope, %{
@@ -1009,9 +1059,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       user2 = user_fixture()
       user3 = user_fixture()
 
-      {:ok, _} = Releases.sign_up(release.id, %{tt_a.id => 1}, user1.id)
-      {:ok, _} = Releases.sign_up(release.id, %{tt_b.id => 1}, user2.id)
-      {:ok, _} = Releases.sign_up(release.id, %{tt_a.id => 1}, user3.id)
+      {:ok, _} = Scope.for_user(user1) |> Releases.sign_up(release.id, %{tt_a.id => 1})
+      {:ok, _} = Scope.for_user(user2) |> Releases.sign_up(release.id, %{tt_b.id => 1})
+      {:ok, _} = Scope.for_user(user3) |> Releases.sign_up(release.id, %{tt_a.id => 1})
 
       Repo.update_all(
         from(r in Tiki.Releases.Release, where: r.id == ^release.id),
@@ -1042,7 +1092,7 @@ defmodule Tiki.ReleasesLifecycleTest do
       parent = ticket_batch_fixture(%{event: event, max_size: 10})
 
       user_admin = admin_user_fixture()
-      child_scope = Tiki.Accounts.Scope.for(event: event.id, user: user_admin.id)
+      child_scope = Scope.for(event: event.id, user: user_admin.id)
 
       {:ok, child} =
         Tiki.Tickets.create_ticket_batch(child_scope, %{
@@ -1058,9 +1108,10 @@ defmodule Tiki.ReleasesLifecycleTest do
         persisted_release_in_phase(:open, %{ticket_batch: parent, max_tickets_per_order: 5})
 
       user = user_fixture()
+      scope = Scope.for_user(user)
 
       # Should route to the release (signup), not FCFS (order)
-      assert {:ok, {:signup, _signup}} = Tickets.request_tickets(event.id, %{tt.id => 1}, user.id)
+      assert {:ok, {:signup, _signup}} = Tickets.request_tickets(scope, event.id, %{tt.id => 1})
     end
 
     test "create_release rejects overlapping release for a batch in the same subtree" do
@@ -1068,7 +1119,7 @@ defmodule Tiki.ReleasesLifecycleTest do
       parent = ticket_batch_fixture(%{event: event, max_size: 10})
 
       user_admin = admin_user_fixture()
-      child_scope = Tiki.Accounts.Scope.for(event: event.id, user: user_admin.id)
+      child_scope = Scope.for(event: event.id, user: user_admin.id)
 
       {:ok, child} =
         Tiki.Tickets.create_ticket_batch(child_scope, %{
@@ -1077,7 +1128,7 @@ defmodule Tiki.ReleasesLifecycleTest do
           parent_batch_id: parent.id
         })
 
-      scope = Tiki.Accounts.Scope.for(event: event.id, user: user_admin.id)
+      scope = Scope.for(event: event.id, user: user_admin.id)
 
       opens_at = DateTime.add(DateTime.utc_now(), 60, :minute)
 
