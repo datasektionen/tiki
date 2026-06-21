@@ -148,9 +148,10 @@ defmodule TikiWeb.UserAuth do
 
   defp locale_from_header(conn) do
     parse_locale = fn entry ->
-      case String.split(entry, ";q=") do
-        [lang, q] -> {lang, String.to_float(q)}
+      case String.split(entry, ";q=", trim: true) do
+        [lang, q | _] -> {lang, parse_q(q)}
         [lang] -> {lang, 1.0}
+        _ -> {"en", 1.0}
       end
     end
 
@@ -162,6 +163,13 @@ defmodule TikiWeb.UserAuth do
       |> Enum.find("en", fn lang -> lang in @supported_langs end)
     else
       _ -> "en"
+    end
+  end
+
+  defp parse_q(q) do
+    case Float.parse(q) do
+      {float, _} -> float
+      :error -> 1.0
     end
   end
 
