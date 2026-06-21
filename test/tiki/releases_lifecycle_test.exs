@@ -437,8 +437,10 @@ defmodule Tiki.ReleasesLifecycleTest do
         set: [opens_at: DateTime.add(DateTime.utc_now(), -30, :minute), signup_window_minutes: 10]
       )
 
-      assert {:ok, winner_count} = DrawEngine.perform_draw(release.id)
-      assert winner_count == 1
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        assert {:ok, winner_count} = DrawEngine.perform_draw(release.id)
+        assert winner_count == 1
+      end)
 
       statuses =
         Repo.all(from s in Signup, where: s.release_id == ^release.id)
@@ -466,7 +468,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         set: [opens_at: DateTime.add(DateTime.utc_now(), -30, :minute), signup_window_minutes: 10]
       )
 
-      assert {:ok, 3} = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        assert {:ok, 3} = DrawEngine.perform_draw(release.id)
+      end)
 
       statuses =
         Repo.all(from s in Signup, where: s.release_id == ^release.id)
@@ -497,7 +501,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         set: [opens_at: DateTime.add(DateTime.utc_now(), -30, :minute), signup_window_minutes: 10]
       )
 
-      {:ok, _} = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        {:ok, _} = DrawEngine.perform_draw(release.id)
+      end)
 
       winner = Repo.get!(Signup, favored_signup.id)
       assert winner.status == :seeded
@@ -524,7 +530,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         set: [opens_at: DateTime.add(DateTime.utc_now(), -30, :minute), signup_window_minutes: 10]
       )
 
-      {:ok, _} = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        {:ok, _} = DrawEngine.perform_draw(release.id)
+      end)
 
       outcast_after = Repo.get!(Signup, outcast_signup.id)
       assert outcast_after.status == :rejected
@@ -545,8 +553,10 @@ defmodule Tiki.ReleasesLifecycleTest do
         set: [opens_at: DateTime.add(DateTime.utc_now(), -30, :minute), signup_window_minutes: 10]
       )
 
-      assert {:ok, 1} = DrawEngine.perform_draw(release.id)
-      assert :ok = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        assert {:ok, 1} = DrawEngine.perform_draw(release.id)
+        assert :ok = DrawEngine.perform_draw(release.id)
+      end)
     end
 
     test "sets drawn_at on the release after the draw" do
@@ -564,7 +574,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         set: [opens_at: DateTime.add(DateTime.utc_now(), -30, :minute), signup_window_minutes: 10]
       )
 
-      {:ok, _} = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        {:ok, _} = DrawEngine.perform_draw(release.id)
+      end)
 
       updated_release = Repo.get!(Tiki.Releases.Release, release.id)
       assert updated_release.drawn_at != nil
@@ -863,7 +875,9 @@ defmodule Tiki.ReleasesLifecycleTest do
         set: [opens_at: DateTime.add(DateTime.utc_now(), -30, :minute), signup_window_minutes: 10]
       )
 
-      assert {:ok, 2} = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        assert {:ok, 2} = DrawEngine.perform_draw(release.id)
+      end)
 
       statuses =
         Repo.all(from s in Signup, where: s.release_id == ^release.id)
@@ -954,7 +968,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       )
 
       # Batch holds 2; 3 entered — exactly 2 should win, 1 should lose
-      assert {:ok, 2} = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        assert {:ok, 2} = DrawEngine.perform_draw(release.id)
+      end)
 
       statuses =
         Repo.all(from s in Signup, where: s.release_id == ^release.id)
@@ -1003,7 +1019,9 @@ defmodule Tiki.ReleasesLifecycleTest do
       )
 
       # Parent holds 2 total; 3 entered — exactly 2 should win, 1 should lose
-      assert {:ok, 2} = DrawEngine.perform_draw(release.id)
+      Oban.Testing.with_testing_mode(:inline, fn ->
+        assert {:ok, 2} = DrawEngine.perform_draw(release.id)
+      end)
 
       statuses =
         Repo.all(from s in Signup, where: s.release_id == ^release.id)

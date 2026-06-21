@@ -119,7 +119,9 @@ defmodule TikiWeb.EventLive.Show do
 
     signups =
       Releases.get_user_sign_ups(socket.assigns.current_scope, event_id)
-      |> Enum.filter(&(Releases.get_phase(&1.release) in [:scheduled, :drawing, :purchase]))
+      |> Enum.filter(
+        &(Releases.get_phase(&1.release) in [:scheduled, :open, :drawing, :purchase])
+      )
 
     initial_count = Presence.list("presence:event:#{event_id}") |> map_size
 

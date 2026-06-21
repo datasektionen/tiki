@@ -75,8 +75,8 @@ defmodule TikiWeb.AdminLive.Releases.Show do
   defp stat_card(assigns) do
     ~H"""
     <.card>
-      <.card_header class="flex flex-row items-center justify-between space-y-0 pb-2 pt-4">
-        <.card_title class="text-xs font-normal text-muted-foreground">
+      <.card_header class="flex flex-row items-center justify-between space-y-0 pt-4 pb-2">
+        <.card_title class="text-muted-foreground text-xs font-normal">
           {@label}
         </.card_title>
         <.icon :if={@icon} name={@icon} class="text-muted-foreground h-4 w-4" />
@@ -136,7 +136,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
         <.signup_status_badge status={@sign_up.status} order={@sign_up.order} />
       </div>
 
-      <div class="ml-4 shrink-0 text-xs text-right text-muted-foreground">
+      <div class="text-muted-foreground ml-4 shrink-0 text-right text-xs">
         {signup_items_summary(@sign_up.items)}
       </div>
 

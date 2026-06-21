@@ -5,8 +5,6 @@ defmodule Tiki.OrderHandler.Worker do
   require Logger
 
   import Ecto.Query, warn: false
-  alias Tiki.Releases
-
   alias Tiki.Repo
   alias Tiki.Tickets
   alias Tiki.Orders
@@ -298,7 +296,8 @@ defmodule Tiki.OrderHandler.Worker do
     Enum.reduce_while(signups, {:ok, []}, fn signup, {:ok, acc} ->
       total_price = Enum.sum(Enum.map(signup.items, &(&1.quantity * &1.ticket_type.price)))
 
-      with {:ok, order} <- insert_order(event_id, total_price, signup.user_id) do
+      with {:ok, order} <- insert_order(event_id, total_price, signup.user_id),
+           {:ok, _} <- signup |> Releases.Signup.changeset(%{order_id: order.id}) |> Repo.update() do
         ticket_rows =
           Enum.flat_map(signup.items, fn item ->
             for _ <- 1..item.quantity do
@@ -311,11 +310,6 @@ defmodule Tiki.OrderHandler.Worker do
           end)
 
         Repo.insert_all(Orders.Ticket, ticket_rows)
-
-        signup
-        |> Releases.Signup.changeset(%{order_id: order.id})
-        |> Repo.update!()
-
         {:cont, {:ok, [order | acc]}}
       else
         error -> {:halt, error}

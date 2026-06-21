@@ -26,7 +26,7 @@ defmodule Tiki.Releases.DrawEngine do
   import Ecto.Query
 
   alias Tiki.OrderHandler
-  alias Tiki.Releases.{Release, Signup}
+  alias Tiki.Releases.{CommitDrawWorker, Release, Signup}
   alias Tiki.Repo
   alias Tiki.Tickets
   alias Tiki.Tickets.{TicketType, TreeBuilder}
@@ -57,10 +57,13 @@ defmodule Tiki.Releases.DrawEngine do
       seed = release.seed || :erlang.phash2(make_ref())
       {winners, losers} = select_winners(entries, inventory(release.event_id), seed)
       winner_ids = Enum.map(winners, & &1.id)
+      loser_ids = Enum.map(losers, & &1.id)
 
       case OrderHandler.Worker.reserve_release_signups(release.event_id, winner_ids) do
         {:ok, _orders, _available} ->
-          commit_draw_result(release, winners, losers, seed)
+          %{release_id: release_id, winner_ids: winner_ids, loser_ids: loser_ids, seed: seed}
+          |> CommitDrawWorker.new()
+          |> Oban.insert()
 
           Logger.info(
             "Draw for release #{release_id}: #{length(winners)} won, #{length(losers)} lost"
@@ -75,10 +78,13 @@ defmodule Tiki.Releases.DrawEngine do
     end
   end
 
-  defp commit_draw_result(release, winners, losers, seed) do
+  @doc """
+  Commits the result of a draw: updates signup statuses and marks the release as drawn.
+  Safe to call more than once; already-updated signups are skipped by the status filters.
+  """
+  def commit_draw_result(release_id, winner_ids, loser_ids, seed) do
+    release = Repo.get!(Release, release_id)
     now = DateTime.utc_now()
-    winner_ids = Enum.map(winners, & &1.id)
-    loser_ids = Enum.map(losers, & &1.id)
 
     Repo.transact(fn ->
       Repo.update_all(
@@ -96,11 +102,10 @@ defmodule Tiki.Releases.DrawEngine do
         set: [status: :lost, decided_at: now]
       )
 
-      release
-      |> Release.changeset(%{drawn_at: now, seed: seed})
-      |> Repo.update!()
-
-      {:ok, :ok}
+      case release |> Release.changeset(%{drawn_at: now, seed: seed}) |> Repo.update() do
+        {:ok, _} -> {:ok, :ok}
+        {:error, changeset} -> {:error, changeset}
+      end
     end)
   end
 

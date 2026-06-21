@@ -206,8 +206,7 @@ defmodule TikiWeb.OrderLive.Show do
         </div>
         <div>
           <p class="text-sm font-semibold">{gettext("Seller")}</p>
-          <div class="text-muted-foreground whitespace-pre text-sm">
-            {gettext("Konglig Datasektionen (Org id. 802412-7709)
+          <div class="text-muted-foreground whitespace-pre text-sm" phx-no-format>{gettext("Konglig Datasektionen (Org id. 802412-7709)
     Fack vid THS
     100 44 Stockholm")}
           </div>

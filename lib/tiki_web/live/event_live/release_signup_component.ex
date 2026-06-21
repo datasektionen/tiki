@@ -10,7 +10,7 @@ defmodule TikiWeb.EventLive.ReleaseSignupComponent do
     ~H"""
     <div class="flex flex-col">
       <div class="bg-accent rounded-xl">
-        <div class="px-4 py-4 flex flex-col gap-2">
+        <div class="flex flex-col gap-2 px-4 py-4">
           <div>
             <.badge variant="outline">
               {gettext("Status:")} {signup_status_label(@signup)}
@@ -33,14 +33,14 @@ defmodule TikiWeb.EventLive.ReleaseSignupComponent do
             </li>
           </ul>
 
-          <p class="text-muted-foreground text-sm flex flex-row">
+          <p class="text-muted-foreground flex flex-row text-sm">
             {gettext("Draw at %{time}",
-              time: time_to_string(lottery_end(@signup.release), format: :short)
+              time: time_to_string(lottery_end(@release), format: :short)
             )}
           </p>
 
           <.button
-            :if={@signup.release.drawn_at == nil}
+            :if={@release.drawn_at == nil}
             variant="outline"
             phx-click="cancel-signup"
             phx-target={@myself}
@@ -51,7 +51,7 @@ defmodule TikiWeb.EventLive.ReleaseSignupComponent do
 
           <%!-- <div :if={@phase == :purchase and @signup.status in [:drawn, :seeded] and @signup.order_id}> --%>
           <div :if={@signup.status in [:drawn, :seeded] and @signup.order_id}>
-            <p class="text-sm mb-3">
+            <p class="mb-3 text-sm">
               {gettext("You've been selected! Pay before %{time} to claim your spot.",
                 time: time_to_string(purchase_end(@release), format: :short)
               )}

@@ -479,8 +479,6 @@ defmodule Tiki.Releases do
             ^release.opens_at
           )
 
-    Repo.all(conflict_query)
-
     if Repo.exists?(conflict_query), do: {:error, :overlap}, else: :ok
   end
 
@@ -488,6 +486,50 @@ defmodule Tiki.Releases do
     DateTime.compare(release.opens_at, updated_release.opens_at) != :eq or
       release.signup_window_minutes != updated_release.signup_window_minutes or
       release.purchase_window_minutes != updated_release.purchase_window_minutes
+  end
+
+  @doc """
+  Commits the result of a draw and broadcasts all side-effects: updated signup statuses,
+  updated release (now carrying `drawn_at`), and ticket availability.
+  """
+  def commit_draw(release_id, winner_ids, loser_ids, seed) do
+    with {:ok, _} <-
+           Tiki.Releases.DrawEngine.commit_draw_result(release_id, winner_ids, loser_ids, seed) do
+      release = get_release!(release_id)
+
+      all_ids = winner_ids ++ loser_ids
+
+      signups =
+        Repo.all(
+          from s in Signup,
+            join: u in assoc(s, :user),
+            join: i in assoc(s, :items),
+            join: tt in assoc(i, :ticket_type),
+            where: s.id in ^all_ids,
+            preload: [user: u, items: {i, ticket_type: tt}]
+        )
+
+      for signup <- signups, do: broadcast_signup_updated(signup, release.event_id)
+
+      handle_release_change(release)
+
+      {:ok, signups}
+    end
+  end
+
+  @doc """
+  Handle a release status change. Is safe to call multiple times. Reconciles the system state
+  based on the state of the release.
+  """
+  def handle_release_change(release) do
+    OrderHandler.Worker.invalidate_cache(release.event_id)
+
+    broadcast_release_updated(release)
+
+    Tiki.Orders.broadcast(
+      release.event_id,
+      {:tickets_updated, Tiki.Tickets.get_available_ticket_types(release.event_id)}
+    )
   end
 
   defmodule Topics do
@@ -517,21 +559,6 @@ defmodule Tiki.Releases do
     end
 
     signup
-  end
-
-  @doc """
-  Handle a release status change. Is safe to call multiple times. Reconciles the system state
-  based on the state of the release.
-  """
-  def handle_release_change(release) do
-    OrderHandler.Worker.invalidate_cache(release.event_id)
-
-    broadcast_release_updated(release)
-
-    Tiki.Orders.broadcast(
-      release.event_id,
-      {:tickets_updated, Tiki.Tickets.get_available_ticket_types(release.event_id)}
-    )
   end
 
   defp broadcast_release_updated(release) do

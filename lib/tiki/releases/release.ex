@@ -48,6 +48,7 @@ defmodule Tiki.Releases.Release do
       :event_id,
       :ticket_batch_id
     ])
+    |> validate_number(:max_tickets_per_order, greater_than: 0)
     |> foreign_key_constraint(:event_id)
     |> foreign_key_constraint(:ticket_batch_id)
   end

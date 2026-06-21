@@ -364,7 +364,7 @@ defmodule TikiWeb.PurchaseLive.TicketsComponent do
   end
 
   defp error_message(%Ecto.Changeset{errors: errors}),
-    do: TikiWeb.CoreComponents.translate_errors(errors)
+    do: errors |> TikiWeb.CoreComponents.translate_errors() |> Enum.join(", ")
 
   defp error_message(reason) when is_binary(reason), do: reason
 
