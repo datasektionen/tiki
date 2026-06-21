@@ -17,7 +17,7 @@ defmodule Tiki.MixProject do
 
   def cli do
     [
-      preferred_envs: [precommit: :test, benchmark: :test]
+      preferred_envs: [precommit: :test, benchmark: :test, "docs_site.build": :docs]
     ]
   end
 
@@ -32,6 +32,8 @@ defmodule Tiki.MixProject do
   end
 
   # Specifies which paths to compile per environment.
+  defp elixirc_paths(:dev), do: ["lib"]
+  defp elixirc_paths(:docs), do: ["docs"]
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
@@ -69,7 +71,7 @@ defmodule Tiki.MixProject do
       {:oidcc, "~> 3.7"},
       {:let_me, "~> 1.2"},
       {:eqrcode, "~> 0.2.0"},
-      {:tailwind_formatter, "~> 0.4.0", only: [:dev, :test], runtime: false},
+      {:tailwind_formatter, "~> 0.4.0", only: [:dev, :test, :docs], runtime: false},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:salad_ui,
        git: "https://github.com/adriansalamon/salad_ui",
@@ -88,7 +90,9 @@ defmodule Tiki.MixProject do
       {:libcluster_postgres, "~> 0.2"},
       {:local_cluster, "~> 2.0", only: [:test]},
       # swoosh really wants to use hackney in test mode
-      {:hackney, "~> 1.9", only: [:test]}
+      {:hackney, "~> 1.9", only: [:test]},
+      {:nimble_publisher_mdex, "~> 0.1", only: :docs},
+      {:lumis, "~> 0.1", only: :docs}
     ]
   end
 
