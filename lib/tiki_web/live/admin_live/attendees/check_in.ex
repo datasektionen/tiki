@@ -244,7 +244,7 @@ defmodule TikiWeb.AdminLive.Attendees.CheckIn do
                 >
                   <.icon name="hero-exclamation-triangle" class="text-destructive" />
                   <dt class="text-foreground text-sm">
-                    {gettext("Attendeee has not filled in the required ticket information")}
+                    {gettext("Attendee has not filled in the required ticket information")}
                   </dt>
                 </div>
 

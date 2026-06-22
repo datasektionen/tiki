@@ -35,7 +35,7 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
         </.button> --%>
       </.form>
 
-      <.card class="sm:col-span-6">
+      <.card class="min-w-0 sm:col-span-6">
         <ul
           id="tickets"
           phx-update="stream"
@@ -144,8 +144,12 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
             </p>
           </.link>
           <.badge variant="outline">
-            <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
+            <.icon name="hero-ticket-mini" class="size-2 mr-1 inline-block" />
             <span class="text-xs">{Localizer.localize(@ticket.ticket_type).name}</span>
+          </.badge>
+          <.badge :if={!@ticket.form_response} variant="warning">
+            <.icon name="hero-exclamation-triangle" class="size-3 mr-1" />
+            <span>{gettext("Has not filled in ticket information")}</span>
           </.badge>
         </div>
         <div class="text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5">

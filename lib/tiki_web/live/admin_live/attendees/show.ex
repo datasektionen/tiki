@@ -141,7 +141,7 @@ defmodule TikiWeb.AdminLive.Attendees.Show do
         <div class="flex flex-row items-center px-4 py-5 sm:gap-4 sm:px-6">
           <.icon name="hero-exclamation-triangle" class="text-destructive" />
           <dt class="text-foreground text-sm">
-            {gettext("Attendeee has not filled in the required ticket information")}
+            {gettext("Attendee has not filled in the required ticket information")}
           </dt>
         </div>
       </.information_card>

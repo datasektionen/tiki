@@ -121,7 +121,7 @@ defmodule Tiki.OrdersTest do
           ticket_fixture(%{order_id: order.id, ticket_type_id: ticket_type.id})
         end)
         |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
-        |> Repo.preload(order: [:user], ticket_type: [])
+        |> Repo.preload(order: [:user], ticket_type: [], form_response: [])
         |> Enum.map(fn ticket -> %{ticket | email: ticket.order.user.email} end)
 
       assert Orders.list_tickets_for_event(event.id) == tickets
@@ -139,7 +139,7 @@ defmodule Tiki.OrdersTest do
           ticket_fixture(%{order_id: order.id, ticket_type_id: ticket_type.id})
         end)
         |> Enum.sort_by(& &1.inserted_at, {:desc, NaiveDateTime})
-        |> Repo.preload(order: [:user], ticket_type: [])
+        |> Repo.preload(order: [:user], ticket_type: [], form_response: [])
         |> Enum.map(fn ticket -> %{ticket | email: ticket.order.user.email} end)
 
       assert Orders.list_tickets_for_event(event.id, limit: 3) == Enum.take(tickets, 3)

@@ -893,7 +893,7 @@ msgstr ""
 #: lib/tiki_web/live/admin_live/attendees/check_in.ex:247
 #: lib/tiki_web/live/admin_live/attendees/show.ex:144
 #, elixir-autogen, elixir-format
-msgid "Attendeee has not filled in the required ticket information"
+msgid "Attendee has not filled in the required ticket information"
 msgstr ""
 
 #: lib/tiki_web/live/order_live/ticket.ex:12
