@@ -148,13 +148,9 @@ defmodule Tiki.Orders do
   def reserve_tickets(event_id, ticket_types, user_id \\ nil) do
     with {:ok, order, ticket_types} <-
            OrderHandler.Worker.reserve_tickets(event_id, ticket_types, user_id) do
-      # Monitor the order, automatically cancels it if it's not paid in time
-      Tiki.PurchaseMonitor.monitor(order)
+      Tiki.Workers.OrderTimeoutWorker.schedule(order)
 
-      broadcast(
-        order.event_id,
-        {:tickets_updated, Tickets.put_available_ticket_meta(ticket_types)}
-      )
+      broadcast(order.event_id, {:tickets_updated, ticket_types})
 
       broadcast_order(order.id, :created, order)
 
@@ -162,6 +158,17 @@ defmodule Tiki.Orders do
     else
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  def reservation_timeout_minutes(), do: Tiki.Workers.OrderTimeoutWorker.timeout_minutes()
+
+  @doc """
+  Creates a held order for each winning signup and links it back to the signup
+  via `order_id`. Status updates (drawn/lost/seeded), `drawn_at`, and `seed` are
+  the caller's responsibility and must be committed separately.
+  """
+  def reserve_release_signups(event_id, winner_signup_ids) do
+    OrderHandler.Worker.reserve_release_signups(event_id, winner_signup_ids)
   end
 
   @doc """

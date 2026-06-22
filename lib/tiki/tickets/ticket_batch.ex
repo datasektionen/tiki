@@ -13,7 +13,7 @@ defmodule Tiki.Tickets.TicketBatch do
 
     has_many :sub_batches, TicketBatch, foreign_key: :parent_batch_id
     has_many :ticket_types, Tiki.Tickets.TicketType
-    has_one :release, Tiki.Releases.Release
+    has_many :releases, Tiki.Releases.Release
 
     belongs_to :parent_batch, TicketBatch
 

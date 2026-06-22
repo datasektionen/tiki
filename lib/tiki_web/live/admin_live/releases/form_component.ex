@@ -29,16 +29,32 @@ defmodule TikiWeb.AdminLive.Releases.FormComponent do
         />
 
         <.input
-          field={@form[:starts_at]}
+          field={@form[:opens_at]}
           type="datetime-local"
           label={gettext("Open time")}
           description={"#{gettext("Time when release signup opens.")} #{gettext("In 'Europe/Stockholm' timezone")}."}
         />
         <.input
-          field={@form[:ends_at]}
-          type="datetime-local"
-          label={gettext("End time")}
-          description={"#{gettext("Time when release signup ends. After this, tickets are sold as usual with no releases.")} #{gettext("In 'Europe/Stockholm' timezone")}."}
+          field={@form[:signup_window_minutes]}
+          type="number"
+          label={gettext("Signup window (minutes)")}
+          default="10"
+          description={gettext("Time users have to signup before tickets are allocated.")}
+        />
+
+        <.input
+          field={@form[:purchase_window_minutes]}
+          type="number"
+          label={gettext("Purchase window (minutes)")}
+          default="30"
+          description={gettext("Time users have to purchase allocated tickets.")}
+        />
+
+        <.input
+          field={@form[:max_tickets_per_order]}
+          type="number"
+          label={gettext("Max tickets per order")}
+          default={1}
         />
 
         <.input
@@ -177,7 +193,7 @@ defmodule TikiWeb.AdminLive.Releases.FormComponent do
   end
 
   defp save_release(socket, :new, release_params) do
-    case Releases.create_release(socket.assigns.event.id, release_params) do
+    case Releases.create_release(socket.assigns.current_scope, release_params) do
       {:ok, release} ->
         notify_parent({:saved, release})
 

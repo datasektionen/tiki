@@ -70,6 +70,37 @@ defmodule Tiki.TicketsTest do
                })
     end
 
+    test "update_ticket_batch/2 rejects a two-batch cycle" do
+      event = Tiki.EventsFixtures.event_fixture()
+      scope = %Scope{event: event}
+      {:ok, batch_a} = Tickets.create_ticket_batch(scope, %{name: "A", max_size: 10})
+
+      {:ok, batch_b} =
+        Tickets.create_ticket_batch(scope, %{name: "B", max_size: 10, parent_batch_id: batch_a.id})
+
+      assert {:error, %Ecto.Changeset{errors: [parent_batch_id: {"would create a cycle", []}]}} =
+               Tickets.update_ticket_batch(Scope.for(event: event.id), batch_a, %{
+                 parent_batch_id: batch_b.id
+               })
+    end
+
+    test "update_ticket_batch/2 rejects a longer cycle" do
+      event = Tiki.EventsFixtures.event_fixture()
+      scope = %Scope{event: event}
+      {:ok, batch_a} = Tickets.create_ticket_batch(scope, %{name: "A", max_size: 10})
+
+      {:ok, batch_b} =
+        Tickets.create_ticket_batch(scope, %{name: "B", max_size: 10, parent_batch_id: batch_a.id})
+
+      {:ok, batch_c} =
+        Tickets.create_ticket_batch(scope, %{name: "C", max_size: 10, parent_batch_id: batch_b.id})
+
+      assert {:error, %Ecto.Changeset{errors: [parent_batch_id: {"would create a cycle", []}]}} =
+               Tickets.update_ticket_batch(Scope.for(event: event.id), batch_a, %{
+                 parent_batch_id: batch_c.id
+               })
+    end
+
     test "delete_ticket_batch/1 deletes the ticket_batch" do
       ticket_batch = ticket_batch_fixture()
       assert {:ok, %TicketBatch{}} = Tickets.delete_ticket_batch(ticket_batch)

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{@doc.title} · Tiki Docs</title>
+    <link rel="stylesheet" href="/assets/docs.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js">
+    </script>
+  </head>
+  <body
+    class="bg-white text-slate-900 antialiased"
+    x-data="{ mobileNavOpen: false }"
+    x-effect="document.documentElement.classList.toggle('overflow-hidden', mobileNavOpen)"
+  >
+    <%!-- Mobile top bar --%>
+    <header class="sticky top-0 z-40 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+      <button
+        @click="mobileNavOpen = !mobileNavOpen"
+        class="mr-2 rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+        aria-label="Toggle navigation"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="h-5 w-5"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+      <a href="/index.html" class="flex items-center gap-2.5">
+        <.logo class="size-5 shrink-0" />
+      </a>
+    </header>
+
+    <%!-- Mobile nav drawer --%>
+    <div
+      x-show="mobileNavOpen"
+      class="bg-slate-900/20 fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm lg:hidden"
+      @click.self="mobileNavOpen = false"
+    >
+      <div class="min-h-full w-4/5 w-full max-w-sm bg-white px-4 pb-16 shadow-xl">
+        <div class="flex items-center gap-3 py-3">
+          <button
+            @click="mobileNavOpen = !mobileNavOpen"
+            class="mr-2 rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Toggle navigation"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class="h-5 w-5"
+            >
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
+          </button>
+          <a href="/index.html" class="flex items-center gap-2.5">
+            <.logo class="size-5 shrink-0" />
+          </a>
+        </div>
+
+        <nav class="mt-2 text-base">
+          <ul role="list" class="space-y-9">
+            <li :for={{section, section_docs} <- @nav_sections}>
+              <h2 :if={section} class="font-medium text-slate-900">
+                {section}
+              </h2>
+              <ul
+                role="list"
+                class={["mt-2 space-y-2 border-l-2 border-slate-100"]}
+              >
+                <li :for={d <- section_docs} class="relative">
+                  <a
+                    href={"/" <> d.path}
+                    @click="mobileNavOpen = false"
+                    class={[
+                      "block w-full py-0.5 pl-3.5 before:pointer-events-none before:absolute before:top-1/2 before:-left-1 before:h-1.5 before:w-1.5 before:-translate-y-1/2 before:rounded-full",
+                      if(d.id == @doc.id,
+                        do: "font-semibold text-slate-900 before:bg-slate-900",
+                        else:
+                          "text-slate-500 before:hidden before:bg-slate-300 hover:text-slate-700 hover:before:block"
+                      )
+                    ]}
+                  >
+                    {d.title}
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <div class="flex min-h-screen">
+      <div class="max-w-8xl relative mx-auto flex w-full flex-auto justify-center sm:px-2 lg:px-8 xl:px-12">
+        <%!-- Left navigation sidebar (desktop) --%>
+        <aside class="hidden lg:relative lg:block lg:flex-none">
+          <div class="w-[50vw] absolute inset-y-0 right-0 bg-slate-50"></div>
+          <div class="sticky top-0 -ml-0.5 h-screen w-64 overflow-y-auto overflow-x-hidden py-16 pr-8 pl-0.5 xl:w-72 xl:pr-16">
+            <div class="mb-8">
+              <a
+                href="/index.html"
+                class="flex items-center gap-2.5 transition-opacity hover:opacity-75"
+              >
+                <.logo class="size-7 shrink-0" />
+              </a>
+            </div>
+            <nav class="text-base lg:text-sm">
+              <ul role="list" class="space-y-9">
+                <li :for={{section, section_docs} <- @nav_sections}>
+                  <h2 :if={section} class="font-medium text-slate-900">
+                    {section}
+                  </h2>
+                  <ul
+                    role="list"
+                    class={[
+                      "space-y-2 border-l-2 border-slate-100 lg:space-y-4 lg:border-slate-200",
+                      if(section, do: "mt-2 lg:mt-4", else: "")
+                    ]}
+                  >
+                    <li :for={d <- section_docs} class="relative">
+                      <a
+                        href={"/" <> d.path}
+                        class={[
+                          "block w-full pl-3.5 before:pointer-events-none before:absolute before:top-1/2 before:-left-1 before:h-1.5 before:w-1.5 before:-translate-y-1/2 before:rounded-full",
+                          if(d.id == @doc.id,
+                            do: "font-semibold text-slate-900 before:bg-slate-900",
+                            else:
+                              "text-slate-500 before:hidden before:bg-slate-300 hover:text-slate-700 hover:before:block"
+                          )
+                        ]}
+                      >
+                        {d.title}
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </aside>
+
+        <%!-- Article content --%>
+        <div class="min-w-0 max-w-2xl flex-auto px-4 py-16 lg:max-w-none lg:pr-0 lg:pl-8 xl:px-16">
+          <article>
+            <header class="mb-1 space-y-1">
+              <p :if={@doc.section} class="text-sm font-medium text-slate-500">
+                {@doc.section}
+              </p>
+            </header>
+            <div
+              class="prose prose-slate max-w-none prose-a:font-semibold prose-a:no-underline prose-headings:scroll-mt-8 prose-pre:rounded-xl prose-pre:bg-slate-900 prose-pre:shadow-lg hover:prose-a:text-slate-700"
+              id="doc-content"
+            >
+              {Phoenix.HTML.raw(@doc.body)}
+            </div>
+          </article>
+
+          <%!-- Previous / Next navigation --%>
+          <dl class="mt-12 flex border-t border-slate-200 pt-6">
+            <%= if @prev_doc do %>
+              <div>
+                <dt class="text-sm font-medium text-slate-900">Previous</dt>
+                <dd class="mt-1">
+                  <a
+                    href={"/" <> @prev_doc.path}
+                    class="flex flex-row-reverse items-center gap-x-1 text-base font-semibold text-slate-500 hover:text-slate-700"
+                  >
+                    {@prev_doc.title}
+                    <svg
+                      viewBox="0 0 16 16"
+                      aria-hidden="true"
+                      class="h-4 w-4 flex-none -scale-x-100 fill-current"
+                    >
+                      <path d="m9.182 13.423-1.17-1.16 3.505-3.505H3V7.065h8.517l-3.506-3.5L9.181 2.4l5.512 5.511-5.511 5.512Z" />
+                    </svg>
+                  </a>
+                </dd>
+              </div>
+            <% end %>
+            <%= if @next_doc do %>
+              <div class="ml-auto text-right">
+                <dt class="text-sm font-medium text-slate-900">Next</dt>
+                <dd class="mt-1">
+                  <a
+                    href={"/" <> @next_doc.path}
+                    class="flex items-center gap-x-1 text-base font-semibold text-slate-500 hover:text-slate-700"
+                  >
+                    {@next_doc.title}
+                    <svg
+                      viewBox="0 0 16 16"
+                      aria-hidden="true"
+                      class="h-4 w-4 flex-none fill-current"
+                    >
+                      <path d="m9.182 13.423-1.17-1.16 3.505-3.505H3V7.065h8.517l-3.506-3.5L9.181 2.4l5.512 5.511-5.511 5.512Z" />
+                    </svg>
+                  </a>
+                </dd>
+              </div>
+            <% end %>
+          </dl>
+        </div>
+
+        <%!-- Right "On this page" TOC sidebar --%>
+        <aside
+          class="hidden xl:sticky xl:top-0 xl:-mr-6 xl:block xl:h-screen xl:flex-none xl:overflow-y-auto xl:py-16 xl:pr-6"
+          x-data="{
+            headings: [],
+            active: null,
+            init() {
+              const article = document.getElementById('doc-content');
+              const hs = Array.from(article.querySelectorAll('h2, h3'));
+
+              const flatItems = [];
+              const groups = [];
+              let currentGroup = null;
+
+              for (const h of hs) {
+                const anchor = h.querySelector('a.anchor[id]');
+                if (!anchor) continue;
+                const id = anchor.id;
+                const text = h.textContent.trim();
+                flatItems.push({ el: anchor, id });
+
+                if (h.tagName === 'H2') {
+                  currentGroup = { id, text, children: [] };
+                  groups.push(currentGroup);
+                } else if (h.tagName === 'H3' && currentGroup) {
+                  currentGroup.children.push({ id, text });
+                }
+              }
+
+              this.headings = groups;
+
+              if (flatItems.length === 0) return;
+
+              const updateActive = () => {
+                const threshold = window.scrollY + 120;
+                let current = flatItems[0].id;
+                for (const item of flatItems) {
+                  if (item.el.getBoundingClientRect().top + window.scrollY <= threshold) {
+                    current = item.id;
+                  }
+                }
+                this.active = current;
+              };
+
+              window.addEventListener('scroll', updateActive, { passive: true });
+              updateActive();
+            }
+          }"
+        >
+          <nav aria-labelledby="on-this-page-title" class="w-56">
+            <h2 id="on-this-page-title" class="text-sm font-medium text-slate-900">
+              On this page
+            </h2>
+            <ol role="list" class="mt-4 space-y-3 text-sm" x-show="headings.length > 0">
+              <template x-for="section in headings" {%{":key" => "section.id"}}>
+                <li>
+                  <h3>
+                    <a
+                      x-bind:href="'#' + section.id"
+                      x-bind:class="active === section.id ? 'font-semibold text-slate-900' : 'font-normal text-slate-500 hover:text-slate-700'"
+                      x-text="section.text"
+                    >
+                    </a>
+                  </h3>
+                  <ol
+                    role="list"
+                    class="mt-2 space-y-3 pl-5 text-slate-500"
+                    x-show="section.children.length > 0"
+                  >
+                    <template x-for="child in section.children" {%{":key" => "child.id"}}>
+                      <li>
+                        <a
+                          x-bind:href="'#' + child.id"
+                          x-bind:class="active === child.id ? 'font-semibold text-slate-900' : 'hover:text-slate-700'"
+                          x-text="child.text"
+                        >
+                        </a>
+                      </li>
+                    </template>
+                  </ol>
+                </li>
+              </template>
+            </ol>
+          </nav>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

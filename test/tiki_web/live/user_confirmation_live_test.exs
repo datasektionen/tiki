@@ -13,8 +13,10 @@ defmodule TikiWeb.UserConfirmationLiveTest do
   describe "Confirm user" do
     test "renders confirmation page for unconfirmed user", %{conn: conn, unconfirmed_user: user} do
       token =
-        extract_user_token(fn url ->
-          Accounts.deliver_login_instructions(user, url)
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          extract_user_token(fn url ->
+            Accounts.deliver_login_instructions(user, url)
+          end)
         end)
 
       {:ok, _lv, html} = live(conn, ~p"/users/log_in/#{token}")
@@ -23,8 +25,10 @@ defmodule TikiWeb.UserConfirmationLiveTest do
 
     test "renders log in page for confirmed user", %{conn: conn, confirmed_user: user} do
       token =
-        extract_user_token(fn url ->
-          Accounts.deliver_login_instructions(user, url)
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          extract_user_token(fn url ->
+            Accounts.deliver_login_instructions(user, url)
+          end)
         end)
 
       {:ok, _lv, html} = live(conn, ~p"/users/log_in/#{token}")
@@ -34,8 +38,10 @@ defmodule TikiWeb.UserConfirmationLiveTest do
 
     test "confirms the given token once", %{conn: conn, unconfirmed_user: user} do
       token =
-        extract_user_token(fn url ->
-          Accounts.deliver_login_instructions(user, url)
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          extract_user_token(fn url ->
+            Accounts.deliver_login_instructions(user, url)
+          end)
         end)
 
       {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")
@@ -68,8 +74,10 @@ defmodule TikiWeb.UserConfirmationLiveTest do
       confirmed_user: user
     } do
       token =
-        extract_user_token(fn url ->
-          Accounts.deliver_login_instructions(user, url)
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          extract_user_token(fn url ->
+            Accounts.deliver_login_instructions(user, url)
+          end)
         end)
 
       {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")

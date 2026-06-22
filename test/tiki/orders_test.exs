@@ -698,19 +698,22 @@ defmodule Tiki.OrdersTest do
 
       assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
 
-      assert {:ok, %Order{status: :paid, id: ^id}} =
-               Orders.init_checkout(order, nil, %{
-                 name: "John Doe",
-                 email: "john@doe.com",
-                 locale: "en"
-               })
+      mail =
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          assert {:ok, %Order{status: :paid, id: ^id}} =
+                   Orders.init_checkout(order, nil, %{
+                     name: "John Doe",
+                     email: "john@doe.com",
+                     locale: "en"
+                   })
 
-      mail = get_order_email()
+          get_order_email()
+        end)
 
       assert mail.to == [{"", "john@doe.com"}]
       assert mail.subject =~ "Your order"
       # Start time in "Europe/Stockholm" timezone
-      assert mail.html_body =~ "4/24/20, 8:00 pm"
+      assert mail.html_body =~ "2020-04-24, 20:00"
 
       assert [%Swoosh.Attachment{data: data, filename: "invite.ics"}] = mail.attachments
 
@@ -736,14 +739,17 @@ defmodule Tiki.OrdersTest do
 
       assert {:ok, %Order{status: :pending, price: ^cost, id: id} = order} = result
 
-      assert {:ok, %Order{status: :paid, id: ^id}} =
-               Orders.init_checkout(order, nil, %{
-                 name: "John Doe",
-                 email: "john@doe.com",
-                 locale: "sv"
-               })
+      mail =
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          assert {:ok, %Order{status: :paid, id: ^id}} =
+                   Orders.init_checkout(order, nil, %{
+                     name: "John Doe",
+                     email: "john@doe.com",
+                     locale: "sv"
+                   })
 
-      mail = get_order_email()
+          get_order_email()
+        end)
 
       assert mail.to == [{"", "john@doe.com"}]
       assert mail.subject =~ "Din order"
@@ -782,16 +788,19 @@ defmodule Tiki.OrdersTest do
                  email: "john@doe.com"
                })
 
-      Checkouts.handle_swish_callback(swish_checkout.callback_identifier, "PAID")
+      mail =
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          Checkouts.handle_swish_callback(swish_checkout.callback_identifier, "PAID")
 
-      assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
+          assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
 
-      assert order.status == :paid
+          assert order.status == :paid
 
-      assert order.swish_checkout.status == "PAID"
-      assert order.swish_checkout.id == swish_checkout.id
+          assert order.swish_checkout.status == "PAID"
+          assert order.swish_checkout.id == swish_checkout.id
 
-      mail = get_order_email()
+          get_order_email()
+        end)
 
       assert mail.to == [{"", "john@doe.com"}]
       assert mail.subject =~ "Your order for"
@@ -881,16 +890,19 @@ defmodule Tiki.OrdersTest do
                  email: "john@doe.com"
                })
 
-      Checkouts.confirm_stripe_payment(%Stripe.PaymentIntent{
-        id: stripe_checkout.payment_intent_id,
-        status: "succeeded"
-      })
+      mail =
+        Oban.Testing.with_testing_mode(:inline, fn ->
+          Checkouts.confirm_stripe_payment(%Stripe.PaymentIntent{
+            id: stripe_checkout.payment_intent_id,
+            status: "succeeded"
+          })
 
-      assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
+          assert_receive {:paid, %Order{status: :paid, id: ^id} = order}
 
-      assert order.status == :paid
+          assert order.status == :paid
 
-      mail = get_order_email()
+          get_order_email()
+        end)
 
       assert mail.to == [{"", "john@doe.com"}]
       assert mail.subject =~ "Your order for"

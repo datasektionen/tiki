@@ -42,7 +42,6 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
   end
 
   alias Tiki.Localizer
-  alias Tiki.PurchaseMonitor
   use TikiWeb, :live_component
 
   alias Tiki.Orders
@@ -72,11 +71,17 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
             <.header class="border-none">
               {gettext("Payment")}
               <:subtitle>
-                {gettext(
-                  "Purchase tickets for %{event}. You have %{count} minutes to complete your order.",
-                  event: @event.name,
-                  count: PurchaseMonitor.timeout_minutes()
-                )}
+                {gettext("Purchase tickets for %{event}.", event: @event.name)}
+                <span
+                  :if={@expires_at}
+                  id={"countdown-#{@order.id}"}
+                  phx-hook=".Countdown"
+                  data-expires-at={DateTime.to_iso8601(@expires_at)}
+                >
+                  {gettext("You have %{count} minutes to complete your order.",
+                    count: countdown_minutes(@expires_at)
+                  )}
+                </span>
               </:subtitle>
             </.header>
 
@@ -209,6 +214,23 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
           </form>
         </div>
       </.dialog>
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".Countdown">
+        export default {
+          mounted() {
+            this.tick();
+            this.timer = setInterval(() => this.tick(), 30_000);
+          },
+          destroyed() {
+            clearInterval(this.timer);
+          },
+          tick() {
+            const expiresAt = new Date(this.el.dataset.expiresAt);
+            const diffMs = expiresAt - Date.now();
+            const mins = Math.max(0, Math.ceil(diffMs / 60_000));
+            this.el.textContent = this.el.textContent.replace(/\d+/, mins);
+          },
+        };
+      </script>
     </div>
     """
   end
@@ -276,5 +298,12 @@ defmodule TikiWeb.PurchaseLive.PurchaseComponent do
       :embedded_purchase -> {:noreply, socket}
       _ -> {:noreply, socket |> push_patch(to: ~p"/events/#{socket.assigns.event}")}
     end
+  end
+
+  defp countdown_minutes(nil), do: 0
+
+  defp countdown_minutes(expires_at) do
+    diff = DateTime.diff(expires_at, DateTime.utc_now(), :second)
+    max(0, ceil(diff / 60))
   end
 end

@@ -30,73 +30,88 @@ msgid "has an invalid entry"
 msgstr "har en felaktig enhet"
 
 msgid "is reserved"
-msgstr "är reserverad"
+msgstr "Är reserverad"
 
 msgid "does not match confirmation"
-msgstr "matchar inte bekräftelse"
+msgstr "Matchar inte bekräftelse"
 
 msgid "is still associated with this entry"
-msgstr "är fortfarande kopplad med denna enhet"
+msgstr "Är fortfarande kopplad med denna enhet"
 
 msgid "are still associated with this entry"
-msgstr "är fortfarande kopplade med denna enhet"
+msgstr "Är fortfarande kopplade med denna enhet"
 
 msgid "should have %{count} item(s)"
 msgid_plural "should have %{count} item(s)"
-msgstr[0] "måste ha %{count}"
-msgstr[1] "måste ha %{count}"
+msgstr[0] "Måste ha %{count}"
+msgstr[1] "Måste ha %{count}"
 
 msgid "should be %{count} character(s)"
 msgid_plural "should be %{count} character(s)"
-msgstr[0] "måste vara %{count} bokstav"
-msgstr[1] "måste vara %{count} bokstäver"
+msgstr[0] "Måste vara %{count} bokstav"
+msgstr[1] "Måste vara %{count} bokstäver"
 
 msgid "should be %{count} byte(s)"
 msgid_plural "should be %{count} byte(s)"
-msgstr[0] "måste vara %{count} byte"
-msgstr[1] "måste vara %{count} bytes"
+msgstr[0] "Måste vara %{count} byte"
+msgstr[1] "Måste vara %{count} bytes"
 
 msgid "should have at least %{count} item(s)"
 msgid_plural "should have at least %{count} item(s)"
-msgstr[0] "måste ha minst %{count} bokstav"
-msgstr[1] "måste ha minst %{count} bokstäver"
+msgstr[0] "Måste ha minst %{count} bokstav"
+msgstr[1] "Måste ha minst %{count} bokstäver"
 
 msgid "should be at least %{count} character(s)"
 msgid_plural "should be at least %{count} character(s)"
-msgstr[0] "måste vara minst %{count} bokstav"
-msgstr[1] "måste vara minst %{count} bokstäver"
+msgstr[0] "Måste vara minst %{count} bokstav"
+msgstr[1] "Måste vara minst %{count} bokstäver"
 
 msgid "should be at least %{count} byte(s)"
 msgid_plural "should be at least %{count} byte(s)"
-msgstr[0] "måste vara minst %{count} byte"
-msgstr[1] "måste vara minst %{count} bytes"
+msgstr[0] "Måste vara minst %{count} byte"
+msgstr[1] "Måste vara minst %{count} bytes"
 
 msgid "should have at most %{count} item(s)"
 msgid_plural "should have at most %{count} item(s)"
-msgstr[0] "måste som mest ha %{count} _"
-msgstr[1] "måste som mest ha %{count} _"
+msgstr[0] "Måste som mest ha %{count} _"
+msgstr[1] "Måste som mest ha %{count} _"
 
 msgid "should be at most %{count} character(s)"
 msgid_plural "should be at most %{count} character(s)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Får vara som mest %{count} bokstav"
+msgstr[1] "Får vara som mest %{count} bokstäver"
 
 msgid "should be at most %{count} byte(s)"
 msgid_plural "should be at most %{count} byte(s)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Får vara som mest %{count} byte"
+msgstr[1] "Får vara som mest %{count} bytes"
 
 msgid "must be less than %{number}"
-msgstr ""
+msgstr "Måste vara mindre än %{number}"
 
 msgid "must be greater than %{number}"
-msgstr ""
+msgstr "Måste vara större än %{number}"
 
 msgid "must be less than or equal to %{number}"
-msgstr ""
+msgstr "Måste vara mindre eller lika med %{number}"
 
 msgid "must be greater than or equal to %{number}"
-msgstr ""
+msgstr "Måste vara högre eller lika med %{number}"
 
 msgid "must be equal to %{number}"
-msgstr ""
+msgstr "Måste vara lika med %{number}"
+
+msgid "only one signup per user per release"
+msgstr "Endast en registrering per användare per biljettläpp"
+
+msgid "did not change"
+msgstr "Ändrades inte"
+
+msgid "would create a cycle"
+msgstr "Skulle skapa en cykel"
+
+msgid "overlaps with an existing release"
+msgstr "Överlappar med ett befintligt biljettsläpp"
+
+msgid "must be on or after start date"
+msgstr "Måste vara på eller efter startdatum"

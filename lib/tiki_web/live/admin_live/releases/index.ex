@@ -33,7 +33,7 @@ defmodule TikiWeb.AdminLive.Releases.Index do
     >
       <:col :let={{_id, release}} label={gettext("Name")}>{Localizer.localize(release).name}</:col>
       <:col :let={{_id, release}} label={gettext("Release time")}>
-        {time_to_string(release.starts_at, format: :short)}
+        {time_to_string(release.opens_at, format: :short)}
       </:col>
 
       <:action :let={{_id, release}}>
@@ -63,6 +63,7 @@ defmodule TikiWeb.AdminLive.Releases.Index do
           release={@release}
           event={@event}
           action={@live_action}
+          current_scope={@current_scope}
         />
       </.sheet_content>
     </.sheet>
@@ -126,7 +127,7 @@ defmodule TikiWeb.AdminLive.Releases.Index do
   def apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, gettext("New Release"))
-    |> assign(:release, %Release{event_id: socket.assigns.event.id})
+    |> assign(:release, %Release{})
   end
 
   def apply_action(socket, :edit, %{"release_id" => release_id}) do
