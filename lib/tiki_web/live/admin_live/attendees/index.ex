@@ -144,8 +144,12 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
             </p>
           </.link>
           <.badge variant="outline">
-            <.icon name="hero-ticket-mini" class="mr-1 inline-block h-2 w-2" />
+            <.icon name="hero-ticket-mini" class="size-2 mr-1 inline-block" />
             <span class="text-xs">{Localizer.localize(@ticket.ticket_type).name}</span>
+          </.badge>
+          <.badge :if={!@ticket.form_response} variant="warning">
+            <.icon name="hero-exclamation-triangle" class="size-3 mr-1" />
+            <span>{gettext("Has not filled in ticket information")}</span>
           </.badge>
         </div>
         <div class="text-muted-foreground mt-1 flex items-center gap-x-2 text-xs leading-5">
@@ -158,10 +162,6 @@ defmodule TikiWeb.AdminLive.Attendees.Index do
             <time datetime="2023-03-17T00:00Z">
               {Calendar.strftime(@ticket.order.updated_at, "%b %d %H:%M")}
             </time>
-          </p>
-          <p :if={!@ticket.form_response} class="truncate min-w-0">
-            <.icon name="hero-exclamation-triangle" class="text-destructive h-5 w-5 shrink-0" />
-            {gettext("Attendee has not filled in the required ticket information")}
           </p>
         </div>
       </div>
