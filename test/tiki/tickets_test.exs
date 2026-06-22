@@ -9,7 +9,7 @@ defmodule Tiki.TicketsTest do
 
     import Tiki.TicketsFixtures
 
-    @invalid_attrs %{max_size: nil, min_size: nil, name: nil}
+    @invalid_attrs %{max_size: nil, name: nil}
 
     test "list_ticket_batch/0 returns all ticket_batch" do
       ticket_batch = ticket_batch_fixture()
@@ -23,13 +23,12 @@ defmodule Tiki.TicketsTest do
 
     test "create_ticket_batch/1 with valid data creates a ticket_batch" do
       event = Tiki.EventsFixtures.event_fixture()
-      valid_attrs = %{max_size: 42, min_size: 42, name: "some name"}
+      valid_attrs = %{max_size: 42, name: "some name"}
 
       assert {:ok, %TicketBatch{} = ticket_batch} =
                Tickets.create_ticket_batch(%Scope{event: event}, valid_attrs)
 
       assert ticket_batch.max_size == 42
-      assert ticket_batch.min_size == 42
       assert ticket_batch.name == "some name"
     end
 
@@ -43,14 +42,13 @@ defmodule Tiki.TicketsTest do
 
     test "update_ticket_batch/2 with valid data updates the ticket_batch" do
       ticket_batch = ticket_batch_fixture()
-      update_attrs = %{max_size: 43, min_size: 43, name: "some updated name"}
+      update_attrs = %{max_size: 43, name: "some updated name"}
       scope = Scope.for(event: ticket_batch.event_id)
 
       assert {:ok, %TicketBatch{} = ticket_batch} =
                Tickets.update_ticket_batch(scope, ticket_batch, update_attrs)
 
       assert ticket_batch.max_size == 43
-      assert ticket_batch.min_size == 43
       assert ticket_batch.name == "some updated name"
     end
 

@@ -18,7 +18,6 @@ defmodule Tiki.Performance.Scenarios do
       %{
         name:         String.t(),
         capacity:     pos_integer(),          # max_size; optional on children
-        min_size:     pos_integer(),          # optional
         ticket_types: [ticket_type_spec()],   # present on leaf batches
         batches:      [batch_spec()]          # present on parent batches
       }

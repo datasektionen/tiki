@@ -54,7 +54,6 @@ defmodule Tiki.EventsFixtures do
     {:ok, alumns} =
       Tiki.Tickets.create_ticket_batch(scope, %{
         name: "Alumner",
-        min_size: 7,
         parent_batch_id: regular.id
       })
 

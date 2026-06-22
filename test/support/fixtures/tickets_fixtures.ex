@@ -17,7 +17,6 @@ defmodule Tiki.TicketsFixtures do
       attrs
       |> Enum.into(%{
         max_size: 42,
-        min_size: 42,
         name: "some name"
       })
       |> then(&Tiki.Tickets.create_ticket_batch(scope, &1))
