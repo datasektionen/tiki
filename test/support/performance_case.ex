@@ -493,7 +493,6 @@ defmodule Tiki.PerformanceCase do
       attrs =
         %{name: spec.name}
         |> maybe_put(:max_size, scale_val(Map.get(spec, :capacity), scale))
-        |> maybe_put(:min_size, scale_val(Map.get(spec, :min_size), scale))
         |> maybe_put(:parent_batch_id, parent_batch_id)
 
       {:ok, batch} = Tiki.Tickets.create_ticket_batch(scope, attrs)
