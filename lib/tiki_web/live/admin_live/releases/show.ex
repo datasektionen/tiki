@@ -207,7 +207,7 @@ defmodule TikiWeb.AdminLive.Releases.Show do
          release <- Releases.get_release!(release_id),
          sign_ups <- Releases.get_release_sign_ups(release_id),
          true <- release.event_id == event.id,
-         true <- FunWithFlags.enabled?(:releases) do
+         true <- FunWithFlags.enabled?(:releases, for: event) do
       if connected?(socket) do
         Releases.subscribe(release_id, sign_ups: true)
       end
