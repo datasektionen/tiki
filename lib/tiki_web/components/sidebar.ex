@@ -125,7 +125,7 @@ defmodule TikiWeb.Component.Sidebar do
         active={@active_tab == :event_tickets}
       />
       <:item
-        :if={FunWithFlags.enabled?(:releases)}
+        :if={FunWithFlags.enabled?(:releases, for: @event)}
         text={gettext("Releases")}
         to={~p"/admin/events/#{@event}/releases"}
         active={@active_tab == :event_releases}

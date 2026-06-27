@@ -70,3 +70,7 @@ defimpl Tiki.Localization, for: Tiki.Events.Event do
 
   def localize(event, "en"), do: event
 end
+
+defimpl FunWithFlags.Actor, for: Tiki.Events.Event do
+  def id(%{id: id}), do: "event:#{id}"
+end
