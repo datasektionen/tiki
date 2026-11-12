@@ -90,7 +90,7 @@ defmodule Tiki.MixProject do
       {:libcluster_postgres, "~> 0.2"},
       {:local_cluster, "~> 2.0", only: [:test]},
       # swoosh really wants to use hackney in test mode
-      {:hackney, "~> 1.9", only: [:test]},
+      {:hackney, "~> 4.0", only: [:test]},
       {:nimble_publisher_mdex, "~> 0.1", only: :docs},
       {:lumis, "~> 0.1", only: :docs}
     ]
